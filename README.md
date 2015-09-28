@@ -1,5 +1,5 @@
 # MetaWear C++ API #
-This project is a C++ implementation of the MetaWear protocol.  It compiled as a shared library, it can be used with any language that supports calling C functions from a shared library, such as C# and Python.  The library only constructs the bytes for communicating with the MetaWear platform, it **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target device.
+This project is a C++ implementation of the MetaWear protocol.  If compiled as a shared library, it can be used with any language that supports calling C functions from a shared library, such as C# and Python.  The library only constructs the bytes for communicating with the MetaWear platform, it **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target device.
 
 # Build #
 Building the project has been tested on Linux using GCC and make, and on Windows with Visual Studio Community 2015.  
