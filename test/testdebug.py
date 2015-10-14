@@ -1,35 +1,27 @@
-import os
-import unittest
-from ctypes import CDLL, create_string_buffer
+from common import TestMetaWearBase
 
-metawear_lib= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
-
-class TestDebug(unittest.TestCase):
+class TestDebug(TestMetaWearBase):
     def test_mbl_mw_debug_reset(self):
-        command= create_string_buffer(2)
-        expected= create_string_buffer(b'\xfe\x01', 2)
+        expected= [0xfe, 0x01]
 
-        metawear_lib.mbl_mw_debug_reset(command)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_debug_reset(self.board)
+        self.assertListEqual(self.command, expected)
 
     def test_mbl_mw_debug_jump_to_bootloader(self):
-        command= create_string_buffer(2)
-        expected= create_string_buffer(b'\xfe\x02', 2)
+        expected= [0xfe, 0x02]
 
-        metawear_lib.mbl_mw_debug_jump_to_bootloader(command)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_debug_jump_to_bootloader(self.board)
+        self.assertEqual(self.command, expected)
 
     def test_mbl_mw_debug_disconnect(self):
-        command= create_string_buffer(2)
-        expected= create_string_buffer(b'\xfe\x06', 2)
+        expected= [0xfe, 0x06]
 
-        metawear_lib.mbl_mw_debug_disconnect(command)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_debug_disconnect(self.board)
+        self.assertEqual(self.command, expected)
 
     def bml_mw_debug_reset_after_gc(self):
-        command= create_string_buffer(2)
-        expected= create_string_buffer(b'\xfe\x05', 2)
+        expected= [0xfe, 0x05]
 
-        metawear_lib.mbl_mw_debug_reset_after_gc(command)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_debug_reset_after_gc(self.board)
+        self.assertEqual(self.command, expected)
 

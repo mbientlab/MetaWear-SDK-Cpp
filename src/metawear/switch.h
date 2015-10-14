@@ -7,28 +7,20 @@
 
 #include <stdint.h>
 
+#include "datasignal_fwd.h"
 #include "dllmarker.h"
-#include "sensor_defs.h"
+#include "metawearboard_fwd.h"
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-const uint8_t MBL_MW_SWITCH_MODULE= 0x1;        ///< Module id for the switch
-const uint8_t MBL_MW_SWITCH_DATA= 0x1;          ///< Register id for switch state data
-
 /**
- * Retrieves the attributes for switch state data 
- * @return Pointer to the switch data source
+ * Retrieves the data signal representing switch state data
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the switch data signal
  */
-METAWEAR_API const DataSource* mbl_mw_switch_get_data_source();
-/**
- * Extracts the the switch state from a response sent by the switch
- * @param data      Pointer to where the function should write the switch state to
- * @param response  Response received from the switch
- * @return #STATUS_OK if the response contains valid switch data, #STATUS_INVALID_RESPONSE otherwise
- */
-METAWEAR_API int mbl_mw_switch_get_data(uint8_t *data, uint8_t response[3]);
+METAWEAR_API const MblMwDataSignal* mbl_mw_switch_get_state_data_signal(const MblMwMetaWearBoard *board);
 
 #ifdef	__cplusplus
 }

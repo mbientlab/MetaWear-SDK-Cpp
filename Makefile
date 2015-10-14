@@ -16,7 +16,7 @@ LIB_SO_NAME:=lib$(APP_NAME).so
 LIB_SHORT_NAME:=$(LIB_SO_NAME).$(VERSION_MAJOR)
 LIB_NAME:=$(LIB_SO_NAME).$(VERSION)
 
-CXXFLAGS+=-fPIC -Wall -Werror -I$(SOURCE_DIR) -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS
+CXXFLAGS+=-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -I$(SOURCE_DIR) -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS
 LD_FLAGS:=-s -shared -Wl,--soname,$(LIB_SHORT_NAME)
 
 ifeq ($(PLATFORM),x86)
@@ -75,7 +75,7 @@ $(DIST_DIR)/$(PUBLISH_NAME_ZIP): $(BUILD_DIR)/$(PUBLISH_NAME)
 
 $(BUILD_DIR)/$(PUBLISH_NAME): build
 	tar -cf $@ $(WRAPPER_DIR)
-	tar -rf $@ --transform 's,^,include/,' -C $(SOURCE_DIR) $(EXPORT_HEADERS)
+	tar -rf $@ --transform 's,$(SOURCE_DIR),include,' $(EXPORT_HEADERS)
 	tar -rf $@ -C $(DIST_DIR) .
 
 clean:
@@ -87,7 +87,6 @@ doc:
 	doxygen Doxyfile
 
 export PYTHONPATH=$(WRAPPER_DIR)/python
-export LD_LIBRARY_PATH=.
 export METAWEAR_LIB_SO_NAME=$(APP_OUTPUT)
 
 test: build

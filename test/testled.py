@@ -1,74 +1,62 @@
-import os
-import unittest
-from mbientlab.metawear.led import *
-from ctypes import CDLL, create_string_buffer
+from ctypes import byref
+from common import TestMetaWearBase
+from mbientlab.metawear import Led
 
-metawear_lib= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
-
-class TestLedControl(unittest.TestCase):
-    def setUp(self):
-        self.command= create_string_buffer(3)
-
+class TestLedControl(TestMetaWearBase):
     def test_play(self):
-        expected= create_string_buffer(b'\x02\x01\x01', 3)
+        expected= [0x02, 0x01, 0x01]
 
-        metawear_lib.mbl_mw_led_play(self.command)
-        self.assertEqual(self.command.raw, expected.raw)
+        self.libmetawear.mbl_mw_led_play(self.board)
+        self.assertEqual(self.command, expected)
 
     def test_autoplay(self):
-        expected= create_string_buffer(b'\x02\x01\x02', 3)
+        expected= [0x02, 0x01, 0x02]
 
-        metawear_lib.mbl_mw_led_autoplay(self.command)
-        self.assertEqual(self.command.raw, expected.raw)
+        self.libmetawear.mbl_mw_led_autoplay(self.board)
+        self.assertEqual(self.command, expected)
 
     def test_pause(self):
-        expected= create_string_buffer(b'\x02\x01\x00', 3)
+        expected= [0x02, 0x01, 0x00]
 
-        metawear_lib.mbl_mw_led_pause(self.command)
-        self.assertEqual(self.command.raw, expected.raw)
+        self.libmetawear.mbl_mw_led_pause(self.board)
+        self.assertEqual(self.command, expected)
 
     def test_stop_clear(self):
-        expected= create_string_buffer(b'\x02\x02\x01', 3)
+        expected= [0x02, 0x02, 0x01]
 
-        metawear_lib.mbl_mw_led_stop(self.command, 1)
-        self.assertEqual(self.command.raw, expected.raw)
+        self.libmetawear.mbl_mw_led_stop_and_clear(self.board, 1)
+        self.assertEqual(self.command, expected)
 
     def test_stop_no_clear(self):
-        expected= create_string_buffer(b'\x02\x02\x00', 3)
+        expected= [0x02, 0x02, 0x00]
 
-        metawear_lib.mbl_mw_led_stop(self.command, 0)
-        self.assertEqual(self.command.raw, expected.raw)
+        self.libmetawear.mbl_mw_led_stop(self.board, 0)
+        self.assertEqual(self.command, expected)
 
-class TestLedPattern(unittest.TestCase):
-    def setUp(self):
-        self.command= create_string_buffer(17)
-
-    def tearDown(self):
-        metawear_lib.mbl_mw_led_free_pattern(self.config)
-
+class TestLedPattern(TestMetaWearBase):
     def test_blink_pattern(self):
-        expected= create_string_buffer(b'\x02\x03\x00\x02\x1f\x00\x00\x00\x32\x00\x00\x00\xf4\x01\x00\x00\x0a', 17)
+        expected= [0x02, 0x03, 0x00, 0x02, 0x1f, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00, 0x00, 0xf4, 0x01, 0x00, 0x00, 0x0a]
+        pattern= Led.Pattern(repeat_count= 10)
 
-        self.config= metawear_lib.mbl_mw_led_create_preset_pattern(Preset.BLINK)
-        metawear_lib.mbl_mw_led_set_repeat_count(self.config, 10)
-        metawear_lib.mbl_mw_led_write_pattern(self.command, self.config, Color.GREEN)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_BLINK)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_GREEN)
 
-        self.assertEqual(self.command.raw, expected.raw)
+        self.assertEqual(self.command, expected)
 
     def test_solid_pattern(self):
-        expected= create_string_buffer(b'\x02\x03\x01\x02\x1f\x1f\x00\x00\xf4\x01\x00\x00\xE8\x03\x00\x00\x14', 17)
+        expected= [0x02, 0x03, 0x01, 0x02, 0x1f, 0x1f, 0x00, 0x00, 0xf4, 0x01, 0x00, 0x00, 0xE8, 0x03, 0x00, 0x00, 0x14]
+        pattern= Led.Pattern(repeat_count= 20)
 
-        self.config= metawear_lib.mbl_mw_led_create_preset_pattern(Preset.SOLID)
-        metawear_lib.mbl_mw_led_set_repeat_count(self.config, 20)
-        metawear_lib.mbl_mw_led_write_pattern(self.command, self.config, Color.RED)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_SOLID)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_RED)
 
-        self.assertEqual(self.command.raw, expected.raw)
+        self.assertEqual(self.command, expected)
 
     def test_pulse_pattern(self):
-        expected= create_string_buffer(b'\x02\x03\x02\x02\x1f\x00\xd5\x02\xf4\x01\xd5\x02\xd0\x07\x00\x00\x28', 17)
+        expected= [0x02, 0x03, 0x02, 0x02, 0x1f, 0x00, 0xd5, 0x02, 0xf4, 0x01, 0xd5, 0x02, 0xd0, 0x07, 0x00, 0x00, 0x28]
+        pattern= Led.Pattern(repeat_count= 40)
 
-        self.config= metawear_lib.mbl_mw_led_create_preset_pattern(Preset.PULSE)
-        metawear_lib.mbl_mw_led_set_repeat_count(self.config, 40)
-        metawear_lib.mbl_mw_led_write_pattern(self.command, self.config, Color.BLUE)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_PULSE)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_BLUE)
 
-        self.assertEqual(self.command.raw, expected.raw)
+        self.assertEqual(self.command, expected)

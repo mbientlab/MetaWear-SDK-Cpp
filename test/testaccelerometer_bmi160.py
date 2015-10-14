@@ -1,94 +1,74 @@
-import os
-import unittest
-from mbientlab.metawear.accelerometer_bmi160 import *
-from mbientlab.metawear.types import *
-from ctypes import *
+from common import TestMetaWearBase
+from mbientlab.metawear import AccelerometerBmi160, CartesianFloat
+from ctypes import create_string_buffer
 
-metawear_lib= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
-
-class TestAccBmi160Config(unittest.TestCase):
-    def setUp(self):
-        self.config= metawear_lib.mbl_mw_acc_bmi160_create_config()
-
-    def tearDown(self):
-        metawear_lib.mbl_mw_acc_bmi160_free_config(self.config)
-
+class TestAccBmi160Config(TestMetaWearBase):
     def test_set_odr(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x03\x03\x27\x03', 4)
+        expected= [0x03, 0x03, 0x27, 0x03]
 
-        metawear_lib.mbl_mw_acc_bmi160_set_odr(self.config, AccBmi160Odr.ODR_50HZ)
-        metawear_lib.mbl_mw_acc_bmi160_write_acceleration_config(command, self.config)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_acc_bmi160_set_odr(self.board, AccelerometerBmi160.ODR_50HZ)
+        self.libmetawear.mbl_mw_acc_bmi160_write_acceleration_config(self.board)
+        self.assertListEqual(self.command, expected)
 
     def test_set_range(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x03\x03\x28\x0c', 4)
+        expected= [0x03, 0x03, 0x28, 0x0c]
 
-        metawear_lib.mbl_mw_acc_bmi160_set_range(self.config, AccBmi160Range.FSR_16G)
-        metawear_lib.mbl_mw_acc_bmi160_write_acceleration_config(command, self.config)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_acc_bmi160_set_range(self.board, AccelerometerBmi160.FSR_16G)
+        self.libmetawear.mbl_mw_acc_bmi160_write_acceleration_config(self.board)
+        self.assertListEqual(self.command, expected)
 
     def test_set_odr_and_range(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x03\x03\x29\x08', 4)
+        expected= [0x03, 0x03, 0x29, 0x08]
 
-        metawear_lib.mbl_mw_acc_bmi160_set_odr(self.config, AccBmi160Odr.ODR_200HZ)
-        metawear_lib.mbl_mw_acc_bmi160_set_range(self.config, AccBmi160Range.FSR_8G)
-        metawear_lib.mbl_mw_acc_bmi160_write_acceleration_config(command, self.config)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_acc_bmi160_set_odr(self.board, AccelerometerBmi160.ODR_200HZ)
+        self.libmetawear.mbl_mw_acc_bmi160_set_range(self.board, AccelerometerBmi160.FSR_8G)
+        self.libmetawear.mbl_mw_acc_bmi160_write_acceleration_config(self.board)
+        self.assertListEqual(self.command, expected)
 
     def test_enable_acceleration_sampling(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x03\x02\x01\x00', 4)
+        expected= [0x03, 0x02, 0x01, 0x00]
 
-        metawear_lib.mbl_mw_acc_bmi160_enable_acceleration_sampling(command)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_acc_bmi160_enable_acceleration_sampling(self.board)
+        self.assertListEqual(self.command, expected)
 
     def test_disable_acceleration_sampling(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x03\x02\x00\x01', 4)
+        expected= [0x03, 0x02, 0x00, 0x01]
 
-        metawear_lib.mbl_mw_acc_bmi160_disable_acceleration_sampling(command)
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_acc_bmi160_disable_acceleration_sampling(self.board)
+        self.assertListEqual(self.command, expected)
 
-class TestBmi160AccelerationData(unittest.TestCase):
+class TestBmi160AccelerationData(TestMetaWearBase):
     def setUp(self):
-        self.config= metawear_lib.mbl_mw_acc_bmi160_create_config()
-        self.accel_data_source= metawear_lib.mbl_mw_acc_bmi160_get_acceleration_data_source
-        self.accel_data_source.restype= c_long
+        super().setUp()
 
-    def tearDown(self):
-        metawear_lib.mbl_mw_acc_bmi160_free_config(self.config)
+        self.accel_data_signal= self.libmetawear.mbl_mw_acc_bmi160_get_acceleration_data_signal(self.board)
 
-    def test_subscribe_acceleration_data(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x03\x04\x01', 3)
-
-        metawear_lib.mbl_mw_sensor_subscribe(command, c_long(self.accel_data_source()))
-        self.assertEqual(command.raw, expected.raw)
-
-    def test_unsubscribe_acceleration_data(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x03\x04\x00', 3)
-
-        metawear_lib.mbl_mw_sensor_unsubscribe(command, c_long(self.accel_data_source()))
-        self.assertEqual(command.raw, expected.raw)
-
-    def test_get_acceleration_data_mg(self):
-        response_bytes= create_string_buffer(b'\x03\x04\xe7\x72\x64\xbe\x28\xda', 8)
-        response_cs= CartesianShort() 
-        expected= CartesianShort(x= 7181, y= -4100, z= -2365)
-
-        metawear_lib.mbl_mw_acc_bmi160_set_range(self.config, AccBmi160Range.FSR_8G)
-        metawear_lib.mbl_mw_acc_bmi160_get_acceleration_data_mg(byref(response_cs), self.config, response_bytes)
-        self.assertEqual(response_cs, expected)
+#    def test_get_acceleration_data_mg(self):
+#        response_bytes= create_string_buffer(b'\x03\x04\xe7\x72\x64\xbe\x28\xda')
+#        response_cs= CartesianShort() 
+#        expected= CartesianShort(x= 7181, y= -4100, z= -2365)
+#
+#        libmetawear.mbl_mw_acc_bmi160_set_range(self.board, AccBmi160Range.FSR_8G)
+#        libmetawear.mbl_mw_acc_bmi160_get_acceleration_data_mg(byref(response_cs), self.board, response_bytes)
+#        self.assertListEqual(response_cs, expected)
 
     def test_get_acceleration_data_g(self):
-        response_bytes= create_string_buffer(b'\x03\x04\x16\xc4\x94\xa2\x2a\xd0', 8)
-        response_cf= CartesianFloat() 
+        response= create_string_buffer(b'\x03\x04\x16\xc4\x94\xa2\x2a\xd0')
         expected= CartesianFloat(x= -1.872, y= -2.919, z= -1.495)
 
-        metawear_lib.mbl_mw_acc_bmi160_set_range(self.config, AccBmi160Range.FSR_4G)
-        metawear_lib.mbl_mw_acc_bmi160_get_acceleration_data_g(byref(response_cf), self.config, response_bytes)
-        self.assertEqual(response_cf, expected)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal)
+        self.libmetawear.mbl_mw_acc_bmi160_set_range(self.board, AccelerometerBmi160.FSR_4G)
+        status= self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.assertEqual(self.data_cartesian_float, expected)
+
+    def test_subscribe_acceleration_data(self):
+        expected= [0x03, 0x04, 0x01]
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal)
+        self.assertListEqual(self.command, expected)
+
+    def test_unsubscribe_acceleration_data(self):
+        expected= [0x03, 0x04, 0x00]
+
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
+        self.assertListEqual(self.command, expected)

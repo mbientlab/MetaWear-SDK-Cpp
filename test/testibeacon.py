@@ -1,64 +1,52 @@
-import os
-import unittest
+from common import TestMetaWearBase
 import uuid
-from ctypes import CDLL, create_string_buffer
 
-metawear_lib= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
-
-class TestIBeacon(unittest.TestCase):
+class TestIBeacon(TestMetaWearBase):
     def test_set_major(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x07\x03\x4e\x00', 4)
+        expected= [0x07, 0x03, 0x4e, 0x00]
 
-        metawear_lib.mbl_mw_ibeacon_set_major(command, 78);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_set_major(self.board, 78);
+        self.assertEqual(self.command, expected)
 
     def test_set_minor(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x07\x04\x1d\x1d', 4)
+        expected= [0x07, 0x04, 0x1d, 0x1d]
 
-        metawear_lib.mbl_mw_ibeacon_set_minor(command, 7453);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_set_minor(self.board, 7453);
+        self.assertEqual(self.command, expected)
 
     def test_set_period(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x07\x07\xb3\x3a', 4)
+        expected= [0x07, 0x07, 0xb3, 0x3a]
 
-        metawear_lib.mbl_mw_ibeacon_set_period(command, 15027);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_set_period(self.board, 15027);
+        self.assertEqual(self.command, expected)
 
     def test_set_rx_power(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x07\x05\xc9', 3)
+        expected= [0x07, 0x05, 0xc9]
 
-        metawear_lib.mbl_mw_ibeacon_set_rx_power(command, -55);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_set_rx_power(self.board, -55);
+        self.assertEqual(self.command, expected)
 
     def test_set_tx_power(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x07\x06\xf4', 3)
+        expected= [0x07, 0x06, 0xf4]
 
-        metawear_lib.mbl_mw_ibeacon_set_tx_power(command, -12);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_set_tx_power(self.board, -12);
+        self.assertEqual(self.command, expected)
 
     def test_set_uuid(self):
-        command= create_string_buffer(18)
-        expected= create_string_buffer(b'\x07\x02\x5a\xe7\xba\xfb\x4c\x46\xdd\xd9\x95\x91\xcb\x85\x06\x90\x6a\x32', 18)
+        expected= [0x07, 0x02, 0x5a, 0xe7, 0xba, 0xfb, 0x4c, 0x46, 0xdd, 0xd9, 0x95, 0x91, 0xcb, 0x85, 0x06, 0x90, 0x6a, 0x32]
 
         ad_uuid= uuid.UUID('{326a9006-85cb-9195-d9dd-464cfbbae75a}')
-        metawear_lib.mbl_mw_ibeacon_set_uuid(command, ad_uuid.bytes[::-1]);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_set_uuid(self.board, ad_uuid.bytes[::-1]);
+        self.assertEqual(self.command, expected)
 
     def test_enable(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x07\x01\x01', 3)
+        expected= [0x07, 0x01, 0x01]
 
-        metawear_lib.mbl_mw_ibeacon_enable(command);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_enable(self.board);
+        self.assertEqual(self.command, expected)
 
     def test_ibeacon_disable(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x07\x01\x00', 3)
+        expected= [0x07, 0x01, 0x00]
 
-        metawear_lib.mbl_mw_ibeacon_disable(command);
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_ibeacon_disable(self.board);
+        self.assertEqual(self.command, expected)

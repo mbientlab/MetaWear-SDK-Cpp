@@ -1,55 +1,36 @@
-import os
-import unittest
-from mbientlab.metawear.sensor_defs import *
 from ctypes import *
+from common import TestMetaWearBase
 
-metawear_lib= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
-
-class TestSwitchData(unittest.TestCase):
+class TestSwitch(TestMetaWearBase):
     def setUp(self):
-        self.accel_data_source= metawear_lib.mbl_mw_switch_get_data_source
-        self.accel_data_source.restype= c_long
+        super().setUp()
+
+        self.switch_data_signal= self.libmetawear.mbl_mw_switch_get_state_data_signal(self.board)
 
     def test_mbl_mw_switch_subscribe(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x01\x01\x01', 3)
+        expected= [0x01, 0x01, 0x01]
 
-        metawear_lib.mbl_mw_sensor_subscribe(command, c_long(self.accel_data_source()))
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal)
+        self.assertEqual(self.command, expected)
 
     def test_mbl_mw_switch_unsubscribe(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x01\x01\x00', 3)
+        expected= [0x01, 0x01, 0x00]
 
-        metawear_lib.mbl_mw_sensor_unsubscribe(command, c_long(self.accel_data_source()))
-        self.assertEqual(command.raw, expected.raw)
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.switch_data_signal)
+        self.assertEqual(self.command, expected)
 
     def test_mbl_mw_switch_get_data_pushed(self):
-        data= create_string_buffer(1);
         response= create_string_buffer(b'\x01\x01\x01', 3)
-
-        status= metawear_lib.mbl_mw_switch_get_data(data, response)
-        self.assertEqual(status, 0)
-        self.assertEqual(data.raw, b'\x01')
+        expected= 1
+        
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal)
+        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.assertEqual(self.data_uint32.value, expected)
 
     def test_mbl_mw_switch_get_data_released(self):
-        data= create_string_buffer(1);
         response= create_string_buffer(b'\x01\x01\x00', 3)
+        expected= 0
 
-        status= metawear_lib.mbl_mw_switch_get_data(data, response)
-        self.assertEqual(status, 0)
-        self.assertEqual(data.raw, b'\x00')
-
-    def test_mbl_mw_switch_get_data_invalid_00(self):
-        data= create_string_buffer(1);
-        response= create_string_buffer(b'\x01\x02\x01', 3)
-
-        status= metawear_lib.mbl_mw_switch_get_data(response, data)
-        self.assertEqual(status, Status.STATUS_INVALID_RESPONSE)
-
-    def test_mbl_mw_switch_get_data_invalid_01(self):
-        data= create_string_buffer(1);
-        response= create_string_buffer(b'\x02\x01\x01', 3)
-
-        status= metawear_lib.mbl_mw_switch_get_data(response, data)
-        self.assertEqual(status, Status.STATUS_INVALID_RESPONSE)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal)
+        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.assertEqual(self.data_uint32.value, expected)

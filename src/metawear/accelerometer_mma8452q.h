@@ -2,22 +2,32 @@
  * @copyright MbientLab License 
  * @file accelerometer_mma8452q.h
  * @brief Functions for interacting with the MMA8452Q accelerometer.
- * This sensor is only available on MetaWear R boards.
+ * @details This sensor is only available on MetaWear R boards.
  */
 #pragma once
 
 #include <stdint.h>
 
+#include "datasignal_fwd.h"
 #include "dllmarker.h"
-#include "sensor_defs.h"
-#include "types.h"
+#include "metawearboard_fwd.h"
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-const uint8_t MBL_MW_ACC_MMA8452Q_MODULE= 0x3;      ///< Module id for the MMA8452Q accelerometer
-const uint8_t MBL_MW_ACC_MMA8452Q_DATA= 0x4;        ///< Register id for MMA8452Q acceleration data
+/*
+typedef enum {
+    MBL_MW_ACC_MMA8452Q_AXIS_X,
+    MBL_MW_ACC_MMA8452Q_AXIS_Y,
+    MBL_MW_ACC_MMA8452Q_AXIS_Z
+} MblMWMma8452qAxis;
+
+typedef enum {
+    MBL_MW_ACC_MMA8452Q_FREE_FALL,
+    MBL_MW_ACC_MMA8452Q_MOTION
+} MblMwAccMma8452qMovementType;
+*/
 
 /**
  * Available g-ranges on the MMA8452Q accelerometer
@@ -43,81 +53,51 @@ typedef enum {
 } MblMwAccMma8452qOdr;
 
 /**
- * Container for MMA8452Q configuration
+ * Retrieves the data signal representing BMI160 acceleration data
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's MMA8452Q acceleration data signal
  */
-typedef struct MblMwAccMma8452qConfig MblMwAccMma8452qConfig;
+METAWEAR_API const MblMwDataSignal* mbl_mw_acc_mma8452q_get_acceleration_data_signal(const MblMwMetaWearBoard *board);
 
-/**
- * Retrieves the attributes for the MMA8452Q acceleration data 
- * @return Pointer to the MMA8452Q acceleration data source
- */
-METAWEAR_API const DataSource* mbl_mw_acc_mma8452q_get_acceleration_data_source();
-
-/**
- * Instantiates a MblMwAccMma8452qConfig struct with an output data rate of 100Hz and a g-range of +/- 2g.
- * The user is responsible for deallocating the memory by calling mbl_mw_acc_mma8452q_free_config()
- */
-METAWEAR_API MblMwAccMma8452qConfig* mbl_mw_acc_mma8452q_create_config();
-/**
- * Frees the memory allocated for an MblMwAccMma8452qConfig struct
- * @param config    Pointer to the memory to free
- */
-METAWEAR_API void mbl_mw_acc_mma8452q_free_config(MblMwAccMma8452qConfig *config);
 /**
  * Sets the output data rate
- * @param config    Pointer to the MblMwAccMma8452qConfig struct to modify
+ * @param board     Pointer to the board to modify
  * @param odr       Output data rate value to set
  */
-METAWEAR_API void mbl_mw_acc_mma8452q_set_odr(MblMwAccMma8452qConfig *config, MblMwAccMma8452qOdr odr);
+METAWEAR_API void mbl_mw_acc_mma8452q_set_odr(MblMwMetaWearBoard *board, MblMwAccMma8452qOdr odr);
 /**
  * Sets the acceleration range 
- * @param config    Pointer to the MblMwAccMma8452qConfig struct to modify
+ * @param board     Pointer to the board to modify
  * @param range     Acceleration range value to set
  */
-METAWEAR_API void mbl_mw_acc_mma8452q_set_range(MblMwAccMma8452qConfig *config, MblMwAccMma8452qRange range);
+METAWEAR_API void mbl_mw_acc_mma8452q_set_range(MblMwMetaWearBoard *board, MblMwAccMma8452qRange range);
 /**
- * Constructs the command that writes the configuration to the MMA8452Q chip
- * @param command   Byte array (lenn 7) for the function to write the command to
- * @param config    Pointer to the MMA8452Q configuration
+ * Writes the acceleration settings to the sensor
+ * @param board     Pointer to the board to send the command to
  */
-METAWEAR_API void mbl_mw_acc_mma8452q_write_acceleration_config(uint8_t command[7], const MblMwAccMma8452qConfig *config);
+METAWEAR_API void mbl_mw_acc_mma8452q_write_acceleration_config(const MblMwMetaWearBoard *board);
 
 /**
- * Constructs the command that puts the accelerometer in active mode.  When in active mode, the accelerometer cannot be configured
- * @param command   Byte array (len 3) for the function to write the command to
+ * Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured
+ * @param board     Pointer to the board to send the command to
  */
-METAWEAR_API void mbl_mw_acc_mma8452q_start(uint8_t command[3]);
+METAWEAR_API void mbl_mw_acc_mma8452q_start(const MblMwMetaWearBoard *board);
 /**
- * Constructs the command that puts the accelerometer in standby mode
- * @param command   Byte array (len 3) for the function to write the command to
+ * Switches the accelerometer to standby mode
+ * @param board     Pointer to the board to send the command to
  */
-METAWEAR_API void mbl_mw_acc_mma8452q_stop(uint8_t command[3]);
+METAWEAR_API void mbl_mw_acc_mma8452q_stop(const MblMwMetaWearBoard *board);
 
 /**
- * Constructs the command that enables acceleration sampling
- * @param command   Byte array (len 3) for the function to write the command to
+ * Enables acceleration sampling
+  * @param board     Pointer to the board to send the command to
  */
-METAWEAR_API void mbl_mw_acc_mma8452q_enable_acceleration_sampling(uint8_t command[3]);
+METAWEAR_API void mbl_mw_acc_mma8452q_enable_acceleration_sampling(const MblMwMetaWearBoard *board);
 /**
- * Constructs the command that disables acceleration sampling
- * @param command   Byte array (len 3) for the function to write the command to
+ * Disables acceleration sampling
+ * @param board     Pointer to the board to send the command to
  */
-METAWEAR_API void mbl_mw_acc_mma8452q_disable_acceleration_sampling(uint8_t command[3]);
-
-/**
- * Extracts the acceleration data from a response sent by the MMA8452Q chip in milli Gs
- * @param data_g   Pointer to a CartesianShort to write the acceleration data to
- * @param response  Response received from the MMA8452Q chip
- * @return #STATUS_OK if the response contains valid acceleration data, #STATUS_INVALID_RESPONSE otherwise
- */
-METAWEAR_API int mbl_mw_acc_mma8452q_get_acceleration_data_g(CartesianFloat *data_g, const uint8_t response[8]);
-/**
- * Extracts the acceleration data from a response sent by the MMA8452Q chip in Gs
- * @param data_mg   Pointer to a CartesianShort to write the acceleration data to
- * @param response  Response received from the MMA8452Q chip
- * @return #STATUS_OK if the response contains valid acceleration data, #STATUS_INVALID_RESPONSE otherwise
- */
-METAWEAR_API int mbl_mw_acc_mma8452q_get_acceleration_data_mg(CartesianShort *data_mg, const uint8_t response[8]);
+METAWEAR_API void mbl_mw_acc_mma8452q_disable_acceleration_sampling(const MblMwMetaWearBoard *board);
 
 #ifdef	__cplusplus
 }

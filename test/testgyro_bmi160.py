@@ -1,99 +1,79 @@
-import os
-import unittest
-from mbientlab.metawear.gyro_bmi160 import *
-from mbientlab.metawear.types import CartesianFloat
-from ctypes import *
+import copy
+from common import TestMetaWearBase
+from ctypes import create_string_buffer
+from mbientlab.metawear import GyroBmi160, CartesianFloat
 
-metawear_lib= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
-
-class TestGyroBmi160Config(unittest.TestCase):
-    def setUp(self):
-        self.config= metawear_lib.mbl_mw_gyro_bmi160_create_config()
-
-    def tearDown(self):
-        metawear_lib.mbl_mw_gyro_bmi160_free_config(self.config)
-
+class TestGyroBmi160Config(TestMetaWearBase):
     def test_mbl_mw_gyro_bmi160_set_odr(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x13\x03\x29\x00')
+        expected= [0x13, 0x3, 0x29, 0x0]
 
-        metawear_lib.mbl_mw_gyro_bmi160_set_odr(self.config, GyroBmi160Odr.ODR_200HZ)
-        metawear_lib.mbl_mw_gyro_bmi160_write_config(command, self.config)
-        self.assertEqual(command.value, expected.value)
+        self.libmetawear.mbl_mw_gyro_bmi160_set_odr(self.board, GyroBmi160.ODR_200HZ)
+        self.libmetawear.mbl_mw_gyro_bmi160_write_config(self.board)
+        self.assertListEqual(self.command, expected)
 
     def test_mbl_mw_gyro_bmi160_set_fsr(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x13\x03\x28\x03')
+        expected= [0x13, 0x03, 0x28, 0x03]
 
-        metawear_lib.mbl_mw_gyro_bmi160_set_range(self.config, GyroBmi160Range.FSR_250DPS)
-        metawear_lib.mbl_mw_gyro_bmi160_write_config(command, self.config)
-        self.assertEqual(command.value, expected.value)
+        self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160.FSR_250DPS)
+        self.libmetawear.mbl_mw_gyro_bmi160_write_config(self.board)
+        self.assertListEqual(self.command, expected)
 
     def test_mbl_mw_gyro_bmi160_set_all_config(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x13\x03\x27\x04')
+        expected= [0x13, 0x03, 0x27, 0x04]
 
-        metawear_lib.mbl_mw_gyro_bmi160_set_odr(self.config, GyroBmi160Odr.ODR_50HZ)
-        metawear_lib.mbl_mw_gyro_bmi160_set_range(self.config, GyroBmi160Range.FSR_125DPS)
-        metawear_lib.mbl_mw_gyro_bmi160_write_config(command, self.config)
-        self.assertEqual(command.value, expected.value)
+        self.libmetawear.mbl_mw_gyro_bmi160_set_odr(self.board, GyroBmi160.ODR_50HZ)
+        self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160.FSR_125DPS)
+        self.libmetawear.mbl_mw_gyro_bmi160_write_config(self.board)
+        self.assertListEqual(self.command, expected)
 
-class TestGyroBmi160RotationData(unittest.TestCase):
+    def test_gyro_active(self):
+        expected= [0x13, 0x01, 0x01]
+
+        self.libmetawear.mbl_mw_gyro_bmi160_start(self.board)
+        self.assertListEqual(self.command, expected)
+
+    def test_gyro_standby(self):
+        expected= [0x13, 0x01, 0x00]
+
+        self.libmetawear.mbl_mw_gyro_bmi160_stop(self.board)
+        self.assertListEqual(self.command, expected)
+
+    def test_enable_rotation_sampling(self):
+        expected= [0x13, 0x02, 0x01, 0x00]
+
+        self.libmetawear.mbl_mw_gyro_bmi160_enable_rotation_sampling(self.board)
+        self.assertListEqual(self.command, expected)
+
+    def test_disable_rotation_sampling(self):
+        expected= [0x13, 0x02, 0x00, 0x01]
+
+        self.libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling(self.board)
+        self.assertListEqual(self.command, expected)
+
+class TestGyroBmi160DataHandler(TestMetaWearBase):
     def setUp(self):
-        self.gyro_rot_data_source= metawear_lib.mbl_mw_gyro_bmi160_get_rotation_data_source
-        self.gyro_rot_data_source.restype= c_long
+        super().setUp()
 
-    def test_mbl_mw_gyro_bmi160_start(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x13\x01\x01')
+        self.gyro_rot_data_signal= self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
 
-        metawear_lib.mbl_mw_gyro_bmi160_start(command)
-        self.assertEqual(command.value, expected.value)
+    def test_subscribe_rotation_data(self):
+        expected= [0x13, 0x05, 0x01]
 
-    def test_mbl_mw_gyro_bmi160_stop(self):
-        command= create_string_buffer(3)
-        expected= create_string_buffer(b'\x13\x01\x00')
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro_rot_data_signal)
+        self.assertListEqual(self.command, expected)
 
-        metawear_lib.mbl_mw_gyro_bmi160_stop(command)
-        self.assertEqual(command.value, expected.value)
+    def test_unsubscribe_rotation_data(self):
+        expected= [0x13, 0x05, 0x00]
 
-    def test_mbl_mw_gyro_bmi160_enable_rotation_sampling(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x13\x02\x01\x00')
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.gyro_rot_data_signal)
+        self.assertListEqual(self.command, expected)
 
-        metawear_lib.mbl_mw_gyro_bmi160_enable_rotation_sampling(command)
-        self.assertEqual(command.value, expected.value)
-
-    def test_mbl_mw_gyro_bmi160_disable_rotation_sampling(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x13\x02\x00\x01')
-
-        metawear_lib.mbl_mw_gyro_bmi160_disable_rotation_sampling(command)
-        self.assertEqual(command.value, expected.value)
-
-    def test_mbl_mw_gyro_bmi160_subscribe_rotation_data(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x13\x05\x01')
-
-        metawear_lib.mbl_mw_sensor_subscribe(command, c_long(self.gyro_rot_data_source()))
-        self.assertEqual(command.value, expected.value)
-
-    def test_mbl_mw_gyro_bmi160_unsubscribe_rotation_data(self):
-        command= create_string_buffer(4)
-        expected= create_string_buffer(b'\x13\x05\x00')
-
-        metawear_lib.mbl_mw_sensor_unsubscribe(command, c_long(self.gyro_rot_data_source()))
-        self.assertEqual(command.value, expected.value)
-
-    def test_mbl_mw_gyro_bmi160_get_rotation_data(self):
-        response_bytes= create_string_buffer(b'\x13\x05\x3e\x43\xff\x7f\x00\x80')
-        response_cf= CartesianFloat()
+    def test_rotation_data_handler(self):
+        response= create_string_buffer(b'\x13\x05\x3e\x43\xff\x7f\x00\x80', 8)
         expected= CartesianFloat(x= 262.409, y= 499.497, z= -499.512)
 
-        config= metawear_lib.mbl_mw_gyro_bmi160_create_config()
-        metawear_lib.mbl_mw_gyro_bmi160_set_range(config, GyroBmi160Range.FSR_500DPS)
-        metawear_lib.mbl_mw_gyro_bmi160_get_rotation_data(byref(response_cf), config, response_bytes)
-        metawear_lib.mbl_mw_gyro_bmi160_free_config(config)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro_rot_data_signal)
+        self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160.FSR_500DPS)
+        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
 
-        self.assertEqual(response_cf, expected)
-
+        self.assertEqual(self.data_cartesian_float, expected)

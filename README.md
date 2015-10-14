@@ -2,7 +2,7 @@
 This project is a C++ implementation of the MetaWear protocol.  If compiled as a shared library, it can be used with any language that supports calling C functions from a shared library, such as C# and Python.  The library only constructs the bytes for communicating with the MetaWear platform, it **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target device.
 
 # Build #
-Building the project has been tested on Linux using GCC and make, and on Windows with Visual Studio Community 2015.  
+Building the project has been tested on Linux using GCC 4.8.3 and make, and on Windows with Visual Studio Community 2015.  
 
 ## GCC and Make ##
 Linux users can build the project by invoking make.  The default action is to build the shared library for your platform.
@@ -20,13 +20,13 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.0.0
-            └── libmetawear.so.0.0.0
+            ├── libmetawear.so.0 -> libmetawear.so.0.2.0
+            └── libmetawear.so.0.2.0
 
 ```
 
 ### Testing ###
-Unit tests for the library are written in Python3 and can be invoked by calling the test target.
+Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target.
 
 ```sh
 > make test

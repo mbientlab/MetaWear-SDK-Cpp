@@ -1,11 +1,27 @@
+#include "connection_def.h"
 #include "metawear/accelerometer_mma8452q.h"
+#include "metawearboard_def.h"
+#include "register.h"
 
 #include <cstring>
 
-const uint8_t MBL_MW_ACC_MMA8452Q_GLOBAL_START= 0x1, MBL_MW_ACC_MMA8452Q_DATA_ENABLE= 0x2, 
-        MBL_MW_ACC_MMA8452Q_DATA_CONFIG= 0x3;
+using std::memcpy;
+using std::memset;
 
-struct AccelerationBitField {
+Mma8452qConfig::Mma8452qConfig() : 
+    tap_threshold(2.f), tap_latency(200), tap_window(300), tap_duration(60),
+    shake_threshold(0.5f), shake_duration(50), 
+    movement_threshold(1.5f), movement_duration(100), 
+    orientation_delay(100),
+    active_timeout(0),
+//    shake_axis(MBL_MW_ACC_MMA8452Q_AXIS_X),
+    movement_axis_x(1), movement_axis_y(1), movement_axis_z(1),
+//    movement_type(MBL_MW_ACC_MMA8452Q_MOTION),
+//    tap_axis(MBL_MW_ACC_MMA8452Q_AXIS_Z), 
+    tap_type_single(1), tap_type_double(0),
+    odr(MBL_MW_ACC_MMA8452Q_ODR_100HZ), accel_fsr(MBL_MW_ACC_MMA8452Q_FSR_2G) { }
+
+struct Mma8452qAccBitField {
     uint8_t fs:2;
     uint8_t :2;
     uint8_t hpf_out:1;
@@ -23,79 +39,42 @@ struct AccelerationBitField {
     uint8_t aslp_count;
 };
 
-struct MblMwAccMma8452qConfig {
-    AccelerationBitField accel_field;
-};
-
-
-MblMwAccMma8452qConfig* mbl_mw_acc_mma8452q_create_config() {
-    MblMwAccMma8452qConfig *config= new MblMwAccMma8452qConfig;
-
-    std::memset(config, 0, sizeof(MblMwAccMma8452qConfig));
-    mbl_mw_acc_mma8452q_set_odr(config, MBL_MW_ACC_MMA8452Q_ODR_100HZ);
-    mbl_mw_acc_mma8452q_set_range(config, MBL_MW_ACC_MMA8452Q_FSR_2G);
-    return config;
+void mbl_mw_acc_mma8452q_set_odr(MblMwMetaWearBoard *board, MblMwAccMma8452qOdr odr) {
+    board->mma8452q_config.odr= odr;
 }
 
-void mbl_mw_acc_mma8452q_free_config(MblMwAccMma8452qConfig *config) {
-    delete config;
+void mbl_mw_acc_mma8452q_set_range(MblMwMetaWearBoard *board, MblMwAccMma8452qRange range) {
+    board->mma8452q_config.accel_fsr= range;
 }
 
-void mbl_mw_acc_mma8452q_set_odr(MblMwAccMma8452qConfig *config, MblMwAccMma8452qOdr odr) {
-    config->accel_field.dr= odr;
+void mbl_mw_acc_mma8452q_start(const MblMwMetaWearBoard *board) {
+    uint8_t command[3]= {ORDINAL(Module::ACCELEROMETER), ORDINAL(AccelerometerMma8452qRegister::GLOBAL_ENABLE), 1};
+    SEND_COMMAND;
 }
 
-void mbl_mw_acc_mma8452q_set_range(MblMwAccMma8452qConfig *config, MblMwAccMma8452qRange range) {
-    config->accel_field.fs= range;
+void mbl_mw_acc_mma8452q_stop(const MblMwMetaWearBoard *board) {
+    uint8_t command[3]= {ORDINAL(Module::ACCELEROMETER), ORDINAL(AccelerometerMma8452qRegister::GLOBAL_ENABLE), 0};
+    SEND_COMMAND;
 }
 
-void mbl_mw_acc_mma8452q_start(uint8_t command[3]) {
-    command[0]= MBL_MW_ACC_MMA8452Q_MODULE;
-    command[1]= MBL_MW_ACC_MMA8452Q_GLOBAL_START;
-    command[2]= 1;
+void mbl_mw_acc_mma8452q_enable_acceleration_sampling(const MblMwMetaWearBoard *board) {
+    uint8_t command[3]= {ORDINAL(Module::ACCELEROMETER), ORDINAL(AccelerometerMma8452qRegister::DATA_ENABLE), 1};
+    SEND_COMMAND;
 }
 
-void mbl_mw_acc_mma8452q_stop(uint8_t command[3]) {
-    command[0]= MBL_MW_ACC_MMA8452Q_MODULE;
-    command[1]= MBL_MW_ACC_MMA8452Q_GLOBAL_START;
-    command[2]= 0;
+void mbl_mw_acc_mma8452q_disable_acceleration_sampling(const MblMwMetaWearBoard *board) {
+    uint8_t command[3]= {ORDINAL(Module::ACCELEROMETER), ORDINAL(AccelerometerMma8452qRegister::DATA_ENABLE), 0};
+    SEND_COMMAND;
 }
 
-void mbl_mw_acc_mma8452q_enable_acceleration_sampling(uint8_t command[3]) {
-    command[0]= MBL_MW_ACC_MMA8452Q_MODULE;
-    command[1]= MBL_MW_ACC_MMA8452Q_DATA_ENABLE;
-    command[2]= 1;
-}
+void mbl_mw_acc_mma8452q_write_acceleration_config(const MblMwMetaWearBoard *board) {
+    uint8_t command[7]= {ORDINAL(Module::ACCELEROMETER), ORDINAL(AccelerometerMma8452qRegister::DATA_CONFIG)};
 
-void mbl_mw_acc_mma8452q_disable_acceleration_sampling(uint8_t command[3]) {
-    command[0]= MBL_MW_ACC_MMA8452Q_MODULE;
-    command[1]= MBL_MW_ACC_MMA8452Q_DATA_ENABLE;
-    command[2]= 0;
-}
+    Mma8452qAccBitField bit_field;
+    memset(&bit_field, 0, sizeof(Mma8452qAccBitField));
+    bit_field.dr= board->mma8452q_config.odr;
+    bit_field.fs= board->mma8452q_config.accel_fsr;
+    memcpy(command + 2, &bit_field, sizeof(bit_field));
 
-void mbl_mw_acc_mma8452q_write_acceleration_config(uint8_t command[7], const MblMwAccMma8452qConfig *config) {
-    command[0]= MBL_MW_ACC_MMA8452Q_MODULE;
-    command[1]= MBL_MW_ACC_MMA8452Q_DATA_CONFIG;
-    std::memcpy(command + 2, &config->accel_field, sizeof(AccelerationBitField));
-}
-
-int mbl_mw_acc_mma8452q_get_acceleration_data_mg(CartesianShort *data_mg, const uint8_t response[8]) {
-    if (response[0] == MBL_MW_ACC_MMA8452Q_MODULE && response[1] == MBL_MW_ACC_MMA8452Q_DATA) {
-        std::memcpy(data_mg, response + 2, sizeof(CartesianShort));
-        return STATUS_OK;
-    }
-    return STATUS_INVALID_RESPONSE;
-}
-
-int mbl_mw_acc_mma8452q_get_acceleration_data_g(CartesianFloat *data_g, const uint8_t response[8]) {
-    if (response[0] == MBL_MW_ACC_MMA8452Q_MODULE && response[1] == MBL_MW_ACC_MMA8452Q_DATA) {
-        CartesianShort milli_g;
-        std::memcpy(&milli_g, response + 2, sizeof(CartesianShort));
-
-        data_g->x= milli_g.x / 1000.f;
-        data_g->y= milli_g.y / 1000.f;
-        data_g->z= milli_g.z / 1000.f;
-        return STATUS_OK;
-    }
-    return STATUS_INVALID_RESPONSE;
+    SEND_COMMAND;
 }
