@@ -20,8 +20,8 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.2.0
-            └── libmetawear.so.0.2.0
+            ├── libmetawear.so.0 -> libmetawear.so.0.2.2
+            └── libmetawear.so.0.2.2
 
 ```
 
@@ -39,7 +39,7 @@ OK
 ``` 
 
 ## Visual Studio ##
-If building the project with Visual Studio, users should build the project as a Windows Runtime Component.  When your project is created, make the following changes to the project properties:
+A VIsual Studio solution building the C# wrapper is available as a separate project, link [here](https://github.com/mbientlab/MetaWear-CSharpWrapper).  The C++ source code is built as Windows Runtime Component with the following changes to the project properties:
 
 1. Disable the **Precompiled Headers** compile option  
 2. Disable **Generate Windows Metadata** linker option  

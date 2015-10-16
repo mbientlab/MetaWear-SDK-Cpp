@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <stdexcept>
+#include <exception>
 #include <tuple>
 #include <unordered_map>
 
@@ -11,9 +11,9 @@
 #include "register.h"
 #include "responseheader.h"
 
+using std::exception;
 using std::forward_as_tuple;
 using std::free;
-using std::out_of_range;
 using std::piecewise_construct;
 using std::unordered_map;
 
@@ -91,10 +91,10 @@ int32_t mbl_mw_metawearboard_handle_response(const MblMwMetaWearBoard *board, co
             ResponseHeader header(response[0], resp_register_id);
             MblMwData* data= board->response_processors.at(header)(board, response + 2, len - 2);
 
-            metawear_connection->received_sensor_data(board->active_data_signals.at(header), data);
+            metawear_connection.received_sensor_data(board->active_data_signals.at(header), data);
             free(data->value);
             free(data);
-        } catch (out_of_range) {
+        } catch (exception) {
             return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
         }
     } 

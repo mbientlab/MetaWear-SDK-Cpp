@@ -2,8 +2,8 @@
 
 #include <cstring>
 
-const MblMwConnection *metawear_connection;
+MblMwConnection metawear_connection;
 
 void mbl_mw_connection_init(const MblMwConnection* conn) {
-    metawear_connection= conn;
+    std::memcpy(&metawear_connection, conn, sizeof(metawear_connection));
 }
