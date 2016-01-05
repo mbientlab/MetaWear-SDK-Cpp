@@ -5,6 +5,7 @@ import uuid
 class Status:
     OK= 0
     WARNING_UNEXPECTED_SENSOR_DATA= 1
+    WARNING_INVALID_PROCESSOR_TYPE= 2
 
 # Constants identifying the message data types
 class DataTypeId:
@@ -19,17 +20,10 @@ class Data(Structure):
         ("type_id", c_int)
     ]
 
-# Python wrapper for the send_command variable type
-SendCommand= CFUNCTYPE(None, c_void_p, POINTER(c_ubyte), c_ubyte);
-# Python wrapper for the data_handler variable type
-ReceivedSensorData= CFUNCTYPE(None, c_void_p, POINTER(Data))
-
-# Python wrapper for the MblMwConnection struct
-class MetaWearConnection(Structure):
-    _fields_= [
-        ("send_command", SendCommand),
-        ("received_sensor_data", ReceivedSensorData)
-    ]
+FnByteArray= CFUNCTYPE(None, POINTER(c_ubyte), c_ubyte)
+FnVoid= CFUNCTYPE(None)
+FnVoidPtr= CFUNCTYPE(None, c_void_p)
+FnDataPtr= CFUNCTYPE(None, POINTER(Data))
 
 # UUIDs for the MetaWear gatt services and characteristics
 class Gatt:
@@ -152,6 +146,8 @@ class Led:
             ("repeat_count", c_ubyte)
         ]
 
+    REPEAT_INDEFINITELY= 0xff
+
     COLOR_GREEN= 0
     COLOR_RED= 1
     COLOR_BLUE= 2
@@ -169,6 +165,76 @@ class NeoPixel:
 
     ROT_DIRECTION_TOWARDS= 0
     ROT_DIRECTION_AWAY= 1
+
+class MultiChannelTemperature:
+    SOURCE_INVALID= -1
+    SOURCE_NRF_DIE= 0
+    SOURCE_EXT_THERM= 1
+    SOURCE_BMP280= 2
+    SOURCE_PRESET_THERM= 3
+
+    METAWEAR_R_CHANNEL_ON_DIE= 0
+    METAWEAR_R_CHANNEL_EXT_THERMISTOR= 1
+
+    METAWEAR_RPRO_CHANNEL_ON_DIE= 0
+    METAWEAR_RPRO_CHANNEL_ON_BOARD_THERMISTOR= 1
+    METAWEAR_RPRO_CHANNEL_EXT_THERMISTOR= 2
+    METAWEAR_RPRO_CHANNEL_BMP280= 3
+
+class Gpio:
+    PULL_MODE_UP= 0
+    PULL_MODE_DOWN= 1
+    PULL_MODE_NONE= 2
+
+    ANALOG_READ_MODE_ABS_REF= 0
+    ANALOG_READ_MODE_ADC= 1
+
+    PIN_CHANGE_TYPE_RISING= 1
+    PIN_CHANGE_TYPE_FALLING= 2
+    PIN_CHANGE_TYPE_ANY= 3
+
+class MathProcessor:
+    OPERATION_ADD= 1
+    OPERATION_MULTIPLY= 2
+    OPERATION_DIVIDE= 3
+    OPERATION_MODULUS= 4
+    OPERATION_EXPONENT= 5
+    OPERATION_SQRT= 6
+    OPERATION_LSHIFT= 7
+    OPERATION_RSHIFT= 8
+    OPERATION_SUBTRACT= 9
+    OPERATION_ABS_VALUE= 10
+
+class ComparatorProcessor:
+    OPERATION_EQ = 0
+    OPERATION_NEQ = 1
+    OPERATION_LT = 2
+    OPERATION_LTE = 3
+    OPERATION_GT = 4
+    OPERATION_GTE = 5
+
+class ThresholdProcessor:
+    MODE_ABSOLUTE= 0
+    MODE_BINARY= 1
+
+class TimeProcessor:
+    MODE_ABSOLUTE= 0
+    MODE_DIFFERENTIAL= 1
+
+class PassthroughProcessor:
+    MODE_ALL= 0
+    MODE_CONDITIONAL= 1
+    MODE_COUNT= 2
+
+class DeltaProcessor:
+    MODE_ABSOLUTE= 0
+    MODE_DIFFERENTIAL= 1
+    MODE_BINARY= 2
+
+class PulseProcessor:
+    OUTPUT_WIDTH= 0
+    OUTPUT_AREA= 1
+    OUTPUT_PEAK= 2
 
 # Python wrapper for the MblMwDataCartesianFloat struct
 class CartesianFloat(Structure):

@@ -4,6 +4,11 @@ from ctypes import create_string_buffer
 from mbientlab.metawear import GyroBmi160, CartesianFloat
 
 class TestGyroBmi160Config(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+
+        super().setUp()
+
     def test_mbl_mw_gyro_bmi160_set_odr(self):
         expected= [0x13, 0x3, 0x29, 0x0]
 
@@ -52,6 +57,8 @@ class TestGyroBmi160Config(TestMetaWearBase):
 
 class TestGyroBmi160DataHandler(TestMetaWearBase):
     def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+
         super().setUp()
 
         self.gyro_rot_data_signal= self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
@@ -59,7 +66,7 @@ class TestGyroBmi160DataHandler(TestMetaWearBase):
     def test_subscribe_rotation_data(self):
         expected= [0x13, 0x05, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro_rot_data_signal)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro_rot_data_signal, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe_rotation_data(self):
@@ -72,7 +79,7 @@ class TestGyroBmi160DataHandler(TestMetaWearBase):
         response= create_string_buffer(b'\x13\x05\x3e\x43\xff\x7f\x00\x80', 8)
         expected= CartesianFloat(x= 262.409, y= 499.497, z= -499.512)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro_rot_data_signal)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro_rot_data_signal, self.sensor_data_handler)
         self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160.FSR_500DPS)
         self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
 

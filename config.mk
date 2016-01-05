@@ -1,5 +1,5 @@
 APP_NAME=metawear
-MODULES=metawear
+MODULES=metawear/core metawear/peripheral metawear/processor metawear/sensor metawear/impl
 
 ifndef PLATFORM
     ifeq ($(shell uname -m), x86_64)

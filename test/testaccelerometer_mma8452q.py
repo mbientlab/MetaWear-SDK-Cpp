@@ -29,13 +29,13 @@ class TestMma8452qConfiguration(TestMetaWearBase):
     def test_enable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x01]
 
-        self.libmetawear.mbl_mw_acc_mma8452q_enable_acceleration_sampling()
+        self.libmetawear.mbl_mw_acc_mma8452q_enable_acceleration_sampling(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_disable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x00]
 
-        self.libmetawear.mbl_mw_acc_mma8452q_disable_acceleration_sampling()
+        self.libmetawear.mbl_mw_acc_mma8452q_disable_acceleration_sampling(self.board)
         self.assertListEqual(self.command, expected)
 
 class TestAccMma8452qAccelerationData(TestMetaWearBase):
@@ -56,7 +56,7 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
         response= create_string_buffer(b'\x03\x04\x56\xfa\x05\xf6\x18\x03', 8)
         expected= CartesianFloat(x= -1.450, y= -2.555, z= 0.792)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
         self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
 
         self.assertEqual(self.data_cartesian_float, expected)
@@ -64,7 +64,7 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
     def test_stream_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_end_stream_acceleration_data(self):

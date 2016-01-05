@@ -8,9 +8,9 @@ SRCS:=
 EXPORT_HEADERS:=
 
 MODULES_SRC_DIR= $(addsuffix /cpp, $(addprefix $(SOURCE_DIR)/, $(MODULES)))
-MODULES_CONFIG:= $(addsuffix /config.mk, $(MODULES_SRC_DIR))
 
-include $(MODULES_CONFIG)
+SRCS:=$(foreach src_dir, $(MODULES_SRC_DIR), $(shell find $(src_dir) -name \*.cpp))
+EXPORT_HEADERS:=$(foreach module, $(addprefix $(SOURCE_DIR)/, $(MODULES)), $(shell find $(module) -maxdepth 1 -name \*.h))
 
 LIB_SO_NAME:=lib$(APP_NAME).so
 LIB_SHORT_NAME:=$(LIB_SO_NAME).$(VERSION_MAJOR)

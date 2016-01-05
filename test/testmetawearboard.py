@@ -18,3 +18,6 @@ class TestMetaWearBoard(TestMetaWearBase):
             with self.subTest(response=resp):
                 status= self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, resp.raw, len(resp))
                 self.assertEqual(status, Status.WARNING_UNEXPECTED_SENSOR_DATA)
+
+    def test_service_discovery(self):
+        self.assertEqual(self.initialized, True)

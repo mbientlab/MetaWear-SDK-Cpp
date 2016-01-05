@@ -24,7 +24,7 @@ class TestLedControl(TestMetaWearBase):
     def test_stop_clear(self):
         expected= [0x02, 0x02, 0x01]
 
-        self.libmetawear.mbl_mw_led_stop_and_clear(self.board, 1)
+        self.libmetawear.mbl_mw_led_stop_and_clear(self.board)
         self.assertEqual(self.command, expected)
 
     def test_stop_no_clear(self):

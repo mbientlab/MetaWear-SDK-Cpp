@@ -3,6 +3,11 @@ from mbientlab.metawear import AccelerometerBmi160, CartesianFloat
 from ctypes import create_string_buffer
 
 class TestAccBmi160Config(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+
+        super().setUp()
+
     def test_set_odr(self):
         expected= [0x03, 0x03, 0x27, 0x03]
 
@@ -39,6 +44,8 @@ class TestAccBmi160Config(TestMetaWearBase):
 
 class TestBmi160AccelerationData(TestMetaWearBase):
     def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+
         super().setUp()
 
         self.accel_data_signal= self.libmetawear.mbl_mw_acc_bmi160_get_acceleration_data_signal(self.board)
@@ -56,7 +63,7 @@ class TestBmi160AccelerationData(TestMetaWearBase):
         response= create_string_buffer(b'\x03\x04\x16\xc4\x94\xa2\x2a\xd0')
         expected= CartesianFloat(x= -1.872, y= -2.919, z= -1.495)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bmi160_set_range(self.board, AccelerometerBmi160.FSR_4G)
         status= self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
         self.assertEqual(self.data_cartesian_float, expected)
@@ -64,7 +71,7 @@ class TestBmi160AccelerationData(TestMetaWearBase):
     def test_subscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe_acceleration_data(self):
