@@ -1,6 +1,6 @@
 from common import TestMetaWearBase
 from ctypes import create_string_buffer
-from mbientlab.metawear import Gpio
+from mbientlab.metawear.sensor import Gpio
 
 class TestGpioDigitalConfig(TestMetaWearBase):
     def test_set_digital_out(self):
@@ -51,7 +51,7 @@ class TestGpioDigitalData(TestMetaWearBase):
 
         for test in tests:
             with self.subTest(changetype=test['change_type']):
-                self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, test['response'].raw, len(test['response']))
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, test['response'].raw, len(test['response']))
                 self.assertEqual(self.data_uint32.value, test['expected'])
 
     def test_pin_monitor_start(self):
@@ -83,7 +83,7 @@ class TestGpioDigitalData(TestMetaWearBase):
 
         for test in tests:
             with self.subTest(changetype=test['state']):
-                self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, test['response'].raw, len(test['response']))
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, test['response'].raw, len(test['response']))
                 self.assertEqual(self.data_uint32.value, test['expected'])
 
 class TestGpioAnalogData(TestMetaWearBase):
@@ -110,5 +110,5 @@ class TestGpioAnalogData(TestMetaWearBase):
                 pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 1, test['mode']);
                 self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, self.sensor_data_handler)
 
-                self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, test['response'].raw, len(test['response']))
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, test['response'].raw, len(test['response']))
                 self.assertEqual(self.data_uint32.value, test['expected'])

@@ -1,6 +1,5 @@
 #include <stdexcept>
 
-#include "metawear/core/cpp/connection_def.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 
@@ -20,13 +19,15 @@ void init_multichannel_temp_module(MblMwMetaWearBoard *board) {
         ResponseHeader header(MBL_MW_MODULE_TEMPERATURE, ORDINAL(MultiChannelTempRegister::TEMPERATURE), extra_byte);
         header.register_id = READ_REGISTER(header.register_id);
 
-        MblMwDataSignal *temp_signal= new MblMwDataSignal(header, board, ResponseConvertor::TEMPERATURE, 1, 2, 1, 0);
+        MblMwDataSignal *temp_signal= new MblMwDataSignal(header, board, DataInterpreter::TEMPERATURE, 1, 2, 1, 0);
         temp_signal->number_to_firmware= temp_to_firmware;
         board->sensor_data_signals[header]= temp_signal;
     }
+
+    board->responses[TEMPERATURE_RESPONSE_HEADER] = response_handler_data_with_id;
 }
 
-const MblMwDataSignal* mbl_mw_multi_chnl_temp_get_temperature_data_signal(const MblMwMetaWearBoard *board, uint8_t channel) {
+MblMwDataSignal* mbl_mw_multi_chnl_temp_get_temperature_data_signal(const MblMwMetaWearBoard *board, uint8_t channel) {
     ResponseHeader header(MBL_MW_MODULE_TEMPERATURE, READ_REGISTER(ORDINAL(MultiChannelTempRegister::TEMPERATURE)), channel);
 
     try {

@@ -2,7 +2,6 @@
 #include "accelerometer_bmi160_register.h"
 
 #include "metawear/core/types.h"
-#include "metawear/core/cpp/connection_def.h"
 #include "metawear/core/cpp/constant.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
@@ -40,10 +39,11 @@ static void* create_acc_bmi160_config() {
 
 void init_accelerometer_bmi160(MblMwMetaWearBoard *board) {
     MblMwDataSignal *acc_signal= new MblMwDataSignal(BMI160_ACCEL_RESPONSE_HEADER, board, 
-            ResponseConvertor::BMI160_ACCELERATION, 3, 2, 1, 0);
+            DataInterpreter::BMI160_ACCELERATION, 3, 2, 1, 0);
     acc_signal->number_to_firmware = bmi160_to_firmware;
     board->sensor_data_signals[BMI160_ACCEL_RESPONSE_HEADER]= acc_signal;
     board->module_config[MBL_MW_MODULE_ACCELEROMETER]= create_acc_bmi160_config();
+    board->responses[BMI160_ACCEL_RESPONSE_HEADER]= response_handler_data_no_id;
 }
 
 void AccBmi160Config::set_output_data_rate(MblMwAccBmi160Odr odr) {
@@ -58,36 +58,7 @@ float AccBmi160Config::get_scale() const {
     return FSR_SCALE.at(acc_range);
 }
 
-MblMwData* convert_to_bmi160_acceleration(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    CartesianShort unscaled;
-    memcpy(&unscaled, response, sizeof(unscaled));
-
-    float scale= ((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->get_scale();
-
-    CartesianFloat *value = (CartesianFloat*)malloc(sizeof(CartesianFloat));
-    value->x = unscaled.x / scale;
-    value->y = unscaled.y / scale;
-    value->z = unscaled.z / scale;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
-}
-
-MblMwData* convert_to_bmi160_acceleration_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    int32_t unscaled;
-    if ((response[len - 1] & 0x80) == 0x80) {
-        unscaled= -1;
-    } else {
-        unscaled= 0;
-    }
-    memcpy(&unscaled, response, min(len, (uint8_t) sizeof(unscaled)));
-
-    float *value = (float*)malloc(sizeof(float));
-    *value = unscaled / ((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->get_scale();
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
-const MblMwDataSignal* mbl_mw_acc_bmi160_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
+MblMwDataSignal* mbl_mw_acc_bmi160_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation != MBL_MW_MODULE_ACC_TYPE_BMI160) {
         return NULL;
     }

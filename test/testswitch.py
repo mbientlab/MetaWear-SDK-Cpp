@@ -24,7 +24,7 @@ class TestSwitch(TestMetaWearBase):
         expected= 1
         
         self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_mbl_mw_switch_get_data_released(self):
@@ -32,5 +32,5 @@ class TestSwitch(TestMetaWearBase):
         expected= 0
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertEqual(self.data_uint32.value, expected)

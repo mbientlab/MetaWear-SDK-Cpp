@@ -43,7 +43,7 @@ void init_accelerometer_module(MblMwMetaWearBoard *board) {
     }
 }
 
-const MblMwDataSignal* mbl_mw_acc_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
+MblMwDataSignal* mbl_mw_acc_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
         return mbl_mw_acc_mma8452q_get_acceleration_data_signal(board);

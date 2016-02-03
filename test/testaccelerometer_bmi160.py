@@ -1,5 +1,6 @@
 from common import TestMetaWearBase
-from mbientlab.metawear import AccelerometerBmi160, CartesianFloat
+from mbientlab.metawear.core import CartesianFloat
+from mbientlab.metawear.sensor import AccelerometerBmi160
 from ctypes import create_string_buffer
 
 class TestAccBmi160Config(TestMetaWearBase):
@@ -65,7 +66,7 @@ class TestBmi160AccelerationData(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bmi160_set_range(self.board, AccelerometerBmi160.FSR_4G)
-        status= self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        status= self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertEqual(self.data_cartesian_float, expected)
 
     def test_subscribe_acceleration_data(self):

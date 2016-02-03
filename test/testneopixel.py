@@ -1,5 +1,5 @@
 from common import TestMetaWearBase
-from mbientlab.metawear import NeoPixel
+from mbientlab.metawear.peripheral import NeoPixel
 
 class TestNeoPixelInit(TestMetaWearBase):
     def test_init_slow_strand(self):

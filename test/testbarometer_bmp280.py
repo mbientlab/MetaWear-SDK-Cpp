@@ -1,6 +1,6 @@
 from common import TestMetaWearBase
 from ctypes import create_string_buffer
-from mbientlab.metawear import BarometerBmp280
+from mbientlab.metawear.sensor import BarometerBmp280
 
 class TestBaroBmp280Config(TestMetaWearBase):
     def setUp(self):
@@ -63,7 +63,7 @@ class TestBaroBmp280PressureData(TestMetaWearBase):
         expected= 101173.828125
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertAlmostEqual(self.data_float.value, expected)
 
     def test_pressure_subscribe(self):
@@ -92,7 +92,7 @@ class TestBaroBmp280AltitudeData(TestMetaWearBase):
         expected= -480.8828125
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertAlmostEqual(self.data_float.value, expected)
 
     def test_altitude_subscribe(self):

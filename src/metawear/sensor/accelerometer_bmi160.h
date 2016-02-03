@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI160 = 1;
+const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI160 = 1;            ///< Constant identifying the BMI160 accelerometer module type
 
 /**
  * Available g-ranges on the BMI160 accelerometer
@@ -51,7 +51,7 @@ typedef enum {
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI160 acceleration data signal
  */
-METAWEAR_API const MblMwDataSignal* mbl_mw_acc_bmi160_get_acceleration_data_signal(const MblMwMetaWearBoard *board);
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_acceleration_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the output data rate

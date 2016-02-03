@@ -1,7 +1,8 @@
 import copy
 from common import TestMetaWearBase
 from ctypes import create_string_buffer
-from mbientlab.metawear import GyroBmi160, CartesianFloat
+from mbientlab.metawear.core import CartesianFloat
+from mbientlab.metawear.sensor import GyroBmi160
 
 class TestGyroBmi160Config(TestMetaWearBase):
     def setUp(self):
@@ -81,6 +82,6 @@ class TestGyroBmi160DataHandler(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro_rot_data_signal, self.sensor_data_handler)
         self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160.FSR_500DPS)
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
 
         self.assertEqual(self.data_cartesian_float, expected)

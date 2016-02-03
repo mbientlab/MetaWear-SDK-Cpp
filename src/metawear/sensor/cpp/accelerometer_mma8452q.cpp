@@ -1,7 +1,6 @@
 #include "accelerometer_mma8452q_private.h"
 #include "accelerometer_mma8452q_register.h"
 
-#include "metawear/core/cpp/connection_def.h"
 #include "metawear/core/cpp/constant.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
@@ -65,13 +64,14 @@ struct Mma8452qAccBitField {
 
 void init_accelerometer_mma8452q(MblMwMetaWearBoard *board) {
     MblMwDataSignal *acc_signal= new MblMwDataSignal(MMA8452Q_ACCEL_RESPONSE_HEADER, board, 
-            ResponseConvertor::MMA8452Q_ACCELERATION, 3, 2, 1, 0);
+            DataInterpreter::MMA8452Q_ACCELERATION, 3, 2, 1, 0);
     acc_signal->number_to_firmware = mma8452q_to_firmware;
     board->sensor_data_signals[MMA8452Q_ACCEL_RESPONSE_HEADER]= acc_signal;
     board->module_config[MBL_MW_MODULE_ACCELEROMETER]= create_mma8452q_config();
+    board->responses[MMA8452Q_ACCEL_RESPONSE_HEADER]= response_handler_data_no_id;
 }
 
-const MblMwDataSignal* mbl_mw_acc_mma8452q_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
+MblMwDataSignal* mbl_mw_acc_mma8452q_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation != MBL_MW_MODULE_ACC_TYPE_MMA8452Q) {
         return NULL;
     }

@@ -58,13 +58,13 @@ typedef enum {
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMP280 pressure data signal
  */
-METAWEAR_API const MblMwDataSignal* mbl_mw_baro_bmp280_get_pressure_data_signal(const MblMwMetaWearBoard *board);
+METAWEAR_API MblMwDataSignal* mbl_mw_baro_bmp280_get_pressure_data_signal(const MblMwMetaWearBoard *board);
 /**
  * Retrieves the data signal representing BMP280 altitude data
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMP280 altitude data signal
  */
-METAWEAR_API const MblMwDataSignal* mbl_mw_baro_bmp280_get_altitude_data_signal(const MblMwMetaWearBoard *board);
+METAWEAR_API MblMwDataSignal* mbl_mw_baro_bmp280_get_altitude_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Set the oversampling mode

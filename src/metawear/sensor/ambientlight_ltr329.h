@@ -59,7 +59,7 @@ typedef enum {
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's LTR329 illuminance data signal
  */
-METAWEAR_API const MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board);
+METAWEAR_API MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the sensor gain

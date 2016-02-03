@@ -1,4 +1,4 @@
-#include "metawear/core/cpp/connection_def.h"
+#include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/peripheral/neopixel.h"
 
 #include <cstring>
@@ -52,7 +52,7 @@ void mbl_mw_neopixel_set_color(const MblMwMetaWearBoard *board, uint8_t strand, 
 
 void mbl_mw_neopixel_rotate(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t count, uint16_t period_ms, MblMwNeoPixelRotDirection direction) {
     uint8_t command[7]= {NEOPIXEL_MODULE, NEOPIXEL_ROTATE, strand, 
-            (direction != MBL_MW_NP_ROT_DIR_TOWARDS) ? MBL_MW_NP_ROT_DIR_AWAY : MBL_MW_NP_ROT_DIR_TOWARDS,
+            static_cast<uint8_t>((direction != MBL_MW_NP_ROT_DIR_TOWARDS) ? MBL_MW_NP_ROT_DIR_AWAY : MBL_MW_NP_ROT_DIR_TOWARDS),
             count};
 
     memcpy(command + 5, &period_ms, 2);

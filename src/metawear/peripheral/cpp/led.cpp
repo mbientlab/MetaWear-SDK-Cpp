@@ -1,4 +1,4 @@
-#include "metawear/core/cpp/connection_def.h"
+#include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/peripheral/led.h"
 
 #include <cstring>
@@ -39,7 +39,7 @@ void mbl_mw_led_load_preset_pattern(MblMwLedPattern* pattern, MblMwLedPreset pre
 
 void mbl_mw_led_write_pattern(const MblMwMetaWearBoard *board, const MblMwLedPattern *pattern, MblMwLedColor color) {
     uint8_t command[17]= {
-            LED_MODULE, LED_CONFIG, color, 2, 
+            LED_MODULE, LED_CONFIG, static_cast<uint8_t>(color), 2, 
             pattern->high_intensity, pattern->low_intensity
     };
 

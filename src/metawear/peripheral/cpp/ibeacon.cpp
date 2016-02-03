@@ -1,4 +1,4 @@
-#include "metawear/core/cpp/connection_def.h"
+#include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/peripheral/ibeacon.h"
 
 #include <cstring>

@@ -1,6 +1,5 @@
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
-#include "metawear/core/cpp/connection_def.h"
 
 #include "metawear/sensor/barometer_bmp280.h"
 #include "barometer_bmp280_register.h"
@@ -35,21 +34,23 @@ void init_barometer_module(MblMwMetaWearBoard *board) {
     board->module_config.emplace(MBL_MW_MODULE_BAROMETER, new_config);
 
     MblMwDataSignal *baro_pa_signal= new MblMwDataSignal(BARO_PRESSURE_RESPONSE_HEADER, board, 
-            ResponseConvertor::BMP280_PRESSURE, 1, 4, 0, 0);
+            DataInterpreter::BMP280_PRESSURE, 1, 4, 0, 0);
     baro_pa_signal->number_to_firmware = bmp280_to_firmware;
     board->sensor_data_signals[BARO_PRESSURE_RESPONSE_HEADER]= baro_pa_signal;
+    board->responses[BARO_PRESSURE_RESPONSE_HEADER]= response_handler_data_no_id;
 
     MblMwDataSignal *baro_m_signal= new MblMwDataSignal(BARO_ALTITUDE_RESPONSE_HEADER, board, 
-            ResponseConvertor::BMP280_ALTITUDE, 1, 4, 1, 0);
+            DataInterpreter::BMP280_ALTITUDE, 1, 4, 1, 0);
     baro_m_signal->number_to_firmware = bmp280_to_firmware;
     board->sensor_data_signals[BARO_ALTITUDE_RESPONSE_HEADER]= baro_m_signal;
+    board->responses[BARO_ALTITUDE_RESPONSE_HEADER]= response_handler_data_no_id;
 }
 
-const MblMwDataSignal* mbl_mw_baro_bmp280_get_pressure_data_signal(const MblMwMetaWearBoard *board) {
+MblMwDataSignal* mbl_mw_baro_bmp280_get_pressure_data_signal(const MblMwMetaWearBoard *board) {
     return board->sensor_data_signals.at(BARO_PRESSURE_RESPONSE_HEADER);
 }
 
-const MblMwDataSignal* mbl_mw_baro_bmp280_get_altitude_data_signal(const MblMwMetaWearBoard *board) {
+MblMwDataSignal* mbl_mw_baro_bmp280_get_altitude_data_signal(const MblMwMetaWearBoard *board) {
     return board->sensor_data_signals.at(BARO_ALTITUDE_RESPONSE_HEADER);
 }
 

@@ -16,5 +16,3 @@ struct MblMwMetaWearBoard;
  */
 typedef struct MblMwMetaWearBoard MblMwMetaWearBoard;
 #endif
-
-typedef void(*MblMwFnByteArray)(const uint8_t* command, uint8_t len);

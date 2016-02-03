@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-const uint8_t MBL_MW_MODULE_ACC_TYPE_MMA8452Q = 0;
+const uint8_t MBL_MW_MODULE_ACC_TYPE_MMA8452Q = 0;          ///< Constant identifying the MMA8452Q accelerometer type
 
 /*
 typedef enum {
@@ -59,7 +59,7 @@ typedef enum {
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's MMA8452Q acceleration data signal
  */
-METAWEAR_API const MblMwDataSignal* mbl_mw_acc_mma8452q_get_acceleration_data_signal(const MblMwMetaWearBoard *board);
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_mma8452q_get_acceleration_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the output data rate

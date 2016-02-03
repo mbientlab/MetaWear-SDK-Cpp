@@ -1,6 +1,9 @@
 from common import TestMetaWearBase
-from ctypes import c_float
-from mbientlab.metawear import *
+from ctypes import *
+from mbientlab.metawear.core import FnVoid, FnVoidPtr, Status
+from mbientlab.metawear.peripheral import Led
+from mbientlab.metawear.processor import *
+from mbientlab.metawear.sensor import Gpio, MultiChannelTemperature
 
 class TestSwitchLedController(TestMetaWearBase):
     def test_chain_setup(self):
@@ -22,23 +25,23 @@ class TestSwitchLedController(TestMetaWearBase):
         self.math_handler= FnVoidPtr(self.math_processor_created)
 
         switch_signal= self.libmetawear.mbl_mw_switch_get_state_data_signal(self.board)
-        self.libmetawear.mbl_mw_dataprocessor_create_counter(switch_signal, self.counter_handler)
+        self.libmetawear.mbl_mw_dataprocessor_counter_create(switch_signal, self.counter_handler)
 
     def counter_processor_created(self, signal):
-        self.libmetawear.mbl_mw_dataprocessor_create_math(signal, MathProcessor.OPERATION_MODULUS, c_float(2), self.math_handler)
+        self.libmetawear.mbl_mw_dataprocessor_math_create(signal, Math.OPERATION_MODULUS, c_float(2), self.math_handler)
 
     def math_processor_created(self, signal):
         self.modulus_signal= signal
 
         self.comparator_odd_handler= FnVoidPtr(self.comparator_odd_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(self.modulus_signal, ComparatorProcessor.OPERATION_EQ, 
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(self.modulus_signal, Comparator.OPERATION_EQ, 
                 c_float(1), self.comparator_odd_handler)
 
     def comparator_odd_created(self, signal):
         self.comp_odd_signal= signal
 
         self.comparator_even_handler= FnVoidPtr(self.comparator_even_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(self.modulus_signal, ComparatorProcessor.OPERATION_EQ, 
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(self.modulus_signal, Comparator.OPERATION_EQ, 
                 c_float(0), self.comparator_even_handler)
 
     def comparator_even_created(self, signal):
@@ -73,27 +76,27 @@ class TestFreeFallDetectorRPro(TestMetaWearBase):
 
         self.rss_handler= FnVoidPtr(self.rss_processor_created) 
         accel_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_dataprocessor_create_rss(accel_signal, self.rss_handler)
+        self.libmetawear.mbl_mw_dataprocessor_rss_create(accel_signal, self.rss_handler)
 
     def rss_processor_created(self, signal):
         self.avg_handler= FnVoidPtr(self.average_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_average(signal, 4, self.avg_handler)
+        self.libmetawear.mbl_mw_dataprocessor_average_create(signal, 4, self.avg_handler)
 
     def average_processor_created(self, signal):
         self.threshold_handler= FnVoidPtr(self.threshold_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_threshold(signal, ThresholdProcessor.MODE_BINARY, c_float(0.5), c_float(0), 
+        self.libmetawear.mbl_mw_dataprocessor_threshold_create(signal, Threshold.MODE_BINARY, c_float(0.5), c_float(0), 
                 self.threshold_handler)
 
     def threshold_processor_created(self, signal):
         self.threshold_signal= signal
 
         self.comparator_below_handler= FnVoidPtr(self.comparator_below_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(signal, ComparatorProcessor.OPERATION_EQ, c_float(-1), 
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(signal, Comparator.OPERATION_EQ, c_float(-1), 
                 self.comparator_below_handler)
 
     def comparator_below_created(self, signal):
         self.comparator_above_handler= FnVoidPtr(self.comparator_above_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(self.threshold_signal, ComparatorProcessor.OPERATION_EQ, 
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(self.threshold_signal, Comparator.OPERATION_EQ, 
                 c_float(1), self.comparator_above_handler)
 
     def comparator_above_created(self, signal):
@@ -107,44 +110,50 @@ class TestActivityMonitorRPro(TestMetaWearBase):
 
         self.rms_handler= FnVoidPtr(self.rms_processor_created) 
         accel_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_dataprocessor_create_rms(accel_signal, self.rms_handler)
+        self.libmetawear.mbl_mw_dataprocessor_rms_create(accel_signal, self.rms_handler)
 
     def test_activity_setup(self):
         self.expected_cmds= [
             [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x07, 0xa5, 0x00],
             [0x09, 0x02, 0x09, 0x03, 0x00, 0x20, 0x02, 0x07],
+            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x0f, 0x03],
             [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x03, 0x30, 0x75, 0x00, 0x00],
-            [0x09, 0x02, 0x09, 0x03, 0x02, 0x60, 0x0c, 0x0b, 0x00, 0x00, 0xc8, 0xaf],
-            [0x09, 0x07, 0x02, 0x01],
+            [0x09, 0x02, 0x09, 0x03, 0x03, 0x60, 0x0c, 0x0b, 0x00, 0x00, 0xc8, 0xaf],
+            [0x09, 0x07, 0x03, 0x01],
             [0x09, 0x03, 0x01]
         ]
 
         self.assertEqual(self.command_history, self.expected_cmds)
 
     def test_time_processor_data(self):
-        response= create_string_buffer(b'\x09\x03\x02\x4f\xee\xf4\x01', 7)
+        response= create_string_buffer(b'\x09\x03\x03\x4f\xee\xf4\x01', 7)
         expected= 2003.7236328125
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertAlmostEqual(self.data_float.value, expected)
 
     def test_time_processor_unsubscribe(self):
-        expected= [0x09, 0x07, 0x02, 0x00]
+        expected= [0x09, 0x07, 0x03, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.time_signal)
         self.assertEqual(self.command, expected)
 
     def rms_processor_created(self, signal):
         self.accum_handler= FnVoidPtr(self.accum_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_accumulator_size(signal, c_ubyte(4), self.accum_handler)
+        self.libmetawear.mbl_mw_dataprocessor_accumulator_create_size(signal, c_ubyte(4), self.accum_handler)
 
     def accum_processor_created(self, signal):
+        self.accum_signal= signal
+        self.buffer_handler= FnVoidPtr(self.buffer_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_buffer_create(signal, self.buffer_handler)
+
+    def buffer_processor_created(self, signal):
         self.time_handler= FnVoidPtr(self.time_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_time_delay(signal, TimeProcessor.MODE_ABSOLUTE, 30000, self.time_handler)
+        self.libmetawear.mbl_mw_dataprocessor_time_create(self.accum_signal, Time.MODE_ABSOLUTE, 30000, self.time_handler)
 
     def time_processor_created(self, signal):
         self.time_signal= signal
         self.delta_handler= FnVoidPtr(self.delta_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_delta(signal, DeltaProcessor.MODE_DIFFERENTIAL, c_float(180000), 
+        self.libmetawear.mbl_mw_dataprocessor_delta_create(signal, Delta.MODE_DIFFERENTIAL, c_float(180000), 
                 self.delta_handler)
 
     def delta_processor_created(self, signal):
@@ -159,7 +168,7 @@ class TestTemperatureConversionRPro(TestMetaWearBase):
         self.f_mult_handler= FnVoidPtr(self.f_mult_processor_created)
         self.temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, 
                 c_ubyte(MultiChannelTemperature.METAWEAR_RPRO_CHANNEL_ON_DIE))
-        self.libmetawear.mbl_mw_dataprocessor_create_math(self.temp_signal, MathProcessor.OPERATION_MULTIPLY, c_float(18), 
+        self.libmetawear.mbl_mw_dataprocessor_math_create(self.temp_signal, Math.OPERATION_MULTIPLY, c_float(18), 
                 self.f_mult_handler)
 
     def test_temperature_setup(self):
@@ -185,7 +194,7 @@ class TestTemperatureConversionRPro(TestMetaWearBase):
 
         for resp in responses:
             with self.subTest(response=resp[2]):
-                self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, resp[0].raw, len(resp[0]))
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, resp[0].raw, len(resp[0]))
                 self.assertAlmostEqual(self.data_float.value, resp[1])
 
     def test_temperature_unsubscribe(self):
@@ -203,17 +212,17 @@ class TestTemperatureConversionRPro(TestMetaWearBase):
 
     def f_mult_processor_created(self, signal):
         self.f_divide_handler= FnVoidPtr(self.f_divide_processor_created) 
-        self.libmetawear.mbl_mw_dataprocessor_create_math(signal, MathProcessor.OPERATION_DIVIDE, c_float(10), 
+        self.libmetawear.mbl_mw_dataprocessor_math_create(signal, Math.OPERATION_DIVIDE, c_float(10), 
                 self.f_divide_handler)
 
     def f_divide_processor_created(self, signal):
         self.f_add_handler= FnVoidPtr(self.f_add_processor_created) 
-        self.libmetawear.mbl_mw_dataprocessor_create_math(signal, MathProcessor.OPERATION_ADD, c_float(32), self.f_add_handler)
+        self.libmetawear.mbl_mw_dataprocessor_math_create(signal, Math.OPERATION_ADD, c_float(32), self.f_add_handler)
 
     def f_add_processor_created(self, signal):
         self.fahrenheit_signal= signal;
         self.k_add_handler= FnVoidPtr(self.k_add_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_math(self.temp_signal, MathProcessor.OPERATION_ADD, c_float(273.15), 
+        self.libmetawear.mbl_mw_dataprocessor_math_create(self.temp_signal, Math.OPERATION_ADD, c_float(273.15), 
                 self.k_add_handler)
 
     def k_add_processor_created(self, signal):
@@ -233,11 +242,11 @@ class TestDataCollector(TestMetaWearBase):
         self.sample_handler= FnVoidPtr(self.sample_processor_created)
         gpio_adc_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, c_ubyte(0), 
                 Gpio.ANALOG_READ_MODE_ADC)
-        self.libmetawear.mbl_mw_dataprocessor_create_sample_delay(gpio_adc_signal, c_ubyte(16), self.sample_handler)
+        self.libmetawear.mbl_mw_dataprocessor_sample_create(gpio_adc_signal, c_ubyte(16), self.sample_handler)
 
     def sample_processor_created(self, signal):
         self.passthrough_handler= FnVoidPtr(self.passthrough_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_passthrough(signal, PassthroughProcessor.MODE_COUNT, c_ushort(0), 
+        self.libmetawear.mbl_mw_dataprocessor_passthrough_create(signal, Passthrough.MODE_COUNT, c_ushort(0), 
                 self.passthrough_handler)
 
     def passthrough_processor_created(self, signal):
@@ -250,7 +259,7 @@ class TestGpioAdcPulse(TestMetaWearBase):
         self.pulse_handler= FnVoidPtr(self.pulse_processor_created)
         gpio_adc_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, c_ubyte(0), 
                 Gpio.ANALOG_READ_MODE_ADC)
-        self.libmetawear.mbl_mw_dataprocessor_create_pulse_detector(gpio_adc_signal, PulseProcessor.OUTPUT_PEAK, c_float(500), 
+        self.libmetawear.mbl_mw_dataprocessor_pulse_create(gpio_adc_signal, Pulse.OUTPUT_PEAK, c_float(500), 
                 c_ushort(10), self.pulse_handler)
 
     def test_pulse_setup(self):
@@ -266,7 +275,7 @@ class TestGpioAdcPulse(TestMetaWearBase):
         expected= 789
         response= create_string_buffer(b'\x09\x03\x00\x15\x03\x00\x00', 7)
 
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_pulse_unsubscribe(self):
@@ -279,9 +288,81 @@ class TestGpioAdcPulse(TestMetaWearBase):
         self.pulse_signal= signal
         self.libmetawear.mbl_mw_datasignal_subscribe(self.pulse_signal, self.sensor_data_handler)
 
-class TestGpioFeedback(TestMetaWearBase):
+class TestGpioFeedbackSetup(TestMetaWearBase):
+    def setUp(self):
+        super().setUp()
+
+        self.passthrough_handler= FnVoidPtr(self.passthrough_processor_created)
+        self.gpio_abs_ref_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, c_ubyte(0), 
+                Gpio.ANALOG_READ_MODE_ABS_REF)
+        self.libmetawear.mbl_mw_dataprocessor_passthrough_create(self.gpio_abs_ref_signal, Passthrough.MODE_COUNT, 
+                c_ushort(0), self.passthrough_handler)
+
+    def passthrough_processor_created(self, signal):
+        self.offset_passthrough= signal
+        self.math_handler= FnVoidPtr(self.math_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_math_create(self.gpio_abs_ref_signal, Math.OPERATION_SUBTRACT, c_float(0), self.math_handler)
+
+    def math_processor_created(self, signal):
+        self.abs_ref_offset= signal
+        self.gt_comparator_handler= FnVoidPtr(self.gt_comparator_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(signal, Comparator.OPERATION_GT, c_float(0), 
+                self.gt_comparator_handler)
+
+    def gt_comparator_processor_created(self, signal):
+        self.gt_comparator= signal
+        self.gt_counter_handler= FnVoidPtr(self.gt_counter_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_counter_create(signal, self.gt_counter_handler)
+
+    def gt_counter_processor_created(self, signal):
+        self.gt_comparator_counter= signal
+        self.gt_counter_comparator_handler= FnVoidPtr(self.gt_counter_comparator_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(signal, Comparator.OPERATION_EQ, c_float(16), 
+                self.gt_counter_comparator_handler)
+
+    def gt_counter_comparator_processor_created(self, signal):
+        self.gt_comparator_counter_comparator= signal
+        self.lte_comparator_handler= FnVoidPtr(self.lte_comparator_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(self.abs_ref_offset, Comparator.OPERATION_LTE, 
+                c_float(0), self.lte_comparator_handler)
+
+    def lte_comparator_processor_created(self, signal):
+        self.lte_comparator= signal
+        self.lte_counter_handler= FnVoidPtr(self.lte_counter_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_counter_create(signal, self.lte_counter_handler)
+
+    def lte_counter_processor_created(self, signal):
+        self.lte_comparator_counter= signal
+        self.lte_counter_comparator_handler= FnVoidPtr(self.lte_counter_comparator_processor_created)
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(signal, Comparator.OPERATION_EQ, c_float(16), 
+                self.lte_counter_comparator_handler)
+
+    def lte_counter_comparator_processor_created(self, signal):
+        self.libmetawear.mbl_mw_event_record_commands(self.offset_passthrough)
+        self.libmetawear.mbl_mw_dataprocessor_counter_set_state(self.lte_comparator_counter, 0)
+        self.libmetawear.mbl_mw_dataprocessor_counter_set_state(self.gt_comparator_counter, 0)
+        self.libmetawear.mbl_mw_dataprocessor_math_modify_rhs_signal(self.abs_ref_offset, self.offset_passthrough)
+        self.libmetawear.mbl_mw_event_end_record(self.offset_passthrough, self.commands_recorded_fn)
+
+        self.libmetawear.mbl_mw_event_record_commands(self.gt_comparator)
+        self.libmetawear.mbl_mw_dataprocessor_counter_set_state(self.lte_comparator_counter, 0)
+        self.libmetawear.mbl_mw_event_end_record(self.gt_comparator, self.commands_recorded_fn)
+
+        self.libmetawear.mbl_mw_event_record_commands(self.gt_comparator_counter_comparator)
+        self.libmetawear.mbl_mw_dataprocessor_passthrough_set_count(self.offset_passthrough, c_ushort(1))
+        self.libmetawear.mbl_mw_event_end_record(self.gt_comparator_counter_comparator, self.commands_recorded_fn)
+
+        self.libmetawear.mbl_mw_event_record_commands(self.lte_comparator)
+        self.libmetawear.mbl_mw_dataprocessor_counter_set_state(self.gt_comparator_counter, 0)
+        self.libmetawear.mbl_mw_event_end_record(self.lte_comparator, self.commands_recorded_fn)
+
+        self.libmetawear.mbl_mw_event_record_commands(signal)
+        self.libmetawear.mbl_mw_dataprocessor_passthrough_set_count(self.offset_passthrough, c_ushort(1))
+        self.libmetawear.mbl_mw_event_end_record(signal, self.commands_recorded_fn)
+
+class TestGpioFeedback(TestGpioFeedbackSetup):
     def test_feedback_setup(self):
-        self.expected_cmds= [
+        expected_cmds= [
             [0x09, 0x02, 0x05, 0x86, 0x00, 0x20, 0x01, 0x02, 0x00, 0x00],
             [0x09, 0x02, 0x05, 0x86, 0x00, 0x20, 0x09, 0x07, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00],
             [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x06, 0x01, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00],
@@ -306,75 +387,61 @@ class TestGpioFeedback(TestMetaWearBase):
             [0x0a, 0x03, 0x00, 0x01, 0x00]
         ]
 
-        self.passthrough_handler= FnVoidPtr(self.passthrough_processor_created)
-        self.gpio_abs_ref_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, c_ubyte(0), 
-                Gpio.ANALOG_READ_MODE_ABS_REF)
-        self.libmetawear.mbl_mw_dataprocessor_create_passthrough(self.gpio_abs_ref_signal, PassthroughProcessor.MODE_COUNT, 
-                c_ushort(0), self.passthrough_handler)
+        self.assertEqual(self.command_history, expected_cmds)
 
-    def passthrough_processor_created(self, signal):
-        self.offset_passthrough= signal
-        self.math_handler= FnVoidPtr(self.math_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_math(self.gpio_abs_ref_signal, MathProcessor.OPERATION_SUBTRACT, c_float(0), self.math_handler)
+    def test_remove_out_of_order(self):
+        expected_cmds= [
+            [0x09, 0x06, 0x07],
+            [0x0a, 0x04, 0x06],
+            [0x09, 0x06, 0x06],
+            [0x09, 0x06, 0x05],
+            [0x0a, 0x04, 0x05],
+            [0x09, 0x06, 0x04],
+            [0x0a, 0x04, 0x04],
+            [0x09, 0x06, 0x03],
+            [0x09, 0x06, 0x02],
+            [0x0a, 0x04, 0x03],
+            [0x09, 0x06, 0x01]
+        ]
 
-    def math_processor_created(self, signal):
-        self.abs_ref_offset= signal
-        self.gt_comparator_handler= FnVoidPtr(self.gt_comparator_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(signal, ComparatorProcessor.OPERATION_GT, c_float(0), 
-                self.gt_comparator_handler)
+        self.libmetawear.mbl_mw_dataprocessor_remove(self.lte_comparator)
+        self.libmetawear.mbl_mw_dataprocessor_remove(self.abs_ref_offset)
+        remove_cmds= self.command_history[22:].copy()
 
-    def gt_comparator_processor_created(self, signal):
-        self.gt_comparator= signal
-        self.gt_counter_handler= FnVoidPtr(self.gt_counter_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_counter(signal, self.gt_counter_handler)
+        self.assertEqual(remove_cmds, expected_cmds)
 
-    def gt_counter_processor_created(self, signal):
-        self.gt_comparator_counter= signal
-        self.gt_counter_comparator_handler= FnVoidPtr(self.gt_counter_comparator_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(signal, ComparatorProcessor.OPERATION_EQ, c_float(16), 
-                self.gt_counter_comparator_handler)
+    def test_remove_passthrough(self):
+        expected_cmds= [
+            [0x09, 0x06, 0x00],
+            [0x0a, 0x04, 0x00],
+            [0x0a, 0x04, 0x01],
+            [0x0a, 0x04, 0x02]
+        ]
 
-    def gt_counter_comparator_processor_created(self, signal):
-        self.gt_comparator_counter_comparator= signal
-        self.lte_comparator_handler= FnVoidPtr(self.lte_comparator_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(self.abs_ref_offset, ComparatorProcessor.OPERATION_LTE, 
-                c_float(0), self.lte_comparator_handler)
+        self.libmetawear.mbl_mw_dataprocessor_remove(self.offset_passthrough)
+        remove_cmds= self.command_history[22:].copy()
 
-    def lte_comparator_processor_created(self, signal):
-        self.lte_comparator= signal
-        self.lte_counter_handler= FnVoidPtr(self.lte_counter_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_counter(signal, self.lte_counter_handler)
+        self.assertEqual(remove_cmds, expected_cmds)
 
-    def lte_counter_processor_created(self, signal):
-        self.lte_comparator_counter= signal
-        self.lte_counter_comparator_handler= FnVoidPtr(self.lte_counter_comparator_processor_created)
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(signal, ComparatorProcessor.OPERATION_EQ, c_float(16), 
-                self.lte_counter_comparator_handler)
+    def test_remove_math(self):
+        expected_cmds= [
+            [0x09, 0x06, 0x04],
+            [0x0a, 0x04, 0x04],
+            [0x09, 0x06, 0x03],
+            [0x09, 0x06, 0x02],
+            [0x0a, 0x04, 0x03],
+            [0x09, 0x06, 0x07],
+            [0x0a, 0x04, 0x06],
+            [0x09, 0x06, 0x06],
+            [0x09, 0x06, 0x05],
+            [0x0a, 0x04, 0x05],
+            [0x09, 0x06, 0x01]
+        ]
 
-    def lte_counter_comparator_processor_created(self, signal):
-        self.libmetawear.mbl_mw_event_record_commands(self.offset_passthrough)
-        self.libmetawear.mbl_mw_dataprocessor_set_counter_state(self.lte_comparator_counter, 0)
-        self.libmetawear.mbl_mw_dataprocessor_set_counter_state(self.gt_comparator_counter, 0)
-        self.libmetawear.mbl_mw_dataprocessor_math_modify_rhs_signal(self.abs_ref_offset, self.offset_passthrough)
-        self.libmetawear.mbl_mw_event_end_record(self.offset_passthrough, self.commands_recorded_fn)
+        self.libmetawear.mbl_mw_dataprocessor_remove(self.abs_ref_offset)
+        remove_cmds= self.command_history[22:].copy()
 
-        self.libmetawear.mbl_mw_event_record_commands(self.gt_comparator)
-        self.libmetawear.mbl_mw_dataprocessor_set_counter_state(self.lte_comparator_counter, 0)
-        self.libmetawear.mbl_mw_event_end_record(self.gt_comparator, self.commands_recorded_fn)
-
-        self.libmetawear.mbl_mw_event_record_commands(self.gt_comparator_counter_comparator)
-        self.libmetawear.mbl_mw_dataprocessor_passthrough_set_count(self.offset_passthrough, c_ushort(1))
-        self.libmetawear.mbl_mw_event_end_record(self.gt_comparator_counter_comparator, self.commands_recorded_fn)
-
-        self.libmetawear.mbl_mw_event_record_commands(self.lte_comparator)
-        self.libmetawear.mbl_mw_dataprocessor_set_counter_state(self.gt_comparator_counter, 0)
-        self.libmetawear.mbl_mw_event_end_record(self.lte_comparator, self.commands_recorded_fn)
-
-        self.libmetawear.mbl_mw_event_record_commands(signal)
-        self.libmetawear.mbl_mw_dataprocessor_passthrough_set_count(self.offset_passthrough, c_ushort(1))
-        self.libmetawear.mbl_mw_event_end_record(signal, self.commands_recorded_fn)
-
-        self.assertEqual(self.command_history, self.expected_cmds)
+        self.assertEqual(remove_cmds, expected_cmds)
 
 class TestPassthroughSetCount(TestMetaWearBase):
     def setUp(self):
@@ -389,12 +456,12 @@ class TestPassthroughSetCount(TestMetaWearBase):
         self.status= self.libmetawear.mbl_mw_dataprocessor_passthrough_set_count(signal, c_ushort(20))
 
     def test_valid_set_count(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_passthrough(self.baro_pa_signal, PassthroughProcessor.MODE_COUNT, 
+        self.libmetawear.mbl_mw_dataprocessor_passthrough_create(self.baro_pa_signal, Passthrough.MODE_COUNT, 
                 c_ushort(10), self.processor_handler)
         self.assertEqual(self.status, Status.OK)
 
     def test_invalid_set_count(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_sample_delay(self.baro_pa_signal, c_ubyte(16), self.processor_handler)
+        self.libmetawear.mbl_mw_dataprocessor_sample_create(self.baro_pa_signal, c_ubyte(16), self.processor_handler)
         self.assertEqual(self.status, Status.WARNING_INVALID_PROCESSOR_TYPE)
 
 class TestAccumulatorSetSum(TestMetaWearBase):
@@ -410,11 +477,11 @@ class TestAccumulatorSetSum(TestMetaWearBase):
         self.status= self.libmetawear.mbl_mw_dataprocessor_set_accumulator_state(signal, c_float(101325))
 
     def test_valid_set_state(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_accumulator(self.baro_pa_signal, self.processor_handler)
+        self.libmetawear.mbl_mw_dataprocessor_accumulator_create(self.baro_pa_signal, self.processor_handler)
         self.assertEqual(self.status, Status.OK)
 
     def test_invalid_set_count(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_time_delay(self.baro_pa_signal, TimeProcessor.MODE_DIFFERENTIAL, 30000, 
+        self.libmetawear.mbl_mw_dataprocessor_time_create(self.baro_pa_signal, Time.MODE_DIFFERENTIAL, 30000, 
                 self.processor_handler)
         self.assertEqual(self.status, Status.WARNING_INVALID_PROCESSOR_TYPE)
 
@@ -428,14 +495,14 @@ class TestCounterSetCount(TestMetaWearBase):
         self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
-        self.status= self.libmetawear.mbl_mw_dataprocessor_set_counter_state(signal, 128)
+        self.status= self.libmetawear.mbl_mw_dataprocessor_counter_set_state(signal, 128)
 
     def test_valid_set_state(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_counter(self.baro_pa_signal, self.processor_handler)
+        self.libmetawear.mbl_mw_dataprocessor_counter_create(self.baro_pa_signal, self.processor_handler)
         self.assertEqual(self.status, Status.OK)
 
     def test_invalid_set_count(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_comparator(self.baro_pa_signal, ComparatorProcessor.OPERATION_LT, 
+        self.libmetawear.mbl_mw_dataprocessor_comparator_create(self.baro_pa_signal, Comparator.OPERATION_LT, 
                 c_float(101325), self.processor_handler)
         self.assertEqual(self.status, Status.WARNING_INVALID_PROCESSOR_TYPE)
 
@@ -449,14 +516,14 @@ class TestAverageReset(TestMetaWearBase):
         self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
-        self.status= self.libmetawear.mbl_mw_dataprocessor_reset_average(signal)
+        self.status= self.libmetawear.mbl_mw_dataprocessor_average_reset(signal)
 
     def test_valid_reset(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_average(self.baro_pa_signal, c_ubyte(8), self.processor_handler)
+        self.libmetawear.mbl_mw_dataprocessor_average_create(self.baro_pa_signal, c_ubyte(8), self.processor_handler)
         self.assertEqual(self.status, Status.OK)
 
     def test_invalid_reset(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_pulse_detector(self.baro_pa_signal, PulseProcessor.OUTPUT_AREA, 
+        self.libmetawear.mbl_mw_dataprocessor_pulse_create(self.baro_pa_signal, Pulse.OUTPUT_AREA, 
                 c_float(101325), c_ushort(64), self.processor_handler)
         self.assertEqual(self.status, Status.WARNING_INVALID_PROCESSOR_TYPE)
 
@@ -470,14 +537,14 @@ class TestDeltaSetPrevious(TestMetaWearBase):
         self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
-        self.status= self.libmetawear.mbl_mw_dataprocessor_delta_set_previous_value(signal, c_float(101325))
+        self.status= self.libmetawear.mbl_mw_dataprocessor_delta_set_reference(signal, c_float(101325))
 
     def test_valid_set_previous(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_delta(self.baro_pa_signal, DeltaProcessor.MODE_DIFFERENTIAL, 
+        self.libmetawear.mbl_mw_dataprocessor_delta_create(self.baro_pa_signal, Delta.MODE_DIFFERENTIAL, 
                 c_float(25331.25), self.processor_handler)
         self.assertEqual(self.status, Status.OK)
 
     def test_invalid_set_previous(self):
-        self.libmetawear.mbl_mw_dataprocessor_create_math(self.baro_pa_signal, MathProcessor.OPERATION_DIVIDE, c_float(1000), 
+        self.libmetawear.mbl_mw_dataprocessor_math_create(self.baro_pa_signal, Math.OPERATION_DIVIDE, c_float(1000), 
                 self.processor_handler)
         self.assertEqual(self.status, Status.WARNING_INVALID_PROCESSOR_TYPE)

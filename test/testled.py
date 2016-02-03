@@ -1,6 +1,6 @@
 from ctypes import byref
 from common import TestMetaWearBase
-from mbientlab.metawear import Led
+from mbientlab.metawear.peripheral import Led
 
 class TestLedControl(TestMetaWearBase):
     def test_play(self):

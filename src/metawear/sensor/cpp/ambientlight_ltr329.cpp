@@ -1,6 +1,5 @@
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
-#include "metawear/core/cpp/connection_def.h"
 
 #include "metawear/sensor/ambientlight_ltr329.h"
 #include "ambientlight_ltr329_register.h"
@@ -8,9 +7,11 @@
 #include <cstdlib>
 #include <cstring>
 
+using std::forward_as_tuple;
 using std::malloc;
 using std::memcpy;
 using std::memset;
+using std::piecewise_construct;
 
 struct Ltr329Config {
     uint8_t:2;
@@ -29,10 +30,11 @@ void init_ambient_light_module(MblMwMetaWearBoard *board) {
     board->module_config.emplace(MBL_MW_MODULE_AMBIENT_LIGHT, new_config);
 
     board->sensor_data_signals[LTR329_ILLUMINANCE_RESPONSE_HEADER]= new MblMwDataSignal(LTR329_ILLUMINANCE_RESPONSE_HEADER, 
-            board, ResponseConvertor::UINT32, 1, 4, 0, 0);
+            board, DataInterpreter::UINT32, 1, 4, 0, 0);
+    board->responses[LTR329_ILLUMINANCE_RESPONSE_HEADER]= response_handler_data_no_id;
 }
 
-const MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board) {
+MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board) {
     return board->sensor_data_signals.at(LTR329_ILLUMINANCE_RESPONSE_HEADER);
 }
 

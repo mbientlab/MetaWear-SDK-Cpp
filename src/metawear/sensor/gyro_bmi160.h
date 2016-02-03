@@ -46,7 +46,7 @@ typedef enum {
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI160 rotation data signal
  */
-METAWEAR_API const MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWearBoard *board);
+METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the output data rate 

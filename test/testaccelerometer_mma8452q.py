@@ -1,6 +1,7 @@
 import copy
 from common import TestMetaWearBase
-from mbientlab.metawear import AccelerometerMma8452q, CartesianFloat
+from mbientlab.metawear.core import CartesianFloat
+from mbientlab.metawear.sensor import AccelerometerMma8452q
 from ctypes import create_string_buffer
 
 class TestMma8452qConfiguration(TestMetaWearBase):
@@ -57,7 +58,7 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
         expected= CartesianFloat(x= -1.450, y= -2.555, z= 0.792)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
 
         self.assertEqual(self.data_cartesian_float, expected)
 

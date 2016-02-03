@@ -1,7 +1,7 @@
 /**
  * @copyright MbientLab License 
  * @file datasignal.h
- * @brief Generic functions for handling sensor data
+ * @brief Functions for controlling a MblMwDataSignal
  */
 #pragma once
 
@@ -15,7 +15,8 @@ extern "C" {
 
 /**
  * Subscribes to a data stream, processing messages with the given handler
- * @param signal    Data signal to subscribe to
+ * @param signal                Data signal to subscribe to
+ * @param received_data         Callback function to handle data received from the signal
  */
 METAWEAR_API void mbl_mw_datasignal_subscribe(MblMwDataSignal *signal, MblMwFnData received_data);
 

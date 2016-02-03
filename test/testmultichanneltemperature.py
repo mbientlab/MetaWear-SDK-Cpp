@@ -1,6 +1,6 @@
 from common import TestMetaWearBase
 from ctypes import create_string_buffer
-from mbientlab.metawear import MultiChannelTemperature
+from mbientlab.metawear.sensor import MultiChannelTemperature
 
 class TestMultiChannelTemperatureMwr(TestMetaWearBase):
     def setUp(self):
@@ -36,7 +36,7 @@ class TestMultiChannelTemperatureMwr(TestMetaWearBase):
              with self.subTest(response=resp):
                 temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, resp[2])
                 self.libmetawear.mbl_mw_datasignal_subscribe(temp_signal, self.sensor_data_handler)
-                self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, resp[0].raw, len(resp[0]))
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, resp[0].raw, len(resp[0]))
                 self.assertAlmostEqual(self.data_float.value, resp[1])
 
     def test_get_num_channels(self):
@@ -97,7 +97,7 @@ class TestMultiChannelTemperatureMwrPro(TestMetaWearBase):
              with self.subTest(response=resp):
                 temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, resp[2])
                 self.libmetawear.mbl_mw_datasignal_subscribe(temp_signal, self.sensor_data_handler)
-                self.libmetawear.mbl_mw_metawearboard_handle_response(self.board, resp[0].raw, len(resp[0]))
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, resp[0].raw, len(resp[0]))
                 self.assertAlmostEqual(self.data_float.value, resp[1])
 
     def test_get_num_channels(self):
