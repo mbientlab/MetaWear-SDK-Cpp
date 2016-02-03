@@ -5,4 +5,5 @@
 
 struct MblMwTimer : public MblMwEvent {
     MblMwTimer(const ResponseHeader& header, MblMwMetaWearBoard *owner);
+    virtual ~MblMwTimer();
 };

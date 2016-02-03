@@ -1,10 +1,7 @@
-#include "dataprocessor_private.h"
+#include "metawear/processor/rms.h"
+#include "metawear/processor/rss.h"
 
-#include "metawear/core/data.h"
-#include "metawear/processor/combiner.h"
-#include "metawear/sensor/cpp/accelerometer_bmi160_register.h"
-#include "metawear/sensor/cpp/accelerometer_mma8452q_register.h"
-#include "metawear/sensor/cpp/gyro_bmi160_register.h"
+#include "processor_private_common.h"
 
 #include <cstdlib>
 
@@ -21,23 +18,26 @@ struct CombinerConfig {
     uint8_t mode;
 };
 
-static inline void create_combiner(MblMwDataSignal *source, DataProcessorType combiner_type, 
+static inline int32_t create_combiner(MblMwDataSignal *source, DataProcessorType combiner_type,
         MblMwFnDataProcessor processor_created) {
+    if (source->n_channels <= 1) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
 
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
     new_processor->is_signed= 0;
     new_processor->offset= 0;
     new_processor->set_channel_attr(1, source->channel_size);
 
-    switch (source->convertor) {
-    case ResponseConvertor::BMI160_ACCELERATION:
-        new_processor->convertor= ResponseConvertor::BMI160_ACCELERATION_SINGLE_AXIS;
+    switch (source->interpreter) {
+    case DataInterpreter::BMI160_ACCELERATION:
+        new_processor->interpreter= DataInterpreter::BMI160_ACCELERATION_SINGLE_AXIS;
         break;
-    case ResponseConvertor::MMA8452Q_ACCELERATION:
-        new_processor->convertor = ResponseConvertor::MMA8452Q_ACCELERATION_SINGLE_AXIS;
+    case DataInterpreter::MMA8452Q_ACCELERATION:
+        new_processor->interpreter = DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS;
         break;
-    case ResponseConvertor::BMI160_ROTATION:
-        new_processor->convertor = ResponseConvertor::BMI160_ROTATION_SINGLE_AXIS;
+    case DataInterpreter::BMI160_ROTATION:
+        new_processor->interpreter = DataInterpreter::BMI160_ROTATION_SINGLE_AXIS;
         break;
     default:
         break;
@@ -50,12 +50,14 @@ static inline void create_combiner(MblMwDataSignal *source, DataProcessorType co
     config->is_signed= source->is_signed;
     config->mode= combiner_type == DataProcessorType::RMS ? MODE_RMS : MODE_RSS;
     create_processor(source, config, sizeof(CombinerConfig), combiner_type, new_processor, processor_created);
+
+    return MBL_MW_STATUS_OK;
 }
 
-void mbl_mw_dataprocessor_create_rms(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
-    create_combiner(source, DataProcessorType::RMS, processor_created);
+int32_t mbl_mw_dataprocessor_rms_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
+    return create_combiner(source, DataProcessorType::RMS, processor_created);
 }
 
-void mbl_mw_dataprocessor_create_rss(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
-    create_combiner(source, DataProcessorType::RSS, processor_created);
+int32_t mbl_mw_dataprocessor_rss_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
+    return create_combiner(source, DataProcessorType::RSS, processor_created);
 }

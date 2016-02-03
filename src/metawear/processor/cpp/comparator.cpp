@@ -1,7 +1,6 @@
-#include "dataprocessor_private.h"
+#include "processor_private_common.h"
 
 #include "metawear/core/cpp/metawearboard_def.h"
-#include "metawear/core/status.h"
 #include "metawear/processor/comparator.h"
 
 #include <cstdint>
@@ -20,8 +19,12 @@ struct ComparatorConfig {
     uint8_t reference[4];
 };
 
-static inline void create_comprator(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, uint8_t is_signed,
+static inline int32_t create_comprator(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, uint8_t is_signed,
         MblMwFnDataProcessor processor_created) {
+    if (source->length() > PROCESSOR_MAX_LENGTH) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
+
     ComparatorConfig *config = (ComparatorConfig*) malloc(sizeof(ComparatorConfig));
     *((uint8_t*) config + 2)= 0;
     config->is_signed= is_signed;
@@ -32,25 +35,26 @@ static inline void create_comprator(MblMwDataSignal *source, MblMwComparatorOper
 
     create_processor(source, config, sizeof(ComparatorConfig), DataProcessorType::COMPARATOR, new MblMwDataProcessor(*source), 
             processor_created);
+    return MBL_MW_STATUS_OK;
 }
 
-void mbl_mw_dataprocessor_create_comparator(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
+int32_t mbl_mw_dataprocessor_comparator_create(MblMwDataSignal *source, MblMwComparatorOperation op, float reference,
         MblMwFnDataProcessor processor_created) {
     if (source->is_signed) {
-        mbl_mw_dataprocessor_create_comparator_signed(source, op, reference, processor_created);
+        return mbl_mw_dataprocessor_comparator_create_signed(source, op, reference, processor_created);
     } else {
-        mbl_mw_dataprocessor_create_comparator_unsigned(source, op, reference, processor_created);
+        return mbl_mw_dataprocessor_comparator_create_unsigned(source, op, reference, processor_created);
     }
 }
 
-void mbl_mw_dataprocessor_create_comparator_signed(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
+int32_t  mbl_mw_dataprocessor_comparator_create_signed(MblMwDataSignal *source, MblMwComparatorOperation op, float reference,
         MblMwFnDataProcessor processor_created) {
-    create_comprator(source, op, reference, 1, processor_created);
+    return create_comprator(source, op, reference, 1, processor_created);
 }
 
-void mbl_mw_dataprocessor_create_comparator_unsigned(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
+int32_t mbl_mw_dataprocessor_comparator_create_unsigned(MblMwDataSignal *source, MblMwComparatorOperation op, float reference,
         MblMwFnDataProcessor processor_created) {
-    create_comprator(source, op, reference, 0, processor_created);
+    return create_comprator(source, op, reference, 0, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_comparator_modify(MblMwDataProcessor *comparator, MblMwComparatorOperation op, float reference) {

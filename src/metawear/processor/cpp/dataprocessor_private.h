@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <vector>
 
 #include "metawear/core/dataprocessor_fwd.h"
 #include "metawear/core/cpp/datasignal_private.h"
@@ -23,17 +24,19 @@ enum class DataProcessorType : uint8_t {
 };
 
 struct MblMwDataProcessor : public MblMwDataSignal {
-    MblMwDataProcessor(const ResponseHeader& header, MblMwMetaWearBoard *owner, ResponseConvertor convertor, uint8_t n_channels, 
-            uint8_t channel_size, uint8_t is_signed, uint8_t offset);
     MblMwDataProcessor(const MblMwDataSignal& signal);
-    ~MblMwDataProcessor();
+    virtual ~MblMwDataProcessor();
 
+    MblMwDataProcessor* parent;
+    MblMwDataSignal* state;
     void* config;
+    std::vector<MblMwDataProcessor*> consumers;
     DataProcessorType type;
 };
 
 void create_processor(MblMwDataSignal* source, void* config, uint8_t size, DataProcessorType type, 
         MblMwDataProcessor* new_processor, MblMwFnDataProcessor processor_created);
+MblMwDataSignal* create_processor_state_signal(MblMwDataProcessor* processor, DataInterpreter interpreter);
 void set_processor_state(MblMwDataProcessor *processor, void* new_state, uint8_t size);
 void modify_processor_configuration(MblMwDataProcessor *processor, uint8_t size);
 

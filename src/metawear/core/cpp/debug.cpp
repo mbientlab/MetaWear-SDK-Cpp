@@ -1,4 +1,4 @@
-#include "connection_def.h"
+#include "metawearboard_def.h"
 #include "metawear/core/debug.h"
 
 static const uint8_t DEBUG_MODULE= 0xfe;

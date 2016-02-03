@@ -1,8 +1,7 @@
-#include "dataprocessor_private.h"
-
-#include "metawear/core/cpp/metawearboard_def.h"
-#include "metawear/core/status.h"
 #include "metawear/processor/math.h"
+#include "metawear/core/cpp/metawearboard_def.h"
+
+#include "processor_private_common.h"
 
 #include <cstdint>
 #include <cstdlib>
@@ -24,8 +23,12 @@ struct MathConfig {
     uint8_t n_channels;
 };
 
-static inline void create_math(MblMwDataSignal *source, MblMwMathOperation op, float rhs, uint8_t is_signed,
+static inline int32_t create_math(MblMwDataSignal *source, MblMwMathOperation op, float rhs, uint8_t is_signed,
         MblMwFnDataProcessor processor_created) {
+    if (source->length() > PROCESSOR_MAX_LENGTH && source->owner->firmware_revision < MULTI_CHANNEL_MATH) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
+
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
     new_processor->set_channel_attr(1, 4);
 
@@ -48,15 +51,15 @@ static inline void create_math(MblMwDataSignal *source, MblMwMathOperation op, f
     case MBL_MW_MATH_OP_SUBTRACT:
     case MBL_MW_MATH_OP_MODULUS:
         if (is_signed) {
-            if (source->convertor == ResponseConvertor::UINT32) {
-                new_processor->convertor = ResponseConvertor::INT32;
+            if (source->interpreter == DataInterpreter::UINT32) {
+                new_processor->interpreter = DataInterpreter::INT32;
             }
         }
         break;
     case MBL_MW_MATH_OP_SQRT:
     case MBL_MW_MATH_OP_ABS_VALUE:
-        if (source->convertor == ResponseConvertor::INT32) {
-            new_processor->convertor = ResponseConvertor::UINT32;
+        if (source->interpreter == DataInterpreter::INT32) {
+            new_processor->interpreter = DataInterpreter::UINT32;
         }
         break;
     default:
@@ -82,28 +85,31 @@ static inline void create_math(MblMwDataSignal *source, MblMwMathOperation op, f
     config->is_signed= is_signed;
     config->operation= op;
     config->n_channels= 0;
-    memcpy(((uint8_t*)(config)) + 2, &scaled_rhs, sizeof(scaled_rhs));
 
+    memcpy(((uint8_t*)(config)) + 2, &scaled_rhs, sizeof(scaled_rhs) - 
+        (source->owner->firmware_revision < MULTI_CHANNEL_MATH ? 1 : 0));
+    
     create_processor(source, config, sizeof(MathConfig), DataProcessorType::MATH, new_processor, processor_created);
+    return MBL_MW_STATUS_OK;
 }
 
-void mbl_mw_dataprocessor_create_math(MblMwDataSignal *source, MblMwMathOperation op, float rhs, 
+int32_t mbl_mw_dataprocessor_math_create(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         MblMwFnDataProcessor processor_created) {
     if (source->is_signed) {
-        mbl_mw_dataprocessor_create_math_signed(source, op, rhs, processor_created);
+        return mbl_mw_dataprocessor_math_create_signed(source, op, rhs, processor_created);
     } else {
-        mbl_mw_dataprocessor_create_math_unsigned(source, op, rhs, processor_created);
+        return mbl_mw_dataprocessor_math_create_unsigned(source, op, rhs, processor_created);
     }
 }
 
-void mbl_mw_dataprocessor_create_math_signed(MblMwDataSignal *source, MblMwMathOperation op, float rhs, 
+int32_t mbl_mw_dataprocessor_math_create_signed(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         MblMwFnDataProcessor processor_created) {
-    create_math(source, op, rhs, 1, processor_created);
+    return create_math(source, op, rhs, 1, processor_created);
 }
 
-void mbl_mw_dataprocessor_create_math_unsigned(MblMwDataSignal *source, MblMwMathOperation op, float rhs, 
+int32_t mbl_mw_dataprocessor_math_create_unsigned(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         MblMwFnDataProcessor processor_created) {
-    create_math(source, op, rhs, 0, processor_created);
+    return create_math(source, op, rhs, 0, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_math_modify_rhs(MblMwDataProcessor *math, float rhs) {

@@ -1,7 +1,6 @@
-#include "dataprocessor_private.h"
+#include "metawear/processor/pulse.h"
 
-#include "metawear/core/status.h"
-#include "metawear/processor/pulse_detector.h"
+#include "processor_private_common.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -17,14 +16,18 @@ struct PulseDetectorConfig {
     uint8_t width[2];
 };
 
-void mbl_mw_dataprocessor_create_pulse_detector(MblMwDataSignal *source, MblMwPulseOutput output, float threshold,
+int32_t mbl_mw_dataprocessor_pulse_create(MblMwDataSignal *source, MblMwPulseOutput output, float threshold,
         uint16_t width, MblMwFnDataProcessor processor_created) {
+    if (source->length() > PROCESSOR_MAX_LENGTH) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
+
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
 
     switch (output) {
     case MBL_MW_PULSE_OUTPUT_WIDTH:
         new_processor->set_channel_attr(1, 2);
-        new_processor->convertor = ResponseConvertor::UINT32;
+        new_processor->interpreter = DataInterpreter::UINT32;
         new_processor->number_to_firmware = number_to_firmware_default;
         break;
     case MBL_MW_PULSE_OUTPUT_AREA:
@@ -43,9 +46,11 @@ void mbl_mw_dataprocessor_create_pulse_detector(MblMwDataSignal *source, MblMwPu
     memcpy(((uint8_t*)(config)) + 3, &scaled_threshold, sizeof(scaled_threshold));
     memcpy(((uint8_t*)(config)) + 7, &width, sizeof(width));
     create_processor(source, config, sizeof(PulseDetectorConfig), DataProcessorType::PULSE, new_processor, processor_created);
+
+    return MBL_MW_STATUS_OK;
 }
 
-int32_t mbl_mw_dataprocessor_pulse_detector_modify(MblMwDataProcessor *pulse, float threshold, uint16_t width) {
+int32_t mbl_mw_dataprocessor_pulse_modify(MblMwDataProcessor *pulse, float threshold, uint16_t width) {
     if (pulse->type == DataProcessorType::PULSE) {
         int32_t scaled_threshold= (int32_t) pulse->number_to_firmware(pulse, threshold);
         memcpy(((uint8_t*)(pulse->config)) + 3, &scaled_threshold, sizeof(scaled_threshold));

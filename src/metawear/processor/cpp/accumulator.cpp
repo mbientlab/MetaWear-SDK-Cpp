@@ -1,8 +1,8 @@
-#include "dataprocessor_private.h"
-
 #include "metawear/processor/accumulator.h"
-#include "metawear/core/status.h"
+#include "metawear/processor/counter.h"
 #include "metawear/core/cpp/metawearboard_def.h"
+
+#include "processor_private_common.h"
 
 #include <cstdlib>
 
@@ -17,32 +17,38 @@ struct AccumulatorConfig {
     uint8_t mode:3;
 };
 
-static inline void create_accumulator_processor(MblMwDataSignal *source, uint8_t n_channels, uint8_t channel_size, 
+static inline int32_t create_accumulator_processor(MblMwDataSignal *source, uint8_t n_channels, uint8_t channel_size, 
         DataProcessorType accum_type, MblMwFnDataProcessor processor_created) {
+    if (source->length() > PROCESSOR_MAX_LENGTH) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
+
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
     new_processor->set_channel_attr(n_channels, channel_size);
     if (accum_type == DataProcessorType::COUNTER) {
         new_processor->is_signed= 0;
         new_processor->number_to_firmware = number_to_firmware_default;
-        new_processor->convertor = ResponseConvertor::UINT32;
+        new_processor->interpreter = DataInterpreter::UINT32;
     }
+    new_processor->state = create_processor_state_signal(new_processor, new_processor->interpreter);
 
     AccumulatorConfig *config = (AccumulatorConfig*) malloc(sizeof(AccumulatorConfig));
     *((uint8_t*) config)= 0;
     config->output= (new_processor->length() - 1);
     config->input= (source->length() - 1);
     config->mode= accum_type == DataProcessorType::ACCUMULATOR ? MODE_ACCUMULATE : MODE_COUNT;
-
     create_processor(source, config, sizeof(AccumulatorConfig), accum_type, new_processor, processor_created);
+
+    return MBL_MW_STATUS_OK;
 }
 
-void mbl_mw_dataprocessor_create_accumulator(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
-    create_accumulator_processor(source, source->n_channels, source->channel_size, DataProcessorType::ACCUMULATOR, 
+int32_t mbl_mw_dataprocessor_accumulator_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
+    return create_accumulator_processor(source, source->n_channels, source->channel_size, DataProcessorType::ACCUMULATOR, 
             processor_created);
 }
-void mbl_mw_dataprocessor_create_accumulator_size(MblMwDataSignal *source, uint8_t output_size, 
+int32_t mbl_mw_dataprocessor_accumulator_create_size(MblMwDataSignal *source, uint8_t output_size,
         MblMwFnDataProcessor processor_created) {
-    create_accumulator_processor(source, source->n_channels, output_size, DataProcessorType::ACCUMULATOR, processor_created);
+    return create_accumulator_processor(source, source->n_channels, output_size, DataProcessorType::ACCUMULATOR, processor_created);
 }
 int32_t mbl_mw_dataprocessor_set_accumulator_state(MblMwDataProcessor *accumulator, float new_running_sum) {
     if (accumulator->type == DataProcessorType::ACCUMULATOR) {
@@ -53,13 +59,18 @@ int32_t mbl_mw_dataprocessor_set_accumulator_state(MblMwDataProcessor *accumulat
     return MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE;
 }
 
-void mbl_mw_dataprocessor_create_counter(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
-    create_accumulator_processor(source, 1, 1, DataProcessorType::COUNTER, processor_created);
+int32_t mbl_mw_dataprocessor_counter_create(MblMwEvent *source, MblMwFnDataProcessor processor_created) {
+    return mbl_mw_dataprocessor_counter_create_size(source, 1, processor_created);
 }
-void mbl_mw_dataprocessor_create_counter_size(MblMwDataSignal *source, uint8_t size, MblMwFnDataProcessor processor_created) {
-    create_accumulator_processor(source, 1, size, DataProcessorType::COUNTER, processor_created);
+int32_t mbl_mw_dataprocessor_counter_create_size(MblMwEvent *source, uint8_t size, MblMwFnDataProcessor processor_created) {
+    if (MblMwDataSignal* src_signal= dynamic_cast<MblMwDataSignal*>(source)) {
+        return create_accumulator_processor(src_signal, 1, 1, DataProcessorType::COUNTER, processor_created);
+    }
+
+    MblMwDataSignal event_signal(*source);
+    return create_accumulator_processor(&event_signal, 1, 1, DataProcessorType::COUNTER, processor_created);
 }
-int32_t mbl_mw_dataprocessor_set_counter_state(MblMwDataProcessor *counter, uint32_t new_count) {
+int32_t mbl_mw_dataprocessor_counter_set_state(MblMwDataProcessor *counter, uint32_t new_count) {
     if (counter->type == DataProcessorType::COUNTER) {
         set_processor_state(counter, &new_count, sizeof(new_count));
         return MBL_MW_STATUS_OK;

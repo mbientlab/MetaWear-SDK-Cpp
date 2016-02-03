@@ -1,7 +1,6 @@
-#include "dataprocessor_private.h"
-
-#include "metawear/core/status.h"
 #include "metawear/processor/passthrough.h"
+
+#include "processor_private_common.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -14,14 +13,17 @@ struct PassthroughConfig {
     uint8_t count[2];
 };
 
-void mbl_mw_dataprocessor_create_passthrough(MblMwDataSignal *source, MblMwPassthroughMode mode, uint16_t count, 
+int32_t mbl_mw_dataprocessor_passthrough_create(MblMwDataSignal *source, MblMwPassthroughMode mode, uint16_t count,
         MblMwFnDataProcessor processor_created) {
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
+    new_processor->state = create_processor_state_signal(new_processor, DataInterpreter::UINT32);
 
     PassthroughConfig *config = (PassthroughConfig*) malloc(sizeof(PassthroughConfig));
     config->mode= mode;
     memcpy(((uint8_t*)(config)) + 1, &count, sizeof(count));
     create_processor(source, config, sizeof(PassthroughConfig), DataProcessorType::PASSTHROUGH, new_processor, processor_created);
+
+    return MBL_MW_STATUS_OK;
 }
 
 int32_t mbl_mw_dataprocessor_passthrough_set_count(MblMwDataProcessor *passthrough, uint16_t new_count) {

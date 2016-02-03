@@ -8,17 +8,19 @@ typedef float (*FnDataSignalFloat)(MblMwDataSignal* source, float value);
 typedef void (*FnDataSignal)(MblMwDataSignal* signal);
 
 struct MblMwDataSignal : public MblMwEvent {
-    MblMwDataSignal(const ResponseHeader& header, MblMwMetaWearBoard *owner, ResponseConvertor convertor, uint8_t n_channels, 
+    MblMwDataSignal(const MblMwEvent& event);
+    MblMwDataSignal(const ResponseHeader& header, MblMwMetaWearBoard *owner, DataInterpreter interpreter, uint8_t n_channels, 
             uint8_t channel_size, uint8_t is_signed, uint8_t offset);
-    MblMwDataSignal(const ResponseHeader& header, MblMwMetaWearBoard *owner, ResponseConvertor convertor, uint8_t n_channels,
+    MblMwDataSignal(const ResponseHeader& header, MblMwMetaWearBoard *owner, DataInterpreter interpreter, uint8_t n_channels,
             uint8_t channel_size, uint8_t is_signed, uint8_t offset, FnDataSignalFloat number_to_firmware, 
             FnDataSignal subscribe, FnDataSignal unsubscribe);
+    virtual ~MblMwDataSignal();
 
     uint8_t length();
     uint8_t get_data_ubyte();
     void set_channel_attr(uint8_t n_channels, uint8_t channel_size);
 
-    ResponseConvertor convertor;
+    DataInterpreter interpreter;
     uint8_t n_channels;
     uint8_t channel_size;
     uint8_t is_signed;

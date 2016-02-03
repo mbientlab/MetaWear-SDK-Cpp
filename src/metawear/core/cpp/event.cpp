@@ -2,34 +2,36 @@
 #include "event_register.h"
 #include "event_private.h"
 
-#include "connection_def.h"
 #include "metawearboard_def.h"
 
-MblMwEvent::MblMwEvent(const ResponseHeader& header, MblMwMetaWearBoard *owner) : header(header), owner(owner) {
+MblMwEvent::MblMwEvent(const ResponseHeader& header, MblMwMetaWearBoard *owner) : header(header), owner(owner), remove(true) {
+}
+
+MblMwEvent::~MblMwEvent() {
+    if (remove) {
+        uint8_t command[3]= {MBL_MW_MODULE_EVENT, ORDINAL(EventRegister::REMOVE)};
+
+        for(auto it: event_command_ids) {
+            command[2]= it;
+            SEND_COMMAND_BOARD(owner);
+        }
+    }
 }
 
 void mbl_mw_event_record_commands(MblMwEvent *event) {
-    event->owner->event_owner.push(event);
+    event->owner->event_owner= event;
     event->num_expected_cmds= 0;
     event->owner->event_config.assign({event->header.module_id, event->header.register_id, event->header.data_id});
 }
 
 void mbl_mw_event_end_record(MblMwEvent *event, MblMwFnVoid commands_recorded) {
-    event->owner->event_recorded_callbacks.push(commands_recorded);
+    event->owner->event_recorded_callback= commands_recorded;
     event->owner->event_config.clear();
-    if (event == event->owner->event_owner.front()) {
+
+    if (event == event->owner->event_owner) {
         for(auto it: event->commands) {
-            send_command_wrapper(event->owner, it.data(), (uint8_t) it.size());
+            send_command(event->owner, it.data(), (uint8_t) it.size());
         }
-    }
-}
-
-void mbl_mw_event_remove_commands(MblMwEvent *event) {
-    uint8_t command[3]= {MBL_MW_MODULE_EVENT, ORDINAL(EventRegister::REMOVE)};
-
-    for(auto it: event->event_command_ids) {
-        command[2]= it;
-        SEND_COMMAND_BOARD(event->owner);
     }
 }
 

@@ -1,7 +1,6 @@
 #include "metawear/core/event.h"
 #include "metawear/core/timer.h"
 
-#include "connection_def.h"
 #include "metawearboard_def.h"
 #include "timer_private.h"
 #include "timer_register.h"
@@ -13,6 +12,11 @@ using std::memcpy;
 static const uint16_t REPEAT_INDEFINITELY= 0xffff;
 
 MblMwTimer::MblMwTimer(const ResponseHeader& header, MblMwMetaWearBoard *owner) : MblMwEvent(header, owner) {
+}
+
+MblMwTimer::~MblMwTimer() {
+    uint8_t command[3]= {MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::REMOVE), header.data_id};
+    SEND_COMMAND_BOARD(owner);
 }
 
 void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, 
@@ -46,12 +50,6 @@ void mbl_mw_timer_stop(const MblMwTimer* timer) {
 
 void mbl_mw_timer_remove(MblMwTimer* timer) {
     mbl_mw_timer_stop(timer);
-
-    uint8_t command[3]= {MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::REMOVE), timer->header.data_id};
-    SEND_COMMAND_BOARD(timer->owner);
-
-    mbl_mw_event_remove_commands(timer);
-
     timer->owner->timer_signals.erase(timer->header);
     delete timer;
 }

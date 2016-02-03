@@ -1,6 +1,5 @@
 #include "metawear/core/settings.h"
 
-#include "connection_def.h"
 #include "constant.h"
 #include "metawearboard_def.h"
 #include "settings_register.h"
@@ -16,7 +15,7 @@ static const float AD_INTERVAL_STEP= 0.625f, CONN_INTERVAL_STEP= 1.25f, TIMEOUT_
 void mbl_mw_settings_set_device_name(const MblMwMetaWearBoard *board, const uint8_t *device_name, uint8_t len) {
     vector<uint8_t> command(device_name, device_name + len);
     command.insert(command.begin(), {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::DEVICE_NAME)});
-    send_command_wrapper(board, command.data(), (uint8_t) command.size());
+    send_command(board, command.data(), (uint8_t) command.size());
 }
 
 void mbl_mw_settings_set_ad_interval(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout) {
@@ -48,13 +47,13 @@ void mbl_mw_settings_set_scan_response(const MblMwMetaWearBoard *board, const ui
         first.insert(first.begin(), {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::PARTIAL_SCAN_RESPONSE)});
         second.insert(second.begin(), {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::SCAN_RESPONSE)});
 
-        send_command_wrapper(board, first.data(), (uint8_t) first.size());
-        send_command_wrapper(board, second.data(), (uint8_t) second.size());
+        send_command(board, first.data(), (uint8_t) first.size());
+        send_command(board, second.data(), (uint8_t) second.size());
     } else {
         vector<uint8_t> command(response, response + len);
 
         command.insert(command.begin(), {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::SCAN_RESPONSE)});
-        send_command_wrapper(board, command.data(), (uint8_t) command.size());
+        send_command(board, command.data(), (uint8_t) command.size());
     }
 }
 
