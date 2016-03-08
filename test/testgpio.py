@@ -54,6 +54,16 @@ class TestGpioDigitalData(TestMetaWearBase):
                 self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, test['response'].raw, len(test['response']))
                 self.assertEqual(self.data_uint32.value, test['expected'])
 
+    # Combining subscribe and unsubscribe since unsubscribing from pin monitoring does not 
+    # issue any metawear commands 
+    def test_pin_monitor_subscribe(self):
+        expected= [0x5, 0xa, 0x1]
+
+        pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_pin_monitor_data_signal(self.board, 1);
+        self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(pin_monitor_signal)
+        self.assertEqual(self.command, expected)
+
     def test_pin_monitor_start(self):
         expected= [0x05, 0x0b, 0x05, 0x01]
 

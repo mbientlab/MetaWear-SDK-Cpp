@@ -7,46 +7,54 @@
 using std::forward_as_tuple;
 using std::piecewise_construct;
 
-static inline void insert_gpio_data_signal(MblMwMetaWearBoard* board, ResponseHeader& header, uint8_t data_len, bool read) {
-    if (read) {
-        header.register_id = READ_REGISTER(header.register_id);
-    }
+static inline MblMwDataSignal* insert_gpio_data_signal(MblMwMetaWearBoard* board, GpioRegister gpioRegister, uint8_t pin, uint8_t data_len) {
+    ResponseHeader header(MBL_MW_MODULE_GPIO, READ_REGISTER(ORDINAL(gpioRegister)), pin);
 
     if (board->sensor_data_signals.count(header) == 0) {
         MblMwDataSignal *gpio_signal= new MblMwDataSignal(header, board, DataInterpreter::UINT32, 1, data_len, 0, 0);
         board->sensor_data_signals[header]= gpio_signal;
     }
+    return board->sensor_data_signals.at(header);
+}
+
+static void gpio_pin_monitor_subscribe(MblMwDataSignal *source) {
+    uint8_t enable_notify[3]= { source->header.module_id, source->header.register_id, 1};
+    send_command(source->owner, enable_notify, sizeof(enable_notify));
+}
+
+static void gpio_pin_monitor_unsubscribe(MblMwDataSignal *source) {
 }
 
 MblMwDataSignal* mbl_mw_gpio_get_analog_input_data_signal(MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioAnalogReadMode mode) {
-    uint8_t analogReadRegister = -1;
+    GpioRegister analogReadRegister;
 
     switch (mode) {
     case MBL_MW_GPIO_ANALOG_READ_MODE_ABS_REF:
-        analogReadRegister = ORDINAL(GpioRegister::READ_AI_ABS_REF);
+        analogReadRegister = GpioRegister::READ_AI_ABS_REF;
         break;
     case MBL_MW_GPIO_ANALOG_READ_MODE_ADC:
-        analogReadRegister = ORDINAL(GpioRegister::READ_AI_ADC);
+        analogReadRegister = GpioRegister::READ_AI_ADC;
         break;
+    default:
+        return nullptr;
     }
 
-    ResponseHeader header(MBL_MW_MODULE_GPIO, analogReadRegister, pin);
-
-    insert_gpio_data_signal(board, header, 2, true);
-    return board->sensor_data_signals.at(header);
+    return insert_gpio_data_signal(board, analogReadRegister, pin, 2);
 }
 
 MblMwDataSignal* mbl_mw_gpio_get_digital_input_data_signal(MblMwMetaWearBoard* board, uint8_t pin) {
-    ResponseHeader header(MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::READ_DI), pin);
-
-    insert_gpio_data_signal(board, header, 1, true);
-    return board->sensor_data_signals.at(header);
+    return insert_gpio_data_signal(board, GpioRegister::READ_DI, pin, 1);
 }
 
 MblMwDataSignal* mbl_mw_gpio_get_pin_monitor_data_signal(MblMwMetaWearBoard* board, uint8_t pin) {
     ResponseHeader header(MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::PIN_CHANGE_NOTIFY), pin);
 
-    insert_gpio_data_signal(board, header, 1, false);
+    if (board->sensor_data_signals.count(header) == 0) {
+        MblMwDataSignal *gpio_signal= new MblMwDataSignal(header, board, DataInterpreter::UINT32, 1, 1, 0, 0, number_to_firmware_default, 
+                gpio_pin_monitor_subscribe, gpio_pin_monitor_unsubscribe);
+        board->sensor_data_signals[header]= gpio_signal;
+    }
+
     return board->sensor_data_signals.at(header);
 }
 
