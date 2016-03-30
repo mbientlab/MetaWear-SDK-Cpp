@@ -1,108 +1,80 @@
+from barometer_bosch_base import BarometerBoschBase
 from common import TestMetaWearBase
-from ctypes import create_string_buffer
-from mbientlab.metawear.sensor import BarometerBmp280
+from mbientlab.metawear.sensor import BarometerBmp280, BarometerBosch
 
-class TestBaroBmp280Config(TestMetaWearBase):
+class TestBarometerBmp280Config(BarometerBoschBase.TestBarometerBoschConfig):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
 
         super().setUp()
-
-    def test_set_oversampling(self):
-        expected= [0x12, 0x03, 0x14, 0x00]
-
-        self.libmetawear.mbl_mw_baro_bmp280_set_oversampling(self.board, BarometerBmp280.OVERSAMPLING_ULTRA_HIGH)
-        self.libmetawear.mbl_mw_baro_bmp280_write_config(self.board)
-        self.assertListEqual(self.command, expected)
-
-    def test_set_filter(self):
-        expected= [0x12, 0x03, 0x0c, 0x08]
-
-        self.libmetawear.mbl_mw_baro_bmp280_set_iir_filter(self.board, BarometerBmp280.IIR_FILTER_AVG_4)
-        self.libmetawear.mbl_mw_baro_bmp280_write_config(self.board)
-        self.assertListEqual(self.command, expected)
 
     def test_set_standby(self):
-        expected= [0x12, 0x03, 0x0c, 0x60]
+        tests= [
+            {
+                'expected': [0x12, 0x03, 0x2c, 0x00],
+                'standby_time': BarometerBmp280.STANDBY_TIME_0_5MS,
+                'time': '0.5ms'
+            },
+            {
+                'expected': [0x12, 0x03, 0x2c, 0x20],
+                'standby_time': BarometerBmp280.STANDBY_TIME_62_5MS,
+                'time': '62.5ms'
+            },
+            {
+                'expected': [0x12, 0x03, 0x2c, 0x40],
+                'standby_time': BarometerBmp280.STANDBY_TIME_125MS,
+                'time': '125ms'
+            },
+            {
+                'expected': [0x12, 0x03, 0x2c, 0x60],
+                'standby_time': BarometerBmp280.STANDBY_TIME_250MS,
+                'time': '250ms'
+            },
+            {
+                'expected': [0x12, 0x03, 0x2c, 0x80],
+                'standby_time': BarometerBmp280.STANDBY_TIME_500MS,
+                'time': '500ms'
+            },
+            {
+                'expected': [0x12, 0x03, 0x2c, 0xa0],
+                'standby_time': BarometerBmp280.STANDBY_TIME_1000MS,
+                'time': '1000ms'
+            },
+            {
+                'expected': [0x12, 0x03, 0x2c, 0xc0],
+                'standby_time': BarometerBmp280.STANDBY_TIME_2000MS,
+                'time': '2000ms'
+            },
+            {
+                'expected': [0x12, 0x03, 0x2c, 0xe0],
+                'standby_time': BarometerBmp280.STANDBY_TIME_4000MS,
+                'time': '4000ms'
+            }
+        ]
 
-        self.libmetawear.mbl_mw_baro_bmp280_set_standby_time(self.board, BarometerBmp280.STANDBY_TIME_250MS)
-        self.libmetawear.mbl_mw_baro_bmp280_write_config(self.board)
-        self.assertListEqual(self.command, expected)
+        for test in tests:
+            with self.subTest(time= test['time']):
+                self.libmetawear.mbl_mw_baro_bmp280_set_standby_time(self.board, test['standby_time'])
+                self.libmetawear.mbl_mw_baro_bosch_write_config(self.board)
+                self.assertEqual(self.command, test['expected'])
 
     def test_set_all_config(self):
-        expected= [0x12, 0x03, 0x08, 0x90]
+        expected= [0x12, 0x03, 0x28, 0x90]
 
-        self.libmetawear.mbl_mw_baro_bmp280_set_oversampling(self.board, BarometerBmp280.OVERSAMPLING_LOW_POWER)
-        self.libmetawear.mbl_mw_baro_bmp280_set_iir_filter(self.board, BarometerBmp280.IIR_FILTER_AVG_16)
+        self.libmetawear.mbl_mw_baro_bosch_set_oversampling(self.board, BarometerBosch.OVERSAMPLING_LOW_POWER)
+        self.libmetawear.mbl_mw_baro_bosch_set_iir_filter(self.board, BarometerBosch.IIR_FILTER_AVG_16)
         self.libmetawear.mbl_mw_baro_bmp280_set_standby_time(self.board, BarometerBmp280.STANDBY_TIME_500MS)
-        self.libmetawear.mbl_mw_baro_bmp280_write_config(self.board)
+        self.libmetawear.mbl_mw_baro_bosch_write_config(self.board)
         self.assertListEqual(self.command, expected)
 
-    def test_start(self):
-        expected= [0x12, 0x04, 0x01, 0x01]
-
-        self.libmetawear.mbl_mw_baro_bmp280_start(self.board);
-        self.assertEqual(self.command, expected)
-
-    def test_stop(self):
-        expected= [0x12, 0x04, 0x00, 0x00]
-
-        self.libmetawear.mbl_mw_baro_bmp280_stop(self.board);
-        self.assertEqual(self.command, expected)
-
-class TestBaroBmp280PressureData(TestMetaWearBase):
+class TestBarometerBmp280PressureData(BarometerBoschBase.TestBarometerBoschPressureData):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
 
         super().setUp()
 
-        self.pa_data_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
-
-    def test_get_pressure_data(self):
-        response= create_string_buffer(b'\x12\x01\xd3\x35\x8b\x01', 6)
-        expected= 101173.828125
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
-        self.assertAlmostEqual(self.data_float.value, expected)
-
-    def test_pressure_subscribe(self):
-        expected= [0x12, 0x1, 0x1]
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, self.sensor_data_handler);
-        self.assertListEqual(self.command, expected)
-
-    def test_pressure_unsubscribe(self):
-        expected= [0x12, 0x1, 0x0]
-
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.pa_data_signal);
-        self.assertListEqual(self.command, expected)
-
-
-class TestBaroBmp280AltitudeData(TestMetaWearBase):
+class TestBarometerBmp280AltitudeData(BarometerBoschBase.TestBarometerBoschAltitudeData):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
 
         super().setUp()
-
-        self.m_data_signal= self.libmetawear.mbl_mw_baro_bmp280_get_altitude_data_signal(self.board)
-
-    def test_get_altitude_data(self):
-        response= create_string_buffer(b'\x12\x02\x1e\x1f\xfe\xff', 6)
-        expected= -480.8828125
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
-        self.assertAlmostEqual(self.data_float.value, expected)
-
-    def test_altitude_subscribe(self):
-        expected= [0x12, 0x2, 0x1]
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, self.sensor_data_handler);
-        self.assertListEqual(self.command, expected)
-
-    def test_altitude_unsubscribe(self):
-        expected= [0x12, 0x2, 0x0]
-
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.m_data_signal);
-        self.assertListEqual(self.command, expected)

@@ -1,5 +1,13 @@
+class AccelerometerBosch:
+    FSR_2G= 0
+    FSR_4G= 1
+    FSR_8G= 2
+    FSR_16G= 3
+
 # Constants for configuring the BMI160 accelerometer
 class AccelerometerBmi160:
+    MODULE_TYPE= 1
+
     ODR_0_78125HZ= 0
     ODR_1_5625HZ= 1
     ODR_3_125HZ= 2
@@ -13,13 +21,22 @@ class AccelerometerBmi160:
     ODR_800HZ= 10
     ODR_1600HZ= 11
 
-    FSR_2G= 0
-    FSR_4G= 1
-    FSR_8G= 2
-    FSR_16G= 3
+class AccelerometerBma255:
+    MODULE_TYPE= 3
+
+    ODR_15_62HZ= 0
+    ODR_31_26HZ= 1
+    ODR_62_5HZ= 2
+    ODR_125HZ= 3
+    ODR_250HZ= 4
+    ODR_500HZ= 5
+    ODR_1000HZ= 6
+    ODR_2000HZ= 7
 
 # Constants for configuring the MMA8452Q accelerometer
 class AccelerometerMma8452q:
+    MODULE_TYPE= 0
+
     ODR_800HZ= 0
     ODR_400HZ= 1
     ODR_200HZ= 2
@@ -58,8 +75,8 @@ class AmbientLightLtr329:
     MEASUREMENT_RATE_1000MS= 4
     MEASUREMENT_RATE_2000MS= 5
 
-# Constants for configuring the BMP280 barometer
-class BarometerBmp280:
+# Constants for configuring the Bosch barometers
+class BarometerBosch:
     OVERSAMPLING_SKIP= 0,
     OVERSAMPLING_ULTRA_LOW_POWER= 1
     OVERSAMPLING_LOW_POWER= 2
@@ -73,6 +90,7 @@ class BarometerBmp280:
     IIR_FILTER_AVG_8= 3
     IIR_FILTER_AVG_16= 4
 
+class BarometerBmp280:
     STANDBY_TIME_0_5MS= 0
     STANDBY_TIME_62_5MS= 1
     STANDBY_TIME_125MS= 2
@@ -81,6 +99,16 @@ class BarometerBmp280:
     STANDBY_TIME_1000MS= 5
     STANDBY_TIME_2000MS= 6
     STANDBY_TIME_4000MS= 7
+
+class BarometerBme280:
+    STANDBY_TIME_0_5MS= 0
+    STANDBY_TIME_62_5MS= 1
+    STANDBY_TIME_125MS= 2
+    STANDBY_TIME_250MS= 3
+    STANDBY_TIME_500MS= 4
+    STANDBY_TIME_1000MS= 5
+    STANDBY_TIME_10MS= 6
+    STANDBY_TIME_20MS= 7
 
 # Constants for configuring the BMI160 gyro
 class GyroBmi160:
@@ -125,3 +153,32 @@ class Gpio:
     PIN_CHANGE_TYPE_RISING= 1
     PIN_CHANGE_TYPE_FALLING= 2
     PIN_CHANGE_TYPE_ANY= 3
+
+class MagnetometerBmm150:
+    POWER_PRESET_LOW_POWER= 0
+    POWER_PRESET_REGULAR= 1
+    POWER_PRESET_ENHANCED_REGULAR= 2
+    POWER_PRESET_HIGH_ACCURACY= 3;
+
+class ColorDetectorTcs34725:
+    GAIN_1X= 0
+    GAIN_4X= 1
+    GAIN_16X= 2
+    GAIN_60X= 3
+
+class ProximityTsl2671:
+    CHANNEL_0= 1
+    CHANNEL_1= 2
+    CHANNEL_BOTH= 3
+
+    CURRENT_100MA= 0
+    CURRENT_50MA= 1
+    CURRENT_25MA= 2
+    CURRENT_12_5MA= 3
+
+class HumidityBme280:
+    OVERSAMPLING_1X= 1
+    OVERSAMPLING_2X= 2
+    OVERSAMPLING_4X= 3
+    OVERSAMPLING_8X= 4
+    OVERSAMPLING_16X= 5

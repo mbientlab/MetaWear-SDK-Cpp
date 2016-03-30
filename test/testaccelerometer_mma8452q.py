@@ -1,4 +1,3 @@
-import copy
 from common import TestMetaWearBase
 from mbientlab.metawear.core import CartesianFloat
 from mbientlab.metawear.sensor import AccelerometerMma8452q

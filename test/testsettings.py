@@ -1,5 +1,7 @@
 from common import TestMetaWearBase
-from ctypes import create_string_buffer, c_float
+from ctypes import byref, create_string_buffer, c_float, c_ushort
+from mbientlab.metawear.core import BatteryState, FnVoid
+from mbientlab.metawear.peripheral import Led
 
 class TestSettings(TestMetaWearBase):
     def test_set_name(self):
@@ -55,3 +57,82 @@ class TestSettingsRevision1(TestMetaWearBase):
         self.libmetawear.mbl_mw_settings_set_ad_interval(self.board, 417, 180)
         self.assertEqual(self.command, expected)
 
+    def test_disconnected_event(self):
+        event= self.libmetawear.mbl_mw_settings_get_disconnect_event(self.board)
+        self.assertEqual(event, 0)
+
+    def test_read_battery_state(self):
+        # no command should be sent
+        expected= [0xb, 0x84]
+
+        self.libmetawear.mbl_mw_settings_read_battery_state(self.board)
+        self.assertEqual(self.command, expected)
+
+    def test_battery_state_data(self):
+        signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
+        self.assertEqual(signal, 0)
+
+class TestSettingsRevision2(TestMetaWearBase):
+    def setUp(self):
+        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x02', 4)
+        super().setUp()
+
+    def test_disconnected_event(self):
+        expected_cmds= [
+            [0x0a, 0x02, 0x11, 0x0a, 0xff, 0x02, 0x03, 0x0f],
+            [0x0a, 0x03, 0x02, 0x02, 0x1f, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00, 0x00, 0xf4, 0x01, 0x00, 0x00, 0x0a],
+            [0x0a, 0x02, 0x11, 0x0a, 0xff, 0x02, 0x01, 0x01],
+            [0x0a, 0x03, 0x01]
+        ]
+
+        pattern= Led.Pattern(high_time_ms = 50, pulse_duration_ms = 500, high_intensity = 31, repeat_count = 10)
+        event= self.libmetawear.mbl_mw_settings_get_disconnect_event(self.board)
+
+        self.libmetawear.mbl_mw_event_record_commands(event)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_BLUE)
+        self.libmetawear.mbl_mw_led_play(self.board)
+        self.libmetawear.mbl_mw_event_end_record(event, FnVoid(lambda: self.assertEqual(self.command_history, expected_cmds)))
+
+    def test_read_battery_state(self):
+        # no command should be sent
+        expected= [0xb, 0x84]
+
+        self.libmetawear.mbl_mw_settings_read_battery_state(self.board)
+        self.assertEqual(self.command, expected)
+
+    def test_battery_state_data(self):
+        signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
+        self.assertEqual(signal, 0)
+
+class TestSettingsRevision3(TestMetaWearBase):
+    def setUp(self):
+        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x03', 4)
+        super().setUp()
+
+    def test_disconnected_event(self):
+        expected_cmds= [
+            [0x0a, 0x02, 0x11, 0x0a, 0xff, 0x08, 0x01, 0x04],
+            [0x0a, 0x03, 0xf8, 0xb8, 0x0b, 0x00]
+        ]
+
+        event= self.libmetawear.mbl_mw_settings_get_disconnect_event(self.board)
+
+        self.libmetawear.mbl_mw_event_record_commands(event)
+        self.libmetawear.mbl_mw_haptic_start_motor(self.board, c_float(100.0), c_ushort(3000))
+        self.libmetawear.mbl_mw_event_end_record(event, FnVoid(lambda: self.assertEqual(self.command_history, expected_cmds)))
+
+    def test_read_battery_state(self):
+        expected= [0x11, 0x8c]
+
+        self.libmetawear.mbl_mw_settings_read_battery_state(self.board)
+        self.assertEqual(self.command, expected)
+
+    def test_battery_state_data(self):
+        expected= BatteryState(voltage= 4148, charge= 99)
+        response= create_string_buffer(b'\x11\x8c\x63\x34\x10', 5)
+
+        signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+
+        self.assertEqual(self.data_battery_state, expected)

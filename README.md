@@ -38,8 +38,8 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.3.0
-            └── libmetawear.so.0.3.0
+            ├── libmetawear.so.0 -> libmetawear.so.0.4.0
+            └── libmetawear.so.0.4.0
 
 ```
 
@@ -51,16 +51,16 @@ Unit tests for the library are written in Python (min v3.4.1) and can be invoked
 python3 -m unittest discover -s test
 ................................................................................
 ................................................................................
-......
+....................................................................
 ----------------------------------------------------------------------
-Ran 166 tests in 0.047s
+Ran 228 tests in 0.079s
 
 OK
 ``` 
 
 ## Visual Studio ##
-A Visual Studio solution building the C# wrapper is available as a separate project, link [here](https://github.com/mbientlab/MetaWear-CSharpWrapper).  The C++ source code is built as Windows Runtime Component with the following changes to the project properties:
+Compiling the code in Visual Studio only requires a few changes to the project properties:
 
-1. Disable the **Precompiled Headers** compile option  
-2. Disable **Generate Windows Metadata** linker option  
+1. Add the path to the MetaWear source in the **Include Directories** fiel
+2. Disable the **Precompiled Headers** compile option  
 3. Add **METAWEAR_DLL_EXPORTS** to the preprocessor list

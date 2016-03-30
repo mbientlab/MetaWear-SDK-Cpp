@@ -6,10 +6,16 @@ namespace MbientLab.MetaWear.Core {
     public delegate void FnVoid();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void FnVoidPtrByteArray(IntPtr pointer, byte[] value, byte length);
+    public delegate void FnVoidPtrByteArray(IntPtr pointer, IntPtr bytes, byte length);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void FnVoidPtr(IntPtr pointer);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FnUintUint(uint first, uint second);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FnUbyteLongByteArray(byte byteValue, long longValue, IntPtr bytes, byte length);
 
     public class Status {
         public const int OK = 0;
@@ -23,18 +29,23 @@ namespace MbientLab.MetaWear.Core {
         UINT32 = 0,
         FLOAT,
         CARTESIAN_FLOAT,
-        INT32
+        INT32,
+        BYTE_ARRAY,
+        BATTERY_STATE,
+        TCS34725_ADC
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct Data {
+        public long epoch;
         public IntPtr value;
         public DataTypeId typeId;
+        public byte length;
     }
 
     public class GattCharGuid {
-        Guid serviceGuid { get; }
-        Guid guid { get; }
+        public Guid serviceGuid { get; }
+        public Guid guid { get; }
 
         public GattCharGuid(Guid serviceGuid, Guid guid) {
             this.serviceGuid = serviceGuid;
@@ -81,6 +92,15 @@ namespace MbientLab.MetaWear.Core {
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct LogDownloadHandler {
+        [MarshalAs(UnmanagedType.FunctionPtr)]
+        public FnUintUint receivedProgressUpdate;
+
+        [MarshalAs(UnmanagedType.FunctionPtr)]
+        public FnUbyteLongByteArray receivedUnknownEntry;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct CartesianFloat {
         public float x;
         public float y;
@@ -88,6 +108,25 @@ namespace MbientLab.MetaWear.Core {
 
         public override string ToString() {
             return string.Format("({0:F3}, {1:F3}, {2:F3})", x, y, z);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct BatteryState {
+        public ushort voltage;
+        public byte charge;
+
+        public override string ToString() {
+            return string.Format("(voltage: {0:d}, charge: {1:d})", voltage, charge);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Tcs34725ColorAdc {
+        public ushort clear, red, green, blue;
+
+        public override string ToString() {
+            return string.Format("(clear: {0:d}, red: {1:d}, green: {2:d}, blue: {3:d})", clear, red, green, blue);
         }
     }
 }

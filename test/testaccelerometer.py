@@ -53,7 +53,7 @@ class TestGenericAccelerometerBmi160(TestMetaWearBase):
 
 
     def test_acc_mma8452q_module_valid(self):
-        result= self.libmetawear.mbl_mw_acc_bmi160_get_acceleration_data_signal(self.board)
+        result= self.libmetawear.mbl_mw_acc_bosch_get_acceleration_data_signal(self.board)
         self.assertNotEqual(result, False)
 
 class TestGenericAccelerometerMma8452q(TestMetaWearBase):
@@ -102,7 +102,7 @@ class TestGenericAccelerometerMma8452q(TestMetaWearBase):
         self.assertListEqual(self.command, expected)
 
     def test_acc_mma8452q_module_null(self):
-        result= self.libmetawear.mbl_mw_acc_bmi160_get_acceleration_data_signal(self.board)
+        result= self.libmetawear.mbl_mw_acc_bosch_get_acceleration_data_signal(self.board)
         self.assertEqual(result, False)
 
     def test_acc_bmi160_module_valid(self):

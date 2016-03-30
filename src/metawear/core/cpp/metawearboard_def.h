@@ -15,6 +15,7 @@
 #include "metawear/core/dataprocessor_fwd.h"
 #include "metawear/core/datasignal_fwd.h"
 #include "metawear/core/event_fwd.h"
+#include "metawear/core/logging.h"
 #include "metawear/core/metawearboard_fwd.h"
 #include "metawear/core/timer_fwd.h"
 
@@ -38,20 +39,25 @@ struct MblMwMetaWearBoard {
     std::queue<MblMwTimerPtr> timer_callbacks;
     std::queue<MblMwFnDataProcessor> dataprocessor_callbacks;
     std::queue<MblMwDataProcessor*> pending_dataprocessors;
-    std::unordered_map<uint8_t, ModuleInfo> module_info;
     std::unordered_map<ResponseHeader, MblMwDataSignal*> sensor_data_signals;
     std::unordered_map<ResponseHeader, ResponseHandler> responses;
     std::unordered_map<ResponseHeader, MblMwTimer*> timer_signals;
     std::unordered_map<ResponseHeader, MblMwFnData> data_signal_handlers;
+    std::unordered_map<uint8_t, ModuleInfo> module_info;
     std::unordered_map<uint8_t, void*> module_config;
+    MblMwEvent* disconnected;
 
+    void* logger_state;
     MblMwFnVoid initialized, event_recorded_callback;
     MblMwEvent* event_owner;
     EventDataParameter* data_token;
     MblMwBtleConnection btle_conn;
+    MblMwLogDownloadHandler log_download_handler;
     Version firmware_revision;
     std::string module_number;
 
+    float log_download_notify_progress;
+    uint32_t n_log_entries;
     int8_t module_discovery_index, dev_info_index;
 };
 
@@ -61,7 +67,7 @@ int32_t response_handler_data_no_id(MblMwMetaWearBoard *board, const uint8_t *re
 int32_t response_handler_data_with_id(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len);
 
 void init_accelerometer_module(MblMwMetaWearBoard *board);
-void init_barometer_module(MblMwMetaWearBoard *board);
 void init_gyro_module(MblMwMetaWearBoard *board);
 void init_ambient_light_module(MblMwMetaWearBoard *board);
 void init_multichannel_temp_module(MblMwMetaWearBoard *board);
+void init_magnetometer_module(MblMwMetaWearBoard *board);

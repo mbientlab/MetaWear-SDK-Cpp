@@ -23,15 +23,17 @@ struct Ltr329Config {
 };
 
 void init_ambient_light_module(MblMwMetaWearBoard *board) {
-    Ltr329Config* new_config = (Ltr329Config*) malloc(sizeof(Ltr329Config));
+    if (board->module_info.count(MBL_MW_MODULE_AMBIENT_LIGHT) && board->module_info.at(MBL_MW_MODULE_AMBIENT_LIGHT).present) {
+        Ltr329Config* new_config = (Ltr329Config*) malloc(sizeof(Ltr329Config));
 
-    memset(new_config, 0, sizeof(Ltr329Config));
-    new_config->als_measurement_rate = MBL_MW_ALS_LTR329_RATE_500MS;
-    board->module_config.emplace(MBL_MW_MODULE_AMBIENT_LIGHT, new_config);
+        memset(new_config, 0, sizeof(Ltr329Config));
+        new_config->als_measurement_rate = MBL_MW_ALS_LTR329_RATE_500MS;
+        board->module_config.emplace(MBL_MW_MODULE_AMBIENT_LIGHT, new_config);
 
-    board->sensor_data_signals[LTR329_ILLUMINANCE_RESPONSE_HEADER]= new MblMwDataSignal(LTR329_ILLUMINANCE_RESPONSE_HEADER, 
-            board, DataInterpreter::UINT32, 1, 4, 0, 0);
-    board->responses[LTR329_ILLUMINANCE_RESPONSE_HEADER]= response_handler_data_no_id;
+        board->sensor_data_signals[LTR329_ILLUMINANCE_RESPONSE_HEADER]= new MblMwDataSignal(LTR329_ILLUMINANCE_RESPONSE_HEADER, 
+                board, DataInterpreter::UINT32, 1, 4, 0, 0);
+        board->responses[LTR329_ILLUMINANCE_RESPONSE_HEADER]= response_handler_data_no_id;
+    }
 }
 
 MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board) {

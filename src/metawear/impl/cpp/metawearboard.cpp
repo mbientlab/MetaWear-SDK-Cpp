@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
@@ -12,24 +13,35 @@
 
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/event_register.h"
+#include "metawear/core/cpp/logging_private.h"
+#include "metawear/core/cpp/logging_register.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/core/cpp/register.h"
 #include "metawear/core/cpp/responseheader.h"
+#include "metawear/core/cpp/settings_private.h"
 #include "metawear/core/cpp/timer_private.h"
 #include "metawear/core/cpp/timer_register.h"
 
 #include "metawear/processor/cpp/dataprocessor_register.h"
 #include "metawear/processor/cpp/dataprocessor_private.h"
 
-#include "metawear/sensor/cpp/accelerometer_bmi160_register.h"
+#include "metawear/sensor/cpp/accelerometer_bosch_register.h"
 #include "metawear/sensor/cpp/accelerometer_mma8452q_register.h"
 #include "metawear/sensor/cpp/ambientlight_ltr329_register.h"
-#include "metawear/sensor/cpp/barometer_bmp280_register.h"
+#include "metawear/sensor/cpp/barometer_bosch_private.h"
+#include "metawear/sensor/cpp/barometer_bosch_register.h"
+#include "metawear/sensor/cpp/colordetector_tcs34725_private.h"
 #include "metawear/sensor/cpp/gpio_register.h"
 #include "metawear/sensor/cpp/gyro_bmi160_register.h"
+#include "metawear/sensor/cpp/humidity_bme280_private.h"
+#include "metawear/sensor/cpp/i2c_register.h"
 #include "metawear/sensor/cpp/multichanneltemperature_register.h"
+#include "metawear/sensor/cpp/proximity_tsl2671_private.h"
 #include "metawear/sensor/cpp/switch_register.h"
 
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using std::chrono::system_clock;
 using std::exception;
 using std::forward_as_tuple;
 using std::free;
@@ -39,10 +51,10 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
-int32_t response_handler_data_no_id(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static inline int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     try {
-        ResponseHeader header(response[0], response[1]);
-        MblMwData* data = data_response_converters.at(board->sensor_data_signals.at(header)->interpreter)(board, response + 2, len - 2);
+        MblMwData* data = data_response_converters.at(board->sensor_data_signals.at(header)->interpreter)(board, response, len);
+        data->epoch= duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
         board->data_signal_handlers.at(header)(data);
 
@@ -55,20 +67,12 @@ int32_t response_handler_data_no_id(MblMwMetaWearBoard *board, const uint8_t *re
     }
 }
 
+int32_t response_handler_data_no_id(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    return forward_response(ResponseHeader(response[0], response[1]), board, response + 2, len - 2);
+}
+
 int32_t response_handler_data_with_id(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    try {
-        ResponseHeader header(response[0], response[1], response[2]);
-        MblMwData* data = data_response_converters.at(board->sensor_data_signals.at(header)->interpreter)(board, response + 3, len - 3);
-
-        board->data_signal_handlers.at(header)(data);
-
-        free(data->value);
-        free(data);
-
-        return MBL_MW_STATUS_OK;
-    } catch (exception) {
-        return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
-    }
+    return forward_response(ResponseHeader(response[0], response[1], response[2]), board, response + 3, len - 3);
 }
 
 static int32_t timer_created(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
@@ -107,6 +111,12 @@ static int32_t dataprocessor_created(MblMwMetaWearBoard *board, const uint8_t *r
     return MBL_MW_STATUS_OK;
 }
 
+static int32_t logging_response_time_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    received_time_data(board, response, len);
+    board->initialized();
+    return MBL_MW_STATUS_OK;
+}
+
 const vector<vector<uint8_t>> MODULE_DISCOVERY_CMDS= {
     {MBL_MW_MODULE_SWITCH, READ_INFO_REGISTER},
     {MBL_MW_MODULE_LED, READ_INFO_REGISTER},
@@ -127,6 +137,10 @@ const vector<vector<uint8_t>> MODULE_DISCOVERY_CMDS= {
     {MBL_MW_MODULE_BAROMETER, READ_INFO_REGISTER},
     {MBL_MW_MODULE_GYRO, READ_INFO_REGISTER},
     {MBL_MW_MODULE_AMBIENT_LIGHT, READ_INFO_REGISTER},
+    {MBL_MW_MODULE_MAGNETOMETER, READ_INFO_REGISTER},
+    {MBL_MW_MODULE_HUMIDITY, READ_INFO_REGISTER},
+    {MBL_MW_MODULE_COLOR_DETECTOR, READ_INFO_REGISTER},
+    {MBL_MW_MODULE_PROXIMITY, READ_INFO_REGISTER},
     {MBL_MW_MODULE_DEBUG, READ_INFO_REGISTER}
 };
 
@@ -169,6 +183,11 @@ MblMwMetaWearBoard::MblMwMetaWearBoard() : data_token(nullptr) {
         forward_as_tuple(dataprocessor_created));
     responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_DATA_PROCESSOR, READ_REGISTER(ORDINAL(DataProcessorRegister::STATE))),
         forward_as_tuple(response_handler_data_with_id));
+
+    responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TIME))),
+        forward_as_tuple(logging_response_time_received));
+
+    responses[I2C_READ_RESPONSE_HEADER]= response_handler_data_with_id;
 }
 
 MblMwMetaWearBoard::~MblMwMetaWearBoard() {
@@ -185,6 +204,8 @@ MblMwMetaWearBoard::~MblMwMetaWearBoard() {
     for (auto it: module_config) {
         free(it.second);
     }
+
+    tear_down_logging(this);
 }
 
 MblMwMetaWearBoard* mbl_mw_metawearboard_create(const MblMwBtleConnection *connection) {
@@ -241,6 +262,10 @@ void mbl_mw_metawearboard_tear_down(MblMwMetaWearBoard *board) {
     command[0]= MBL_MW_MODULE_EVENT;
     command[1]= ORDINAL(EventRegister::REMOVE_ALL);
     SEND_COMMAND;
+
+    command[0]= MBL_MW_MODULE_LOGGING;
+    command[1]= ORDINAL(LoggingRegister::REMOVE_ALL);
+    SEND_COMMAND;
 }
 
 int32_t mbl_mw_connection_notify_char_changed(MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length) {
@@ -257,8 +282,15 @@ int32_t mbl_mw_connection_notify_char_changed(MblMwMetaWearBoard *board, const u
             init_gyro_module(board);
             init_ambient_light_module(board);
             init_multichannel_temp_module(board);
+            init_logging(board);
+            init_magnetometer_module(board);
+            init_settings_module(board);
+            init_colordetector_module(board);
+            init_proximity_module(board);
+            init_humidity_module(board);
 
-            board->initialized();
+            uint8_t command[2]= {MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TIME))};
+            SEND_COMMAND;
         } else {
             queue_next_query(board);
         }

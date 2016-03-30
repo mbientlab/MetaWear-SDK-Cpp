@@ -450,7 +450,7 @@ class TestPassthroughSetCount(TestMetaWearBase):
         super().setUp()
 
         self.processor_handler= FnVoidPtr(self.processor_created)
-        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
+        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bosch_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
         self.status= self.libmetawear.mbl_mw_dataprocessor_passthrough_set_count(signal, c_ushort(20))
@@ -471,7 +471,7 @@ class TestAccumulatorSetSum(TestMetaWearBase):
         super().setUp()
 
         self.processor_handler= FnVoidPtr(self.processor_created)
-        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
+        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bosch_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
         self.status= self.libmetawear.mbl_mw_dataprocessor_set_accumulator_state(signal, c_float(101325))
@@ -492,7 +492,7 @@ class TestCounterSetCount(TestMetaWearBase):
         super().setUp()
 
         self.processor_handler= FnVoidPtr(self.processor_created)
-        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
+        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bosch_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
         self.status= self.libmetawear.mbl_mw_dataprocessor_counter_set_state(signal, 128)
@@ -513,7 +513,7 @@ class TestAverageReset(TestMetaWearBase):
         super().setUp()
 
         self.processor_handler= FnVoidPtr(self.processor_created)
-        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
+        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bosch_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
         self.status= self.libmetawear.mbl_mw_dataprocessor_average_reset(signal)
@@ -534,7 +534,7 @@ class TestDeltaSetPrevious(TestMetaWearBase):
         super().setUp()
 
         self.processor_handler= FnVoidPtr(self.processor_created)
-        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bmp280_get_pressure_data_signal(self.board)
+        self.baro_pa_signal= self.libmetawear.mbl_mw_baro_bosch_get_pressure_data_signal(self.board)
 
     def processor_created(self, signal):
         self.status= self.libmetawear.mbl_mw_dataprocessor_delta_set_reference(signal, c_float(101325))
@@ -548,3 +548,16 @@ class TestDeltaSetPrevious(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_math_create(self.baro_pa_signal, Math.OPERATION_DIVIDE, c_float(1000), 
                 self.processor_handler)
         self.assertEqual(self.status, Status.WARNING_INVALID_PROCESSOR_TYPE)
+
+class TestThreshold(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
+
+        super().setUp()
+
+    def test_valid_set_count(self):
+        expected= [0x09, 0x02, 0x16, 0x81, 0xff, 0x60, 0x0d, 0x0b, 0x00, 0xe4, 0x00, 0x00, 0x00, 0x00]
+
+        signal= self.libmetawear.mbl_mw_humidity_bme280_get_percentage_data_signal(self.board)
+        self.libmetawear.mbl_mw_dataprocessor_threshold_create(signal, Threshold.MODE_BINARY, c_float(57), c_float(0), 
+                FnVoidPtr(lambda p: self.assertEqual(self.command, expected)))

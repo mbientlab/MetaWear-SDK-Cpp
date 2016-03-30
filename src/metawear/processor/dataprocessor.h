@@ -1,7 +1,7 @@
 /**
  * @copyright MbientLab License 
  * @file dataprocessor.h
- * @brief 
+ * @brief Interacts with an onboard data processor
  */
 #pragma once
 

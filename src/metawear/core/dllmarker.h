@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined _WIN32 || defined __CYGWIN__
 #define METAWEAR_HELPER_DLL_IMPORT __declspec(dllimport)
 #define METAWEAR_HELPER_DLL_EXPORT __declspec(dllexport)

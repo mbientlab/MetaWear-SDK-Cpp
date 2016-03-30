@@ -6,12 +6,27 @@
 #pragma once
 
 #include <stdint.h>
+#include "datasignal_fwd.h"
 #include "dllmarker.h"
+#include "event_fwd.h"
 #include "metawearboard_fwd.h"
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+/**
+ * Retrieves an event pointer representing a disconnect event
+ * @param board         Board the event is fired on
+ * @return Pointer to the disconnect event
+ */
+METAWEAR_API MblMwEvent* mbl_mw_settings_get_disconnect_event(const MblMwMetaWearBoard *board);
+/**
+ * Retrieves the data signal representing battery state
+ * @param board         Board the battery state is from
+ * @return Pointer to the battery state signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_battery_state_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the advertisement name
@@ -55,6 +70,11 @@ METAWEAR_API void mbl_mw_settings_set_scan_response(const MblMwMetaWearBoard *bo
  */
 METAWEAR_API void mbl_mw_settings_set_connection_parameters(const MblMwMetaWearBoard *board, float min_conn_interval, float max_conn_interval, 
         uint16_t latency, uint16_t timeout);
+/**
+ * Read the battery state
+ * @param board                 Board to read the battery state on
+ */
+METAWEAR_API void mbl_mw_settings_read_battery_state(const MblMwMetaWearBoard *board);
 
 #ifdef	__cplusplus
 }
