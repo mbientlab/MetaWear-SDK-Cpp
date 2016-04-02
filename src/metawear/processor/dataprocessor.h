@@ -19,7 +19,7 @@ extern "C" {
  * @param processor         Processor to access
  * @return Pointer to the data signal, null if the processor does not have an internal state
  */
-METAWEAR_API const MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(MblMwDataProcessor *processor);
+METAWEAR_API MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(MblMwDataProcessor *processor);
 /**
  * Reads the processor's internal state
  * @param processor         Processor to read

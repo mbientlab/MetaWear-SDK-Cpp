@@ -18,7 +18,7 @@ namespace MbientLab.MetaWear.Processor {
         }
     }
 
-    public class Math {
+    public class Maths {
         public enum Operation {
             ADD = 1,
             MULTIPLY,

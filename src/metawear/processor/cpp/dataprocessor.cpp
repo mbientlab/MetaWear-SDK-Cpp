@@ -66,7 +66,7 @@ MblMwDataProcessor::~MblMwDataProcessor() {
     }
 }
 
-const MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(MblMwDataProcessor *processor) {
+MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(MblMwDataProcessor *processor) {
     return processor->state;
 }
 
