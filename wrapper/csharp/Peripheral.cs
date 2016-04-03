@@ -1,6 +1,20 @@
+using System;
 using System.Runtime.InteropServices;
 
 namespace MbientLab.MetaWear.Peripheral {
+    public class IBeacon {
+        public static byte[] GuidToByteArray(Guid guid) {
+            byte[] guidBytes = guid.ToByteArray();
+
+            // Implementation taken from SO: http://stackoverflow.com/a/16722909
+            Array.Reverse(guidBytes, 0, 4);
+            Array.Reverse(guidBytes, 4, 2);
+            Array.Reverse(guidBytes, 6, 4);
+            Array.Reverse(guidBytes);
+            return guidBytes;
+        }
+    }
+
     public class Led {
         public const byte REPEAT_INDEFINITELY = 0xff;
 

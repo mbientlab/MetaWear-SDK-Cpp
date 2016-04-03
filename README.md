@@ -38,8 +38,8 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.4.12
-            └── libmetawear.so.0.4.12
+            ├── libmetawear.so.0 -> libmetawear.so.0.4.15
+            └── libmetawear.so.0.4.15
 
 ```
 

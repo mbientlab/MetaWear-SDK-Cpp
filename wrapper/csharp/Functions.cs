@@ -366,7 +366,7 @@ namespace MbientLab.MetaWear {
         /// <param name="board">Pointer to the board to send the command to</param>
         /// <param name="ad_uuid">Byte representation of the UUID in little endian ordering</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_uuid(IntPtr board, byte ad_uuid);
+        public static extern void mbl_mw_ibeacon_set_uuid(IntPtr board, byte[] ad_uuid);
 
         /// <summary>
         /// Enables iBeacon mode.  You will need to disconnect from the board to advertise as an iBeacon
