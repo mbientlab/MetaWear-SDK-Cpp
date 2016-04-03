@@ -8,7 +8,7 @@ using MbientLab.MetaWear.Sensor;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mbientlab.MetaWear {
+namespace MbientLab.MetaWear {
     public sealed class Functions {
         private const String METAWEAR_DLL= "MetaWear.WinRT.dll";
 
