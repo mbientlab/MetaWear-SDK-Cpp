@@ -1,5 +1,5 @@
 from common import TestMetaWearBase
-from ctypes import byref, create_string_buffer, c_float, c_ushort
+from ctypes import byref, create_string_buffer
 from mbientlab.metawear.core import BatteryState, FnVoid
 from mbientlab.metawear.peripheral import Led
 
@@ -37,7 +37,7 @@ class TestSettings(TestMetaWearBase):
     def test_set_conn_params(self):
         expected= [0x11, 0x09, 0x58, 0x02, 0x20, 0x03, 0x80, 0x00, 0x66, 0x06]
 
-        self.libmetawear.mbl_mw_settings_set_connection_parameters(self.board, c_float(750.), c_float(1000.), 128, 16384)
+        self.libmetawear.mbl_mw_settings_set_connection_parameters(self.board, 750.0, 1000.0, 128, 16384)
         self.assertEqual(self.command, expected)
 
     def test_set_ad_interval(self):
@@ -57,20 +57,20 @@ class TestSettingsRevision1(TestMetaWearBase):
         self.libmetawear.mbl_mw_settings_set_ad_interval(self.board, 417, 180)
         self.assertEqual(self.command, expected)
 
-    def test_disconnected_event(self):
+    def test_disconnected_event_null(self):
         event= self.libmetawear.mbl_mw_settings_get_disconnect_event(self.board)
-        self.assertEqual(event, 0)
+        self.assertEqual(event, None)
 
     def test_read_battery_state(self):
-        # no command should be sent
+        # no command should be sent so expected should be the last sent command
         expected= [0xb, 0x84]
 
         self.libmetawear.mbl_mw_settings_read_battery_state(self.board)
         self.assertEqual(self.command, expected)
 
-    def test_battery_state_data(self):
+    def test_battery_state_data_null(self):
         signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
-        self.assertEqual(signal, 0)
+        self.assertEqual(signal, None)
 
 class TestSettingsRevision2(TestMetaWearBase):
     def setUp(self):
@@ -94,15 +94,15 @@ class TestSettingsRevision2(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_end_record(event, FnVoid(lambda: self.assertEqual(self.command_history, expected_cmds)))
 
     def test_read_battery_state(self):
-        # no command should be sent
+        # no command should be sent so expected should be the last sent command
         expected= [0xb, 0x84]
 
         self.libmetawear.mbl_mw_settings_read_battery_state(self.board)
         self.assertEqual(self.command, expected)
 
-    def test_battery_state_data(self):
+    def test_battery_state_data_null(self):
         signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
-        self.assertEqual(signal, 0)
+        self.assertEqual(signal, None)
 
 class TestSettingsRevision3(TestMetaWearBase):
     def setUp(self):
@@ -118,7 +118,7 @@ class TestSettingsRevision3(TestMetaWearBase):
         event= self.libmetawear.mbl_mw_settings_get_disconnect_event(self.board)
 
         self.libmetawear.mbl_mw_event_record_commands(event)
-        self.libmetawear.mbl_mw_haptic_start_motor(self.board, c_float(100.0), c_ushort(3000))
+        self.libmetawear.mbl_mw_haptic_start_motor(self.board, 100.0, 3000)
         self.libmetawear.mbl_mw_event_end_record(event, FnVoid(lambda: self.assertEqual(self.command_history, expected_cmds)))
 
     def test_read_battery_state(self):

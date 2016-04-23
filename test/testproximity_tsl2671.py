@@ -1,5 +1,5 @@
 from common import TestMetaWearBase
-from ctypes import c_float, c_ubyte, create_string_buffer
+from ctypes import c_float, create_string_buffer
 from mbientlab.metawear.sensor import ProximityTsl2671
 
 class TestProximityTsl2671Config(TestMetaWearBase):
@@ -87,7 +87,7 @@ class TestProximityTsl2671Config(TestMetaWearBase):
     def test_n_pulses(self):
         expected= [0x18, 0x02, 0xff, 0x20, 0xa0]
 
-        self.libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses(self.board, c_ubyte(32))
+        self.libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses(self.board, 32)
         self.libmetawear.mbl_mw_proximity_tsl2671_write_config(self.board)
         self.assertEqual(self.command, expected)
 

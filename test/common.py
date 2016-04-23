@@ -1,4 +1,5 @@
 from mbientlab.metawear.core import * 
+from mbientlab.metawear.functions import setup_libmetawear
 from ctypes import *
 import copy
 import os
@@ -12,9 +13,14 @@ class TestMetaWearBase(unittest.TestCase):
     METAWEAR_ENV_BOARD= 4
     METAWEAR_DETECT_BOARD= 5
 
+    @classmethod
+    def setUpClass(cls):
+        cls.libmetawear= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
+        setup_libmetawear(cls.libmetawear)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.libmetawear= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
+
         self.initialized_fn= FnVoid(self.initialized)
         self.sensor_data_handler= FnDataPtr(self.sensorDataHandler)
         self.timer_signal_ready= FnVoidPtr(self.timerSignalReady)

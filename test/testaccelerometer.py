@@ -1,5 +1,4 @@
 from common import TestMetaWearBase
-from ctypes import c_float
 
 class TestGenericAccelerometerBmi160(TestMetaWearBase):
     def setUp(self):
@@ -10,29 +9,29 @@ class TestGenericAccelerometerBmi160(TestMetaWearBase):
     def test_acc_bmi160_set_odr(self):
         expected= [0x03, 0x03, 0x27, 0x03]
 
-        self.libmetawear.mbl_mw_acc_set_odr(self.board, c_float(55.))
+        self.libmetawear.mbl_mw_acc_set_odr(self.board, 55.0)
         self.libmetawear.mbl_mw_acc_write_acceleration_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_set_range(self):
         expected= [0x03, 0x03, 0x28, 0x0c]
 
-        self.libmetawear.mbl_mw_acc_set_range(self.board, c_float(14.75))
+        self.libmetawear.mbl_mw_acc_set_range(self.board, 14.75)
         self.libmetawear.mbl_mw_acc_write_acceleration_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_subscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]
 
-        signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal)
+        signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_unsubscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x00]
 
         signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(signal)
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(signal, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_enable_acceleration_sampling(self):
@@ -49,12 +48,12 @@ class TestGenericAccelerometerBmi160(TestMetaWearBase):
 
     def test_acc_bmi160_module_null(self):
         result= self.libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_signal(self.board)
-        self.assertEqual(result, False)
+        self.assertEqual(result, None)
 
 
     def test_acc_mma8452q_module_valid(self):
         result= self.libmetawear.mbl_mw_acc_bosch_get_acceleration_data_signal(self.board)
-        self.assertNotEqual(result, False)
+        self.assertNotEqual(result, None)
 
 class TestGenericAccelerometerMma8452q(TestMetaWearBase):
     def setUp(self):
@@ -64,29 +63,29 @@ class TestGenericAccelerometerMma8452q(TestMetaWearBase):
     def test_acc_mma8452q_set_odr(self):
         expected= [0x03, 0x03, 0x00, 0x00, 0x20, 0x00, 0x00]
 
-        self.libmetawear.mbl_mw_acc_set_odr(self.board, c_float(35.25))
+        self.libmetawear.mbl_mw_acc_set_odr(self.board, 35.25)
         self.libmetawear.mbl_mw_acc_write_acceleration_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_set_range(self):
         expected= [0x03, 0x03, 0x02, 0x00, 0x18, 0x00, 0x00]
 
-        self.libmetawear.mbl_mw_acc_set_range(self.board, c_float(7.3333))
+        self.libmetawear.mbl_mw_acc_set_range(self.board, 7.3333)
         self.libmetawear.mbl_mw_acc_write_acceleration_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_subscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]
 
-        signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal)
+        signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_unsubscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x00]
 
         signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(signal)
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(signal, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_enable_acceleration_sampling(self):
@@ -103,8 +102,8 @@ class TestGenericAccelerometerMma8452q(TestMetaWearBase):
 
     def test_acc_mma8452q_module_null(self):
         result= self.libmetawear.mbl_mw_acc_bosch_get_acceleration_data_signal(self.board)
-        self.assertEqual(result, False)
+        self.assertEqual(result, None)
 
     def test_acc_bmi160_module_valid(self):
         result= self.libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_signal(self.board)
-        self.assertNotEqual(result, False)
+        self.assertNotEqual(result, None)

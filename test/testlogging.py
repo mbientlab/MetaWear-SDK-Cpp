@@ -1,6 +1,6 @@
 import copy
 from common import TestMetaWearBase
-from ctypes import byref, c_float, c_ubyte
+from ctypes import byref
 #from datetime import datetime
 from logdata import Bmi160Accelerometer
 from mbientlab.metawear.core import *
@@ -14,7 +14,7 @@ class TestLoggingModule(TestMetaWearBase):
             [0x0b, 0x01, 0x01]
         ]
 
-        self.libmetawear.mbl_mw_logging_start(self.board, c_ubyte(1))
+        self.libmetawear.mbl_mw_logging_start(self.board, 1)
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_start_no_overwrite(self):
@@ -23,7 +23,7 @@ class TestLoggingModule(TestMetaWearBase):
             [0x0b, 0x01, 0x01]
         ]
 
-        self.libmetawear.mbl_mw_logging_start(self.board, c_ubyte(0))
+        self.libmetawear.mbl_mw_logging_start(self.board, 0)
         self.assertEqual(self.command_history, expected_cmds)
         
     def test_stop(self):
@@ -99,7 +99,7 @@ class TestLogDownload(TestMetaWearBase):
             create_string_buffer(b'\x0b\x08\x00\x00\x00\x00', 6)
         ]
 
-        self.libmetawear.mbl_mw_logging_download(self.board, c_ubyte(20), byref(self.download_handler))
+        self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
         for buffer in progress_responses:
             self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, buffer.raw, len(buffer.raw))
 
@@ -112,14 +112,14 @@ class TestLogDownload(TestMetaWearBase):
             [0x0b, 0x06, 0x9e, 0x01, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00]
         ]
 
-        self.libmetawear.mbl_mw_logging_download(self.board, c_ubyte(20), self.download_handler)
+        self.libmetawear.mbl_mw_logging_download(self.board, 20, self.download_handler)
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_unknown_entry(self):
         self.expected_entry= [0x1, 0x016c]
         log_response= create_string_buffer(b'\x0b\x07\xa1\xcc\x4d\x00\x00\x6c\x01\x00\x00', 11)
 
-        self.libmetawear.mbl_mw_logging_download(self.board, c_ubyte(20), byref(self.download_handler))
+        self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
         self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, log_response.raw, len(log_response.raw))
 
 class TestAccelerometerLogging(TestMetaWearBase):
@@ -151,7 +151,7 @@ class TestAccelerometerLogging(TestMetaWearBase):
         self.logged_data.append(contents)
 
     def logger_ready_handler(self):
-        self.libmetawear.mbl_mw_logging_download(self.board, c_ubyte(20), byref(self.download_handler))
+        self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
         for buffer in Bmi160Accelerometer.log_responses:
             self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, buffer.raw, len(buffer.raw))
 
@@ -192,4 +192,4 @@ class TestLoggerSetup(TestMetaWearBase):
 
         logger_ready= FnVoid(self.logger_ready_handler)
         self.test_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, logger_ready)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, self.sensor_data_handler, logger_ready)

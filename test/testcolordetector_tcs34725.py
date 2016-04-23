@@ -1,5 +1,5 @@
 from common import TestMetaWearBase
-from ctypes import c_float, c_ubyte, create_string_buffer
+from ctypes import c_float, create_string_buffer
 from mbientlab.metawear.core import Tcs34725ColorAdc
 from mbientlab.metawear.sensor import ColorDetectorTcs34725
 
