@@ -2,8 +2,8 @@
 # It is used to set the appropriate return and arguments types of the exposed functions 
 # from the MetaWear shared library so Python can correctly call into the library
 from ctypes import *
-from mbientlab.metawear.core import *
-from mbientlab.metawear.peripheral import Led
+from .core import *
+from .peripheral import Led
 
 def setup_libmetawear(libmetawear):
     libmetawear.mbl_mw_connection_notify_char_changed.restype= c_int
