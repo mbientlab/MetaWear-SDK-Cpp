@@ -1,14 +1,17 @@
 #pragma once
 
-#include "metawear/core/cpp/register.h"
-#include "metawear/core/cpp/responseheader.h"
-
 enum class AccelerometerBoschRegister : uint8_t {
     POWER_MODE = 1,
     DATA_INTERRUPT_ENABLE,
     DATA_CONFIG,
     DATA_INTERRUPT,
-    DATA_INTERRUPT_CONFIG
-};
+    DATA_INTERRUPT_CONFIG,
 
-const ResponseHeader BOSCH_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT));
+    ///<step counter/detector BMI160 only
+    STEP_DETECTOR_INTERRUPT_EN= 0x17,
+    STEP_DETECTOR_CONFIG,
+    STEP_DETECTOR_INTERRUPT,
+    STEP_COUNTER_DATA,
+    STEP_COUNTER_RESET,
+    PACKED_ACC_DATA
+};

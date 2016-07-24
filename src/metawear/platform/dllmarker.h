@@ -1,3 +1,8 @@
+/**
+ * @copyright MbientLab License
+ * @file dllmarker.h
+ * @brief Macros for identifying exported functions
+ */
 #pragma once
 
 #if defined _WIN32 || defined __CYGWIN__
@@ -17,6 +22,7 @@
 #endif
 
 #if defined _WINDLL || defined METAWEAR_DLL // defined if METAWEAR is compiled as a DLL
+/** Indicates the function should be exported to the symbol table  */
 #ifdef METAWEAR_DLL_EXPORTS // defined if we are building the METAWEAR DLL (instead of using it)
 #define METAWEAR_API METAWEAR_HELPER_DLL_EXPORT
 #else

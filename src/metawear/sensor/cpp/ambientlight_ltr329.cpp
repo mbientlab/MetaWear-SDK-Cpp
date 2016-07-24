@@ -1,7 +1,13 @@
+#include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
+#include "metawear/core/cpp/metawearboard_macro.h"
+#include "metawear/core/module.h"
+#include "metawear/core/cpp/register.h"
+#include "metawear/core/cpp/responseheader.h"
 
 #include "metawear/sensor/ambientlight_ltr329.h"
+#include "ambientlight_ltr329_private.h"
 #include "ambientlight_ltr329_register.h"
 
 #include <cstdlib>
@@ -12,6 +18,8 @@ using std::malloc;
 using std::memcpy;
 using std::memset;
 using std::piecewise_construct;
+
+const ResponseHeader LTR329_ILLUMINANCE_RESPONSE_HEADER(MBL_MW_MODULE_AMBIENT_LIGHT, ORDINAL(AmbientLightLtr329Register::OUTPUT));
 
 struct Ltr329Config {
     uint8_t:2;
@@ -24,20 +32,32 @@ struct Ltr329Config {
 
 void init_ambient_light_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_AMBIENT_LIGHT) && board->module_info.at(MBL_MW_MODULE_AMBIENT_LIGHT).present) {
-        Ltr329Config* new_config = (Ltr329Config*) malloc(sizeof(Ltr329Config));
+        if (!board->module_config.count(MBL_MW_MODULE_AMBIENT_LIGHT)) {
+            Ltr329Config* new_config = (Ltr329Config*)malloc(sizeof(Ltr329Config));
 
-        memset(new_config, 0, sizeof(Ltr329Config));
-        new_config->als_measurement_rate = MBL_MW_ALS_LTR329_RATE_500MS;
-        board->module_config.emplace(MBL_MW_MODULE_AMBIENT_LIGHT, new_config);
+            memset(new_config, 0, sizeof(Ltr329Config));
+            new_config->als_measurement_rate = MBL_MW_ALS_LTR329_RATE_500MS;
+            board->module_config.emplace(MBL_MW_MODULE_AMBIENT_LIGHT, new_config);
+        }
 
-        board->sensor_data_signals[LTR329_ILLUMINANCE_RESPONSE_HEADER]= new MblMwDataSignal(LTR329_ILLUMINANCE_RESPONSE_HEADER, 
+        if (!board->module_events.count(LTR329_ILLUMINANCE_RESPONSE_HEADER)) {
+            board->module_events[LTR329_ILLUMINANCE_RESPONSE_HEADER] = new MblMwDataSignal(LTR329_ILLUMINANCE_RESPONSE_HEADER,
                 board, DataInterpreter::UINT32, 1, 4, 0, 0);
+        }
         board->responses[LTR329_ILLUMINANCE_RESPONSE_HEADER]= response_handler_data_no_id;
     }
 }
 
+void serialize_ambient_light_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
+    SERIALIZE_MODULE_CONFIG(Ltr329Config, MBL_MW_MODULE_AMBIENT_LIGHT);
+}
+
+void deserialize_ambient_light_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
+    DESERIALIZE_MODULE_CONFIG(Ltr329Config, MBL_MW_MODULE_AMBIENT_LIGHT);
+}
+
 MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board) {
-    return board->sensor_data_signals.at(LTR329_ILLUMINANCE_RESPONSE_HEADER);
+    GET_DATA_SIGNAL(LTR329_ILLUMINANCE_RESPONSE_HEADER);
 }
 
 void mbl_mw_als_ltr329_set_gain(MblMwMetaWearBoard *board, MblMwAlsLtr329Gain gain) {

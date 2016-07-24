@@ -8,6 +8,13 @@ namespace MbientLab.MetaWear.Processor {
             GT,
             GTE
         }
+
+        public enum Mode {
+            ABSOLUTE = 0,
+            REFERENCE,
+            ZONE,
+            BINARY
+        }
     }
 
     public class Delta {
@@ -29,7 +36,8 @@ namespace MbientLab.MetaWear.Processor {
             LSHIFT,
             RSHIFT,
             SUBTRACT,
-            ABS_VALUE
+            ABS_VALUE,
+            CONSTANT
         }
     }
 
@@ -45,7 +53,8 @@ namespace MbientLab.MetaWear.Processor {
         public enum Output {
             WIDTH = 0,
             AREA,
-            PEAK
+            PEAK,
+            ON_DETECTION
         }
     }
 

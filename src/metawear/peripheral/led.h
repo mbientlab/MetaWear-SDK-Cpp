@@ -5,10 +5,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "peripheral_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -40,12 +37,13 @@ typedef enum {
  * Attributes describing a light pulse
  */
 typedef struct {
+    uint8_t high_intensity;             ///< Intensity when the pulse is in a high state, between [0, 31]
+    uint8_t low_intensity;              ///< Intensity when the pulse is in a low state, between [0, 31]
     uint16_t rise_time_ms;              ///< Transition time from low to high state, in milliseconds
     uint16_t high_time_ms;              ///< Length of time the pulse spends in the high state, in milliseconds
     uint16_t fall_time_ms;              ///< Transition time from high to low state, in milliseconds
     uint16_t pulse_duration_ms;         ///< Length of time for one pulse, in milliseconds
-    uint8_t high_intensity;             ///< Intensity when the pulse is in a high state, between [0, 31]
-    uint8_t low_intensity;              ///< Intensity when the pulse is in a low state, between [0, 31]
+    uint16_t delay_time_ms;             ///< How long to wait before starting the pulse, only used on firmware v1.2.3 or later
     uint8_t repeat_count;               ///< Number of repetitions
 } MblMwLedPattern;
 

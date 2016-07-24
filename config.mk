@@ -1,11 +1,16 @@
 APP_NAME=metawear
-MODULES=metawear/core metawear/peripheral metawear/processor metawear/sensor metawear/impl
+MODULES=metawear/platform metawear/core metawear/peripheral metawear/processor metawear/sensor metawear/impl
 
-ifndef PLATFORM
-    ifeq ($(shell uname -m), x86_64)
-        PLATFORM:=x64
+KERNEL?=$(shell uname -s)
+
+ifndef MACHINE
+    MACHINE_RAW:=$(shell uname -m)
+    ifeq ($(MACHINE_RAW),x86_64)
+        MACHINE:=x64
+    else ifeq ($(MACHINE_RAW),amd64)
+        MACHINE:=x64
     else
-        PLATFORM:=x86
+        MACHINE:=x86
     endif
 endif
 

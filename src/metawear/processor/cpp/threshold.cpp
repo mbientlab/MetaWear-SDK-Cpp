@@ -26,13 +26,13 @@ int32_t mbl_mw_dataprocessor_threshold_create(MblMwDataSignal *source, MblMwThre
 
     if (mode == MBL_MW_THRESHOLD_MODE_BINARY) {
         new_processor->is_signed = 1;
-        new_processor->interpreter = DataInterpreter::UINT32;
+        new_processor->interpreter = DataInterpreter::INT32;
         new_processor->set_channel_attr(1, 1);
-        new_processor->number_to_firmware = number_to_firmware_default;
+        new_processor->converter = FirmwareConverter::DEFAULT;
     }
 
-    int32_t scaled_boundary= (int32_t) source->number_to_firmware(source, boundary);
-    uint16_t scaled_hysteresis= (uint16_t) source->number_to_firmware(source, hysteresis);
+    int32_t scaled_boundary= (int32_t) number_to_firmware_converters.at(source->converter)(source, boundary);
+    uint16_t scaled_hysteresis= (uint16_t) number_to_firmware_converters.at(source->converter)(source, hysteresis);
 
     ThresholdConfig *config = (ThresholdConfig*) malloc(sizeof(ThresholdConfig));
     *((uint8_t*) config)= 0;
@@ -49,8 +49,8 @@ int32_t mbl_mw_dataprocessor_threshold_create(MblMwDataSignal *source, MblMwThre
 
 int32_t mbl_mw_dataprocessor_threshold_modify_boundary(MblMwDataProcessor *threshold, float boundary, float hysteresis) {
     if (threshold->type == DataProcessorType::THRESHOLD) {
-        int32_t scaled_boundary= (int32_t) threshold->number_to_firmware(threshold, boundary);
-        uint16_t scaled_hysteresis= (uint16_t) threshold->number_to_firmware(threshold, hysteresis);
+        int32_t scaled_boundary= (int32_t) number_to_firmware_converters.at(threshold->converter)(threshold, boundary);
+        uint16_t scaled_hysteresis= (uint16_t) number_to_firmware_converters.at(threshold->converter)(threshold, hysteresis);
 
         memcpy(((uint8_t*)(threshold->config)) + 1, &scaled_boundary, sizeof(scaled_boundary));
         memcpy(((uint8_t*)(threshold->config)) + 5, &scaled_hysteresis, sizeof(scaled_hysteresis));

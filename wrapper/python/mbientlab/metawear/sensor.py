@@ -1,3 +1,5 @@
+from ctypes import c_int, c_ushort, c_ubyte, c_void_p, Structure
+
 class AccelerometerBosch:
     FSR_2G= 0
     FSR_4G= 1
@@ -20,6 +22,10 @@ class AccelerometerBmi160:
     ODR_400HZ= 9
     ODR_800HZ= 10
     ODR_1600HZ= 11
+
+    STEP_COUNTER_MODE_NORMAL= 0
+    STEP_COUNTER_MODE_SENSITIVE= 1
+    STEP_COUNTER_MODE_ROBUST= 2
 
 class AccelerometerBma255:
     MODULE_TYPE= 3
@@ -143,6 +149,17 @@ class MultiChannelTemperature:
     METAWEAR_RPRO_CHANNEL_BMP280= 3
 
 class Gpio:
+    # Python wrapper for the MblMwGpioAnalogReadParameters struct
+    class AnalogReadParameters(Structure):
+        _fields_= [
+            ("pullup_pin", c_ubyte),
+            ("pulldown_pin", c_ubyte),
+            ("virtual_pin", c_ubyte),
+            ("delay_us", c_ushort)
+        ]
+
+    UNUSED_PIN = 0xff
+
     PULL_MODE_UP= 0
     PULL_MODE_DOWN= 1
     PULL_MODE_NONE= 2
@@ -182,3 +199,40 @@ class HumidityBme280:
     OVERSAMPLING_4X= 3
     OVERSAMPLING_8X= 4
     OVERSAMPLING_16X= 5
+
+class I2C:
+    # Python wrapper for the MblMwI2cParameters struct
+    class ReadParameters(Structure):
+        _fields_= [
+            ("device_addr", c_ubyte),
+            ("register_addr", c_ubyte)
+        ]
+
+class SPI:
+    # Python wrapper for the MblMwI2cParameters struct
+    class Parameters(Structure):
+        _fields_= [
+            ("mode", c_int),
+            ("frequency", c_int),
+            ("data", c_void_p),
+            ("data_length", c_ubyte),
+            ("slave_select_pin", c_ubyte),
+            ("clock_pin", c_ubyte),
+            ("mosi_pin", c_ubyte),
+            ("miso_pin", c_ubyte),
+            ("lsb_first", c_ubyte),
+            ("use_nrf_pins", c_ubyte),
+        ]
+
+    MODE_0= 0
+    MODE_1= 1
+    MODE_2= 2
+    MODE_3= 3
+
+    FREQUENCY_125_KHZ= 0
+    FREQUENCY_250_KHZ= 1
+    FREQUENCY_500_KHZ= 2
+    FREQUENCY_1_MHZ= 3
+    FREQUENCY_2_MHZ= 4
+    FREQUENCY_4_MHZ= 5
+    FREQUENCY_8_MHZ= 6

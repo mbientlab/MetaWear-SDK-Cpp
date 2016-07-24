@@ -16,7 +16,7 @@ struct PassthroughConfig {
 int32_t mbl_mw_dataprocessor_passthrough_create(MblMwDataSignal *source, MblMwPassthroughMode mode, uint16_t count,
         MblMwFnDataProcessor processor_created) {
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
-    new_processor->state = create_processor_state_signal(new_processor, DataInterpreter::UINT32);
+    create_processor_state_signal(new_processor, DataInterpreter::UINT32);
 
     PassthroughConfig *config = (PassthroughConfig*) malloc(sizeof(PassthroughConfig));
     config->mode= mode;

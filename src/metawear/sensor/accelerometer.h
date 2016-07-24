@@ -5,11 +5,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -21,19 +17,27 @@ extern "C" {
  * @return Pointer to the acceleration data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_get_acceleration_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Retrieves a special data signal representing high frequency (>100Hz) acceleration data.  This signal is only for 
+ * streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from
+ * mbl_mw_acc_get_acceleration_data_signal.
+ * @param board     Board to retrieve the signal from
+ * @return Pointer to a high frequency data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the output data rate.  If an invalid odr is used, the closest valid value will be used.
  * @param board     Board to configure
  * @param odr       Output data rate, in Hz
  */
-METAWEAR_API void mbl_mw_acc_set_odr(MblMwMetaWearBoard *board, float odr);
+METAWEAR_API float mbl_mw_acc_set_odr(MblMwMetaWearBoard *board, float odr);
 /**
  * Sets the full scale range.  IF an invalid range is used, the closet valid value will be used.
  * @param board     Board to configure
  * @param range     Sampling range, in g's
  */
-METAWEAR_API void mbl_mw_acc_set_range(MblMwMetaWearBoard *board, float range);
+METAWEAR_API float mbl_mw_acc_set_range(MblMwMetaWearBoard *board, float range);
 /**
  * Writes the acceleration settings to the board
  * @param board     Board to configure

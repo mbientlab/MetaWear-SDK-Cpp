@@ -3,19 +3,22 @@ using System.Runtime.InteropServices;
 
 namespace MbientLab.MetaWear.Core {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void FnVoid();
+    public delegate void Fn_IntPtr(IntPtr pointer);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void FnVoidPtrByteArray(IntPtr pointer, IntPtr bytes, byte length);
+    public delegate void Fn_IntPtr_Int(IntPtr pointer, int second);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void FnVoidPtr(IntPtr pointer);
+    public delegate void Fn_IntPtr_IntPtr_ByteArray(IntPtr fstPtr, IntPtr sndPtr, IntPtr bytes, byte length);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void FnUintUint(uint first, uint second);
+    public delegate void Fn_IntPtr_IntPtr(IntPtr first, IntPtr second);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void FnUbyteLongByteArray(byte byteValue, long longValue, IntPtr bytes, byte length);
+    public delegate void Fn_Uint_Uint(uint first, uint second);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void Fn_Ubyte_Long_ByteArray(byte byteValue, long longValue, IntPtr bytes, byte length);
 
     public class Status {
         public const int OK = 0;
@@ -23,6 +26,34 @@ namespace MbientLab.MetaWear.Core {
         public const int WARNING_INVALID_PROCESSOR_TYPE = 2;
         public const int ERROR_UNSUPPORTED_PROCESSOR = 4;
         public const int WARNING_INVALID_RESPONSE = 8;
+        public const int ERROR_TIMEOUT = 16;
+    }
+
+    public enum Module {
+        SWITCH = 1,
+        LED,
+        ACCELEROMETER,
+        TEMPERATURE,
+        GPIO,
+        NEO_PIXEL,
+        IBEACON,
+        HAPTIC,
+        DATA_PROCESSOR,
+        EVENT,
+        LOGGING,
+        TIMER,
+        I2C,
+        MACRO = 0xf,
+        GSR,
+        SETTINGS,
+        BAROMETER,
+        GYRO,
+        AMBIENT_LIGHT,
+        MAGNETOMETER,
+        HUMIDITY,
+        COLOR_DETECTOR,
+        PROXIMITY,
+        DEBUG = 0xfe
     }
 
     public enum DataTypeId {
@@ -85,19 +116,22 @@ namespace MbientLab.MetaWear.Core {
     [StructLayout(LayoutKind.Sequential)]
     public struct BtleConnection {
         [MarshalAs(UnmanagedType.FunctionPtr)]
-        public FnVoidPtrByteArray writeGattChar;
+        public Fn_IntPtr_IntPtr_ByteArray writeGattChar;
 
         [MarshalAs(UnmanagedType.FunctionPtr)]
-        public FnVoidPtr readGattChar;
+        public Fn_IntPtr_IntPtr readGattChar;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct LogDownloadHandler {
         [MarshalAs(UnmanagedType.FunctionPtr)]
-        public FnUintUint receivedProgressUpdate;
+        public Fn_Uint_Uint receivedProgressUpdate;
 
         [MarshalAs(UnmanagedType.FunctionPtr)]
-        public FnUbyteLongByteArray receivedUnknownEntry;
+        public Fn_Ubyte_Long_ByteArray receivedUnknownEntry;
+
+        [MarshalAs(UnmanagedType.FunctionPtr)]
+        public Fn_IntPtr receivedUnhandledEntry;
     }
 
     [StructLayout(LayoutKind.Sequential)]

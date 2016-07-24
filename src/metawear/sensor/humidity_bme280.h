@@ -5,11 +5,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -32,11 +28,6 @@ typedef enum {
  * @return Pointer to the data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_humidity_bme280_get_percentage_data_signal(const MblMwMetaWearBoard *board);
-/**
- * Reads the humidity percentage from the sensor
- * @param board             Board the humidity sensor resides on
- */
-METAWEAR_API void mbl_mw_humidity_bme280_read_percentage(const MblMwMetaWearBoard *board);
 /**
  * Sets the oversampling mode
  * @param board             Board the humidity sensor resides on

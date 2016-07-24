@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
-#include "dllmarker.h"
 #include "metawearboard_fwd.h"
 #include "timer_fwd.h"
+
+#include "metawear/platform/dllmarker.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -24,8 +25,7 @@ extern "C" {
  * @param delay             Zero if the tiemr should immediately fire, non-zero to delay the first event
  * @param received_timer    Callback function to be executed when the timer is created
  */
-METAWEAR_API void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, 
-        MblMwTimerPtr received_timer);
+METAWEAR_API void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, MblMwFnTimerPtr received_timer);
 /**
  * Creates a timer that will run indefinitely.  A pointer representing the timer will be passed to the user 
  * through a callback function
@@ -34,8 +34,20 @@ METAWEAR_API void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period
  * @param delay             Zero if the tiemr should immediately fire, non-zero to delay the first event
  * @param received_timer    Callback function to be executed when the timer is created
  */
-METAWEAR_API void mbl_mw_timer_create_indefinite(MblMwMetaWearBoard *board, uint32_t period, uint8_t delay,
-        MblMwTimerPtr received_timer);
+METAWEAR_API void mbl_mw_timer_create_indefinite(MblMwMetaWearBoard *board, uint32_t period, uint8_t delay, MblMwFnTimerPtr received_timer);
+/**
+ * Retrieves the id value identifying the timer
+ * @param timer             Timer to lookup
+ * @return Numerical id of the timer
+ */
+METAWEAR_API uint8_t mbl_mw_timer_get_id(const MblMwTimer* timer);
+/**
+ * Looks up the MblMwTimer object corresponding to the id
+ * @param board             Board to search on
+ * @param id                Numerical id to lookup
+ * @return Timer object identified by the id, null if no object is found
+ */
+METAWEAR_API MblMwTimer* mbl_mw_timer_lookup_id(const MblMwMetaWearBoard* board, uint8_t id);
 
 /**
  * Starts a timer

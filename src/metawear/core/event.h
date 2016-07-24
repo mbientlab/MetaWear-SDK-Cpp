@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include "callback.h"
-#include "dllmarker.h"
 #include "event_fwd.h"
 #include "metawearboard_fwd.h"
+
+#include "metawear/platform/dllmarker.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -33,7 +33,7 @@ METAWEAR_API void mbl_mw_event_record_commands(MblMwEvent *event);
  * @param event                 Event to end recording for
  * @param commands_recorded     Callback function to be executed when commands have been recorded
  */
-METAWEAR_API void mbl_mw_event_end_record(MblMwEvent *event, MblMwFnVoid commands_recorded);
+METAWEAR_API void mbl_mw_event_end_record(MblMwEvent *event, MblMwFnEventPtrInt commands_recorded);
 
 #ifdef	__cplusplus
 }

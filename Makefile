@@ -1,33 +1,14 @@
-.PHONY: build clean test doc
+.PHONY: build clean test doc publish
 
 include config.mk
 include project_version.mk
 
-WRAPPER_DIR=wrapper
-SRCS:=
-EXPORT_HEADERS:=
-
 MODULES_SRC_DIR= $(addsuffix /cpp, $(addprefix $(SOURCE_DIR)/, $(MODULES)))
-
 SRCS:=$(foreach src_dir, $(MODULES_SRC_DIR), $(shell find $(src_dir) -name \*.cpp))
 EXPORT_HEADERS:=$(foreach module, $(addprefix $(SOURCE_DIR)/, $(MODULES)), $(shell find $(module) -maxdepth 1 -name \*.h))
 
-LIB_SO_NAME:=lib$(APP_NAME).so
-LIB_SHORT_NAME:=$(LIB_SO_NAME).$(VERSION_MAJOR)
-LIB_NAME:=$(LIB_SO_NAME).$(VERSION)
-
 CXXFLAGS+=-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -I$(SOURCE_DIR) -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS
-LD_FLAGS:=-s -shared -Wl,--soname,$(LIB_SHORT_NAME)
-
-ifeq ($(PLATFORM),x86)
-    CXXFLAGS+=-m32
-    LD_FLAGS+=-m32
-else ifeq ($(PLATFORM),x64)
-    CXXFLAGS+=-m64
-    LD_FLAGS+=-m64
-else
-    $(error Unrecognized PLATFORM value, use x86 or x64)
-endif
+LD_FLAGS:=-s -shared -Wl,
 
 ifeq ($(CONFIGURATION),debug)
     APP_NAME:=$(APP_NAME)_d
@@ -38,8 +19,31 @@ else
     $(error Invalid value for "CONFIGURATION", must be 'release' or 'debug')
 endif
 
-REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(PLATFORM)
-REAL_BUILD_DIR:=$(BUILD_DIR)/$(PLATFORM)/$(CONFIGURATION)
+ifneq ($(KERNEL),Darwin)
+    EXTENSION:=so
+    LIB_SO_NAME:=lib$(APP_NAME).so
+    LD_FLAGS:=$(LD_FLAGS)--soname
+else
+    EXTENSION:=dylib
+    LD_FLAGS:=-dynamiclib $(LD_FLAGS)-install_name
+endif
+LIB_SO_NAME:=lib$(APP_NAME).$(EXTENSION)
+LIB_SHORT_NAME:=$(LIB_SO_NAME).$(VERSION_MAJOR)
+LIB_NAME:=$(LIB_SO_NAME).$(VERSION)
+LD_FLAGS:=$(LD_FLAGS),$(LIB_SHORT_NAME)
+
+ifeq ($(MACHINE),x86)
+    CXXFLAGS+=-m32
+    LD_FLAGS+=-m32
+else ifeq ($(MACHINE),x64)
+    CXXFLAGS+=-m64
+    LD_FLAGS+=-m64
+else
+    $(error Unrecognized "MACHINE" value, use 'x86' or 'x64')
+endif
+
+REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)
+REAL_BUILD_DIR:=$(BUILD_DIR)/$(MACHINE)/$(CONFIGURATION)
 MODULES_BUILD_DIR:=$(addprefix $(REAL_BUILD_DIR)/, $(MODULES_SRC_DIR))
 
 OBJS:=$(addprefix $(REAL_BUILD_DIR)/,$(SRCS:%.cpp=%.o))

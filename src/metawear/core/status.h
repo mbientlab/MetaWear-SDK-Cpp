@@ -18,3 +18,5 @@ const int32_t MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE= 2;
 const int32_t MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR = 4;
 /** Invalid response receieved from the MetaWear notify characteristic */
 const int32_t MBL_MW_STATUS_WARNING_INVALID_RESPONSE = 8;
+/** Timeout occured during an asynchronous class */
+const int32_t MBL_MW_STATUS_ERROR_TIMEOUT = 16;

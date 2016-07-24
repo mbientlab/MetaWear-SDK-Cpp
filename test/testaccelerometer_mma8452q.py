@@ -72,3 +72,37 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
         self.assertListEqual(self.command, expected)
+
+class TestAccMma8452qHighFreqAccData(TestMetaWearBase):
+    def setUp(self):
+        super().setUp()
+
+        self.accel_data_signal= self.libmetawear.mbl_mw_acc_mma8452q_get_high_freq_acceleration_data_signal(self.board)
+
+    def sensorDataHandler(self, data):
+        super().sensorDataHandler(data)
+
+        self.cartesian_float_values.append(self.data_cartesian_float)
+
+    def test_get_acceleration_data_g(self):
+        response= create_string_buffer(b'\x03\x12\xdf\xed\x2b\x16\x15\xff\x7d\xfa\xed\x04\xc5\x0a\x31\xfb\xdb\xf8\x7b\xf2', 20)
+        expected_values= [CartesianFloat(x= -4.641, y= 5.675, z= -0.235), CartesianFloat(x= -1.411, y= 1.261, z= 2.757), CartesianFloat(x= -1.231, y= -1.829, z= -3.461)]
+
+        self.cartesian_float_values= []
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+
+        self.assertEqual(self.cartesian_float_values, expected_values)
+
+    def test_stream_acceleration_data(self):
+        expected= [0x03, 0x12, 0x01]
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.assertListEqual(self.command, expected)
+
+    def test_end_stream_acceleration_data(self):
+        expected= [0x03, 0x12, 0x00]
+
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
+        self.assertListEqual(self.command, expected)
+

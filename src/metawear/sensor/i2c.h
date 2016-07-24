@@ -1,28 +1,32 @@
 /**
  * @copyright MbientLab License (LICENSE.md)
  * @file i2c.h
- * @brief Communicates with the I2C bus
+ * @brief Communicates with sensors on the I2C bus
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
 /**
- * Retrieves the data signal representing the i2c data.  The length and id parameters must match their respective values in the 
- * mbl_mw_i2c_read function.
+ * Parameters required for an i2c read.  
+ * This struct is to be used with mbl_mw_datasignal_read_with_parameters
+ */
+typedef struct {
+    uint8_t device_addr;            ///< Device to communicate with
+    uint8_t register_addr;          ///< Register to read from
+} MblMwI2cReadParameters;
+
+/**
+ * Retrieves the data signal representing i2c data.  The data signal is identified by the id value and if the id is not present, 
+ * a new data signal will be created using the length parameter. 
  * @param board         Board the i2c bus resides on
- * @param length        Data length, in number of bytes
+ * @param length        Number of bytes to read
  * @param id            Numerical value identifying the data
  * @return Pointer to the i2c data signal
- * @see mbl_mw_i2c_read
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_i2c_get_data_signal(MblMwMetaWearBoard *board, uint8_t length, uint8_t id);
 /**
@@ -34,15 +38,6 @@ METAWEAR_API MblMwDataSignal* mbl_mw_i2c_get_data_signal(MblMwMetaWearBoard *boa
  * @param length            Number of bytes
  */
 METAWEAR_API void mbl_mw_i2c_write(const MblMwMetaWearBoard *board, uint8_t device_addr, uint8_t register_addr, const uint8_t* value, uint8_t length);
-/**
- * Reads data via the i2c bus
- * @param board             Board the i2c bus resides on
- * @param device_addr       Device to read from
- * @param register_addr     Address of the register to read
- * @param length            Number of bytes to read
- * @param id                Numerical value identifying the data
- */
-METAWEAR_API void mbl_mw_i2c_read(const MblMwMetaWearBoard *board, uint8_t device_addr, uint8_t register_addr, uint8_t length, uint8_t id);
 
 #ifdef	__cplusplus
 }

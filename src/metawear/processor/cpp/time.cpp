@@ -20,6 +20,7 @@ int32_t mbl_mw_dataprocessor_time_create(MblMwDataSignal *source, MblMwTimeMode 
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
 
     if (mode == MBL_MW_TIME_DIFFERENTIAL) {
+        new_processor->is_signed = 1;
         if (source->interpreter == DataInterpreter::UINT32) {
             new_processor->interpreter = DataInterpreter::INT32;
         }

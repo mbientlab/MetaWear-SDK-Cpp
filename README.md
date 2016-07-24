@@ -2,7 +2,7 @@
 This project is a C++ implementation of the MetaWear protocol.  If compiled as a shared library, it can be used with any language that supports calling C functions from a shared library, such as C# and Python.  The library only constructs the bytes for communicating with the MetaWear platform, it **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target device.
 
 # Build #
-Building the project has been tested on Linux with GCC 4.8.5 and Clang 3.7.0, and on Windows with Visual Studio Community 2015.  
+Building the project has been tested on \*nix systems with GCC 4.8.5 and Clang 3.7.0, and on Windows with Visual Studio Community 2015.  
 
 ```sh
 > gcc --version
@@ -18,7 +18,7 @@ Thread model: posix
 ```
 
 ## GCC and Clang ##
-Linux users can build the project by invoking make.  The default action is to build the shared library for your platform.
+Linux users can build the project by invoking GNU make.  The default action is to build the shared library for your platform.
 
 ```sh
 > make
@@ -38,12 +38,19 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.4.15
-            └── libmetawear.so.0.4.15
+            ├── libmetawear.so.0 -> libmetawear.so.0.5.0
+            └── libmetawear.so.0.5.0
 
 ```
 
-### Testing ###
+## Visual Studio ##
+Compiling the code in Visual Studio only requires a few changes to the project properties:
+
+1. Add the path to the MetaWear source in the **Include Directories** file
+2. Disable the **Precompiled Headers** compile option  
+3. Add **METAWEAR_DLL_EXPORTS** to the preprocessor list
+
+# Testing #
 Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target.
 
 ```sh
@@ -51,16 +58,10 @@ Unit tests for the library are written in Python (min v3.4.1) and can be invoked
 python3 -m unittest discover -s test
 ................................................................................
 ................................................................................
-....................................................................
+................................................................................
+.....................................................................
 ----------------------------------------------------------------------
-Ran 228 tests in 0.079s
+Ran 309 tests in 6.024s
 
 OK
 ``` 
-
-## Visual Studio ##
-Compiling the code in Visual Studio only requires a few changes to the project properties:
-
-1. Add the path to the MetaWear source in the **Include Directories** fiel
-2. Disable the **Precompiled Headers** compile option  
-3. Add **METAWEAR_DLL_EXPORTS** to the preprocessor list

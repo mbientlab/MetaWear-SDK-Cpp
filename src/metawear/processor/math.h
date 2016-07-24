@@ -24,7 +24,8 @@ typedef enum {
     MBL_MW_MATH_OP_LSHIFT,          ///< Computes input << rhs
     MBL_MW_MATH_OP_RSHIFT,          ///< Computes input >> rhs
     MBL_MW_MATH_OP_SUBTRACT,        ///< Computes input - rhs
-    MBL_MW_MATH_OP_ABS_VALUE        ///< Computes |input|
+    MBL_MW_MATH_OP_ABS_VALUE,       ///< Computes |input|
+    MBL_MW_MATH_OP_CONSTANT         ///< Replaces input with rhs
 } MblMwMathOperation;
 
 /**

@@ -1,6 +1,32 @@
 from ctypes import *
 import uuid
 
+class Module:
+    SWITCH = 1
+    LED = 2
+    ACCELEROMETER = 3
+    TEMPERATURE = 4
+    GPIO = 5
+    NEO_PIXEL = 6
+    IBEACON = 7
+    HAPTIC = 8
+    DATA_PROCESSOR = 9
+    EVENT = 0xa
+    LOGGING = 0xb
+    TIMER = 0xc
+    I2C = 0xd
+    MACRO = 0xf
+    GSR = 0x10
+    SETTINGS = 0x11
+    BAROMETER = 0x12
+    GYRO = 0x13
+    AMBIENT_LIGHT = 0x14
+    MAGNETOMETER = 0x15
+    HUMIDITY = 0x16
+    COLOR_DETECTOR = 0x17
+    PROXIMITY = 0x18
+    DEBUG = 0xfe
+
 # Constants identifying the message data types
 class DataTypeId:
     UINT32= 0
@@ -28,14 +54,14 @@ class GattCharacteristic(Structure):
         ("uuid_low", c_ulong)
     ]
 
-FnByteArray= CFUNCTYPE(None, POINTER(c_ubyte), c_ubyte)
-FnVoid= CFUNCTYPE(None)
-FnVoidPtr= CFUNCTYPE(None, c_void_p)
-FnDataPtr= CFUNCTYPE(None, POINTER(Data))
-FnGattCharPtrByteArray= CFUNCTYPE(None, POINTER(GattCharacteristic), POINTER(c_ubyte), c_ubyte)
-FnGattCharPtr= CFUNCTYPE(None, POINTER(GattCharacteristic))
-FnUintUint= CFUNCTYPE(None, c_uint, c_uint)
-FnUbyteUlongByteArray= CFUNCTYPE(None, c_ubyte, c_long, POINTER(c_ubyte), c_ubyte)
+Fn_ByteArray= CFUNCTYPE(None, POINTER(c_ubyte), c_ubyte)
+Fn_VoidPtr= CFUNCTYPE(None, c_void_p)
+Fn_VoidPtr_Int= CFUNCTYPE(None, c_void_p, c_int)
+Fn_DataPtr= CFUNCTYPE(None, POINTER(Data))
+Fn_VoidPtr_GattCharPtr_ByteArray= CFUNCTYPE(None, c_void_p, POINTER(GattCharacteristic), POINTER(c_ubyte), c_ubyte)
+Fn_VoidPtr_GattCharPtr= CFUNCTYPE(None, c_void_p, POINTER(GattCharacteristic))
+Fn_Uint_Uint= CFUNCTYPE(None, c_uint, c_uint)
+Fn_Ubyte_Long_ByteArray= CFUNCTYPE(None, c_ubyte, c_long, POINTER(c_ubyte), c_ubyte)
 
 # UUIDs for the MetaWear gatt services and characteristics
 class Gatt:
@@ -44,8 +70,8 @@ class Gatt:
 
 class BtleConnection(Structure):
     _fields_= [
-        ("write_gatt_char", FnGattCharPtrByteArray),
-        ("read_gatt_char", FnGattCharPtr)
+        ("write_gatt_char", Fn_VoidPtr_GattCharPtr_ByteArray),
+        ("read_gatt_char", Fn_VoidPtr_GattCharPtr)
     ]
 
 # Constants indicating status codes
@@ -55,11 +81,13 @@ class Status:
     WARNING_INVALID_PROCESSOR_TYPE= 2
     ERROR_UNSUPPORTED_PROCESSOR = 4
     WARNING_INVALID_RESPONSE = 8
+    ERROR_TIMEOUT = 16
 
 class LogDownloadHandler(Structure):
     _fields_= [
-        ("received_progress_update", FnUintUint),
-        ("received_unknown_entry", FnUbyteUlongByteArray)
+        ("received_progress_update", Fn_Uint_Uint),
+        ("received_unknown_entry", Fn_Ubyte_Long_ByteArray),
+        ("received_unhandled_entry", Fn_DataPtr)
     ]
 
 # Python wrapper for the MblMwDataCartesianFloat struct

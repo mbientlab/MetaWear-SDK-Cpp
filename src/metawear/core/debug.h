@@ -6,8 +6,8 @@
 #pragma once
 
 #include <stdint.h>
-#include "dllmarker.h"
 #include "metawearboard_fwd.h"
+#include "metawear/platform/dllmarker.h"
 
 #ifdef	__cplusplus
 extern "C" {

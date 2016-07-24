@@ -5,12 +5,13 @@ class Led:
     # Python wrapper for the MblMwLedPattern struct
     class Pattern(Structure):
         _fields_= [
+            ("high_intensity", c_ubyte),
+            ("low_intensity", c_ubyte),
             ("rise_time_ms", c_ushort),
             ("high_time_ms", c_ushort),
             ("fall_time_ms", c_ushort),
             ("pulse_duration_ms", c_ushort),
-            ("high_intensity", c_ubyte),
-            ("low_intensity", c_ubyte),
+            ("delay_time_ms", c_ushort),
             ("repeat_count", c_ubyte)
         ]
 

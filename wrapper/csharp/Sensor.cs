@@ -1,3 +1,6 @@
+using System;
+using System.Runtime.InteropServices;
+
 namespace MbientLab.MetaWear.Sensor {
     public class AccelerometerBosch {
         public enum FullScaleRange {
@@ -37,6 +40,12 @@ namespace MbientLab.MetaWear.Sensor {
             ODR_400HZ,
             ODR_800HZ,
             ODR_1600HZ
+        };
+
+        public enum StepCounterMode {
+            NORMAL = 0,
+            SENSITIVE,
+            ROBUST
         };
     }
     public class AccelerometerMma8452q {
@@ -140,6 +149,16 @@ namespace MbientLab.MetaWear.Sensor {
     }
 
     public class Gpio {
+        public const byte UNUSED_PIN = 0xff;
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct AnalogReadParameters {
+            public byte pullupPin;
+            public byte pulldownPin;
+            public byte virtualPin;
+            public ushort delay;
+        }
+
         public enum PullMode {
             UP = 0,
             DOWN,
@@ -242,6 +261,47 @@ namespace MbientLab.MetaWear.Sensor {
             REGULAR,
             ENHANCED_REGULAR,
             HIGH_ACCURACY
+        }
+    }
+
+    public class I2C {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ReadParameters {
+            public byte deviceAddr;
+            public byte registerAddr;
+        }
+    }
+
+    public class SPI {
+        public enum Mode {
+            M_0= 0,
+            M_1,
+            M_2,
+            M_3
+        }
+
+        public enum Frequency {
+            F_125_KHZ= 0,
+            F_250_KHZ,
+            F_500_KHZ,
+            F_1_MHZ,
+            F_2_MHZ,
+            F_4_MHZ,
+            F_8_MHZ
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ReadParameters {
+            public Mode mode;
+            public Frequency frequency;
+            public IntPtr data;
+            public byte data_length;
+            public byte slaveSelectPin;
+            public byte clockPin;
+            public byte mosiPin;
+            public byte misoPin;
+            public byte lsbFirst;
+            public byte useNrfPins;
         }
     }
 }

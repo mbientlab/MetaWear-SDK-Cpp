@@ -17,7 +17,8 @@ extern "C" {
 typedef enum {
     MBL_MW_PULSE_OUTPUT_WIDTH = 0,      ///< Return number of samples in the pulse
     MBL_MW_PULSE_OUTPUT_AREA,           ///< Return a sum of all data points in the pulse
-    MBL_MW_PULSE_OUTPUT_PEAK            ///< Return the highest value in the pulse
+    MBL_MW_PULSE_OUTPUT_PEAK,           ///< Return the highest value in the pulse
+    MBL_MW_PULSE_OUTPUT_ON_DETECTION    ///< Return a 0x01 as soon as a pulse is detected
 } MblMwPulseOutput;
 
 /**

@@ -5,13 +5,13 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-struct MblMwDataProcessor; 
-#else
 /**
  * Data signal from the on board data processor.  An MblMwDataProcessor pointer can be casted as an 
  * MblMwDataSignal pointer and used with any function tht accepts an MblMwdDataSignal.
  */
+#ifdef __cplusplus
+struct MblMwDataProcessor; 
+#else
 typedef struct MblMwDataProcessor MblMwDataProcessor;
 #endif
 

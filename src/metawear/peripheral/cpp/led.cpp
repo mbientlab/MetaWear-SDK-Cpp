@@ -1,3 +1,4 @@
+#include "metawear/core/module.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/peripheral/led.h"
 
@@ -5,8 +6,7 @@
 
 using namespace std;
 
-static const uint8_t LED_MODULE= 2;
-static const uint8_t LED_PLAY= 1, LED_STOP= 2, LED_CONFIG= 3;
+const uint8_t LED_PLAY= 1, LED_STOP= 2, LED_CONFIG= 3, DELAYED_REVISION= 1;
 
 static inline void set_intensities(MblMwLedPattern *pattern, uint8_t high, uint8_t low) {
     pattern->high_intensity= high;
@@ -38,38 +38,38 @@ void mbl_mw_led_load_preset_pattern(MblMwLedPattern* pattern, MblMwLedPreset pre
 }
 
 void mbl_mw_led_write_pattern(const MblMwMetaWearBoard *board, const MblMwLedPattern *pattern, MblMwLedColor color) {
-    uint8_t command[17]= {
-            LED_MODULE, LED_CONFIG, static_cast<uint8_t>(color), 2, 
-            pattern->high_intensity, pattern->low_intensity
-    };
+    uint8_t command[17]= { MBL_MW_MODULE_LED, LED_CONFIG, static_cast<uint8_t>(color), 2};
 
-    // 2 bytes for each time parameter, 4 parameters total
-    memcpy(command + 6, pattern, 8);
-    command[16]= pattern->repeat_count;
+    // MblMwLedPattern is aligned to 14 bytes wide, individual elements total to 13 bytes
+    memcpy(command + 4, pattern, 13);
+    if (board->module_info.at(MBL_MW_MODULE_LED).revision < DELAYED_REVISION) {
+        command[14]= 0;
+        command[15]= 0;
+    }
     SEND_COMMAND;
 }
 
 void mbl_mw_led_autoplay(const MblMwMetaWearBoard *board) {
-    uint8_t command[3]= {LED_MODULE, LED_PLAY, 2};
+    uint8_t command[3]= {MBL_MW_MODULE_LED, LED_PLAY, 2};
     SEND_COMMAND;
 }
 
 void mbl_mw_led_play(const MblMwMetaWearBoard *board) {
-    uint8_t command[3]= {LED_MODULE, LED_PLAY, 1};
+    uint8_t command[3]= {MBL_MW_MODULE_LED, LED_PLAY, 1};
     SEND_COMMAND;
 }
 
 void mbl_mw_led_pause(const MblMwMetaWearBoard *board) {
-    uint8_t command[3]= {LED_MODULE, LED_PLAY, 0};
+    uint8_t command[3]= {MBL_MW_MODULE_LED, LED_PLAY, 0};
     SEND_COMMAND;
 }
 
 void mbl_mw_led_stop(const MblMwMetaWearBoard *board) {
-    uint8_t command[3]= {LED_MODULE, LED_STOP, 0};
+    uint8_t command[3]= {MBL_MW_MODULE_LED, LED_STOP, 0};
     SEND_COMMAND;
 }
 
 void mbl_mw_led_stop_and_clear(const MblMwMetaWearBoard *board) {
-    uint8_t command[3]= {LED_MODULE, LED_STOP, 1};
+    uint8_t command[3]= {MBL_MW_MODULE_LED, LED_STOP, 1};
     SEND_COMMAND;
 }

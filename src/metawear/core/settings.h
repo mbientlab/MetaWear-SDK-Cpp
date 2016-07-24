@@ -6,10 +6,12 @@
 #pragma once
 
 #include <stdint.h>
+
 #include "datasignal_fwd.h"
-#include "dllmarker.h"
 #include "event_fwd.h"
 #include "metawearboard_fwd.h"
+
+#include "metawear/platform/dllmarker.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -70,11 +72,6 @@ METAWEAR_API void mbl_mw_settings_set_scan_response(const MblMwMetaWearBoard *bo
  */
 METAWEAR_API void mbl_mw_settings_set_connection_parameters(const MblMwMetaWearBoard *board, float min_conn_interval, float max_conn_interval, 
         uint16_t latency, uint16_t timeout);
-/**
- * Read the battery state
- * @param board                 Board to read the battery state on
- */
-METAWEAR_API void mbl_mw_settings_read_battery_state(const MblMwMetaWearBoard *board);
 
 #ifdef	__cplusplus
 }

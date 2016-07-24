@@ -5,15 +5,14 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+/** Pin value indicating the pin setting is not used */
+const uint8_t MBL_MW_GPIO_UNUSED_PIN = 0xff;
 
 /**
  * Pin configuration types
@@ -42,6 +41,18 @@ typedef enum {
 } MblMwGpioPinChangeType;
 
 /**
+ * Additional parameters required for an enhanced analog read.
+ * This struct is to be used with mbl_mw_datasignal_read_with_parameters
+ * @author Eric Tsai
+ */
+typedef struct {
+    uint8_t pullup_pin;                 ///< GPIO pin to be pulled up before the read, set to MBL_MW_GPIO_UNUSED_PIN if not used
+    uint8_t pulldown_pin;               ///< GPIO pin to be pulled down before the read, set to MBL_MW_GPIO_UNUSED_PIN if not used
+    uint8_t virtual_pin;                ///< GPIO pin the data identifies as, must match pin value for mbl_mw_gpio_get_analog_input_data_signal if used or set to MBL_MW_GPIO_UNUSED_PIN if not used
+    uint16_t delay_us;                  ///< How long to wait before reading from the pin, between [0, 1020]us, set to 0 if not used
+} MblMwGpioAnalogReadParameters;
+
+/**
  * Retrieves a data signal representing analog data
  * @param board     Board to receive data from
  * @param pin       GPIO pin to read
@@ -62,26 +73,12 @@ METAWEAR_API MblMwDataSignal* mbl_mw_gpio_get_digital_input_data_signal(MblMwMet
 METAWEAR_API MblMwDataSignal* mbl_mw_gpio_get_pin_monitor_data_signal(MblMwMetaWearBoard* board, uint8_t pin);
 
 /**
- * Read analog input voltage
- * @param board     Board the pin is on
- * @param pin       GPIO pin to read
- * @param mode      Analog read mode
- */
-METAWEAR_API void mbl_mw_gpio_read_analog_input(const MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioAnalogReadMode mode);
-
-/**
  * Sets the pin pull mode
  * @param board     Board the pin is on
  * @param pin       GPIO pin to modify
  * @param mode      New pull mode
  */
 METAWEAR_API void mbl_mw_gpio_set_pull_mode(const MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioPullMode mode);
-/**
- * Read digtal input state
- * @param board     Board the pin is on
- * @param pin       GPIO pin to read
- */
-METAWEAR_API void mbl_mw_gpio_read_digital_input(const MblMwMetaWearBoard* board, uint8_t pin);
 /**
  * Sets the digital output state
  * @param board     Board the pin is on

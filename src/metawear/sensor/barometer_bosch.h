@@ -8,11 +8,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -78,6 +74,12 @@ typedef enum {
  * @return Pointer to the board's pressure data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_baro_bosch_get_pressure_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Retrieves the data signal representing a single read from a Bosch barometer
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's pressure data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_baro_bosch_get_pressure_read_data_signal(const MblMwMetaWearBoard *board);
 /**
  * Retrieves the data signal representing altitude data from a Bosch barometer
  * @param board     Pointer to the board to retrieve the signal from

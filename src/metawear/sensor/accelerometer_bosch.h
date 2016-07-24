@@ -8,11 +8,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -64,11 +60,43 @@ typedef enum {
 } MblMwAccBma255Odr;
 
 /**
+ * Operation modes for the step counter algorithm
+ */
+typedef enum {
+    /** Recommended for most applications, well balanced between false positives and false negatives */
+    MBL_MW_ACC_BMI160_STEP_COUNTER_MODE_NORMAL= 0,
+    /** Recommended for light weighted persons, gives few false negatives but eventually more false positives */
+    MBL_MW_ACC_BMI160_STEP_COUNTER_MODE_SENSITIVE,
+    /** Gives few false positives but eventually more false negatives */
+    MBL_MW_ACC_BMI160_STEP_COUNTER_MODE_ROBUST
+} MblMwAccBmi160StepCounterMode;
+
+/**
  * Retrieves the data signal representing acceleration data from a Bosch accelerometer
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI160 acceleration data signal
  */
-METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_acceleration_data_signal(const MblMwMetaWearBoard *board);
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_acceleration_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves a special data signal representing high frequency (>100Hz) acceleration data for a Bosch accelerometer.  This signal is only for 
+ * streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from 
+ * mbl_mw_acc_bosch_get_acceleration_data_signal.
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to a high frequency data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves the data signal representing data from the BMI160 step counter
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's BMI160 step counter data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_counter_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves the data signal representing data from the BMI160 step detector
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's BMI160 step detector data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_detector_data_signal(const MblMwMetaWearBoard* board);
 
 /**
  * Sets the output data rate for the BMI160 accelerometer
@@ -93,6 +121,44 @@ METAWEAR_API void mbl_mw_acc_bosch_set_range(MblMwMetaWearBoard *board, MblMwAcc
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bosch_write_acceleration_config(const MblMwMetaWearBoard *board);
+
+/**
+ * Sets the operational mode of the step counter
+ * @param board     Board to modify
+ * @param mode      New operation mode
+ */
+METAWEAR_API void mbl_mw_acc_bmi160_set_step_counter_mode(MblMwMetaWearBoard* board, MblMwAccBmi160StepCounterMode mode);
+/**
+ * Enables the BMI160 step counter
+ * @param board     Board to modify
+ */
+METAWEAR_API void mbl_mw_acc_bmi160_enable_step_counter(MblMwMetaWearBoard* board);
+/**
+ * Disables the BMI160 step counter
+ * @param board     Board to modify
+ */
+METAWEAR_API void mbl_mw_acc_bmi160_disable_step_counter(MblMwMetaWearBoard* board);
+/**
+ * Writes the step counter configuration to the sensor
+ * @param board     Board to write to
+ */
+METAWEAR_API void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWearBoard* board);
+/**
+ * Resets the BMI160 step counter
+ * @param board     Board to reset
+ */
+METAWEAR_API void mbl_mw_acc_bmi160_reset_step_counter(const MblMwMetaWearBoard* board);
+
+/**
+ * Enables the BMI160 step detector 
+ * @param board     Pointer to the board to send the command to
+ */
+METAWEAR_API void mbl_mw_acc_bmi160_enable_step_detector(const MblMwMetaWearBoard *board);
+/**
+ * Disables the BMI160 step detector
+ * @param board     Pointer to the board to send the command to
+ */
+METAWEAR_API void mbl_mw_acc_bmi160_disable_step_detector(const MblMwMetaWearBoard *board);
 
 /**
  * Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured

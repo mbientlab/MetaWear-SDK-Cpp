@@ -11,8 +11,7 @@ class TestMultiChannelTemperatureMwr(TestMetaWearBase):
     def test_configure_ext_thermistor(self):
         expected= [0x04, 0x02, 0x01, 0x00, 0x01, 0x00]
 
-        self.libmetawear.mbl_mw_multi_chnl_temp_configure_ext_thermistor(self.board, 
-                MultiChannelTemperature.METAWEAR_R_CHANNEL_EXT_THERMISTOR, 0, 1, 0)
+        self.libmetawear.mbl_mw_multi_chnl_temp_configure_ext_thermistor(self.board, MultiChannelTemperature.METAWEAR_R_CHANNEL_EXT_THERMISTOR, 0, 1, 0)
         self.assertListEqual(self.command, expected)
 
     def test_read_temperature(self):
@@ -23,7 +22,21 @@ class TestMultiChannelTemperatureMwr(TestMetaWearBase):
 
         for chnl in channels:
              with self.subTest(channel=chnl):
-                self.libmetawear.mbl_mw_multi_chnl_temp_read_temperature(self.board, chnl[1])
+                temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, chnl[1])
+                self.libmetawear.mbl_mw_datasignal_subscribe(temp_signal, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_read(temp_signal)
+                self.assertListEqual(self.command, chnl[0])
+
+    def test_read_temperature_silent(self):
+        channels= [
+            [[0x04, 0xc1, 0x00], MultiChannelTemperature.METAWEAR_R_CHANNEL_ON_DIE],
+            [[0x04, 0xc1, 0x01], MultiChannelTemperature.METAWEAR_R_CHANNEL_EXT_THERMISTOR]
+        ]
+
+        for chnl in channels:
+             with self.subTest(channel=chnl):
+                temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, chnl[1])
+                self.libmetawear.mbl_mw_datasignal_read(temp_signal)
                 self.assertListEqual(self.command, chnl[0])
 
     def test_get_temperature_data(self):
@@ -82,7 +95,23 @@ class TestMultiChannelTemperatureMwrPro(TestMetaWearBase):
 
         for chnl in channels:
              with self.subTest(channel=chnl):
-                self.libmetawear.mbl_mw_multi_chnl_temp_read_temperature(self.board, chnl[1])
+                temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, chnl[1])
+                self.libmetawear.mbl_mw_datasignal_subscribe(temp_signal, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_read(temp_signal)
+                self.assertListEqual(self.command, chnl[0])
+
+    def test_read_temperature_silent(self):
+        channels= [
+            [[0x04, 0xc1, 0x00], MultiChannelTemperature.METAWEAR_RPRO_CHANNEL_ON_DIE],
+            [[0x04, 0xc1, 0x01], MultiChannelTemperature.METAWEAR_RPRO_CHANNEL_ON_BOARD_THERMISTOR],
+            [[0x04, 0xc1, 0x02], MultiChannelTemperature.METAWEAR_RPRO_CHANNEL_EXT_THERMISTOR],
+            [[0x04, 0xc1, 0x03], MultiChannelTemperature.METAWEAR_RPRO_CHANNEL_BMP280]
+        ]
+
+        for chnl in channels:
+             with self.subTest(channel=chnl):
+                temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, chnl[1])
+                self.libmetawear.mbl_mw_datasignal_read(temp_signal)
                 self.assertListEqual(self.command, chnl[0])
 
     def test_get_temperature_data(self):

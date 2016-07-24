@@ -1,19 +1,24 @@
 #include "metawear/core/logging.h"
-
 #include "metawear/core/datasignal.h"
+#include "metawear/core/module.h"
+#include "metawear/core/status.h"
+#include "metawear/core/cpp/constant.h"
+#include "metawear/platform/cpp/async_creator.h"
+#include "metawear/platform/cpp/threadpool.h"
 
 #include "datasignal_private.h"
 #include "logging_private.h"
 #include "logging_register.h"
 #include "metawearboard_def.h"
+#include "register.h"
 
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <queue>
-#include <stack>
 #include <unordered_map>
+#include <unordered_set>
 #include <tuple>
 #include <vector>
 
@@ -24,30 +29,40 @@ using std::chrono::time_point;
 using std::forward_as_tuple;
 using std::free;
 using std::find_if;
+using std::make_shared;
 using std::malloc;
 using std::memcpy;
 using std::min;
 using std::piecewise_construct;
 using std::queue;
-using std::stack;
+using std::static_pointer_cast;
 using std::unordered_map;
+using std::unordered_set;
 using std::vector;
 
-const uint8_t REVISION_EXTENDED_LOGGING= 2, ENTRY_ID_MASK= 0x1f, LOG_ENTRY_SIZE= (uint8_t) sizeof(uint32_t);
+#define GET_LOGGER_STATE(board) static_pointer_cast<LoggerState>(board->logger_state)
+
+const uint8_t REVISION_EXTENDED_LOGGING= 2, ENTRY_ID_MASK= 0x1f, RESET_UID_MASK= 0x7, LOG_ENTRY_SIZE= (uint8_t) sizeof(uint32_t);
 const float TICK_TIME_STEP= (48.f / 32768.f) * 1000.f;         ///< milliseconds
 
-class Loggable {
-public:
-    Loggable(MblMwDataSignal* source, MblMwFnData data_handler, MblMwFnVoid logger_ready);
+static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len);
+
+struct MblMwDataLogger {
+    MblMwDataLogger(uint8_t** state_stream, MblMwMetaWearBoard* board);
+    MblMwDataLogger(MblMwDataSignal* source, MblMwFnDataLoggerPtr logger_ready);
 
     void add_entry_id(uint8_t id);
     void process_log_data(const MblMwMetaWearBoard* board, uint8_t id, int64_t epoch, uint32_t data);
+    void serialize(vector<uint8_t>& state) const;
+
+    inline uint8_t get_id() const {
+        return entry_ids.front();
+    }
 
     MblMwDataSignal *source;
     uint8_t n_req_entries;
-private:
     MblMwFnData data_handler;
-    MblMwFnVoid logger_ready;
+    MblMwFnDataLoggerPtr logger_ready;
     vector<uint8_t> entry_ids;
     unordered_map<uint8_t, queue<uint32_t>> entries;
 };
@@ -57,31 +72,56 @@ struct TimeReference {
     uint32_t tick;
     uint8_t reset_uid;
 
+    TimeReference(uint8_t** state_stream);
     TimeReference(uint32_t tick, uint8_t reset_uid);
+    void serialize(vector<uint8_t>& state) const;
 };
 
-struct LoggerState {
+struct LoggerState : public AsyncCreator {
     unordered_map<uint8_t, TimeReference> log_time_references;
     unordered_map<uint8_t, uint32_t> latest_tick;
-    unordered_map<uint8_t, Loggable*> data_loggers;
-    vector<Loggable> spawned_loggers;
-    size_t pending_index;
+    unordered_map<uint8_t, MblMwDataLogger*> data_loggers;
+    MblMwDataLogger* next_logger;
 
     LoggerState();
+
+    void clear_data_loggers();
 };
 
+static int32_t logging_response_time_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    if (board->initialized_timeout != nullptr) {
+        board->initialized_timeout->cancel();
+    }
+
+    auto state = GET_LOGGER_STATE(board);
+    uint32_t tick;
+
+    memcpy(&tick, response + 2, 4);
+    state->log_time_references.erase(response[6]);
+    state->log_time_references.emplace(piecewise_construct, forward_as_tuple(response[6]), forward_as_tuple(tick, response[6]));
+
+    board->initialized(board, MBL_MW_STATUS_OK);
+    return MBL_MW_STATUS_OK;
+}
+
 static int32_t logging_response_entry_id_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    auto state= (LoggerState*) board->logger_state;
-    state->spawned_loggers.at(state->pending_index).add_entry_id(response[2]);
+    GET_LOGGER_STATE(board)->next_logger->add_entry_id(response[2]);
     return 0;
 }
 
 static int32_t logging_response_length_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     uint8_t payload_size= len - 2;
-
+    
     memcpy(&board->n_log_entries, response + 2, payload_size);
     uint32_t n_entries_notify= board->n_log_entries * board->log_download_notify_progress;
-
+    
+    // If there are no entires we won't get any responses, so end the download now
+    // by forcing a callback on the readout progress with 0 remaining entries
+    if (board->n_log_entries == 0) {
+        // Just recycle the response buffer since we know it a 32bit 0 entry
+        return logging_response_readout_progress(board, response, len);
+    }
+    
     vector<uint8_t> command= { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT) };
     command.insert(command.end(), response + 2, response + len);
     command.insert(command.end(), (uint8_t*) &n_entries_notify, (uint8_t*) &n_entries_notify + 4);
@@ -90,14 +130,38 @@ static int32_t logging_response_length_received(MblMwMetaWearBoard *board, const
     return 0;
 }
 
+static TimeReference mbl_mw_logger_lookup_reset_uid(const MblMwMetaWearBoard* board, uint8_t reset_uid) {
+    auto logger_state = GET_LOGGER_STATE(board);
+    if (logger_state->log_time_references.count(reset_uid)) {
+        return logger_state->log_time_references.at(reset_uid);
+    }
+    // No valid reset uid time base found.  This means we had multiple unexpected resets,
+    // so come up with a best guess by working backwards to find a previous reset uid base.
+    for (uint8_t prev_uid = (reset_uid - 1) & RESET_UID_MASK; prev_uid != reset_uid; prev_uid = (prev_uid - 1) & RESET_UID_MASK) {
+        if (logger_state->log_time_references.count(prev_uid)) {
+            // Copy the previous one
+            TimeReference prev_reference = logger_state->log_time_references.at(prev_uid);
+            prev_reference.reset_uid = reset_uid;
+            logger_state->log_time_references.erase(reset_uid);
+            logger_state->log_time_references.emplace(reset_uid, prev_reference);
+            return prev_reference;
+        }
+    }
+    // Nothing to go on just create a new one
+    TimeReference reference = TimeReference(0, reset_uid);
+    logger_state->log_time_references.erase(reset_uid);
+    logger_state->log_time_references.emplace(reset_uid, reference);
+    return reference;
+}
+
 static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto parse_response= [&board, &response](uint8_t offset) -> void {
-        auto state= (LoggerState*) board->logger_state;
+        auto state= GET_LOGGER_STATE(board);
         uint8_t entry_id= response[offset] & ENTRY_ID_MASK, reset_uid= (response[offset] & ~ENTRY_ID_MASK) >> 5;
         uint32_t entry_tick, data;
 
         memcpy(&entry_tick, response + offset + 1, 4);
-        TimeReference reference= state->log_time_references.at(reset_uid);
+        TimeReference reference = mbl_mw_logger_lookup_reset_uid(board, reset_uid);
         auto timestamp_copy(reference.timestamp);
         milliseconds time_offset((int64_t) ((entry_tick - reference.tick) * TICK_TIME_STEP));
         timestamp_copy+= time_offset;
@@ -140,35 +204,71 @@ static int32_t logging_response_page_completed(MblMwMetaWearBoard *board, const 
     return 0;
 }
 
+TimeReference::TimeReference(uint8_t** state_stream) {
+    milliseconds epoch(*((int64_t*) *state_stream));
+    timestamp= time_point<system_clock, milliseconds>{epoch};
+    *state_stream += sizeof(int64_t);
+
+    memcpy(&tick, *state_stream, sizeof(uint32_t));
+    *state_stream += sizeof(uint32_t);
+
+    reset_uid = **state_stream;
+
+    (*state_stream)++;
+}
+
 TimeReference::TimeReference(uint32_t tick, uint8_t reset_uid) : tick(tick), reset_uid(reset_uid) {
     timestamp= system_clock::now();
 }
 
-Loggable::Loggable(MblMwDataSignal* source, MblMwFnData data_handler, MblMwFnVoid logger_ready) : 
-        source(source), n_req_entries((source->length() - 1) / sizeof(uint32_t) + 1), data_handler(data_handler), logger_ready(logger_ready) {
+void TimeReference::serialize(vector<uint8_t>& state) const {
+    int64_t epoch= duration_cast<milliseconds>(timestamp.time_since_epoch()).count();
+
+    state.insert(state.end(), (uint8_t*) &epoch, ((uint8_t*) &epoch) + sizeof(epoch));
+    state.insert(state.end(), (uint8_t*) &tick, ((uint8_t*) &tick) + sizeof(tick));
+    state.push_back(reset_uid);
 }
 
-LoggerState::LoggerState() : pending_index(0) {
+MblMwDataLogger::MblMwDataLogger(uint8_t** state_stream, MblMwMetaWearBoard* board) : data_handler(nullptr), logger_ready(nullptr) {
+    ResponseHeader source_header(state_stream);
+    source_header.disable_silent();
+    source = dynamic_cast<MblMwDataSignal*>(board->module_events.at(source_header));
 
+    uint8_t n_entry_ids = **state_stream;
+    for (uint8_t i = 0; i < n_entry_ids; i++) {
+        uint8_t id = *(++(*state_stream));
+        entry_ids.push_back(id);
+        entries.emplace(id, queue<uint32_t>());
+    }
+
+    (*state_stream)++;
 }
 
+MblMwDataLogger::MblMwDataLogger(MblMwDataSignal* source, MblMwFnDataLoggerPtr logger_ready) :
+        source(source), n_req_entries((source->length() - 1) / sizeof(uint32_t) + 1), data_handler(nullptr), logger_ready(logger_ready) {
+}
 
-void Loggable::add_entry_id(uint8_t id) {
+void MblMwDataLogger::add_entry_id(uint8_t id) {
     entry_ids.push_back(id);
     entries.emplace(id, queue<uint32_t>());
 
     if ((uint8_t) entry_ids.size() == n_req_entries) {
-        auto state= (LoggerState*) source->owner->logger_state;
-        state->pending_index++;
+        auto state= GET_LOGGER_STATE(source->owner);
+
+        state->timeout->cancel();
 
         for(auto it: entry_ids) {
             state->data_loggers[it]= this;
         }
-        logger_ready();
+        state->next_logger = nullptr;
+
+        logger_ready(this);
+
+        state->create_next(true);
     }
 }
 
-void Loggable::process_log_data(const MblMwMetaWearBoard* board, uint8_t id, int64_t epoch, uint32_t data) {
+void MblMwDataLogger::process_log_data(const MblMwMetaWearBoard* board, uint8_t id, int64_t epoch, uint32_t data) {
     entries.at(id).push(data);
     
     bool ready= true;
@@ -186,32 +286,67 @@ void Loggable::process_log_data(const MblMwMetaWearBoard* board, uint8_t id, int
         MblMwData* data = data_response_converters.at(source->interpreter)(board, merged.data(), (uint8_t) merged.size());
         data->epoch= epoch;
 
-        data_handler(data);
+        if (data_handler != nullptr) {
+            data_handler(data);
+        } else if (board->log_download_handler.received_unhandled_entry != nullptr) {
+            board->log_download_handler.received_unhandled_entry(data);
+        }
 
         free(data->value);
         free(data);
     }
 }
 
+void MblMwDataLogger::serialize(vector<uint8_t>& state) const {
+    source->header.serialize(state);
+
+    state.push_back((uint8_t) entry_ids.size());
+    state.insert(state.end(), entry_ids.begin(), entry_ids.end());
+}
+
+LoggerState::LoggerState() : next_logger(nullptr) { }
+
+void LoggerState::clear_data_loggers() {
+    unordered_set<MblMwDataLogger*> unique_loggables;
+    for (auto it : data_loggers) {
+        unique_loggables.insert(it.second);
+    }
+
+    for(auto it: unique_loggables) {
+        delete it;
+    }
+
+    data_loggers.clear();
+}
+
 void init_logging(MblMwMetaWearBoard *board) {
-    board->logger_state= new LoggerState;
-    board->responses.emplace(LOGGING_RESPONSE_TRIGGER_HEADER, logging_response_entry_id_received);
-    board->responses.emplace(LOGGING_RESPONSE_LENGTH_HEADER, logging_response_length_received);
-    board->responses.emplace(LOGGING_RESPONSE_NOTIFY_HEADER, logging_response_readout_notify);
-    board->responses.emplace(LOGGING_RESPONSE_PROGRESS_HEADER, logging_response_readout_progress);
-    board->responses.emplace(LOGGING_RESPONSE_PAGE_COMPLETED_HEADER, logging_response_page_completed);
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TIME))),
+        forward_as_tuple(logging_response_time_received));
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::TRIGGER)),
+        forward_as_tuple(logging_response_entry_id_received));
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::LENGTH))),
+        forward_as_tuple(logging_response_length_received));
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_NOTIFY)),
+        forward_as_tuple(logging_response_readout_notify));
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PROGRESS)),
+        forward_as_tuple(logging_response_readout_progress));
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PAGE_COMPLETED)),
+        forward_as_tuple(logging_response_page_completed));
+
+    if (!board->logger_state) {
+        board->logger_state = make_shared<LoggerState>();
+    }
 }
 
-void tear_down_logging(MblMwMetaWearBoard *board) {
-    delete (LoggerState*) board->logger_state;
-}
+void tear_down_logging(void *state, bool preserve_memory) {
+    auto logging_state= (LoggerState*) state;
 
-void received_time_data(MblMwMetaWearBoard *board, const uint8_t* value, uint8_t length) {
-    auto state= (LoggerState*) board->logger_state;
-    uint32_t tick;
-
-    memcpy(&tick, value + 2, 4);
-    state->log_time_references.emplace(piecewise_construct, forward_as_tuple(value[6]), forward_as_tuple(tick, value[6]));
+    if (logging_state != nullptr) {
+        logging_state->clear_data_loggers();
+        if (!preserve_memory) {
+            delete logging_state;
+        }
+    }
 }
 
 void mbl_mw_logging_start(const MblMwMetaWearBoard* board, uint8_t overwrite) {
@@ -261,52 +396,128 @@ void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, cons
     } else {
         board->log_download_handler.received_progress_update= nullptr;
         board->log_download_handler.received_unknown_entry= nullptr;
+        board->log_download_handler.received_unhandled_entry = nullptr;
     }
 
     command[1]= READ_REGISTER(ORDINAL(LoggingRegister::LENGTH));
     send_command(board, command, 2);
 }
 
-void mbl_mw_datasignal_log(MblMwDataSignal *signal, MblMwFnData received_data, MblMwFnVoid logger_ready) {
-    auto state= (LoggerState*) signal->owner->logger_state;
-    uint8_t remainder= signal->length();
+uint8_t mbl_mw_logger_get_id(const MblMwDataLogger* logger) {
+    return logger->get_id();
+}
 
-    state->spawned_loggers.emplace_back(signal, received_data, logger_ready);
+MblMwDataSignal* mbl_mw_logger_get_signal(const MblMwDataLogger* logger) {
+    return logger->source;
+}
 
-    auto entries= state->spawned_loggers.back().n_req_entries;
-    for(uint8_t i= 0; i < entries; i++, remainder-= LOG_ENTRY_SIZE) {
-        uint8_t entry_size= min(remainder, LOG_ENTRY_SIZE), entry_offset= LOG_ENTRY_SIZE * i + signal->offset;
-        uint8_t command[6]= {MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::TRIGGER), signal->header.module_id, signal->header.register_id, 
-                signal->header.data_id, (uint8_t) ((entry_size - 1) << 5 | entry_offset)};
-        SEND_COMMAND_BOARD(signal->owner);
+MblMwDataLogger* mbl_mw_logger_lookup_id(const MblMwMetaWearBoard* board, uint8_t id) {
+    auto logger_state = GET_LOGGER_STATE(board);
+    return logger_state->data_loggers.count(id) ? logger_state->data_loggers.at(id) : nullptr;
+}
+
+void mbl_mw_logger_remove(MblMwDataLogger* loggable) {
+    auto state = GET_LOGGER_STATE(loggable->source->owner);
+
+    sort(loggable->entry_ids.begin(), loggable->entry_ids.end());
+    for (auto it : loggable->entry_ids) {
+        state->data_loggers.erase(it);
+        uint8_t command[3] = { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::REMOVE_ENTRIES), it };
+        SEND_COMMAND_BOARD(loggable->source->owner);
+    }
+
+    delete loggable;
+}
+
+void mbl_mw_logger_subscribe(MblMwDataLogger* loggable, MblMwFnData received_data) {
+    loggable->data_handler = received_data;
+}
+
+void mbl_mw_datasignal_log(MblMwDataSignal *signal, MblMwFnDataLoggerPtr logger_ready) {
+    auto state= GET_LOGGER_STATE(signal->owner);
+
+    state->pending_fns.push([=](void) -> void {
+        state->next_logger= new MblMwDataLogger(signal, logger_ready);
+        state->timeout= ThreadPool::schedule([state, logger_ready](void) -> void {
+            delete state->next_logger;
+            state->next_logger = nullptr;
+
+            logger_ready(nullptr);
+            state->create_next(true);
+        }, state->next_logger->n_req_entries * TIME_PER_COMMAND);
+
+        auto entries= state->next_logger->n_req_entries;
+        uint8_t remainder= signal->length();
+        for(uint8_t i= 0; i < entries; i++, remainder-= LOG_ENTRY_SIZE) {
+            uint8_t entry_size= min(remainder, LOG_ENTRY_SIZE), entry_offset= LOG_ENTRY_SIZE * i + signal->offset;
+            uint8_t command[6]= {MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::TRIGGER), signal->header.module_id, signal->header.register_id, 
+                    signal->header.data_id, (uint8_t) ((entry_size - 1) << 5 | entry_offset)};
+            SEND_COMMAND_BOARD(signal->owner);
+        }
+    });
+    state->create_next(false);
+}
+
+void serialize_logging(const MblMwMetaWearBoard* board, std::vector<uint8_t>& state) {
+    auto logger_state= GET_LOGGER_STATE(board);
+
+    {
+        vector<uint8_t> sorted_keys;
+        for (auto it : logger_state->log_time_references) {
+            sorted_keys.push_back(it.first);
+        }
+        sort(sorted_keys.begin(), sorted_keys.end());
+
+        state.push_back((uint8_t)logger_state->log_time_references.size());
+        for (auto it : sorted_keys) {
+            logger_state->log_time_references.at(it).serialize(state);
+        }
+    }
+
+    {
+        vector<uint8_t> sorted_keys;
+        unordered_set<MblMwDataLogger*> unique_loggers;
+        for (auto it : logger_state->data_loggers) {
+            sorted_keys.push_back(it.first);
+            unique_loggers.insert(it.second);
+        }
+        sort(sorted_keys.begin(), sorted_keys.end());
+
+        state.push_back((uint8_t) unique_loggers.size());
+        unique_loggers.clear();
+        for (auto it : sorted_keys) {
+            auto current = logger_state->data_loggers.at(it);
+            if (!unique_loggers.count(current)) {
+                unique_loggers.insert(current);
+                current->serialize(state);
+            }
+        }
     }
 }
 
-void mbl_mw_datasignal_remove_logger(MblMwDataSignal *signal) {
-    queue<uint8_t> logger_ids;
-    auto state= (LoggerState*) signal->owner->logger_state;
-
-    for(auto it: state->data_loggers) {
-        if (it.second->source == signal) {
-            uint8_t command[3]= { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::REMOVE_ENTRIES), it.first };
-            SEND_COMMAND_BOARD(signal->owner);
-
-            logger_ids.push(it.first);
-        }
+void deserialize_logging(MblMwMetaWearBoard* board, uint8_t** state_stream) {
+    if (board->logger_state) {
+        GET_LOGGER_STATE(board)->clear_data_loggers();
+    } else {
+        board->logger_state = make_shared<LoggerState>();
     }
 
-    while(!logger_ids.empty()) {
-        uint8_t id= logger_ids.front();
+    auto saved_log_state = GET_LOGGER_STATE(board);
 
-        auto pos= find_if(state->spawned_loggers.begin(), state->spawned_loggers.end(), [&state, &id](const Loggable& elem) -> bool {
-            return ((void*) &elem == (void*) state->data_loggers.at(id));
-        });
-        if (pos != state->spawned_loggers.end()) {
-            state->spawned_loggers.erase(pos);
-        }
-
-        logger_ids.pop();
+    uint8_t n_refs = **state_stream;
+    (*state_stream)++;
+    for (uint8_t i = 0; i < n_refs; i++) {
+        TimeReference reference(state_stream);
+        saved_log_state->log_time_references.emplace(reference.reset_uid, reference);
     }
 
-    state->pending_index= state->spawned_loggers.size();
+    uint8_t n_loggers = **state_stream;
+    (*state_stream)++;
+    for (uint8_t i = 0; i < n_loggers; i++) {
+        MblMwDataLogger* saved_loggable = new MblMwDataLogger(state_stream, board);
+
+        for (auto it : saved_loggable->entry_ids) {
+            saved_log_state->data_loggers[it] = saved_loggable;
+        }
+    }
 }

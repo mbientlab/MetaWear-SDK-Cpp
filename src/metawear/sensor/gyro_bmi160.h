@@ -6,11 +6,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -47,6 +43,14 @@ typedef enum {
  * @return Pointer to the board's BMI160 rotation data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Retrieves a special data signal representing high frequency (>100Hz) rotation data for the BMI160 IMU.  This signal is only for streaming and cannot 
+ * use logging nor data processing.  To use those features with a rotation data signal, use the signal from 
+ * mbl_mw_gyro_bmi160_get_rotation_data_signal.
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to a high frequency data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the output data rate 

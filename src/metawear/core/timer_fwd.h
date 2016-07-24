@@ -5,13 +5,13 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-struct MblMwTimer; 
-#else
 /**
  * On board timer that periodically fires events.  An MblMwTimer pointer can be casted as an MblMwEvent pointer 
  * and used with any function that accepts an MblMwEvent pointer.
  */
+#ifdef __cplusplus
+struct MblMwTimer; 
+#else
 typedef struct MblMwTimer MblMwTimer;
 #endif
 
@@ -19,4 +19,4 @@ typedef struct MblMwTimer MblMwTimer;
  * Definition for callback functions that accept an MblMwTimer pointer
  * @param timer         Timer to be used with the function
  */
-typedef void (*MblMwTimerPtr)(MblMwTimer* timer);
+typedef void (*MblMwFnTimerPtr)(MblMwTimer* timer);

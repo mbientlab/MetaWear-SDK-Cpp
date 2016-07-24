@@ -36,14 +36,14 @@ int32_t mbl_mw_dataprocessor_delta_create(MblMwDataSignal *source, MblMwDeltaMod
         new_processor->is_signed = 1;
         new_processor->interpreter = DataInterpreter::INT32;
         new_processor->set_channel_attr(1, 1);
-        new_processor->number_to_firmware = number_to_firmware_default;
+        new_processor->converter = FirmwareConverter::DEFAULT;
         break;
     default:
         break;
     }
-    new_processor->state = create_processor_state_signal(new_processor, new_processor->interpreter);    
+    create_processor_state_signal(new_processor, new_processor->interpreter);    
 
-    uint32_t scaled_magnitude= (uint32_t) source->number_to_firmware(source, magnitude);
+    uint32_t scaled_magnitude= (uint32_t) number_to_firmware_converters.at(source->converter)(source, magnitude);
 
     DeltaConfig *config = (DeltaConfig*) malloc(sizeof(DeltaConfig));
     *((uint8_t*) config)= 0;
@@ -58,7 +58,7 @@ int32_t mbl_mw_dataprocessor_delta_create(MblMwDataSignal *source, MblMwDeltaMod
 
 int32_t mbl_mw_dataprocessor_delta_set_reference(MblMwDataProcessor *delta, float previous_value) {
     if (delta->type == DataProcessorType::DELTA) {
-        int32_t scaled_previous_value= (int32_t) delta->number_to_firmware(delta, previous_value);
+        int32_t scaled_previous_value= (int32_t) number_to_firmware_converters.at(delta->converter)(delta, previous_value);
         set_processor_state(delta, &scaled_previous_value, sizeof(scaled_previous_value));
 
         return MBL_MW_STATUS_OK;
@@ -68,7 +68,7 @@ int32_t mbl_mw_dataprocessor_delta_set_reference(MblMwDataProcessor *delta, floa
 
 int32_t mbl_mw_dataprocessor_delta_modify_magnitude(MblMwDataProcessor *delta, float magnitude) {
     if (delta->type == DataProcessorType::DELTA) {
-        uint32_t scaled_magnitude= (uint32_t) delta->number_to_firmware(delta, magnitude);
+        uint32_t scaled_magnitude= (uint32_t) number_to_firmware_converters.at(delta->converter)(delta, magnitude);
         memcpy(((uint8_t*)(delta->config)) + 1, &scaled_magnitude, sizeof(scaled_magnitude));
 
         modify_processor_configuration(delta, sizeof(DeltaConfig));

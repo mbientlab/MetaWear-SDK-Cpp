@@ -1,5 +1,9 @@
+#include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
+#include "metawear/core/cpp/metawearboard_macro.h"
+#include "metawear/core/cpp/register.h"
+#include "metawear/core/cpp/responseheader.h"
 
 #include "metawear/sensor/barometer_bosch.h"
 #include "barometer_bosch_private.h"
@@ -13,13 +17,14 @@ using std::calloc;
 using std::forward_as_tuple;
 using std::memcpy;
 using std::piecewise_construct;
+using std::vector;
 
-static const vector<float> BMP280_STANDBY_VALUES= {0.5f, 62.5f, 125.f, 250.f, 500.f, 1000.f, 2000.f, 4000.f},
+const vector<float> BMP280_STANDBY_VALUES= {0.5f, 62.5f, 125.f, 250.f, 500.f, 1000.f, 2000.f, 4000.f},
         BME280_STANDBY_VALUES= {0.5f, 62.5f, 125.f, 250.f, 500.f, 1000.f, 10.f, 20.f};
 
-static float bosch_baro_to_firmware(MblMwDataSignal* source, float value) {
-    return (value * 256.f);
-}
+const ResponseHeader BARO_PRESSURE_RESPONSE_HEADER(MBL_MW_MODULE_BAROMETER, ORDINAL(BarometerBmp280Register::PRESSURE)),
+        BARO_ALTITUDE_RESPONSE_HEADER(MBL_MW_MODULE_BAROMETER, ORDINAL(BarometerBmp280Register::ALTITUDE)),
+        BARO_PRESSURE_READ_RESPONSE_HEADER(MBL_MW_MODULE_BAROMETER, READ_REGISTER(ORDINAL(BarometerBmp280Register::PRESSURE)));
 
 struct BoschBaroConfig {
     uint8_t:2;
@@ -32,39 +37,56 @@ struct BoschBaroConfig {
 
 void init_barometer_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_BAROMETER) && board->module_info.at(MBL_MW_MODULE_BAROMETER).present) {
-        BoschBaroConfig* new_config = (BoschBaroConfig*) calloc(1, sizeof(BoschBaroConfig));
+        if (!board->module_config.count(MBL_MW_MODULE_BAROMETER)) {
+            BoschBaroConfig* new_config = (BoschBaroConfig*)calloc(1, sizeof(BoschBaroConfig));
 
-        new_config->pressure_oversampling = MBL_MW_BARO_BOSCH_OVERSAMPLE_STANDARD;
-        new_config->iir_filter = MBL_MW_BARO_BOSCH_IIR_FILTER_OFF;
-        new_config->standby_time = 0;       ///< Set standby time to 0.5ms, which is enum 0 for both bmp280 and bme280
-        new_config->temperature_oversampling= MBL_MW_BARO_BOSCH_OVERSAMPLE_ULTRA_LOW_POWER;
+            new_config->pressure_oversampling = MBL_MW_BARO_BOSCH_OVERSAMPLE_STANDARD;
+            new_config->iir_filter = MBL_MW_BARO_BOSCH_IIR_FILTER_OFF;
+            new_config->standby_time = 0;       ///< Set standby time to 0.5ms, which is enum 0 for both bmp280 and bme280
+            new_config->temperature_oversampling = MBL_MW_BARO_BOSCH_OVERSAMPLE_ULTRA_LOW_POWER;
 
-        board->module_config.emplace(MBL_MW_MODULE_BAROMETER, new_config);
+            board->module_config.emplace(MBL_MW_MODULE_BAROMETER, new_config);
+        }
 
-        MblMwDataSignal *baro_pa_signal= new MblMwDataSignal(BARO_PRESSURE_RESPONSE_HEADER, board, 
-                DataInterpreter::BOSCH_PRESSURE, 1, 4, 0, 0);
-        baro_pa_signal->number_to_firmware = bosch_baro_to_firmware;
-        board->sensor_data_signals[BARO_PRESSURE_RESPONSE_HEADER]= baro_pa_signal;
+        if (!board->module_events.count(BARO_PRESSURE_RESPONSE_HEADER)) {
+            board->module_events[BARO_PRESSURE_RESPONSE_HEADER] = new MblMwDataSignal(BARO_PRESSURE_RESPONSE_HEADER, board, 
+                DataInterpreter::BOSCH_PRESSURE, FirmwareConverter::BOSCH_BAROMETER, 1, 4, 0, 0);
+        }
         board->responses[BARO_PRESSURE_RESPONSE_HEADER]= response_handler_data_no_id;
 
-        MblMwDataSignal *baro_m_signal= new MblMwDataSignal(BARO_ALTITUDE_RESPONSE_HEADER, board, 
-                DataInterpreter::BOSCH_ALTITUDE, 1, 4, 1, 0);
-        baro_m_signal->number_to_firmware = bosch_baro_to_firmware;
-        board->sensor_data_signals[BARO_ALTITUDE_RESPONSE_HEADER]= baro_m_signal;
+        if (!board->module_events.count(BARO_ALTITUDE_RESPONSE_HEADER)) {
+            board->module_events[BARO_ALTITUDE_RESPONSE_HEADER] = new MblMwDataSignal(BARO_ALTITUDE_RESPONSE_HEADER, board, 
+                DataInterpreter::BOSCH_ALTITUDE, FirmwareConverter::BOSCH_BAROMETER, 1, 4, 1, 0);
+        }
         board->responses[BARO_ALTITUDE_RESPONSE_HEADER]= response_handler_data_no_id;
+        
+        if (!board->module_events.count(BARO_PRESSURE_READ_RESPONSE_HEADER)) {
+            board->module_events[BARO_PRESSURE_READ_RESPONSE_HEADER] = new MblMwDataSignal(BARO_PRESSURE_READ_RESPONSE_HEADER, board,
+                DataInterpreter::BOSCH_PRESSURE, FirmwareConverter::BOSCH_BAROMETER, 1, 4, 0, 0);
+        }
+        board->responses[BARO_PRESSURE_READ_RESPONSE_HEADER]= response_handler_data_no_id;
     }
 }
 
+
+void serialize_barometer_config(const MblMwMetaWearBoard *board, vector<uint8_t>& state) {
+    SERIALIZE_MODULE_CONFIG(BoschBaroConfig, MBL_MW_MODULE_BAROMETER);
+}
+
+void deserialize_barometer_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
+    DESERIALIZE_MODULE_CONFIG(BoschBaroConfig, MBL_MW_MODULE_BAROMETER);
+}
+
 MblMwDataSignal* mbl_mw_baro_bosch_get_pressure_data_signal(const MblMwMetaWearBoard *board) {
-    return board->sensor_data_signals.count(BARO_PRESSURE_RESPONSE_HEADER) ? 
-            board->sensor_data_signals.at(BARO_PRESSURE_RESPONSE_HEADER) :
-            nullptr;
+    GET_DATA_SIGNAL(BARO_PRESSURE_RESPONSE_HEADER);
+}
+
+MblMwDataSignal* mbl_mw_baro_bosch_get_pressure_read_data_signal(const MblMwMetaWearBoard *board) {
+    GET_DATA_SIGNAL(BARO_PRESSURE_READ_RESPONSE_HEADER);
 }
 
 MblMwDataSignal* mbl_mw_baro_bosch_get_altitude_data_signal(const MblMwMetaWearBoard *board) {
-    return board->sensor_data_signals.count(BARO_ALTITUDE_RESPONSE_HEADER) ? 
-            board->sensor_data_signals.at(BARO_ALTITUDE_RESPONSE_HEADER) :
-            nullptr;
+    GET_DATA_SIGNAL(BARO_ALTITUDE_RESPONSE_HEADER);
 }
 
 void mbl_mw_baro_bosch_set_oversampling(MblMwMetaWearBoard *board, MblMwBaroBoschOversampling oversampling) {

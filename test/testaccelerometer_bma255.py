@@ -130,7 +130,7 @@ class TestAccBma255Data(TestMetaWearBase):
         self.assertListEqual(self.command, expected)
 
     def test_handle_data(self):
-        response= create_string_buffer(b'\x03\x04\xe1\xb3\xa1\x24\xb1\x2e')
+        response= create_string_buffer(b'\x03\x04\xe1\xb3\xa1\x24\xb1\x2e', 8)
         expected= CartesianFloat(x= -4.7576, y= 2.2893, z= 2.9182)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, self.sensor_data_handler)

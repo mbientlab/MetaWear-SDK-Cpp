@@ -6,6 +6,7 @@ from logdata import Bmi160Accelerometer
 from mbientlab.metawear.core import *
 from mbientlab.metawear.sensor import AccelerometerBosch
 #from time import mktime
+import threading
 
 class TestLoggingModule(TestMetaWearBase):
     def test_start_overwrite(self):
@@ -44,8 +45,8 @@ class TestLogDownload(TestMetaWearBase):
 
         super().setUp()
 
-        self.progress_update= FnUintUint(self.progress_update_handler)
-        self.unknown_entry= FnUbyteUlongByteArray(self.unknown_entry_handler)
+        self.progress_update= Fn_Uint_Uint(self.progress_update_handler)
+        self.unknown_entry= Fn_Ubyte_Long_ByteArray(self.unknown_entry_handler)
         self.download_handler= LogDownloadHandler(received_progress_update = self.progress_update, received_unknown_entry = self.unknown_entry)
         self.updates= []
 
@@ -122,15 +123,18 @@ class TestLogDownload(TestMetaWearBase):
         self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
         self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, log_response.raw, len(log_response.raw))
 
-class TestAccelerometerLogging(TestMetaWearBase):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-
-        super().setUp()
+class TestAccelerometerLoggingBase(TestMetaWearBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.logged_data= []
         self.data_time_offsets= []
         self.prev_time= -1
+
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
 
     def acc_data_progress_update_handler(self, entries_left, total_entries):
         if (entries_left == 0):
@@ -150,46 +154,76 @@ class TestAccelerometerLogging(TestMetaWearBase):
         contents= copy.deepcopy(cast(data.contents.value, POINTER(CartesianFloat)).contents)
         self.logged_data.append(contents)
 
-    def logger_ready_handler(self):
+    def logger_ready_handler(self, logger):
+        cartesian_float_data= Fn_DataPtr(self.cartesian_float_data_handler)
+        self.libmetawear.mbl_mw_logger_subscribe(logger, cartesian_float_data)
         self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
         for buffer in Bmi160Accelerometer.log_responses:
             self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, buffer.raw, len(buffer.raw))
 
+class TestAccelerometerLogging(TestAccelerometerLoggingBase):
     def test_acc_data(self):
-        progress_update= FnUintUint(self.acc_data_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, FnUbyteUlongByteArray))
+        progress_update= Fn_Uint_Uint(self.acc_data_progress_update_handler)
+        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, \
+                received_unknown_entry = cast(None, Fn_Ubyte_Long_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
 
-        cartesian_float_data= FnDataPtr(self.cartesian_float_data_handler)
-        logger_ready= FnVoid(self.logger_ready_handler)
+        logger_ready= Fn_VoidPtr(self.logger_ready_handler)
 
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, cartesian_float_data, logger_ready)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, logger_ready)
 
     def test_epoch_calc(self):
-        progress_update= FnUintUint(self.data_epoch_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, FnUbyteUlongByteArray))
+        progress_update= Fn_Uint_Uint(self.data_epoch_progress_update_handler)
+        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, \
+                received_unknown_entry = cast(None, Fn_Ubyte_Long_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
 
-        cartesian_float_data= FnDataPtr(self.cartesian_float_data_handler)
-        logger_ready= FnVoid(self.logger_ready_handler)
+        logger_ready= Fn_VoidPtr(self.logger_ready_handler)
 
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, cartesian_float_data, logger_ready)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, logger_ready)
 
 class TestLoggerSetup(TestMetaWearBase):
-    def logger_ready_handler(self):
-        self.libmetawear.mbl_mw_datasignal_remove_logger(self.test_signal)
+    def logger_ready_handler(self, logger):
+        self.libmetawear.mbl_mw_logger_remove(logger)
         self.assertEqual(self.command_history, self.expected_cmds)
 
     def test_accelerometer(self):
         self.expected_cmds= [
             [0x0b, 0x02, 0x03, 0x04, 0xff, 0x60],
             [0x0b, 0x02, 0x03, 0x04, 0xff, 0x24],
-            [0x0b, 0x09, 0x01],
-            [0x0b, 0x09, 0x00]
+            [0x0b, 0x09, 0x00],
+            [0x0b, 0x09, 0x01]
         ]
 
-        logger_ready= FnVoid(self.logger_ready_handler)
+        logger_ready= Fn_VoidPtr(self.logger_ready_handler)
         self.test_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, self.sensor_data_handler, logger_ready)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, logger_ready)
+
+class TestLoggerTimeout(TestMetaWearBase):
+    def logger_ready(self, logger):
+        self.created_logger= logger
+
+    def logger_ready_snd(self, logger):
+        self.e.set()
+
+    def commandLogger(self, board, characteristic, command, length):
+        if (command[0] == 0xb and command[1] == 0x2):
+            response= create_string_buffer(b'\x0b\x00', 2)
+            self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+        else:
+            super().commandLogger(board, characteristic, command, length)
+
+    def test_timeout(self):
+        self.e= threading.Event()
+
+        logger_ready_fn= Fn_VoidPtr(self.logger_ready)
+        logger_ready_snd_fn= Fn_VoidPtr(self.logger_ready_snd)
+        self.test_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, logger_ready_fn)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, logger_ready_fn)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, logger_ready_snd_fn)
+
+        self.e.wait()
+        self.assertIsNone(self.created_logger)

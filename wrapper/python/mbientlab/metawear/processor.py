@@ -9,6 +9,7 @@ class Math:
     OPERATION_RSHIFT= 8
     OPERATION_SUBTRACT= 9
     OPERATION_ABS_VALUE= 10
+    OPERATION_CONSTANT= 11
 
 class Comparator:
     OPERATION_EQ = 0
@@ -17,6 +18,11 @@ class Comparator:
     OPERATION_LTE = 3
     OPERATION_GT = 4
     OPERATION_GTE = 5
+
+    MODE_ABSOLUTE = 0
+    MODE_REFERENCE = 1
+    MODE_ZONE = 2
+    MODE_BINARY = 3
 
 class Threshold:
     MODE_ABSOLUTE= 0
@@ -40,3 +46,4 @@ class Pulse:
     OUTPUT_WIDTH= 0
     OUTPUT_AREA= 1
     OUTPUT_PEAK= 2
+    OUTPUT_ON_DETECTION= 3

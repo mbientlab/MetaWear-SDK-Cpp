@@ -5,11 +5,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -40,11 +36,6 @@ typedef enum {
  * @return Pointer to the data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_proximity_tsl2671_get_adc_data_signal(const MblMwMetaWearBoard *board);
-/**
- * Read the ADC values from the sensor
- * @param board         Board the sensor resides on
- */
-METAWEAR_API void mbl_mw_proximity_tsl2671_read_adc(const MblMwMetaWearBoard *board);
 /**
  * Sets the integration time
  * @param board         Board to modify

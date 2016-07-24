@@ -28,16 +28,22 @@ int32_t mbl_mw_dataprocessor_pulse_create(MblMwDataSignal *source, MblMwPulseOut
     case MBL_MW_PULSE_OUTPUT_WIDTH:
         new_processor->set_channel_attr(1, 2);
         new_processor->interpreter = DataInterpreter::UINT32;
-        new_processor->number_to_firmware = number_to_firmware_default;
+        new_processor->converter = FirmwareConverter::DEFAULT;
         break;
     case MBL_MW_PULSE_OUTPUT_AREA:
         new_processor->set_channel_attr(1, 4);
+        break;
+   case MBL_MW_PULSE_OUTPUT_ON_DETECTION:
+        new_processor->is_signed = 0;
+        new_processor->set_channel_attr(1, 1);
+        new_processor->interpreter = DataInterpreter::UINT32;
+        new_processor->converter = FirmwareConverter::DEFAULT;
         break;
     default:
         break;
     }
     
-    int32_t scaled_threshold= (int32_t) source->number_to_firmware(source, threshold);
+    int32_t scaled_threshold= (int32_t) number_to_firmware_converters.at(source->converter)(source, threshold);
 
     PulseDetectorConfig *config = (PulseDetectorConfig*) malloc(sizeof(PulseDetectorConfig));
     config->length= source->length() - 1;
@@ -52,7 +58,7 @@ int32_t mbl_mw_dataprocessor_pulse_create(MblMwDataSignal *source, MblMwPulseOut
 
 int32_t mbl_mw_dataprocessor_pulse_modify(MblMwDataProcessor *pulse, float threshold, uint16_t width) {
     if (pulse->type == DataProcessorType::PULSE) {
-        int32_t scaled_threshold= (int32_t) pulse->number_to_firmware(pulse, threshold);
+        int32_t scaled_threshold= (int32_t) number_to_firmware_converters.at(pulse->converter)(pulse, threshold);
         memcpy(((uint8_t*)(pulse->config)) + 3, &scaled_threshold, sizeof(scaled_threshold));
         memcpy(((uint8_t*)(pulse->config)) + 7, &width, sizeof(width));
 

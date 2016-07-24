@@ -11,25 +11,12 @@ using System.Runtime.InteropServices;
 namespace MbientLab.MetaWear {
     public sealed class Functions {
         private const String METAWEAR_DLL= "MetaWear.WinRT.dll";
-
         /// <summary>
-        /// Handles changes from the MetaWear notify characteristic.  All characteristic changes from the notify characteristic must be forwarded to this function
+        /// Frees allocated memory
         /// </summary>
-        /// <param name="board">Board the characteristic change is from</param>
-        /// <param name="value">Byte array containing the new characteristic value</param>
-        /// <param name="len">Length of the array</param>
+        /// <param name="ptr">Pointer to the memory to free</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_connection_notify_char_changed(IntPtr board, byte[] value, byte len);
-
-        /// <summary>
-        /// Handles responses from reading gatt characteristics.  All characteristic values read must be forwaded to this function.
-        /// </summary>
-        /// <param name="board">Board the response is from</param>
-        /// <param name="characteristic">Characteristic that was read</param>
-        /// <param name="value">Byte array containing the characteristic value</param>
-        /// <param name="length">Length of the array</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_connection_char_read(IntPtr board, IntPtr characteristic, byte[] value, byte length);
+        public static extern void mbl_mw_memory_free(IntPtr ptr);
 
         /// <summary>
         /// Issues a soft reset
@@ -79,51 +66,7 @@ namespace MbientLab.MetaWear {
         /// <param name="event">Event to end recording for</param>
         /// <param name="commands_recorded">Callback function to be executed when commands have been recorded</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_event_end_record(IntPtr mw_event, FnVoid commands_recorded);
-
-        /// <summary>
-        /// Creates an instance of the MblMwMetaWearBoard struct
-        /// </summary>
-        /// <param name="connection">Connection struct the new MblMwMetaWearBoard variable will use for btle communication</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_metawearboard_create(ref BtleConnection connection);
-
-        /// <summary>
-        /// Frees the memory allocated for the struct
-        /// </summary>
-        /// <param name="board">Pointer to the memory to free</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_free(IntPtr board);
-
-        /// <summary>
-        /// Initialize the board.  This function is non-blocking and will alert the caller when the operation is complete.
-        /// </summary>
-        /// <param name="board">Board to initialize</param>
-        /// <param name="initialized">Callback function to be executed when the board is initialized</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_initialize(IntPtr board, FnVoid initialized);
-
-        /// <summary>
-        /// Removes all data processors and timers from the MetaWear board
-        /// </summary>
-        /// <param name="board">Board to tear down</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_tear_down(IntPtr board);
-
-        /// <summary>
-        /// Checks if the board is initialized
-        /// </summary>
-        /// <param name="board">Board to check</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_metawearboard_is_initialized(IntPtr board);
-
-        /// <summary>
-        /// Checks module type i.e. what kind of accelerometer is being used
-        /// </summary>
-        /// <param name="board">Board to check</param>
-        /// <param name="module">Module to lookup</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_metawearboard_lookup_module(IntPtr board, byte module);
+        public static extern void mbl_mw_event_end_record(IntPtr mw_event, Fn_IntPtr_Int commands_recorded);
 
         /// <summary>
         /// Creates a timer that will run for a set number of repetitions.  A pointer representing the timer will be passed to the user through a callback function
@@ -134,7 +77,7 @@ namespace MbientLab.MetaWear {
         /// <param name="delay">Zero if the tiemr should immediately fire</param>
         /// <param name="received_timer">Callback function to be executed when the timer is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_timer_create(IntPtr board, uint period, ushort repetitions, byte delay, FnVoidPtr received_timer);
+        public static extern void mbl_mw_timer_create(IntPtr board, uint period, ushort repetitions, byte delay, Fn_IntPtr received_timer);
 
         /// <summary>
         /// Creates a timer that will run indefinitely.  A pointer representing the timer will be passed to the user through a callback function
@@ -144,7 +87,22 @@ namespace MbientLab.MetaWear {
         /// <param name="delay">Zero if the tiemr should immediately fire</param>
         /// <param name="received_timer">Callback function to be executed when the timer is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_timer_create_indefinite(IntPtr board, uint period, byte delay, FnVoidPtr received_timer);
+        public static extern void mbl_mw_timer_create_indefinite(IntPtr board, uint period, byte delay, Fn_IntPtr received_timer);
+
+        /// <summary>
+        /// Retrieves the id value identifying the timer
+        /// </summary>
+        /// <param name="timer">Timer to lookup</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern byte mbl_mw_timer_get_id(IntPtr timer);
+
+        /// <summary>
+        /// Looks up the MblMwTimer object corresponding to the id
+        /// </summary>
+        /// <param name="board">Board to search on</param>
+        /// <param name="id">Numerical id to lookup</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_timer_lookup_id(IntPtr board, byte id);
 
         /// <summary>
         /// Starts a timer
@@ -166,68 +124,6 @@ namespace MbientLab.MetaWear {
         /// <param name="timer">Timer to remove</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_timer_remove(IntPtr timer);
-
-        /// <summary>
-        /// Subscribes to a data stream, processing messages with the given handler
-        /// </summary>
-        /// <param name="signal">Data signal to subscribe to</param>
-        /// <param name="received_data">Callback function to handle data received from the signal</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_subscribe(IntPtr signal, FnVoidPtr received_data);
-
-        /// <summary>
-        /// Unsubscribes from a data stream
-        /// </summary>
-        /// <param name="signal">Data signal to unsubscribe from</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_unsubscribe(IntPtr signal);
-
-        /// <summary>
-        /// Logs the data signal, processing messages with the given handler
-        /// </summary>
-        /// <param name="signal">Data signal to log</param>
-        /// <param name="received_data">Callback function to handle the logged data</param>
-        /// <param name="logger_ready">Callback function to be executed when the signal logger is ready</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_log(IntPtr signal, FnVoidPtr received_data, FnVoid logger_ready);
-
-        /// <summary>
-        /// Removes the logger attached to the signal
-        /// </summary>
-        /// <param name="signal">Data signal to stop logging</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_remove_logger(IntPtr signal);
-
-        /// <summary>
-        /// Starts data logging
-        /// </summary>
-        /// <param name="board">Board to log data on</param>
-        /// <param name="overwrite">Non</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_logging_start(IntPtr board, byte overwrite);
-
-        /// <summary>
-        /// Stops data logging
-        /// </summary>
-        /// <param name="board">Board to stop logging</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_logging_stop(IntPtr board);
-
-        /// <summary>
-        /// Clear the logger of saved entries
-        /// </summary>
-        /// <param name="board">Board to remove entries from</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_logging_clear_entries(IntPtr board);
-
-        /// <summary>
-        /// Downloads the log data
-        /// </summary>
-        /// <param name="board">Board to download the log data from</param>
-        /// <param name="n_notifies">How many progress updates to send</param>
-        /// <param name="handler">Handler for processing logger responses</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_logging_download(IntPtr board, byte n_notifies, ref LogDownloadHandler handler);
 
         /// <summary>
         /// Retrieves an event pointer representing a disconnect event
@@ -297,142 +193,203 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_settings_set_connection_parameters(IntPtr board, float min_conn_interval, float max_conn_interval, ushort latency, ushort timeout);
 
         /// <summary>
-        /// Read the battery state
+        /// Subscribes to a data stream, processing messages with the given handler
         /// </summary>
-        /// <param name="board">Board to read the battery state on</param>
+        /// <param name="signal">Data signal to subscribe to</param>
+        /// <param name="received_data">Callback function to handle data received from the signal</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_settings_read_battery_state(IntPtr board);
+        public static extern void mbl_mw_datasignal_subscribe(IntPtr signal, Fn_IntPtr received_data);
 
         /// <summary>
-        /// Drives a motor
+        /// Unsubscribes from a data stream
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="duty_cycle_per">Strength of the motor</param>
-        /// <param name="pulse_width_ms">How long to run the motor</param>
+        /// <param name="signal">Data signal to unsubscribe from</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_haptic_start_motor(IntPtr board, float duty_cycle_per, ushort pulse_width_ms);
+        public static extern void mbl_mw_datasignal_unsubscribe(IntPtr signal);
 
         /// <summary>
-        /// Drives a buzzer
+        /// Check if the data signal can be explicitly read
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="pulse_width_ms">How long to run the buzzer</param>
+        /// <param name="signal">Data signal to check</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_haptic_start_buzzer(IntPtr board, ushort pulse_width_ms);
+        public static extern int mbl_mw_datasignal_is_readable(IntPtr signal);
 
         /// <summary>
-        /// Sets the iBeacon advertising major number
+        /// Reads data from sensor represented by the data signal.  Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="major">New advertising major number</param>
+        /// <param name="signal">Data signal to read from</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_major(IntPtr board, ushort major);
+        public static extern void mbl_mw_datasignal_read(IntPtr signal);
 
         /// <summary>
-        /// Sets the iBeacon advertising minor number
+        /// Reads data from sensor represented by the data signal.  Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function.  This variant is for reads that require additional parameters.
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="minor">New advertising minor number</param>
+        /// <param name="signal">Data signal to read from</param>
+        /// <param name="parameters">Additional parameters required for the read operation</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_minor(IntPtr board, ushort minor);
+        public static extern void mbl_mw_datasignal_read_with_parameters(IntPtr signal, IntPtr parameters);
 
         /// <summary>
-        /// Sets the iBeacon advertising period
+        /// Creates an MblMwDataLogger for the signal
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="period">New advertising period</param>
+        /// <param name="signal">Data signal to log</param>
+        /// <param name="logger_ready">Callback function to be executed when the logger is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_period(IntPtr board, ushort period);
+        public static extern void mbl_mw_datasignal_log(IntPtr signal, Fn_IntPtr logger_ready);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_connection_notify_char_changed(IntPtr board, byte[] value, byte len);
 
         /// <summary>
-        /// Sets the iBeacon advertising transmitting power
+        /// Handles changes from the MetaWear notify characteristic.  All characteristic changes from the notify characteristic must be forwarded to this function
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="tx_power">New advertising transmitting power</param>
+        /// <param name="board">Board the characteristic change is from</param>
+        /// <param name="value">Byte array containing the new characteristic value</param>
+        /// <param name="len">Length of the array</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_tx_power(IntPtr board, sbyte tx_power);
+        public static extern int mbl_mw_metawearboard_notify_char_changed(IntPtr board, byte[] value, byte len);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_connection_char_read(IntPtr board, IntPtr characteristic, byte[] value, byte length);
 
         /// <summary>
-        /// Sets the iBeacon advertising receiving power
+        /// Handles responses from a gatt characteristic read issued by a MblMwMetaWearBoard object.  All characteristic values read must be forwaded to this function.
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="rx_power">New advertising receiving power</param>
+        /// <param name="board">Board the response is from</param>
+        /// <param name="characteristic">Characteristic that was read</param>
+        /// <param name="value">Byte array containing the characteristic value</param>
+        /// <param name="length">Length of the array</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_rx_power(IntPtr board, sbyte rx_power);
+        public static extern void mbl_mw_metawearboard_char_read(IntPtr board, IntPtr characteristic, byte[] value, byte length);
 
         /// <summary>
-        /// Sets the iBeacon advertising UUID
+        /// Creates an instance of the MblMwMetaWearBoard struct
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="ad_uuid">Byte representation of the UUID in little endian ordering</param>
+        /// <param name="connection">Connection struct the new MblMwMetaWearBoard variable will use for btle communication</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_uuid(IntPtr board, byte[] ad_uuid);
+        public static extern IntPtr mbl_mw_metawearboard_create(ref BtleConnection connection);
 
         /// <summary>
-        /// Enables iBeacon mode.  You will need to disconnect from the board to advertise as an iBeacon
+        /// Frees the memory allocated for the struct
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="board">Pointer to the memory to free</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_enable(IntPtr board);
+        public static extern void mbl_mw_metawearboard_free(IntPtr board);
 
         /// <summary>
-        /// Disables iBeacon mode
+        /// Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="board">Board to initialize</param>
+        /// <param name="initialized">Callback function to be executed when the board is initialized</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_disable(IntPtr board);
+        public static extern void mbl_mw_metawearboard_initialize(IntPtr board, Fn_IntPtr_Int initialized);
 
         /// <summary>
-        /// Loads the struct with a preset configuration
+        /// Removes all data processors and timers from the MetaWear board
         /// </summary>
-        /// <param name="pattern">Pointer to the pattern to write the configuration to</param>
-        /// <param name="preset">Preset pattern to load</param>
+        /// <param name="board">Board to tear down</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_led_load_preset_pattern(ref Led.Pattern pattern, Led.PatternPreset preset);
+        public static extern void mbl_mw_metawearboard_tear_down(IntPtr board);
 
         /// <summary>
-        /// Writes the led pattern to the board
+        /// Checks if the board is initialized
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="pattern">Pointer to the pattern attributes to write to the board</param>
-        /// <param name="color">Color the pattern is configuring</param>
+        /// <param name="board">Board to check</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_led_write_pattern(IntPtr board, ref Led.Pattern pattern, Led.Color color);
+        public static extern int mbl_mw_metawearboard_is_initialized(IntPtr board);
 
         /// <summary>
-        /// Plays any programmed patterns, and immediately plays any patterns programmed later
+        /// Checks module type i.e. what kind of accelerometer is being used
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="board">Board to check</param>
+        /// <param name="module">Module to lookup</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_led_autoplay(IntPtr board);
+        public static extern int mbl_mw_metawearboard_lookup_module(IntPtr board, Module module);
 
         /// <summary>
-        /// Plays any programmed patterns
+        /// Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="board">Board to serialize</param>
+        /// <param name="size">Pointer to where the size of the returned byte array will be written to</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_led_play(IntPtr board);
+        public static extern IntPtr mbl_mw_metawearboard_serialize(IntPtr board, ref uint size);
 
         /// <summary>
-        /// Pauses the patterns
+        /// Deserializes API state.  This function must be executed before calling mbl_mw_metawearboard_initialize.
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="board">Board to deserialize</param>
+        /// <param name="state">Byte array holding the the information state</param>
+        /// <param name="size">Byte array size</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_led_pause(IntPtr board);
+        public static extern void mbl_mw_metawearboard_deserialize(IntPtr board, byte[] state, uint size);
 
         /// <summary>
-        /// Stops playing LED patterns
+        /// Starts data logging
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="board">Board to log data on</param>
+        /// <param name="overwrite">Non</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_led_stop(IntPtr board);
+        public static extern void mbl_mw_logging_start(IntPtr board, byte overwrite);
 
         /// <summary>
-        /// Stops playing LED patterns and clears all pattern configurations
+        /// Stops data logging
         /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="board">Board to stop logging</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_led_stop_and_clear(IntPtr board);
+        public static extern void mbl_mw_logging_stop(IntPtr board);
+
+        /// <summary>
+        /// Clear the logger of saved entries
+        /// </summary>
+        /// <param name="board">Board to remove entries from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_logging_clear_entries(IntPtr board);
+
+        /// <summary>
+        /// Downloads the log data
+        /// </summary>
+        /// <param name="board">Board to download the log data from</param>
+        /// <param name="n_notifies">How many progress updates to send</param>
+        /// <param name="handler">Handler for processing logger responses</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_logging_download(IntPtr board, byte n_notifies, ref LogDownloadHandler handler);
+
+        /// <summary>
+        /// Retrieves the id value identifying the logger
+        /// </summary>
+        /// <param name="logger">Logger to lookup</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern byte mbl_mw_logger_get_id(IntPtr logger);
+
+        /// <summary>
+        /// Retrieves the data signal the logger is recording data for
+        /// </summary>
+        /// <param name="logger">Logger to lookup</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_logger_get_signal(IntPtr logger);
+
+        /// <summary>
+        /// Looks up the MblMwDataLogger object corresponding to the id
+        /// </summary>
+        /// <param name="board">Board to search on</param>
+        /// <param name="id">Numerical id to lookup</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_logger_lookup_id(IntPtr board, byte id);
+
+        /// <summary>
+        /// Removes the logger from the board
+        /// </summary>
+        /// <param name="logger">Logger to remove</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_logger_remove(IntPtr logger);
+
+        /// <summary>
+        /// Subscribes to responses from the data logger
+        /// </summary>
+        /// <param name="logger">Logger to subscribe to</param>
+        /// <param name="received_data">Callback function to handle data received from the logger</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_logger_subscribe(IntPtr logger, Fn_IntPtr received_data);
 
         /// <summary>
         /// Initializes memory on the MetaWear board for a NeoPixel strand with a slow operating speed (400 KHz)
@@ -532,29 +489,135 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_neopixel_stop_rotation(IntPtr board, byte strand);
 
         /// <summary>
-        /// Create an accumulator whose output is the same size as the input.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// Sets the iBeacon advertising major number
         /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="major">New advertising major number</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_accumulator_create(IntPtr source, FnVoidPtr processor_created);
+        public static extern void mbl_mw_ibeacon_set_major(IntPtr board, ushort major);
 
         /// <summary>
-        /// Create an accumulator with a specific output size.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// Sets the iBeacon advertising minor number
         /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="output_size">Output size</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="minor">New advertising minor number</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_accumulator_create_size(IntPtr source, byte output_size, FnVoidPtr processor_created);
+        public static extern void mbl_mw_ibeacon_set_minor(IntPtr board, ushort minor);
 
         /// <summary>
-        /// Overwrites the current running sum with a new value
+        /// Sets the iBeacon advertising period
         /// </summary>
-        /// <param name="accumulator">Accumulator processor to modify</param>
-        /// <param name="new_running_sum">New running sum of the accumulator</param>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="period">New advertising period</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_set_accumulator_state(IntPtr accumulator, float new_running_sum);
+        public static extern void mbl_mw_ibeacon_set_period(IntPtr board, ushort period);
+
+        /// <summary>
+        /// Sets the iBeacon advertising transmitting power
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="tx_power">New advertising transmitting power</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_tx_power(IntPtr board, sbyte tx_power);
+
+        /// <summary>
+        /// Sets the iBeacon advertising receiving power
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="rx_power">New advertising receiving power</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_rx_power(IntPtr board, sbyte rx_power);
+
+        /// <summary>
+        /// Sets the iBeacon advertising UUID
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="ad_uuid">Byte representation of the UUID in little endian ordering</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_uuid(IntPtr board, byte[] ad_uuid);
+
+        /// <summary>
+        /// Enables iBeacon mode.  You will need to disconnect from the board to advertise as an iBeacon
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_enable(IntPtr board);
+
+        /// <summary>
+        /// Disables iBeacon mode
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_disable(IntPtr board);
+
+        /// <summary>
+        /// Drives a motor
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="duty_cycle_per">Strength of the motor</param>
+        /// <param name="pulse_width_ms">How long to run the motor</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_haptic_start_motor(IntPtr board, float duty_cycle_per, ushort pulse_width_ms);
+
+        /// <summary>
+        /// Drives a buzzer
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="pulse_width_ms">How long to run the buzzer</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_haptic_start_buzzer(IntPtr board, ushort pulse_width_ms);
+
+        /// <summary>
+        /// Loads the struct with a preset configuration
+        /// </summary>
+        /// <param name="pattern">Pointer to the pattern to write the configuration to</param>
+        /// <param name="preset">Preset pattern to load</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_led_load_preset_pattern(ref Led.Pattern pattern, Led.PatternPreset preset);
+
+        /// <summary>
+        /// Writes the led pattern to the board
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="pattern">Pointer to the pattern attributes to write to the board</param>
+        /// <param name="color">Color the pattern is configuring</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_led_write_pattern(IntPtr board, ref Led.Pattern pattern, Led.Color color);
+
+        /// <summary>
+        /// Plays any programmed patterns, and immediately plays any patterns programmed later
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_led_autoplay(IntPtr board);
+
+        /// <summary>
+        /// Plays any programmed patterns
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_led_play(IntPtr board);
+
+        /// <summary>
+        /// Pauses the patterns
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_led_pause(IntPtr board);
+
+        /// <summary>
+        /// Stops playing LED patterns
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_led_stop(IntPtr board);
+
+        /// <summary>
+        /// Stops playing LED patterns and clears all pattern configurations
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_led_stop_and_clear(IntPtr board);
 
         /// <summary>
         /// Create an average processor with a specific sample size.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -563,7 +626,7 @@ namespace MbientLab.MetaWear {
         /// <param name="size">How many data samples to use for computing the running average.  Recommended                              to be a power of 2 for faster computation.</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_average_create(IntPtr source, byte size, FnVoidPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_average_create(IntPtr source, byte size, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Resets the running average
@@ -586,7 +649,222 @@ namespace MbientLab.MetaWear {
         /// <param name="source">Data signal providing the input for the processor</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_buffer_create(IntPtr source, FnVoidPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_buffer_create(IntPtr source, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create a delta processor.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="mode">Output mode of the processor</param>
+        /// <param name="magnitude">Min distance from the reference value to allow the input to pass</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_delta_create(IntPtr source, Delta.Mode mode, float magnitude, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Sets the reference value of the processor.
+        /// </summary>
+        /// <param name="delta">Delta processor to modify</param>
+        /// <param name="previous_value">Min distance from the reference value to allow the input to pass</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_delta_set_reference(IntPtr delta, float previous_value);
+
+        /// <summary>
+        /// Modifies the magnitude that allows data through
+        /// </summary>
+        /// <param name="delta">Delta processor to modify</param>
+        /// <param name="magnitude">Min distance from the reference value to allow the input to pass</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_delta_modify_magnitude(IntPtr delta, float magnitude);
+
+        /// <summary>
+        /// Create a passthrough processor.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="mode">Processor</param>
+        /// <param name="count">Internal count to initial the processor with</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_passthrough_create(IntPtr source, Passthrough.Mode mode, ushort count, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Modify the internal count of the passthrough processor
+        /// </summary>
+        /// <param name="passthrough">Passthrough processor to modify</param>
+        /// <param name="new_count">New internal count</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_passthrough_set_count(IntPtr passthrough, ushort new_count);
+
+        /// <summary>
+        /// Modify the passthrough configuration
+        /// </summary>
+        /// <param name="passthrough">Passthrough processor to update</param>
+        /// <param name="mode">New operation mode to use</param>
+        /// <param name="count">New initial count</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_passthrough_modify(IntPtr passthrough, Passthrough.Mode mode, ushort count);
+
+        /// <summary>
+        /// Create an rms processor.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_rms_create(IntPtr source, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create an rss processor.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_rss_create(IntPtr source, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create a sample delay processor.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="bin_size">Number of samples to hold before letting data through</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_sample_create(IntPtr source, byte bin_size, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Modify the bin size of a sample delay processor
+        /// </summary>
+        /// <param name="sample_delay">Sample processor to modify</param>
+        /// <param name="bin_size">Number of samples to hold before letting data through</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_sample_modify_bin_size(IntPtr sample_delay, byte bin_size);
+
+        /// <summary>
+        /// Create a threshold processor.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="mode">Processor output mode</param>
+        /// <param name="boundary">Limit that triggers an event when data crosses it</param>
+        /// <param name="hysteresis">Min distance between the limit and value to signal a successful crossing</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_threshold_create(IntPtr source, Threshold.Mode mode, float boundary, float hysteresis, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Modifies the threshold processor configuration
+        /// </summary>
+        /// <param name="threshold">Threshold processor to modify</param>
+        /// <param name="boundary">Limit that triggers an event when data crosses it</param>
+        /// <param name="hysteresis">Min distance between the limit and value to signal a successful crossing</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_threshold_modify_boundary(IntPtr threshold, float boundary, float hysteresis);
+
+        /// <summary>
+        /// Creates a time delay processor.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="mode">Operation mode of the processor</param>
+        /// <param name="period">How often to allow data through</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_time_create(IntPtr source, Time.Mode mode, uint period, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Modify the configuration of the time delay processor
+        /// </summary>
+        /// <param name="time_delay">Time delay processor to modify</param>
+        /// <param name="period">How often to allow data through</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_time_modify_period(IntPtr time_delay, uint period);
+
+        /// <summary>
+        /// Create a pulse detector.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="output">Output type of the processor</param>
+        /// <param name="threshold">Value the data must exceed for a valid pulse</param>
+        /// <param name="width">Number of samples that must exceed the threshold for a valid pulse</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_pulse_create(IntPtr source, Pulse.Output output, float threshold, ushort width, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Modify the configuration of a pulse detector
+        /// </summary>
+        /// <param name="pulse">Pulse detector to modify</param>
+        /// <param name="threshold">New threshold of the detector</param>
+        /// <param name="width">New width of the detector</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_pulse_modify(IntPtr pulse, float threshold, ushort width);
+
+        /// <summary>
+        /// Create an accumulator whose output is the same size as the input.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_accumulator_create(IntPtr source, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create an accumulator with a specific output size.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="output_size">Output size</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_accumulator_create_size(IntPtr source, byte output_size, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Overwrites the current running sum with a new value
+        /// </summary>
+        /// <param name="accumulator">Accumulator processor to modify</param>
+        /// <param name="new_running_sum">New running sum of the accumulator</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_set_accumulator_state(IntPtr accumulator, float new_running_sum);
+
+        /// <summary>
+        /// Create a math processor where signed/unsigned operation is inferred.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="op">Math operation to compute</param>
+        /// <param name="rhs">Right hand side of the operation that requires 2 inputs</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_math_create(IntPtr source, Maths.Operation op, float rhs, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create a math processor using signed operations.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="op">Math operation to compute</param>
+        /// <param name="rhs">Right hand side of the operation that requires 2 inputs</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_math_create_signed(IntPtr source, Maths.Operation op, float rhs, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create a math processor using unsigned operations.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input for the processor</param>
+        /// <param name="op">Math operation to compute</param>
+        /// <param name="rhs">Right hand side of the operation that requires 2 inputs</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_math_create_unsigned(IntPtr source, Maths.Operation op, float rhs, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Modify the configuration of a math processor, changing the right side value of the operation
+        /// </summary>
+        /// <param name="math">Math processor to modify</param>
+        /// <param name="rhs">New right hand side of the operation</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_math_modify_rhs(IntPtr math, float rhs);
+
+        /// <summary>
+        /// Modify the configuration of a math processor for a feedback or feedforward loop
+        /// </summary>
+        /// <param name="math">Math processor to modify</param>
+        /// <param name="rhs_signal">Data signal supplying the rhs value of the operation</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_math_modify_rhs_signal(IntPtr math, IntPtr rhs_signal);
 
         /// <summary>
         /// Create a comparator processor where signed/unsigned is inferred.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -596,7 +874,7 @@ namespace MbientLab.MetaWear {
         /// <param name="reference">Reference value to compare the input to</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_comparator_create(IntPtr source, Comparator.Operation op, float reference, FnVoidPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_comparator_create(IntPtr source, Comparator.Operation op, float reference, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Create a comparator processor specifically for a signed comparison.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -606,7 +884,7 @@ namespace MbientLab.MetaWear {
         /// <param name="reference">Reference value to compare the input to</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_comparator_create_signed(IntPtr source, Comparator.Operation op, float reference, FnVoidPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_comparator_create_signed(IntPtr source, Comparator.Operation op, float reference, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Create a comparator processor specifically for an unsigned comparison.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -616,7 +894,7 @@ namespace MbientLab.MetaWear {
         /// <param name="reference">Reference value to compare the input to</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_comparator_create_unsigned(IntPtr source, Comparator.Operation op, float reference, FnVoidPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_comparator_create_unsigned(IntPtr source, Comparator.Operation op, float reference, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Modifies the comparator processor, changing the operation and reference value
@@ -637,12 +915,58 @@ namespace MbientLab.MetaWear {
         public static extern int mbl_mw_dataprocessor_comparator_modify_signal(IntPtr comparator, Comparator.Operation op, IntPtr reference_signal);
 
         /// <summary>
+        /// Create a multi-value comparator where a signed/unsigned comparison is inferred.  This feature is only available on firmware v1.2.3 and later. A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input</param>
+        /// <param name="op">Comparison operation to execute</param>
+        /// <param name="mode">Processor output mode</param>
+        /// <param name="references">Array of reference values to compare against</param>
+        /// <param name="references_length">Number of elements in the references array</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_multi_comparator_create(IntPtr source, Comparator.Operation op, Comparator.Mode mode, ref float references, byte references_length, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create a multi-value comparator for signed comparisons.  This feature is only available on firmware v1.2.3 and later.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input</param>
+        /// <param name="op">Comparison operation to execute</param>
+        /// <param name="mode">Processor output mode</param>
+        /// <param name="references">Array of reference values to compare against</param>
+        /// <param name="references_length">Number of elements in the references array</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_multi_comparator_create_signed(IntPtr source, Comparator.Operation op, Comparator.Mode mode, ref float references, byte references_length, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Create a multi-value comparator for unsigned comparisons.  This feature is only available on firmware v1.2.3 and later.  A pointer representing the processor will be passed back to the user via a callback function.
+        /// </summary>
+        /// <param name="source">Data signal providing the input</param>
+        /// <param name="op">Comparison operation to execute</param>
+        /// <param name="mode">Processor output mode</param>
+        /// <param name="references">Array of reference values to compare against</param>
+        /// <param name="references_length">Number of elements in the references array</param>
+        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_multi_comparator_create_unsigned(IntPtr source, Comparator.Operation op, Comparator.Mode mode, ref float references, byte references_length, Fn_IntPtr processor_created);
+
+        /// <summary>
+        /// Modifies the multi-value comparator, changing the operation and reference values.  This feature is only available on firmware v1.2.3 and later.
+        /// </summary>
+        /// <param name="comparator">Comparator processor to modify</param>
+        /// <param name="op">New comparison operation</param>
+        /// <param name="references">Array of new reference values</param>
+        /// <param name="references_length">Number of elements in the references array</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_dataprocessor_multi_comparator_modify(IntPtr comparator, Comparator.Operation op, ref float references, byte references_length);
+
+        /// <summary>
         /// Create a counter with an output size of 1 byte.  A pointer representing the processor will be passed back to the user via a callback function.
         /// </summary>
         /// <param name="source">Event the processor is counting</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_counter_create(IntPtr source, FnVoidPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_counter_create(IntPtr source, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Create a counter with a specific output size.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -651,7 +975,7 @@ namespace MbientLab.MetaWear {
         /// <param name="size">Output size</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_counter_create_size(IntPtr source, byte size, FnVoidPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_counter_create_size(IntPtr source, byte size, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Overwrites the current count with a new value
@@ -662,208 +986,11 @@ namespace MbientLab.MetaWear {
         public static extern int mbl_mw_dataprocessor_counter_set_state(IntPtr counter, uint new_count);
 
         /// <summary>
-        /// Create a delta processor.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="mode">Output mode of the processor</param>
-        /// <param name="magnitude">Min distance from the reference value to allow the input to pass</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_delta_create(IntPtr source, Delta.Mode mode, float magnitude, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Sets the reference value of the processor.
-        /// </summary>
-        /// <param name="delta">Delta processor to modify</param>
-        /// <param name="previous_value">Min distance from the reference value to allow the input to pass</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_delta_set_reference(IntPtr delta, float previous_value);
-
-        /// <summary>
-        /// Modifies the magnitude that allows data through
-        /// </summary>
-        /// <param name="delta">Delta processor to modify</param>
-        /// <param name="magnitude">Min distance from the reference value to allow the input to pass</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_delta_modify_magnitude(IntPtr delta, float magnitude);
-
-        /// <summary>
-        /// Create a math processor where signed/unsigned operation is inferred.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="op">Math operation to compute</param>
-        /// <param name="rhs">Right hand side of the operation that requires 2 inputs</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_math_create(IntPtr source, Maths.Operation op, float rhs, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Create a math processor using signed operations.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="op">Math operation to compute</param>
-        /// <param name="rhs">Right hand side of the operation that requires 2 inputs</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_math_create_signed(IntPtr source, Maths.Operation op, float rhs, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Create a math processor using unsigned operations.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="op">Math operation to compute</param>
-        /// <param name="rhs">Right hand side of the operation that requires 2 inputs</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_math_create_unsigned(IntPtr source, Maths.Operation op, float rhs, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Modify the configuration of a math processor, changing the right side value of the operation
-        /// </summary>
-        /// <param name="math">Math processor to modify</param>
-        /// <param name="rhs">New right hand side of the operation</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_math_modify_rhs(IntPtr math, float rhs);
-
-        /// <summary>
-        /// Modify the configuration of a math processor for a feedback or feedforward loop
-        /// </summary>
-        /// <param name="math">Math processor to modify</param>
-        /// <param name="rhs_signal">Data signal supplying the rhs value of the operation</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_math_modify_rhs_signal(IntPtr math, IntPtr rhs_signal);
-
-        /// <summary>
-        /// Create a passthrough processor.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="mode">Processor</param>
-        /// <param name="count">Internal count to initial the processor with</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_passthrough_create(IntPtr source, Passthrough.Mode mode, ushort count, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Modify the internal count of the passthrough processor
-        /// </summary>
-        /// <param name="passthrough">Passthrough processor to modify</param>
-        /// <param name="new_count">New internal count</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_passthrough_set_count(IntPtr passthrough, ushort new_count);
-
-        /// <summary>
-        /// Modify the passthrough configuration
-        /// </summary>
-        /// <param name="passthrough">Passthrough processor to update</param>
-        /// <param name="mode">New operation mode to use</param>
-        /// <param name="count">New initial count</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_passthrough_modify(IntPtr passthrough, Passthrough.Mode mode, ushort count);
-
-        /// <summary>
-        /// Create a pulse detector.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="output">Output type of the processor</param>
-        /// <param name="threshold">Value the data must exceed for a valid pulse</param>
-        /// <param name="width">Number of samples that must exceed the threshold for a valid pulse</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_pulse_create(IntPtr source, Pulse.Output output, float threshold, ushort width, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Modify the configuration of a pulse detector
-        /// </summary>
-        /// <param name="pulse">Pulse detector to modify</param>
-        /// <param name="threshold">New threshold of the detector</param>
-        /// <param name="width">New width of the detector</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_pulse_modify(IntPtr pulse, float threshold, ushort width);
-
-        /// <summary>
-        /// Create an rms processor.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_rms_create(IntPtr source, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Create an rss processor.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_rss_create(IntPtr source, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Create a sample delay processor.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="bin_size">Number of samples to hold before letting data through</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_sample_create(IntPtr source, byte bin_size, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Modify the bin size of a sample delay processor
-        /// </summary>
-        /// <param name="sample_delay">Sample processor to modify</param>
-        /// <param name="bin_size">Number of samples to hold before letting data through</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_sample_modify_bin_size(IntPtr sample_delay, byte bin_size);
-
-        /// <summary>
-        /// Create a threshold processor.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="mode">Processor output mode</param>
-        /// <param name="boundary">Limit that triggers an event when data crosses it</param>
-        /// <param name="hysteresis">Min distance between the limit and value to signal a successful crossing</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_threshold_create(IntPtr source, Threshold.Mode mode, float boundary, float hysteresis, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Modifies the threshold processor configuration
-        /// </summary>
-        /// <param name="threshold">Threshold processor to modify</param>
-        /// <param name="boundary">Limit that triggers an event when data crosses it</param>
-        /// <param name="hysteresis">Min distance between the limit and value to signal a successful crossing</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_threshold_modify_boundary(IntPtr threshold, float boundary, float hysteresis);
-
-        /// <summary>
-        /// Creates a time delay processor.  A pointer representing the processor will be passed back to the user via a callback function.
-        /// </summary>
-        /// <param name="source">Data signal providing the input for the processor</param>
-        /// <param name="mode">Operation mode of the processor</param>
-        /// <param name="period">How often to allow data through</param>
-        /// <param name="processor_created">Callback function to be executed when the processor is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_time_create(IntPtr source, Time.Mode mode, uint period, FnVoidPtr processor_created);
-
-        /// <summary>
-        /// Modify the configuration of the time delay processor
-        /// </summary>
-        /// <param name="time_delay">Time delay processor to modify</param>
-        /// <param name="period">How often to allow data through</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_time_modify_period(IntPtr time_delay, uint period);
-
-        /// <summary>
         /// Get the data signal representing a processor's internal state.  Processors that have an internal state are: accumulator, buffer, counter, delta, and passthrough.
         /// </summary>
         /// <param name="processor">Processor to access</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr mbl_mw_dataprocessor_get_state_data_signal(IntPtr processor);
-
-        /// <summary>
-        /// Reads the processor's internal state
-        /// </summary>
-        /// <param name="processor">Processor to read</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_dataprocessor_read_state(IntPtr processor);
 
         /// <summary>
         /// Removes a data processor and its consumers from the board
@@ -873,120 +1000,19 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_dataprocessor_remove(IntPtr processor);
 
         /// <summary>
-        /// Retrieves the data signal representing acceleration data
+        /// Retrieves the id value identifying the processor
         /// </summary>
-        /// <param name="board">Board to retrieve the signal from</param>
+        /// <param name="processor">Processor to lookup</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_acc_get_acceleration_data_signal(IntPtr board);
+        public static extern byte mbl_mw_dataprocessor_get_id(IntPtr processor);
 
         /// <summary>
-        /// Sets the output data rate.  If an invalid odr is used, the closest valid value will be used.
+        /// Looks up the MblMwDataProcessor object corresponding to the id
         /// </summary>
-        /// <param name="board">Board to configure</param>
-        /// <param name="odr">Output data rate</param>
+        /// <param name="board">Board to search on</param>
+        /// <param name="id">Numerical id to lookup</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_set_odr(IntPtr board, float odr);
-
-        /// <summary>
-        /// Sets the full scale range.  IF an invalid range is used, the closet valid value will be used.
-        /// </summary>
-        /// <param name="board">Board to configure</param>
-        /// <param name="range">Sampling range</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_set_range(IntPtr board, float range);
-
-        /// <summary>
-        /// Writes the acceleration settings to the board
-        /// </summary>
-        /// <param name="board">Board to configure</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_write_acceleration_config(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to active mode
-        /// </summary>
-        /// <param name="board">Board the accelerometer is on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_start(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to standby mode
-        /// </summary>
-        /// <param name="board">Board the accelerometer is on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_stop(IntPtr board);
-
-        /// <summary>
-        /// Enables acceleration sampling
-        /// </summary>
-        /// <param name="board">Board to enable acceleration sampling on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_enable_acceleration_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disables acceleration sampling
-        /// </summary>
-        /// <param name="board">Board to disable acceleration sampling on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_disable_acceleration_sampling(IntPtr board);
-
-        /// <summary>
-        /// Retrieves the data signal representing BMI160 acceleration data
-        /// </summary>
-        /// <param name="board">Pointer to the board to retrieve the signal from</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_acc_mma8452q_get_acceleration_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the output data rate
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="odr">Output data rate value to set</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_mma8452q_set_odr(IntPtr board, AccelerometerMma8452q.OutputDataRate odr);
-
-        /// <summary>
-        /// Sets the acceleration range
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="range">Acceleration range value to set</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_mma8452q_set_range(IntPtr board, AccelerometerMma8452q.FullScaleRange range);
-
-        /// <summary>
-        /// Writes the acceleration settings to the sensor
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_mma8452q_write_acceleration_config(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_mma8452q_start(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to standby mode
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_mma8452q_stop(IntPtr board);
-
-        /// <summary>
-        /// Enables acceleration sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_mma8452q_enable_acceleration_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disables acceleration sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_mma8452q_disable_acceleration_sampling(IntPtr board);
+        public static extern IntPtr mbl_mw_dataprocessor_lookup_id(IntPtr board, byte id);
 
         /// <summary>
         /// Retrieves the data signal representing LTR329 illuminance data
@@ -1041,184 +1067,47 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_als_ltr329_stop(IntPtr board);
 
         /// <summary>
-        /// Retrieves a data signal representing analog data
+        /// Retrieves the data signal representing B field strength
         /// </summary>
-        /// <param name="board">Board to receive data from</param>
-        /// <param name="pin">GPIO pin to read</param>
-        /// <param name="mode">Read mode to use</param>
+        /// <param name="board">Board the magnetometer resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_gpio_get_analog_input_data_signal(IntPtr board, byte pin, Gpio.ReadMode mode);
+        public static extern IntPtr mbl_mw_mag_bmm150_get_b_field_data_signal(IntPtr board);
 
         /// <summary>
-        /// Retrieves a data signal representing digital data
+        /// Sets the power mode to one of the recommended presets
         /// </summary>
-        /// <param name="board">Board to receive data from</param>
-        /// <param name="pin">GPIO pin to read</param>
+        /// <param name="board">Board to modify</param>
+        /// <param name="preset">New preset power mode to use</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_gpio_get_digital_input_data_signal(IntPtr board, byte pin);
+        public static extern void mbl_mw_mag_bmm150_set_power_preset(IntPtr board, MagnetometerBmm150.PowerPreset preset);
 
         /// <summary>
-        /// Retrieves a data signal representing changes in digital data
+        /// Enable B field sampling
         /// </summary>
-        /// <param name="board">Board to receive data from</param>
-        /// <param name="pin">GPIO pin to monitor</param>
+        /// <param name="board">Board the magnetometer resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_gpio_get_pin_monitor_data_signal(IntPtr board, byte pin);
+        public static extern void mbl_mw_mag_bmm150_enable_b_field_sampling(IntPtr board);
 
         /// <summary>
-        /// Read analog input voltage
+        /// Disable B field sampling
         /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to read</param>
-        /// <param name="mode">Analog read mode</param>
+        /// <param name="board">Board the magnetometer resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_read_analog_input(IntPtr board, byte pin, Gpio.ReadMode mode);
+        public static extern void mbl_mw_mag_bmm150_disable_b_field_sampling(IntPtr board);
 
         /// <summary>
-        /// Sets the pin pull mode
+        /// Switches the magnetometer into normal mode
         /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to modify</param>
-        /// <param name="mode">New pull mode</param>
+        /// <param name="board">Board the magnetometer resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_set_pull_mode(IntPtr board, byte pin, Gpio.PullMode mode);
+        public static extern void mbl_mw_mag_bmm150_start(IntPtr board);
 
         /// <summary>
-        /// Read digtal input state
+        /// Switches the magnetometer into sleep mode
         /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to read</param>
+        /// <param name="board">Board the magnetometer resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_read_digital_input(IntPtr board, byte pin);
-
-        /// <summary>
-        /// Sets the digital output state
-        /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to set</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_set_digital_output(IntPtr board, byte pin);
-
-        /// <summary>
-        /// Clears the digital output state
-        /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to clear</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_clear_digital_output(IntPtr board, byte pin);
-
-        /// <summary>
-        /// Sets the pin change type to monitor
-        /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to set</param>
-        /// <param name="type">Change type to monitor</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_set_pin_change_type(IntPtr board, byte pin, Gpio.PinChangeType type);
-
-        /// <summary>
-        /// Start pin monitoring
-        /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to monitor</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_start_pin_monitoring(IntPtr board, byte pin);
-
-        /// <summary>
-        /// Stop pin monitoring
-        /// </summary>
-        /// <param name="board">Board the pin is on</param>
-        /// <param name="pin">GPIO pin to stop monitoring</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gpio_stop_pin_monitoring(IntPtr board, byte pin);
-
-        /// <summary>
-        /// Retrieves the data signal representing BMI160 rotation data
-        /// </summary>
-        /// <param name="board">Pointer to the board to retrieve the signal from</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_gyro_bmi160_get_rotation_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the output data rate
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="odr">Output data rate value to assign</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_set_odr(IntPtr board, GyroBmi160.OutputDataRate odr);
-
-        /// <summary>
-        /// Sets the rotation range
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="range">New rotation range</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_set_range(IntPtr board, GyroBmi160.FullScaleRange range);
-
-        /// <summary>
-        /// Writes the configuration to the sendor
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_write_config(IntPtr board);
-
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_start(IntPtr board);
-
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_stop(IntPtr board);
-
-        /// <summary>
-        /// Enables rotation sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_enable_rotation_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disables rotation sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_disable_rotation_sampling(IntPtr board);
-
-        /// <summary>
-        /// Retrieves the data signal representing a temperature source
-        /// </summary>
-        /// <param name="board">Board to retrieve the signal from</param>
-        /// <param name="channel">Channel ID of the temperature source</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_multi_chnl_temp_get_temperature_data_signal(IntPtr board, byte channel);
-
-        /// <summary>
-        /// Configure the external thermistor
-        /// </summary>
-        /// <param name="board">Board the external thermistor is attached to</param>
-        /// <param name="channel">Channel ID of the external thermistor</param>
-        /// <param name="data_pin">GPIO pin reading the data</param>
-        /// <param name="pulldown_pin">GPIO pin the pulldown resistor is connected to</param>
-        /// <param name="active_high">Zero if the pulldown pin is not active high</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_multi_chnl_temp_configure_ext_thermistor(IntPtr board, byte channel, byte data_pin, byte pulldown_pin, byte active_high);
-
-        /// <summary>
-        /// Read temperature from a temperature source
-        /// </summary>
-        /// <param name="board">Board to read temperature from</param>
-        /// <param name="channel">Channel ID of the temperature source</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_multi_chnl_temp_read_temperature(IntPtr board, byte channel);
-
-        /// <summary>
-        /// Retrieve the temperature source type corresponding to a channel ID
-        /// </summary>
-        /// <param name="board">Board to lookup the temperature source on</param>
-        /// <param name="channel">Channel ID to lookup</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern MultiChannelTemperature.Source mbl_mw_multi_chnl_temp_get_source(IntPtr board, byte channel);
-
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte mbl_mw_multi_chnl_temp_get_num_channels(IntPtr board);
+        public static extern void mbl_mw_mag_bmm150_stop(IntPtr board);
 
         /// <summary>
         /// Retrieves the data signal representing switch state data
@@ -1228,77 +1117,18 @@ namespace MbientLab.MetaWear {
         public static extern IntPtr mbl_mw_switch_get_state_data_signal(IntPtr board);
 
         /// <summary>
-        /// Retrieves the data signal representing acceleration data from a Bosch accelerometer
-        /// </summary>
-        /// <param name="board">Pointer to the board to retrieve the signal from</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_acc_bosch_get_acceleration_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the output data rate for the BMI160 accelerometer
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="odr">Output data rate value to assign</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bmi160_set_odr(IntPtr board, AccelerometerBmi160.OutputDataRate odr);
-
-        /// <summary>
-        /// Sets the output data rate for the BMA255 accelerometer
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="odr">Output data rate value to assign</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bma255_set_odr(IntPtr board, AccelerometerBma255.OutputDataRate odr);
-
-        /// <summary>
-        /// Sets the acceleration range
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="range">Acceleration range to assign</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bosch_set_range(IntPtr board, AccelerometerBosch.FullScaleRange range);
-
-        /// <summary>
-        /// Writes the acceleration settings to the sensor
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bosch_write_acceleration_config(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bosch_start(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to standby mode
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bosch_stop(IntPtr board);
-
-        /// <summary>
-        /// Enables acceleration sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bosch_enable_acceleration_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disables acceleration sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_bosch_disable_acceleration_sampling(IntPtr board);
-
-        /// <summary>
         /// Retrieves the data signal representing pressure data from a Bosch barometer
         /// </summary>
         /// <param name="board">Pointer to the board to retrieve the signal from</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr mbl_mw_baro_bosch_get_pressure_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing a single read from a Bosch barometer
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_baro_bosch_get_pressure_read_data_signal(IntPtr board);
 
         /// <summary>
         /// Retrieves the data signal representing altitude data from a Bosch barometer
@@ -1369,55 +1199,11 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_baro_bosch_stop(IntPtr board);
 
         /// <summary>
-        /// Retrieves the data signal representing detected ADC values for clear, red, green, and blue
-        /// </summary>
-        /// <param name="board">Board the sensor resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_cd_tcs34725_get_adc_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Read color ADC values from the sensor
-        /// </summary>
-        /// <param name="board">Board the sensor resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_read_adc(IntPtr board);
-
-        /// <summary>
-        /// Sets the integration time
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="time">New integration time to use</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_set_integration_time(IntPtr board, float time);
-
-        /// <summary>
-        /// Sets the analog gain scale
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="gain">New gain scale to use</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_set_gain(IntPtr board, ColorDetectorTcs34725.Gain gain);
-
-        /// <summary>
-        /// Writes the configuration to the sensor
-        /// </summary>
-        /// <param name="board">Board the sensor resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_write_config(IntPtr board);
-
-        /// <summary>
         /// Retrieves the data signal representing humidity data
         /// </summary>
         /// <param name="board">Board the humidity sensor resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr mbl_mw_humidity_bme280_get_percentage_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Reads the humidity percentage from the sensor
-        /// </summary>
-        /// <param name="board">Board the humidity sensor resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_humidity_bme280_read_percentage(IntPtr board);
 
         /// <summary>
         /// Sets the oversampling mode
@@ -1428,78 +1214,34 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_humidity_bme280_set_oversampling(IntPtr board, HumidityBme280.Oversampling oversampling);
 
         /// <summary>
-        /// Retrieves the data signal representing the i2c data.  The length and id parameters must match their respective values in the mbl_mw_i2c_read function.
+        /// Retrieves the data signal representing a temperature source
         /// </summary>
-        /// <param name="board">Board the i2c bus resides on</param>
-        /// <param name="length">Data length</param>
-        /// <param name="id">Numerical value identifying the data</param>
+        /// <param name="board">Board to retrieve the signal from</param>
+        /// <param name="channel">Channel ID of the temperature source</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_i2c_get_data_signal(IntPtr board, byte length, byte id);
+        public static extern IntPtr mbl_mw_multi_chnl_temp_get_temperature_data_signal(IntPtr board, byte channel);
 
         /// <summary>
-        /// Writes data via the i2c bus
+        /// Configure the external thermistor
         /// </summary>
-        /// <param name="board">Board the i2c bus resides on</param>
-        /// <param name="device_addr">Device to write to</param>
-        /// <param name="register_addr">Address of the register to write</param>
-        /// <param name="value">Payload</param>
-        /// <param name="length">Number of bytes</param>
+        /// <param name="board">Board the external thermistor is attached to</param>
+        /// <param name="channel">Channel ID of the external thermistor</param>
+        /// <param name="data_pin">GPIO pin reading the data</param>
+        /// <param name="pulldown_pin">GPIO pin the pulldown resistor is connected to</param>
+        /// <param name="active_high">Zero if the pulldown pin is not active high</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_i2c_write(IntPtr board, byte device_addr, byte register_addr, byte[] value, byte length);
+        public static extern void mbl_mw_multi_chnl_temp_configure_ext_thermistor(IntPtr board, byte channel, byte data_pin, byte pulldown_pin, byte active_high);
 
         /// <summary>
-        /// Reads data via the i2c bus
+        /// Retrieve the temperature source type corresponding to a channel ID
         /// </summary>
-        /// <param name="board">Board the i2c bus resides on</param>
-        /// <param name="device_addr">Device to read from</param>
-        /// <param name="register_addr">Address of the register to read</param>
-        /// <param name="length">Number of bytes to read</param>
-        /// <param name="id">Numerical value identifying the data</param>
+        /// <param name="board">Board to lookup the temperature source on</param>
+        /// <param name="channel">Channel ID to lookup</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_i2c_read(IntPtr board, byte device_addr, byte register_addr, byte length, byte id);
+        public static extern MultiChannelTemperature.Source mbl_mw_multi_chnl_temp_get_source(IntPtr board, byte channel);
 
-        /// <summary>
-        /// Retrieves the data signal representing B field strength
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_mag_bmm150_get_b_field_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the power mode to one of the recommended presets
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="preset">New preset power mode to use</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_set_power_preset(IntPtr board, MagnetometerBmm150.PowerPreset preset);
-
-        /// <summary>
-        /// Enable B field sampling
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_enable_b_field_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disable B field sampling
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_disable_b_field_sampling(IntPtr board);
-
-        /// <summary>
-        /// Switches the magnetometer into normal mode
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_start(IntPtr board);
-
-        /// <summary>
-        /// Switches the magnetometer into sleep mode
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_stop(IntPtr board);
+        public static extern byte mbl_mw_multi_chnl_temp_get_num_channels(IntPtr board);
 
         /// <summary>
         /// Retrieves the data signal representing ADC values for the light's colors
@@ -1507,13 +1249,6 @@ namespace MbientLab.MetaWear {
         /// <param name="board">Board the sensor resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr mbl_mw_proximity_tsl2671_get_adc_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Read the ADC values from the sensor
-        /// </summary>
-        /// <param name="board">Board the sensor resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_proximity_tsl2671_read_adc(IntPtr board);
 
         /// <summary>
         /// Sets the integration time
@@ -1553,5 +1288,485 @@ namespace MbientLab.MetaWear {
         /// <param name="board">Board the sensor resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_proximity_tsl2671_write_config(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing acceleration data for the MMA8452Q accelerometer
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_mma8452q_get_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves a special data signal representing high frequency (>100Hz) acceleration data for the MMA8452Q accelerometer.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from mbl_mw_acc_mma8452q_get_acceleration_data_signal.
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_mma8452q_get_high_freq_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the output data rate
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="odr">Output data rate value to set</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_mma8452q_set_odr(IntPtr board, AccelerometerMma8452q.OutputDataRate odr);
+
+        /// <summary>
+        /// Sets the acceleration range
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="range">Acceleration range value to set</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_mma8452q_set_range(IntPtr board, AccelerometerMma8452q.FullScaleRange range);
+
+        /// <summary>
+        /// Writes the acceleration settings to the sensor
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_mma8452q_write_acceleration_config(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_mma8452q_start(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to standby mode
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_mma8452q_stop(IntPtr board);
+
+        /// <summary>
+        /// Enables acceleration sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_mma8452q_enable_acceleration_sampling(IntPtr board);
+
+        /// <summary>
+        /// Disables acceleration sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_mma8452q_disable_acceleration_sampling(IntPtr board);
+
+        /// <summary>
+        /// Retrieves a data signal representing analog data
+        /// </summary>
+        /// <param name="board">Board to receive data from</param>
+        /// <param name="pin">GPIO pin to read</param>
+        /// <param name="mode">Read mode to use</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_gpio_get_analog_input_data_signal(IntPtr board, byte pin, Gpio.ReadMode mode);
+
+        /// <summary>
+        /// Retrieves a data signal representing digital data
+        /// </summary>
+        /// <param name="board">Board to receive data from</param>
+        /// <param name="pin">GPIO pin to read</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_gpio_get_digital_input_data_signal(IntPtr board, byte pin);
+
+        /// <summary>
+        /// Retrieves a data signal representing changes in digital data
+        /// </summary>
+        /// <param name="board">Board to receive data from</param>
+        /// <param name="pin">GPIO pin to monitor</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_gpio_get_pin_monitor_data_signal(IntPtr board, byte pin);
+
+        /// <summary>
+        /// Sets the pin pull mode
+        /// </summary>
+        /// <param name="board">Board the pin is on</param>
+        /// <param name="pin">GPIO pin to modify</param>
+        /// <param name="mode">New pull mode</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gpio_set_pull_mode(IntPtr board, byte pin, Gpio.PullMode mode);
+
+        /// <summary>
+        /// Sets the digital output state
+        /// </summary>
+        /// <param name="board">Board the pin is on</param>
+        /// <param name="pin">GPIO pin to set</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gpio_set_digital_output(IntPtr board, byte pin);
+
+        /// <summary>
+        /// Clears the digital output state
+        /// </summary>
+        /// <param name="board">Board the pin is on</param>
+        /// <param name="pin">GPIO pin to clear</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gpio_clear_digital_output(IntPtr board, byte pin);
+
+        /// <summary>
+        /// Sets the pin change type to monitor
+        /// </summary>
+        /// <param name="board">Board the pin is on</param>
+        /// <param name="pin">GPIO pin to set</param>
+        /// <param name="type">Change type to monitor</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gpio_set_pin_change_type(IntPtr board, byte pin, Gpio.PinChangeType type);
+
+        /// <summary>
+        /// Start pin monitoring
+        /// </summary>
+        /// <param name="board">Board the pin is on</param>
+        /// <param name="pin">GPIO pin to monitor</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gpio_start_pin_monitoring(IntPtr board, byte pin);
+
+        /// <summary>
+        /// Stop pin monitoring
+        /// </summary>
+        /// <param name="board">Board the pin is on</param>
+        /// <param name="pin">GPIO pin to stop monitoring</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gpio_stop_pin_monitoring(IntPtr board, byte pin);
+
+        /// <summary>
+        /// Retrieves the data signal representing BMI160 rotation data
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_gyro_bmi160_get_rotation_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves a special data signal representing high frequency (>100Hz) rotation data for the BMI160 IMU.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with a rotation data signal, use the signal from mbl_mw_gyro_bmi160_get_rotation_data_signal.
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the output data rate
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="odr">Output data rate value to assign</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_set_odr(IntPtr board, GyroBmi160.OutputDataRate odr);
+
+        /// <summary>
+        /// Sets the rotation range
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="range">New rotation range</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_set_range(IntPtr board, GyroBmi160.FullScaleRange range);
+
+        /// <summary>
+        /// Writes the configuration to the sendor
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_write_config(IntPtr board);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_start(IntPtr board);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_stop(IntPtr board);
+
+        /// <summary>
+        /// Enables rotation sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_enable_rotation_sampling(IntPtr board);
+
+        /// <summary>
+        /// Disables rotation sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_disable_rotation_sampling(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing acceleration data
+        /// </summary>
+        /// <param name="board">Board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_get_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves a special data signal representing high frequency (>100Hz) acceleration data.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from mbl_mw_acc_get_acceleration_data_signal.
+        /// </summary>
+        /// <param name="board">Board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_get_high_freq_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the output data rate.  If an invalid odr is used, the closest valid value will be used.
+        /// </summary>
+        /// <param name="board">Board to configure</param>
+        /// <param name="odr">Output data rate</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern float mbl_mw_acc_set_odr(IntPtr board, float odr);
+
+        /// <summary>
+        /// Sets the full scale range.  IF an invalid range is used, the closet valid value will be used.
+        /// </summary>
+        /// <param name="board">Board to configure</param>
+        /// <param name="range">Sampling range</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern float mbl_mw_acc_set_range(IntPtr board, float range);
+
+        /// <summary>
+        /// Writes the acceleration settings to the board
+        /// </summary>
+        /// <param name="board">Board to configure</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_write_acceleration_config(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to active mode
+        /// </summary>
+        /// <param name="board">Board the accelerometer is on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_start(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to standby mode
+        /// </summary>
+        /// <param name="board">Board the accelerometer is on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_stop(IntPtr board);
+
+        /// <summary>
+        /// Enables acceleration sampling
+        /// </summary>
+        /// <param name="board">Board to enable acceleration sampling on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_enable_acceleration_sampling(IntPtr board);
+
+        /// <summary>
+        /// Disables acceleration sampling
+        /// </summary>
+        /// <param name="board">Board to disable acceleration sampling on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_disable_acceleration_sampling(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing detected ADC values for clear, red, green, and blue
+        /// </summary>
+        /// <param name="board">Board the sensor resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_cd_tcs34725_get_adc_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the integration time
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="time">New integration time to use</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_set_integration_time(IntPtr board, float time);
+
+        /// <summary>
+        /// Sets the analog gain scale
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="gain">New gain scale to use</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_set_gain(IntPtr board, ColorDetectorTcs34725.Gain gain);
+
+        /// <summary>
+        /// Enable the illuminator LED
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_enable_illuminator_led(IntPtr board);
+
+        /// <summary>
+        /// Disable the illuminator LED
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_disable_illuminator_led(IntPtr board);
+
+        /// <summary>
+        /// Writes the configuration to the sensor
+        /// </summary>
+        /// <param name="board">Board the sensor resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_write_config(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing acceleration data from a Bosch accelerometer
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_bosch_get_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves a special data signal representing high frequency (>100Hz) acceleration data for a Bosch accelerometer.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from mbl_mw_acc_bosch_get_acceleration_data_signal.
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing data from the BMI160 step counter
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_bmi160_get_step_counter_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing data from the BMI160 step detector
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_bmi160_get_step_detector_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the output data rate for the BMI160 accelerometer
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="odr">Output data rate value to assign</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_set_odr(IntPtr board, AccelerometerBmi160.OutputDataRate odr);
+
+        /// <summary>
+        /// Sets the output data rate for the BMA255 accelerometer
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="odr">Output data rate value to assign</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bma255_set_odr(IntPtr board, AccelerometerBma255.OutputDataRate odr);
+
+        /// <summary>
+        /// Sets the acceleration range
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="range">Acceleration range to assign</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bosch_set_range(IntPtr board, AccelerometerBosch.FullScaleRange range);
+
+        /// <summary>
+        /// Writes the acceleration settings to the sensor
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bosch_write_acceleration_config(IntPtr board);
+
+        /// <summary>
+        /// Sets the operational mode of the step counter
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="mode">New operation mode</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_set_step_counter_mode(IntPtr board, AccelerometerBmi160.StepCounterMode mode);
+
+        /// <summary>
+        /// Enables the BMI160 step counter
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_enable_step_counter(IntPtr board);
+
+        /// <summary>
+        /// Disables the BMI160 step counter
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_disable_step_counter(IntPtr board);
+
+        /// <summary>
+        /// Writes the step counter configuration to the sensor
+        /// </summary>
+        /// <param name="board">Board to write to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_write_step_counter_config(IntPtr board);
+
+        /// <summary>
+        /// Resets the BMI160 step counter
+        /// </summary>
+        /// <param name="board">Board to reset</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_reset_step_counter(IntPtr board);
+
+        /// <summary>
+        /// Enables the BMI160 step detector
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_enable_step_detector(IntPtr board);
+
+        /// <summary>
+        /// Disables the BMI160 step detector
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bmi160_disable_step_detector(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bosch_start(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to standby mode
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bosch_stop(IntPtr board);
+
+        /// <summary>
+        /// Enables acceleration sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bosch_enable_acceleration_sampling(IntPtr board);
+
+        /// <summary>
+        /// Disables acceleration sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_bosch_disable_acceleration_sampling(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing spi data.  The data signal is identified by the id value and if the id is not present, a new data signal will be created using the length parameter.
+        /// </summary>
+        /// <param name="board">Board to communicate with</param>
+        /// <param name="length">Number of bytes to read</param>
+        /// <param name="id">Numerical id identifying the data</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_spi_get_data_signal(IntPtr board, byte length, byte id);
+
+        /// <summary>
+        /// Writes data via the spi bus
+        /// </summary>
+        /// <param name="board">Board to communicate with</param>
+        /// <param name="parameters">Parameters configuring the read</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_spi_write(IntPtr board, IntPtr parameters);
+
+        /// <summary>
+        /// Retrieves the data signal representing i2c data.  The data signal is identified by the id value and if the id is not present, a new data signal will be created using the length parameter.
+        /// </summary>
+        /// <param name="board">Board the i2c bus resides on</param>
+        /// <param name="length">Number of bytes to read</param>
+        /// <param name="id">Numerical value identifying the data</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_i2c_get_data_signal(IntPtr board, byte length, byte id);
+
+        /// <summary>
+        /// Writes data via the i2c bus
+        /// </summary>
+        /// <param name="board">Board the i2c bus resides on</param>
+        /// <param name="device_addr">Device to write to</param>
+        /// <param name="register_addr">Address of the register to write</param>
+        /// <param name="value">Payload</param>
+        /// <param name="length">Number of bytes</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_i2c_write(IntPtr board, byte device_addr, byte register_addr, byte[] value, byte length);
     };
 }

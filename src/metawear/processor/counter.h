@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include "metawear/core/dataprocessor_fwd.h"
-#include "metawear/core/dllmarker.h"
+#include "dataprocessor_fwd.h"
 #include "metawear/core/event_fwd.h"
+#include "metawear/platform/dllmarker.h"
 
 #ifdef	__cplusplus
 extern "C" {

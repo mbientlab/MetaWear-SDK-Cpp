@@ -6,11 +6,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/dllmarker.h"
-#include "metawear/core/metawearboard_fwd.h"
+#include "sensor_common.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -64,12 +60,6 @@ METAWEAR_API MblMwDataSignal* mbl_mw_multi_chnl_temp_get_temperature_data_signal
 METAWEAR_API void mbl_mw_multi_chnl_temp_configure_ext_thermistor(const MblMwMetaWearBoard *board, uint8_t channel, uint8_t data_pin, 
         uint8_t pulldown_pin, uint8_t active_high);
 
-/**
- * Read temperature from a temperature source
- * @param board         Board to read temperature from
- * @param channel       Channel ID of the temperature source
- */
-METAWEAR_API void mbl_mw_multi_chnl_temp_read_temperature(const MblMwMetaWearBoard *board, uint8_t channel);
 /**
  * Retrieve the temperature source type corresponding to a channel ID
  * @param board         Board to lookup the temperature source on

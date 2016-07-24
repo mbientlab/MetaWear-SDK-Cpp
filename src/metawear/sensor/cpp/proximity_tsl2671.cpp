@@ -2,13 +2,20 @@
 #include "proximity_tsl2671_private.h"
 #include "proximity_tsl2671_register.h"
 
+#include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
+#include "metawear/core/cpp/metawearboard_macro.h"
+#include "metawear/core/cpp/register.h"
+#include "metawear/core/cpp/responseheader.h"
 
 #include <cstring>
 #include <stdint.h>
+#include <cstdlib>
 
 using std::calloc;
+
+const ResponseHeader PROXIMITY_TSL2671_ADC_RESPONSE_HEADER(MBL_MW_MODULE_PROXIMITY, READ_REGISTER(ORDINAL(ProximityTsl2671Register::PROXIMITY)));
 
 struct Tsl2671Config {
     uint8_t integration_time;
@@ -20,28 +27,33 @@ struct Tsl2671Config {
 
 void init_proximity_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_PROXIMITY) && board->module_info.at(MBL_MW_MODULE_PROXIMITY).present) {
-        Tsl2671Config* new_config= (Tsl2671Config*) calloc(1, sizeof(Tsl2671Config));
-        new_config->integration_time= 0xff;
-        new_config->n_pulses= 1;
-        new_config->receiver_channel= MBL_MW_PROXIMITY_TSL2671_CHANNEL_1;
-        new_config->transmitter_current= MBL_MW_PROXIMITY_TSL2671_CURRENT_25MA;
-        board->module_config.emplace(MBL_MW_MODULE_PROXIMITY, new_config);
+        if (!board->module_config.count(MBL_MW_MODULE_PROXIMITY)) {
+            Tsl2671Config* new_config = (Tsl2671Config*)calloc(1, sizeof(Tsl2671Config));
+            new_config->integration_time = 0xff;
+            new_config->n_pulses = 1;
+            new_config->receiver_channel = MBL_MW_PROXIMITY_TSL2671_CHANNEL_1;
+            new_config->transmitter_current = MBL_MW_PROXIMITY_TSL2671_CURRENT_25MA;
+            board->module_config.emplace(MBL_MW_MODULE_PROXIMITY, new_config);
+        }
 
-        board->sensor_data_signals[PROXIMITY_TSL2671_ADC_RESPONSE_HEADER]= new MblMwDataSignal(PROXIMITY_TSL2671_ADC_RESPONSE_HEADER, board, 
+        if (!board->module_events.count(PROXIMITY_TSL2671_ADC_RESPONSE_HEADER)) {
+            board->module_events[PROXIMITY_TSL2671_ADC_RESPONSE_HEADER] = new MblMwDataSignal(PROXIMITY_TSL2671_ADC_RESPONSE_HEADER, board,
                 DataInterpreter::UINT32, 1, 2, 0, 0);
+        }
         board->responses[PROXIMITY_TSL2671_ADC_RESPONSE_HEADER]= response_handler_data_no_id;
     }
 }
 
-MblMwDataSignal* mbl_mw_proximity_tsl2671_get_adc_data_signal(const MblMwMetaWearBoard *board) {
-    return board->sensor_data_signals.count(PROXIMITY_TSL2671_ADC_RESPONSE_HEADER) ? 
-            board->sensor_data_signals.at(PROXIMITY_TSL2671_ADC_RESPONSE_HEADER) : 
-            nullptr;
+void serialize_proximity_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
+    SERIALIZE_MODULE_CONFIG(Tsl2671Config, MBL_MW_MODULE_PROXIMITY);
 }
 
-void mbl_mw_proximity_tsl2671_read_adc(const MblMwMetaWearBoard *board) {
-    uint8_t command[2]= { PROXIMITY_TSL2671_ADC_RESPONSE_HEADER.module_id, PROXIMITY_TSL2671_ADC_RESPONSE_HEADER.register_id };
-    SEND_COMMAND;
+void deserialize_proximity_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
+    DESERIALIZE_MODULE_CONFIG(Tsl2671Config, MBL_MW_MODULE_PROXIMITY);
+}
+
+MblMwDataSignal* mbl_mw_proximity_tsl2671_get_adc_data_signal(const MblMwMetaWearBoard *board) {
+    GET_DATA_SIGNAL(PROXIMITY_TSL2671_ADC_RESPONSE_HEADER);
 }
 
 void mbl_mw_proximity_tsl2671_set_integration_time(MblMwMetaWearBoard *board, float time) {

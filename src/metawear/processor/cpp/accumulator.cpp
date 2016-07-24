@@ -27,10 +27,10 @@ static inline int32_t create_accumulator_processor(MblMwDataSignal *source, uint
     new_processor->set_channel_attr(n_channels, channel_size);
     if (accum_type == DataProcessorType::COUNTER) {
         new_processor->is_signed= 0;
-        new_processor->number_to_firmware = number_to_firmware_default;
+        new_processor->converter = FirmwareConverter::DEFAULT;
         new_processor->interpreter = DataInterpreter::UINT32;
     }
-    new_processor->state = create_processor_state_signal(new_processor, new_processor->interpreter);
+    create_processor_state_signal(new_processor, new_processor->interpreter);
 
     AccumulatorConfig *config = (AccumulatorConfig*) malloc(sizeof(AccumulatorConfig));
     *((uint8_t*) config)= 0;
@@ -52,7 +52,7 @@ int32_t mbl_mw_dataprocessor_accumulator_create_size(MblMwDataSignal *source, ui
 }
 int32_t mbl_mw_dataprocessor_set_accumulator_state(MblMwDataProcessor *accumulator, float new_running_sum) {
     if (accumulator->type == DataProcessorType::ACCUMULATOR) {
-        uint32_t scaled_sum= (uint32_t) accumulator->number_to_firmware(accumulator, new_running_sum);
+        uint32_t scaled_sum= (uint32_t) number_to_firmware_converters.at(accumulator->converter)(accumulator, new_running_sum);
         set_processor_state(accumulator, &scaled_sum, sizeof(scaled_sum));
         return MBL_MW_STATUS_OK;
     }

@@ -20,6 +20,20 @@ Version::Version(uint8_t major, uint8_t minor, uint8_t step) {
     this->step= step;
 }
 
+
+void Version::deserialize(uint8_t** state_stream) {
+    step = **state_stream;
+    minor = *(++(*state_stream));
+    major = *(++(*state_stream));
+    ++(*state_stream);
+}
+
+void Version::serialize(vector<uint8_t>& state) const {
+    state.push_back(step);
+    state.push_back(minor);
+    state.push_back(major);
+}
+
 bool Version::empty() const {
     return major == EMPTY_VALUE && minor == EMPTY_VALUE && step == EMPTY_VALUE;
 }
@@ -57,7 +71,7 @@ Version& Version::operator =(const Version& original) {
 }
 
 bool operator <(const Version& left, const Version& right) {
-    auto compare = [](uint8_t l, uint8_t r) -> uint8_t {
+    auto compare = [](uint8_t l, uint8_t r) -> int8_t {
         if (l < r) return -1;
         if (l > r) return 1;
         return 0;

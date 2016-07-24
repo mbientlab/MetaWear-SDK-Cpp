@@ -5,11 +5,20 @@
  */
 #pragma once
 
-#ifdef	__cplusplus
-struct MblMwEvent;
-#else
+#include <stdint.h>
+
 /**
  * Represents an event fired from the MetaWear board.
  */
+#ifdef	__cplusplus
+struct MblMwEvent;
+#else
 typedef struct MblMwEvent MblMwEvent;
 #endif
+
+/**
+ * Definition for callback functions that accept an MblMwEvent pointer and an int32
+ * @param event         Event to be used with the function
+ * @param status        Status code passed into the function
+ */
+typedef void(*MblMwFnEventPtrInt)(MblMwEvent* event, int32_t status);

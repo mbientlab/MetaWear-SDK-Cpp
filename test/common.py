@@ -21,19 +21,19 @@ class TestMetaWearBase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.initialized_fn= FnVoid(self.initialized)
-        self.sensor_data_handler= FnDataPtr(self.sensorDataHandler)
-        self.timer_signal_ready= FnVoidPtr(self.timerSignalReady)
-        self.commands_recorded_fn= FnVoid(self.commandsRecorded)
+        self.initialized_fn= Fn_VoidPtr_Int(self.initialized)
+        self.sensor_data_handler= Fn_DataPtr(self.sensorDataHandler)
+        self.timer_signal_ready= Fn_VoidPtr(self.timerSignalReady)
+        self.commands_recorded_fn= Fn_VoidPtr_Int(self.commandsRecorded)
 
-        self.send_command_fn= FnGattCharPtrByteArray(self.commandLogger)
-        self.read_gatt_char_fn= FnGattCharPtr(self.read_gatt_char)
+        self.send_command_fn= Fn_VoidPtr_GattCharPtr_ByteArray(self.commandLogger)
+        self.read_gatt_char_fn= Fn_VoidPtr_GattCharPtr(self.read_gatt_char)
         self.btle_connection= BtleConnection(write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn)
 
         self.metawear_rg_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x01\x00', 4),
+            0x03: create_string_buffer(b'\x03\x80\x01\x01', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x03\x01\x02', 8),
             0x05: create_string_buffer(b'\x05\x80\x00\x00', 4),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -48,7 +48,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x10: create_string_buffer(b'\x10\x80', 2),
             0x11: create_string_buffer(b'\x11\x80\x00\x00', 4),
             0x12: create_string_buffer(b'\x12\x80', 2),
-            0x13: create_string_buffer(b'\x13\x80\x00\x00', 4),
+            0x13: create_string_buffer(b'\x13\x80\x00\x01', 4),
             0x14: create_string_buffer(b'\x14\x80', 2),
             0x15: create_string_buffer(b'\x15\x80', 2),
             0x16: create_string_buffer(b'\x16\x80', 2),
@@ -60,7 +60,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.metawear_r_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x00\x00', 4),
+            0x03: create_string_buffer(b'\x03\x80\x00\x01', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x01', 6),
             0x05: create_string_buffer(b'\x05\x80\x00\x00', 4),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -87,7 +87,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.metawear_rpro_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x01\x00', 4),
+            0x03: create_string_buffer(b'\x03\x80\x01\x01', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x03\x01\x02', 8),
             0x05: create_string_buffer(b'\x05\x80\x00\x00', 4),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -102,7 +102,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x10: create_string_buffer(b'\x10\x80', 2),
             0x11: create_string_buffer(b'\x11\x80\x00\x00', 4),
             0x12: create_string_buffer(b'\x12\x80\x00\x00', 4),
-            0x13: create_string_buffer(b'\x13\x80\x00\x00', 4),
+            0x13: create_string_buffer(b'\x13\x80\x00\x01', 4),
             0x14: create_string_buffer(b'\x14\x80\x00\x00', 4),
             0x15: create_string_buffer(b'\x15\x80', 2),
             0x16: create_string_buffer(b'\x16\x80', 2),
@@ -114,7 +114,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.metawear_cpro_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x01\x00', 4),
+            0x03: create_string_buffer(b'\x03\x80\x01\x01', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x03\x01\x02', 8),
             0x05: create_string_buffer(b'\x05\x80\x00\x00', 4),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -129,7 +129,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x10: create_string_buffer(b'\x10\x80', 2),
             0x11: create_string_buffer(b'\x11\x80\x00\x00', 4),
             0x12: create_string_buffer(b'\x12\x80\x00\x00', 4),
-            0x13: create_string_buffer(b'\x13\x80\x00\x00', 4),
+            0x13: create_string_buffer(b'\x13\x80\x00\x01', 4),
             0x14: create_string_buffer(b'\x14\x80\x00\x00', 4),
             0x15: create_string_buffer(b'\x15\x80\x00\x00', 4),
             0x16: create_string_buffer(b'\x16\x80', 2),
@@ -141,7 +141,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.metawear_detector_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x03\x00', 4),
+            0x03: create_string_buffer(b'\x03\x80\x03\x01', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x03\x01\x02', 8),
             0x05: create_string_buffer(b'\x05\x80\x00\x01\x03\x03\x03\x03\x01', 9),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -168,7 +168,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.metawear_environment_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x03\x00', 4),
+            0x03: create_string_buffer(b'\x03\x80\x03\x01', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x03\x01\x02', 8),
             0x05: create_string_buffer(b'\x05\x80\x00\x01\x03\x03\x03\x03\x01', 9),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -192,7 +192,7 @@ class TestMetaWearBase(unittest.TestCase):
             0xfe: create_string_buffer(b'\xfe\x80\x00\x00', 4),
         }
 
-        self.firmware_revision= create_string_buffer(b'1.1.0', 5)
+        self.firmware_revision= create_string_buffer(b'1.1.3', 5)
 
         self.command_history= []
         self.full_history= []
@@ -203,7 +203,6 @@ class TestMetaWearBase(unittest.TestCase):
         self.loggerId= 0
         self.timerSignals= []
         self.boardType= TestMetaWearBase.METAWEAR_R_BOARD
-        self.initialized= False
         
     def setUp(self):
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
@@ -212,16 +211,16 @@ class TestMetaWearBase(unittest.TestCase):
     def tearDown(self):
         self.libmetawear.mbl_mw_metawearboard_free(self.board)
 
-    def commandsRecorded(self):
+    def commandsRecorded(self, event, status):
         self.recorded= True
 
     def timerSignalReady(self, timer_signal):
         self.timerSignals.append(timer_signal)
 
-    def initialized(self):
-        self.initialized= True
+    def initialized(self, board, status):
+        self.init_status= status;
 
-    def read_gatt_char(self, characteristic):
+    def read_gatt_char(self, board, characteristic):
         if (characteristic.contents.uuid_high == 0x00002a2400001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             if (self.boardType == TestMetaWearBase.METAWEAR_RG_BOARD):
                 model_number= create_string_buffer(b'1', 1)
@@ -236,7 +235,7 @@ class TestMetaWearBase(unittest.TestCase):
         elif (characteristic.contents.uuid_high == 0x00002a2600001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             self.libmetawear.mbl_mw_connection_char_read(self.board, characteristic, self.firmware_revision.raw, len(self.firmware_revision.raw))
 
-    def commandLogger(self, characteristic, command, length):
+    def commandLogger(self, board, characteristic, command, length):
         self.command= []
         for i in range(0, length):
             self.command.append(command[i])
@@ -314,3 +313,12 @@ class TestMetaWearBase(unittest.TestCase):
             self.data_tcs34725_adc= copy.deepcopy(data_ptr.contents)
         else:
             raise RuntimeError('Unrecognized data type id: ' + str(data.contents.type_id))
+
+    def to_string_buffer(self, bytes):
+        buffer= create_string_buffer(len(bytes))
+        i= 0
+        for b in bytes:
+            buffer[i]= b
+            i= i + 1
+
+        return buffer

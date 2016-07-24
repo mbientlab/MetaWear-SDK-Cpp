@@ -31,16 +31,19 @@ static inline int32_t create_combiner(MblMwDataSignal *source, DataProcessorType
 
     switch (source->interpreter) {
     case DataInterpreter::BOSCH_ACCELERATION:
-        new_processor->interpreter= DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS;
+        new_processor->interpreter= DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS;
         break;
     case DataInterpreter::MMA8452Q_ACCELERATION:
-        new_processor->interpreter = DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS;
+        new_processor->interpreter = DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS;
         break;
     case DataInterpreter::BMI160_ROTATION:
-        new_processor->interpreter = DataInterpreter::BMI160_ROTATION_SINGLE_AXIS;
+        new_processor->interpreter = DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS;
         break;
     case DataInterpreter::BMM150_B_FIELD:
-        new_processor->interpreter = DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS;
+        new_processor->interpreter = DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS;
+        break;
+    case DataInterpreter::TCS34725_COLOR_ADC:
+        new_processor->interpreter = DataInterpreter::UINT32;
         break;
     default:
         break;

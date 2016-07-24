@@ -1,8 +1,5 @@
 #pragma once
 
-#include "metawear/core/cpp/register.h"
-#include "metawear/core/cpp/responseheader.h"
-
 enum class AccelerometerMma8452qRegister : uint8_t {
     GLOBAL_ENABLE = 1,
     DATA_ENABLE,
@@ -19,7 +16,6 @@ enum class AccelerometerMma8452qRegister : uint8_t {
     PULSE_STATUS,
     SHAKE_ENABLE,
     SHAKE_CONFIG,
-    SHAKE_STATUS
+    SHAKE_STATUS,
+    PACKED_ACC_DATA= 0x12
 };
-
-const ResponseHeader MMA8452Q_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::DATA_VALUE));
