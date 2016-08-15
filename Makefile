@@ -39,8 +39,9 @@ ifeq ($(MACHINE),x86)
 else ifeq ($(MACHINE),x64)
     CXXFLAGS+=-m64
     LD_FLAGS+=-m64
+else ifeq ($(MACHINE),arm)
 else
-    $(error Unrecognized "MACHINE" value, use 'x86' or 'x64')
+    $(error Unrecognized "MACHINE" value, use 'x86', 'x64' or 'arm')
 endif
 
 REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)

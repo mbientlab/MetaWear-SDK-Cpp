@@ -9,6 +9,8 @@ ifndef MACHINE
         MACHINE:=x64
     else ifeq ($(MACHINE_RAW),amd64)
         MACHINE:=x64
+    else ifeq ($(MACHINE_RAW),armv7l)
+        MACHINE:=arm
     else
         MACHINE:=x86
     endif
