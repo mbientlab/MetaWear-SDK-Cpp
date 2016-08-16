@@ -40,7 +40,7 @@ class DataTypeId:
 # Python wrapper for the MblMwMessage struct
 class Data(Structure):
     _fields_= [
-        ("epoch", c_long),
+        ("epoch", c_longlong),
         ("value", c_void_p),
         ("type_id", c_int),
         ("length", c_ubyte)
@@ -48,10 +48,10 @@ class Data(Structure):
 
 class GattCharacteristic(Structure):
     _fields_= [
-        ("service_uuid_high", c_ulong),
-        ("service_uuid_low", c_ulong),
-        ("uuid_high", c_ulong),
-        ("uuid_low", c_ulong)
+        ("service_uuid_high", c_ulonglong),
+        ("service_uuid_low", c_ulonglong),
+        ("uuid_high", c_ulonglong),
+        ("uuid_low", c_ulonglong)
     ]
 
 Fn_ByteArray= CFUNCTYPE(None, POINTER(c_ubyte), c_ubyte)
@@ -61,7 +61,7 @@ Fn_DataPtr= CFUNCTYPE(None, POINTER(Data))
 Fn_VoidPtr_GattCharPtr_ByteArray= CFUNCTYPE(None, c_void_p, POINTER(GattCharacteristic), POINTER(c_ubyte), c_ubyte)
 Fn_VoidPtr_GattCharPtr= CFUNCTYPE(None, c_void_p, POINTER(GattCharacteristic))
 Fn_Uint_Uint= CFUNCTYPE(None, c_uint, c_uint)
-Fn_Ubyte_Long_ByteArray= CFUNCTYPE(None, c_ubyte, c_long, POINTER(c_ubyte), c_ubyte)
+Fn_Ubyte_Long_ByteArray= CFUNCTYPE(None, c_ubyte, c_longlong, POINTER(c_ubyte), c_ubyte)
 
 # UUIDs for the MetaWear gatt services and characteristics
 class Gatt:
