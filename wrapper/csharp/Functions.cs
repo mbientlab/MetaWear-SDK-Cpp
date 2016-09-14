@@ -1830,36 +1830,5 @@ namespace MbientLab.MetaWear {
         /// <returns>Pointer to the switch data signal</returns>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr mbl_mw_switch_get_state_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Creates an instance of the MblMwMetaWearBoard struct
-        /// </summary>
-        /// <param name="connection">Connection struct the new MblMwMetaWearBoard variable will use for btle communication</param>
-        /// <returns>Pointer to the newly created struct</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_metabootboard_create(ref BtleConnection connection, IntPtr mw_delegate);
-
-        /// <summary>
-        /// Frees the memory allocated for the struct
-        /// </summary>
-        /// <param name="board">Pointer to the memory to free</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metabootboard_free(IntPtr board);
-
-        /// <summary>
-        /// Starts the DFU process and updloads the given file to the device
-        /// </summary>
-        /// <param name="filename">path to firmware bin file</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metabootboard_perform_dfu(IntPtr board, [MarshalAs(UnmanagedType.LPStr)] string filename);
-
-        /// <summary>
-        /// Handles changes from the MetaWear notify characteristic.  All characteristic changes from the notify characteristic must be forwarded to this function
-        /// </summary>
-        /// <param name="board">Board the characteristic change is from</param>
-        /// <param name="value">Byte array containing the new characteristic value</param>
-        /// <param name="len">Length of the array</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_dfu_control_point_char_changed(IntPtr board, byte[] value, byte len);
     };
 }

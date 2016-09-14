@@ -678,15 +678,3 @@ def setup_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_switch_get_state_data_signal.restype= c_void_p
     libmetawear.mbl_mw_switch_get_state_data_signal.argtypes= [c_void_p]
-
-    libmetawear.mbl_mw_metabootboard_create.restype= c_void_p
-    libmetawear.mbl_mw_metabootboard_create.argtypes= [POINTER(BtleConnection), c_void_p]
-
-    libmetawear.mbl_mw_metabootboard_free.restype= None
-    libmetawear.mbl_mw_metabootboard_free.argtypes= [c_void_p]
-
-    libmetawear.mbl_mw_metabootboard_perform_dfu.restype= None
-    libmetawear.mbl_mw_metabootboard_perform_dfu.argtypes= [c_void_p, c_char_p]
-
-    libmetawear.mbl_mw_dfu_control_point_char_changed.restype= None
-    libmetawear.mbl_mw_dfu_control_point_char_changed.argtypes= [c_void_p, c_void_p, c_ubyte]

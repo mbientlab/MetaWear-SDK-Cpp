@@ -77,18 +77,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <ItemGroup Label="WrapperSettings">
-    <ExportHeaders Include="src\metawear\**\*.h" />
-    <Modules Include="$([System.String]::Join(`,`,$([System.IO.Directory]::GetDirectories(`src\metawear`))))" />
-  </ItemGroup>
-  <PropertyGroup Label="WrapperSettings">
-    <PythonWrapper>wrapper\python\mbientlab\metawear\functions.py</PythonWrapper>
-  </PropertyGroup>
-  <Target Name="CreatePythonWrapper" Outputs="$(PythonWrapper)" Inputs="@(ExportHeaders)">
-    <Exec Command="groovy -cp scripts scripts\wrapper_builder.groovy -c PythonWrapperCreator -d @(Modules) -o $(PythonWrapper)" />
-  </Target>
   <UsingTask TaskName="SetEnv" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Build.CppTasks.Common.dll"/>
-  <Target Name="Test" DependsOnTargets="Build;CreatePythonWrapper">
+  <Target Name="Test" DependsOnTargets="Build">
     <SetEnv Name   ="METAWEAR_LIB_SO_NAME"
             Value  ="$(TargetPath)"
             Prefix ="false">
@@ -98,12 +88,6 @@
             Value  ="wrapper\python"
             Prefix ="false">
     </SetEnv>
-    <Exec Command="python -m pytest --junitxml $(IntermediateOutputPath)pytest_results.xml test" />
-  </Target>
-  <Target Name="CreateNupkg" DependsOnTargets="Test">
-    <Exec Command="configure_version.bat" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="ProjectVersion" />
-    </Exec>
-    <Exec Command="nuget pack MetaWear.Win32.nuspec -Version $(ProjectVersion)" />
+    <Exec Command="python -m unittest discover -s test" />
   </Target>
 </Project>

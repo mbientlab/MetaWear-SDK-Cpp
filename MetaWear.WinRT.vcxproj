@@ -83,20 +83,4 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <ItemGroup Label="WrapperSettings">
-    <ExportHeaders Include="src\metawear\**\*.h" />
-    <Modules Include="$([System.String]::Join(`,`,$([System.IO.Directory]::GetDirectories(`src\metawear`))))" />
-  </ItemGroup>
-  <PropertyGroup Label="WrapperSettings">
-    <PythonWrapper>wrapper\csharp\Functions.cs</PythonWrapper>
-  </PropertyGroup>
-  <Target Name="CreateCSharpWrapper" Outputs="$(PythonWrapper)" Inputs="@(ExportHeaders)">
-    <Exec Command="groovy -cp scripts scripts\wrapper_builder.groovy -c CSharpWrapperCreator -d @(Modules) -o $(PythonWrapper)" />
-  </Target>
-  <Target Name="CreateNupkg" DependsOnTargets="CreateCSharpWrapper">
-    <Exec Command="configure_version.bat" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="ProjectVersion" />
-    </Exec>
-    <Exec Command="nuget pack MetaWear.WinRT.nuspec -Version $(ProjectVersion)" />
-  </Target>
 </Project>
