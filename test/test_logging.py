@@ -46,7 +46,7 @@ class TestLogDownload(TestMetaWearBase):
         super().setUp()
 
         self.progress_update= Fn_Uint_Uint(self.progress_update_handler)
-        self.unknown_entry= Fn_Ubyte_Long_ByteArray(self.unknown_entry_handler)
+        self.unknown_entry= Fn_Ubyte_LongLong_ByteArray(self.unknown_entry_handler)
         self.download_handler= LogDownloadHandler(received_progress_update = self.progress_update, received_unknown_entry = self.unknown_entry)
         self.updates= []
 
@@ -165,7 +165,7 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
     def test_acc_data(self):
         progress_update= Fn_Uint_Uint(self.acc_data_progress_update_handler)
         self.download_handler= LogDownloadHandler(received_progress_update = progress_update, \
-                received_unknown_entry = cast(None, Fn_Ubyte_Long_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
+                received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
 
         logger_ready= Fn_VoidPtr(self.logger_ready_handler)
 
@@ -176,7 +176,7 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
     def test_epoch_calc(self):
         progress_update= Fn_Uint_Uint(self.data_epoch_progress_update_handler)
         self.download_handler= LogDownloadHandler(received_progress_update = progress_update, \
-                received_unknown_entry = cast(None, Fn_Ubyte_Long_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
+                received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
 
         logger_ready= Fn_VoidPtr(self.logger_ready_handler)
 
@@ -193,8 +193,8 @@ class TestLoggerSetup(TestMetaWearBase):
         self.expected_cmds= [
             [0x0b, 0x02, 0x03, 0x04, 0xff, 0x60],
             [0x0b, 0x02, 0x03, 0x04, 0xff, 0x24],
-            [0x0b, 0x09, 0x00],
-            [0x0b, 0x09, 0x01]
+            [0x0b, 0x03, 0x00],
+            [0x0b, 0x03, 0x01]
         ]
 
         logger_ready= Fn_VoidPtr(self.logger_ready_handler)

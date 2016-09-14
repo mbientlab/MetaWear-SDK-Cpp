@@ -61,7 +61,7 @@ Fn_DataPtr= CFUNCTYPE(None, POINTER(Data))
 Fn_VoidPtr_GattCharPtr_ByteArray= CFUNCTYPE(None, c_void_p, POINTER(GattCharacteristic), POINTER(c_ubyte), c_ubyte)
 Fn_VoidPtr_GattCharPtr= CFUNCTYPE(None, c_void_p, POINTER(GattCharacteristic))
 Fn_Uint_Uint= CFUNCTYPE(None, c_uint, c_uint)
-Fn_Ubyte_Long_ByteArray= CFUNCTYPE(None, c_ubyte, c_longlong, POINTER(c_ubyte), c_ubyte)
+Fn_Ubyte_LongLong_ByteArray= CFUNCTYPE(None, c_ubyte, c_longlong, POINTER(c_ubyte), c_ubyte)
 
 # UUIDs for the MetaWear gatt services and characteristics
 class Gatt:
@@ -86,7 +86,7 @@ class Status:
 class LogDownloadHandler(Structure):
     _fields_= [
         ("received_progress_update", Fn_Uint_Uint),
-        ("received_unknown_entry", Fn_Ubyte_Long_ByteArray),
+        ("received_unknown_entry", Fn_Ubyte_LongLong_ByteArray),
         ("received_unhandled_entry", Fn_DataPtr)
     ]
 

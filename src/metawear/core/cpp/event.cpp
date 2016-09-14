@@ -1,14 +1,14 @@
 #include "metawear/core/event.h"
 #include "metawear/core/module.h"
 #include "metawear/core/status.h"
-#include "metawear/core/cpp/constant.h"
 #include "metawear/platform/cpp/threadpool.h"
 
 #include "event_register.h"
 #include "event_private.h"
-
 #include "metawearboard_def.h"
 #include "register.h"
+
+#include <vector>
 
 using std::forward_as_tuple;
 using std::make_shared;
@@ -23,6 +23,7 @@ struct EventState {
     MblMwFnEventPtrInt event_recorded_callback;
     MblMwEvent* event_owner;
     const EventDataParameter* data_token;
+    vector<uint8_t> event_config;
 
     EventState();
 };
@@ -95,18 +96,18 @@ void mbl_mw_event_record_commands(MblMwEvent *event) {
     state->event_owner= event;
     event->commands.clear();
     event->num_expected_cmds= 0;
-    event->owner->event_config.assign({event->header.module_id, event->header.register_id, event->header.data_id});
+    state->event_config.assign({event->header.module_id, event->header.register_id, event->header.data_id});
 }
 
 void mbl_mw_event_end_record(MblMwEvent *event, MblMwFnEventPtrInt commands_recorded) {
     auto state = GET_EVENT_STATE(event->owner);
 
     state->event_recorded_callback= commands_recorded;
-    event->owner->event_config.clear();
+    state->event_config.clear();
     state->record_cmd_task= ThreadPool::schedule([state, event](void) -> void {
         state->event_owner = nullptr;
         state->event_recorded_callback(event, MBL_MW_STATUS_ERROR_TIMEOUT);
-    }, event->commands.size() * TIME_PER_COMMAND);
+    }, event->commands.size() * event->owner->time_per_response);
 
     for(auto it: event->commands) {
         send_command(event->owner, it.data(), (uint8_t) it.size());
@@ -120,10 +121,10 @@ MblMwMetaWearBoard* mbl_mw_event_get_owner(const MblMwEvent *event) {
 bool record_command(const MblMwMetaWearBoard* board, const uint8_t* command, uint8_t len) {
     auto state = GET_EVENT_STATE(board);
 
-    if (!board->event_config.empty()) {
+    if (state != nullptr && !state->event_config.empty()) {
         state->event_owner->num_expected_cmds++;
         vector<uint8_t> event_entry = { MBL_MW_MODULE_EVENT, ORDINAL(EventRegister::ENTRY),
-            board->event_config.at(0), board->event_config.at(1), board->event_config.at(2), command[0], command[1],
+            state->event_config.at(0), state->event_config.at(1), state->event_config.at(2), command[0], command[1],
             (uint8_t)(len - 2) };
 
         if (state->data_token != nullptr) {

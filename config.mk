@@ -9,7 +9,7 @@ ifndef MACHINE
         MACHINE:=x64
     else ifeq ($(MACHINE_RAW),amd64)
         MACHINE:=x64
-    else ifeq ($(MACHINE_RAW),armv7l)
+    else ifneq (,$(findstring arm, $(MACHINE_RAW)))
         MACHINE:=arm
     else
         MACHINE:=x86
@@ -18,6 +18,7 @@ endif
 
 DOC_DIR=doc
 
+WRAPPER_DIR?=wrapper
 SOURCE_DIR?=src
 BUILD_DIR?=build
 DIST_DIR?=dist

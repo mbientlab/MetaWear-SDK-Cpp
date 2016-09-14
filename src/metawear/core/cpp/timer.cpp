@@ -5,7 +5,6 @@
 #include "metawear/platform/cpp/async_creator.h"
 #include "metawear/platform/cpp/threadpool.h"
 
-#include "constant.h"
 #include "metawearboard_def.h"
 #include "timer_private.h"
 #include "timer_register.h"
@@ -48,7 +47,13 @@ MblMwTimer::MblMwTimer(const ResponseHeader& header, MblMwMetaWearBoard *owner) 
 }
 
 MblMwTimer::~MblMwTimer() {
-    uint8_t command[3]= {MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::REMOVE), header.data_id};
+    if (remove) {
+        remove_from_board();
+    }
+}
+
+void MblMwTimer::remove_from_board() {
+    uint8_t command[3] = { MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::REMOVE), header.data_id };
     SEND_COMMAND_BOARD(owner);
 }
 
@@ -78,7 +83,7 @@ void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t re
         state->timeout= ThreadPool::schedule([state, received_timer](void) -> void {
             received_timer(nullptr);
             state->create_next(true);
-        }, TIME_PER_COMMAND);
+        }, board->time_per_response);
 
         SEND_COMMAND;
     });
@@ -110,7 +115,6 @@ void mbl_mw_timer_stop(const MblMwTimer* timer) {
 }
 
 void mbl_mw_timer_remove(MblMwTimer* timer) {
-    mbl_mw_timer_stop(timer);
     timer->owner->module_events.erase(timer->header);
     delete timer;
 }

@@ -83,19 +83,26 @@ namespace MbientLab.MetaWear.Core {
             this.guid = guid;
         }
 
+        public override string ToString() {
+            return string.Format("{{service: {0}, characteristic: {1}{2}", serviceGuid.ToString(), guid.ToString(), "}");
+        }
+
         public static readonly GattCharGuid METAWEAR_NOTIFY_CHAR = new GattCharGuid(new Guid("326A9000-85CB-9195-D9DD-464CFBBAE75A"), 
                 new Guid("326A9006-85CB-9195-D9DD-464CFBBAE75A"));
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct GattCharacteristic {
-        public ulong service_uuid_high;
-        public ulong service_uuid_low;
-        public ulong uuid_high;
-        public ulong uuid_low;
+        public ulong service_uuid_high, service_uuid_low;
+        public ulong uuid_high, uuid_low;
 
         public GattCharGuid toGattCharGuid() {
             return new GattCharGuid(toGuid(service_uuid_high, service_uuid_low), toGuid(uuid_high, uuid_low));
+        }
+
+        public override string ToString() {
+            return string.Format("{{service_uuid_high: 0x{0:X}, service_uuid_low: 0x{1:X}, uuid_high: 0x{2:X}, uuid_low: 0x{3:X}{4}", 
+                service_uuid_high, service_uuid_low, uuid_high, uuid_low, "}");
         }
 
         private static Guid toGuid(ulong high, ulong low) {
@@ -136,12 +143,10 @@ namespace MbientLab.MetaWear.Core {
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CartesianFloat {
-        public float x;
-        public float y;
-        public float z;
+        public float x, y, z;
 
         public override string ToString() {
-            return string.Format("({0:F3}, {1:F3}, {2:F3})", x, y, z);
+            return string.Format("{{x: {0:F3}, y: {1:F3}, z: {2:F3}{3}", x, y, z, "}");
         }
     }
 
@@ -151,7 +156,7 @@ namespace MbientLab.MetaWear.Core {
         public byte charge;
 
         public override string ToString() {
-            return string.Format("(voltage: {0:d}, charge: {1:d})", voltage, charge);
+            return string.Format("{{voltage: {0:d}mv, charge: {1:d}%{2}", voltage, charge, "}");
         }
     }
 
@@ -160,7 +165,7 @@ namespace MbientLab.MetaWear.Core {
         public ushort clear, red, green, blue;
 
         public override string ToString() {
-            return string.Format("(clear: {0:d}, red: {1:d}, green: {2:d}, blue: {3:d})", clear, red, green, blue);
+            return string.Format("{{clear: {0:d}, red: {1:d}, green: {2:d}, blue: {3:d}{4}", clear, red, green, blue, "}");
         }
     }
 }

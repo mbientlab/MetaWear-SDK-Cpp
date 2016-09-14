@@ -3,7 +3,10 @@
 include config.mk
 include project_version.mk
 
-WRAPPER_DIR=wrapper
+EMPTY:=
+SPACE:= $(EMPTY) $(EMPTY)
+COMMA:=,
+
 MODULES_SRC_DIR= $(addsuffix /cpp, $(addprefix $(SOURCE_DIR)/, $(MODULES)))
 SRCS:=$(foreach src_dir, $(MODULES_SRC_DIR), $(shell find $(src_dir) -name \*.cpp))
 EXPORT_HEADERS:=$(foreach module, $(addprefix $(SOURCE_DIR)/, $(MODULES)), $(shell find $(module) -maxdepth 1 -name \*.h))
@@ -40,8 +43,10 @@ else ifeq ($(MACHINE),x64)
     CXXFLAGS+=-m64
     LD_FLAGS+=-m64
 else ifeq ($(MACHINE),arm)
+    CXXFLAGS+=-marm
+    LD_FLAGS+=-marm
 else
-    $(error Unrecognized "MACHINE" value, use 'x86', 'x64' or 'arm')
+    $(error Unrecognized "MACHINE" value, use 'x86', 'x64', or 'arm')
 endif
 
 REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)

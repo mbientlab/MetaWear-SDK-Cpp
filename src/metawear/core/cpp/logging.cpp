@@ -2,7 +2,6 @@
 #include "metawear/core/datasignal.h"
 #include "metawear/core/module.h"
 #include "metawear/core/status.h"
-#include "metawear/core/cpp/constant.h"
 #include "metawear/platform/cpp/async_creator.h"
 #include "metawear/platform/cpp/threadpool.h"
 
@@ -82,6 +81,10 @@ struct LoggerState : public AsyncCreator {
     unordered_map<uint8_t, uint32_t> latest_tick;
     unordered_map<uint8_t, MblMwDataLogger*> data_loggers;
     MblMwDataLogger* next_logger;
+    MblMwLogDownloadHandler log_download_handler;
+    float log_download_notify_progress;
+    uint32_t n_log_entries;
+
 
     LoggerState();
 
@@ -110,18 +113,19 @@ static int32_t logging_response_entry_id_received(MblMwMetaWearBoard *board, con
 }
 
 static int32_t logging_response_length_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    auto state= GET_LOGGER_STATE(board);
     uint8_t payload_size= len - 2;
     
-    memcpy(&board->n_log_entries, response + 2, payload_size);
-    uint32_t n_entries_notify= board->n_log_entries * board->log_download_notify_progress;
+    memcpy(&state->n_log_entries, response + 2, payload_size);
     
     // If there are no entires we won't get any responses, so end the download now
     // by forcing a callback on the readout progress with 0 remaining entries
-    if (board->n_log_entries == 0) {
+    if (state->n_log_entries == 0) {
         // Just recycle the response buffer since we know it a 32bit 0 entry
         return logging_response_readout_progress(board, response, len);
     }
     
+    uint32_t n_entries_notify= state->n_log_entries * state->log_download_notify_progress;
     vector<uint8_t> command= { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT) };
     command.insert(command.end(), response + 2, response + len);
     command.insert(command.end(), (uint8_t*) &n_entries_notify, (uint8_t*) &n_entries_notify + 4);
@@ -142,16 +146,14 @@ static TimeReference mbl_mw_logger_lookup_reset_uid(const MblMwMetaWearBoard* bo
             // Copy the previous one
             TimeReference prev_reference = logger_state->log_time_references.at(prev_uid);
             prev_reference.reset_uid = reset_uid;
-            logger_state->log_time_references.erase(reset_uid);
             logger_state->log_time_references.emplace(reset_uid, prev_reference);
-            return prev_reference;
+            return logger_state->log_time_references.at(reset_uid);
         }
     }
     // Nothing to go on just create a new one
-    TimeReference reference = TimeReference(0, reset_uid);
-    logger_state->log_time_references.erase(reset_uid);
-    logger_state->log_time_references.emplace(reset_uid, reference);
-    return reference;
+    logger_state->log_time_references.emplace(piecewise_construct, forward_as_tuple(reset_uid), 
+        forward_as_tuple(reset_uid, 0));
+    return logger_state->log_time_references.at(reset_uid);
 }
 
 static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
@@ -163,7 +165,7 @@ static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const 
         memcpy(&entry_tick, response + offset + 1, 4);
         TimeReference reference = mbl_mw_logger_lookup_reset_uid(board, reset_uid);
         auto timestamp_copy(reference.timestamp);
-        milliseconds time_offset((int64_t) ((entry_tick - reference.tick) * TICK_TIME_STEP));
+        milliseconds time_offset((int64_t) ((int32_t)(entry_tick - reference.tick) * TICK_TIME_STEP));
         timestamp_copy+= time_offset;
 
         memcpy(&data, response + offset + 5, 4);
@@ -173,8 +175,8 @@ static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const 
             if (state->data_loggers.count(entry_id)) {
                 state->data_loggers.at(entry_id)->process_log_data(board, entry_id, 
                         duration_cast<milliseconds>(timestamp_copy.time_since_epoch()).count(), data);
-            } else if (board->log_download_handler.received_unknown_entry != nullptr) {
-                board->log_download_handler.received_unknown_entry(entry_id, 
+            } else if (state->log_download_handler.received_unknown_entry != nullptr) {
+                state->log_download_handler.received_unknown_entry(entry_id, 
                          duration_cast<milliseconds>(timestamp_copy.time_since_epoch()).count(), (const uint8_t*) &data, sizeof(data));
             }
         }
@@ -189,11 +191,12 @@ static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const 
 }
 
 static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    if (board->log_download_handler.received_progress_update != nullptr) {
+    auto state= GET_LOGGER_STATE(board);
+    if (state->log_download_handler.received_progress_update != nullptr) {
         uint32_t entries_left;
         memcpy(&entries_left, response + 2, min(len - 2, 4));
 
-        board->log_download_handler.received_progress_update(entries_left, board->n_log_entries);
+        state->log_download_handler.received_progress_update(entries_left, state->n_log_entries);
     }
     return 0;
 }
@@ -286,10 +289,11 @@ void MblMwDataLogger::process_log_data(const MblMwMetaWearBoard* board, uint8_t 
         MblMwData* data = data_response_converters.at(source->interpreter)(board, merged.data(), (uint8_t) merged.size());
         data->epoch= epoch;
 
+        MblMwFnData unhandled_callback;
         if (data_handler != nullptr) {
             data_handler(data);
-        } else if (board->log_download_handler.received_unhandled_entry != nullptr) {
-            board->log_download_handler.received_unhandled_entry(data);
+        } else if ((unhandled_callback= GET_LOGGER_STATE(board)->log_download_handler.received_unhandled_entry) != nullptr) {
+            unhandled_callback(data);
         }
 
         free(data->value);
@@ -374,7 +378,8 @@ void mbl_mw_logging_clear_entries(const MblMwMetaWearBoard* board) {
 }
 
 void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwLogDownloadHandler* handler) {
-    board->log_download_notify_progress= n_notifies ? 1.0 / n_notifies : 0;
+    auto state= GET_LOGGER_STATE(board);
+    state->log_download_notify_progress= n_notifies ? 1.0 / n_notifies : 0;
 
     uint8_t command[3]= {MBL_MW_MODULE_LOGGING};
     if (board->module_info.at(MBL_MW_MODULE_LOGGING).revision == REVISION_EXTENDED_LOGGING) {
@@ -388,15 +393,15 @@ void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, cons
     SEND_COMMAND;
 
     if (handler != nullptr) {
-        memcpy(&board->log_download_handler, handler, sizeof(MblMwLogDownloadHandler));
+        memcpy(&state->log_download_handler, handler, sizeof(MblMwLogDownloadHandler));
 
         command[1]= ORDINAL(LoggingRegister::READOUT_PROGRESS);
         command[2]= 0x1;
         SEND_COMMAND;
     } else {
-        board->log_download_handler.received_progress_update= nullptr;
-        board->log_download_handler.received_unknown_entry= nullptr;
-        board->log_download_handler.received_unhandled_entry = nullptr;
+        state->log_download_handler.received_progress_update= nullptr;
+        state->log_download_handler.received_unknown_entry= nullptr;
+        state->log_download_handler.received_unhandled_entry = nullptr;
     }
 
     command[1]= READ_REGISTER(ORDINAL(LoggingRegister::LENGTH));
@@ -422,7 +427,7 @@ void mbl_mw_logger_remove(MblMwDataLogger* loggable) {
     sort(loggable->entry_ids.begin(), loggable->entry_ids.end());
     for (auto it : loggable->entry_ids) {
         state->data_loggers.erase(it);
-        uint8_t command[3] = { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::REMOVE_ENTRIES), it };
+        uint8_t command[3] = { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::REMOVE), it };
         SEND_COMMAND_BOARD(loggable->source->owner);
     }
 
@@ -444,7 +449,7 @@ void mbl_mw_datasignal_log(MblMwDataSignal *signal, MblMwFnDataLoggerPtr logger_
 
             logger_ready(nullptr);
             state->create_next(true);
-        }, state->next_logger->n_req_entries * TIME_PER_COMMAND);
+        }, state->next_logger->n_req_entries * signal->owner->time_per_response);
 
         auto entries= state->next_logger->n_req_entries;
         uint8_t remainder= signal->length();

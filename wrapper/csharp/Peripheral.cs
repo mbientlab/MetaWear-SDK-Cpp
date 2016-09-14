@@ -32,14 +32,9 @@ namespace MbientLab.MetaWear.Peripheral {
 
         [StructLayout(LayoutKind.Sequential)]
         public struct Pattern {
-            byte highIntensity;
-            byte lowIntensity;
-            ushort riseTime;
-            ushort highTime;
-            ushort fallTime;
-            ushort pulseDuration;
-            ushort delayTime;
-            byte repeatCount;
+            public byte highIntensity, lowIntensity;
+            public ushort riseTime, highTime, fallTime, pulseDuration, delayTime;
+            public byte repeatCount;
         }
     }
 

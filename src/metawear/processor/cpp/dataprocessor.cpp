@@ -4,7 +4,6 @@
 
 #include "metawear/core/module.h"
 #include "metawear/core/status.h"
-#include "metawear/core/cpp/constant.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/core/cpp/metawearboard_macro.h"
 #include "metawear/core/cpp/register.h"
@@ -236,7 +235,7 @@ void create_processor(MblMwDataSignal *source, void* config, uint8_t size, DataP
             state->processor_callback(nullptr);
 
             state->create_next(true);
-        }, TIME_PER_COMMAND);
+        }, source->owner->time_per_response);
         send_command(source->owner, command.data(), (uint8_t) command.size());
     });
     state->create_next(false);

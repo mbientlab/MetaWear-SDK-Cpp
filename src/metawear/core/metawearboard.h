@@ -42,7 +42,7 @@ METAWEAR_API int32_t mbl_mw_metawearboard_notify_char_changed(MblMwMetaWearBoard
  */
 METAWEAR_API void mbl_mw_connection_char_read(MblMwMetaWearBoard *board, const MblMwGattChar *characteristic, const uint8_t *value, uint8_t length);
 /**
- * Handles responses from a gatt characteristic read issued by a MblMwMetaWearBoard object.  All characteristic values read must be forwaded to this function.
+ * Handles responses from a gatt characteristic read issued by a MblMwMetaWearBoard object.  All characteristic values read must be forwarded to this function.
  * @param board             Board the response is from
  * @param characteristic    Characteristic that was read
  * @param value             Byte array containing the characteristic value
@@ -61,6 +61,13 @@ METAWEAR_API MblMwMetaWearBoard* mbl_mw_metawearboard_create(const MblMwBtleConn
  * @param board     Pointer to the memory to free
  */
 METAWEAR_API void mbl_mw_metawearboard_free(MblMwMetaWearBoard *board);
+/**
+ * Sets how long the API should wait before a required response is received.  You should increase this value if operations such as 
+ * API initialization, creating timer, loggers, and data processors, and recording commands consistently time out.
+ * @param board                 Board to configure
+ * @param response_time_ms      How long to wait, in milliseconds, capped at 4000ms (4s)
+ */
+METAWEAR_API void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard* board, uint16_t response_time_ms);
 /**
  * Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
  * @param board         Board to initialize

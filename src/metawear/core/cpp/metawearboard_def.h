@@ -3,7 +3,6 @@
 #include <memory>
 #include <stdint.h>
 #include <unordered_map>
-#include <vector>
 
 #include "moduleinfo.h"
 #include "responseheader.h"
@@ -11,7 +10,6 @@
 
 #include "metawear/core/datasignal_fwd.h"
 #include "metawear/core/event_fwd.h"
-#include "metawear/core/logging.h"
 #include "metawear/core/metawearboard_fwd.h"
 #include "metawear/core/timer_fwd.h"
 #include "metawear/platform/btle_connection.h"
@@ -26,7 +24,6 @@ struct MblMwMetaWearBoard {
     MblMwMetaWearBoard();
     ~MblMwMetaWearBoard();
 
-    std::vector<uint8_t> event_config;
     std::unordered_map<ResponseHeader, MblMwEvent*> module_events;
     std::unordered_map<ResponseHeader, ResponseHandler> responses;
     std::unordered_map<uint8_t, ModuleInfo> module_info;
@@ -36,12 +33,10 @@ struct MblMwMetaWearBoard {
     MblMwFnBoardPtrInt initialized;
     Task* initialized_timeout;
     MblMwBtleConnection btle_conn;
-    MblMwLogDownloadHandler log_download_handler;
     Version firmware_revision;
     std::string module_number;
 
-    float log_download_notify_progress;
-    uint32_t n_log_entries;
+    int64_t time_per_response;
     int8_t module_discovery_index, dev_info_index;
 };
 

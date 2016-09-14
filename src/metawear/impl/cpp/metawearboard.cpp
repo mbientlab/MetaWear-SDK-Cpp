@@ -13,7 +13,6 @@
 #include "metawear/core/metawearboard.h"
 #include "metawear/core/status.h"
 
-#include "metawear/core/cpp/constant.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/event_register.h"
 #include "metawear/core/cpp/logging_register.h"
@@ -61,6 +60,7 @@ using std::unordered_map;
 using std::vector;
 
 const uint8_t CARTESIAN_FLOAT_SIZE= 6;
+const uint16_t MAX_TIME_PER_RESPONSE= 4000;
 
 #define CLEAR_READ_MODIFIERS(x) (x & 0x3f)
 
@@ -201,7 +201,7 @@ MblMwMetaWearBoard::MblMwMetaWearBoard() : logger_state(nullptr, [](void *ptr) -
         timer_state(nullptr, [](void *ptr) -> void { free_timer_module(ptr); }),
         event_state(nullptr, [](void *ptr) -> void { free_event_module(ptr); }), 
         dp_state(nullptr, [](void *ptr) -> void { free_dataprocessor_module(ptr); }),
-        module_discovery_index(-1) {
+        time_per_response(150), module_discovery_index(-1) {
 }
 
 MblMwMetaWearBoard::~MblMwMetaWearBoard() {
@@ -228,6 +228,10 @@ MblMwMetaWearBoard* mbl_mw_metawearboard_create(const MblMwBtleConnection *conne
 
 void mbl_mw_metawearboard_free(MblMwMetaWearBoard *board) {
     delete board;
+}
+
+void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard* board, uint16_t response_time_ms) {
+    board->time_per_response= response_time_ms > MAX_TIME_PER_RESPONSE ? MAX_TIME_PER_RESPONSE : response_time_ms;
 }
 
 static inline void service_discovery_completed(MblMwMetaWearBoard* board) {
@@ -268,7 +272,7 @@ void mbl_mw_metawearboard_initialize(MblMwMetaWearBoard *board, MblMwFnBoardPtrI
 
     board->initialized_timeout= ThreadPool::schedule([board](void) -> void {
         board->initialized(board, MBL_MW_STATUS_ERROR_TIMEOUT);
-    }, (MODULE_DISCOVERY_CMDS.size() + BOARD_DEV_INFO_CHARS.size() + 1) * TIME_PER_COMMAND);
+    }, (MODULE_DISCOVERY_CMDS.size() + BOARD_DEV_INFO_CHARS.size() + 1) * board->time_per_response);
     queue_next_gatt_char(board);
 }
 
@@ -284,8 +288,14 @@ void mbl_mw_metawearboard_tear_down(MblMwMetaWearBoard *board) {
             it.second->event_command_ids.clear();
         }
     }
+    sort(spawned_keys.begin(), spawned_keys.end());
     for (auto it: spawned_keys) {
         auto event= board->module_events.at(it);
+
+        if (it.module_id == MBL_MW_MODULE_TIMER) {
+            dynamic_cast<MblMwTimer*>(event)->remove_from_board();
+        }
+
         event->remove = false;
         delete event;
 

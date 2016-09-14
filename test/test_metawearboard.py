@@ -3,8 +3,8 @@ from ctypes import byref, cast, create_string_buffer, c_ubyte, c_uint, POINTER
 from mbientlab.metawear.core import *
 from mbientlab.metawear.processor import *
 from mbientlab.metawear.sensor import Gpio
-from testdataprocessor import TestGpioFeedbackSetup
-from testlogging import TestAccelerometerLoggingBase
+from test_dataprocessor import TestGpioFeedbackSetup
+from test_logging import TestAccelerometerLoggingBase
 import serializedstate
 import threading
 
@@ -143,6 +143,7 @@ class TestTimerTearDown(TestMetaWearBase):
         self.libmetawear.mbl_mw_timer_create_indefinite(self.board, 1000, 0, self.timer_signal_ready)
 
         self.libmetawear.mbl_mw_metawearboard_tear_down(self.board)
+        self.assertEqual(self.command_history[4:], expected_cmds)
 
 class TestMetaWearBoardSerialize(TestMetaWearBase):
     def __init__(self, *args, **kwargs):
@@ -274,7 +275,6 @@ class TestDeserializeTimer(TestMetaWearBase):
 
     def test_remove(self):
         expected_cmds= [
-            [0x0c, 0x04, 0x7],
             [0x0c, 0x05, 0x7],
             [0x0a, 0x04, 0x0],
             [0x0a, 0x04, 0x1]
@@ -302,20 +302,20 @@ class TestDeserializeAccelerometerLog(TestAccelerometerLoggingBase):
 
     def test_acc_data(self):
         progress_update= Fn_Uint_Uint(self.acc_data_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, Fn_Ubyte_Long_ByteArray))
+        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray))
 
         self.logger_ready_handler(self.acc_logger)
 
     def test_epoch_calc(self):
         progress_update= Fn_Uint_Uint(self.data_epoch_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, Fn_Ubyte_Long_ByteArray))
+        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray))
 
         self.logger_ready_handler(self.acc_logger)
 
     def test_remove_logger(self):
         expected_cmds= [
-            [0x0b, 0x09, 0x00],
-            [0x0b, 0x09, 0x01]
+            [0x0b, 0x03, 0x00],
+            [0x0b, 0x03, 0x01]
         ]
 
         self.libmetawear.mbl_mw_logger_remove(self.acc_logger)

@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{779F1B32-5465-416E-B14F-3F5256644E5F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MetaWearWin32</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <OutDir>dist\$(Configuration)\lib\$(Platform)\</OutDir>
+    <IntermediateOutputPath>build\$(Platform)\$(Configuration)\$(ProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)'=='Release'">false</LinkIncremental>
+    <IncludePath>$(MSBuildProjectDirectory)\src;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)'=='Release'">MaxSpeed</Optimization>
+      <FunctionLevelLinking Condition="'$(Configuration)'=='Release'">true</FunctionLevelLinking>
+      <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
+      <PreprocessorDefinitions>METAWEAR_DLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding Condition="'$(Configuration)'=='Release'">true</EnableCOMDATFolding>
+      <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="src\metawear\**\cpp\*.h" />
+    <ClInclude Include="src\metawear\**\*.h" />
+    <ClCompile Include="src\metawear\**\**\*.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ItemGroup Label="WrapperSettings">
+    <ExportHeaders Include="src\metawear\**\*.h" />
+    <Modules Include="$([System.String]::Join(`,`,$([System.IO.Directory]::GetDirectories(`src\metawear`))))" />
+  </ItemGroup>
+  <PropertyGroup Label="WrapperSettings">
+    <PythonWrapper>wrapper\python\mbientlab\metawear\functions.py</PythonWrapper>
+  </PropertyGroup>
+  <Target Name="CreatePythonWrapper" Outputs="$(PythonWrapper)" Inputs="@(ExportHeaders)">
+    <Exec Command="groovy -cp scripts scripts\wrapper_builder.groovy -c PythonWrapperCreator -d @(Modules) -o $(PythonWrapper)" />
+  </Target>
+  <UsingTask TaskName="SetEnv" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Build.CppTasks.Common.dll"/>
+  <Target Name="Test" DependsOnTargets="Build;CreatePythonWrapper">
+    <SetEnv Name   ="METAWEAR_LIB_SO_NAME"
+            Value  ="$(TargetPath)"
+            Prefix ="false">
+    </SetEnv>
+
+    <SetEnv Name   ="PYTHONPATH"
+            Value  ="wrapper\python"
+            Prefix ="false">
+    </SetEnv>
+    <Exec Command="python -m pytest --junitxml $(IntermediateOutputPath)pytest_results.xml test" />
+  </Target>
+  <Target Name="CreateNupkg" DependsOnTargets="Test">
+    <Exec Command="configure_version.bat" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="ProjectVersion" />
+    </Exec>
+    <Exec Command="nuget pack MetaWear.Win32.nuspec -Version $(ProjectVersion)" />
+  </Target>
+</Project>
