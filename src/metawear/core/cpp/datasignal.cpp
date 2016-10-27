@@ -4,7 +4,23 @@
 #include "datasignal_private.h"
 #include "metawearboard_def.h"
 
+#include <stdexcept>
+
+using std::out_of_range;
 using std::vector;
+
+
+uint8_t MblMwDataSignal::count_subscribers(const MblMwDataSignal* signal) {
+    auto root= dynamic_cast<MblMwDataSignal*>(signal->owner->module_events.at(signal->header));
+    uint8_t count= root->handler == nullptr ? 0 : 1;
+
+    for(auto it: root->components) {
+        if (it->handler != nullptr) {
+            count++;
+        } 
+    }
+    return count;
+}
 
 MblMwDataSignal::MblMwDataSignal(uint8_t** state_stream, MblMwMetaWearBoard *owner) : MblMwEvent(state_stream, owner), handler(nullptr) {
     interpreter = static_cast<DataInterpreter>(**state_stream);
@@ -36,14 +52,19 @@ MblMwDataSignal::MblMwDataSignal(const ResponseHeader& header, MblMwMetaWearBoar
 }
 
 MblMwDataSignal::~MblMwDataSignal() {
+    for(auto it: components) {
+        delete it;
+    }
 }
 
 void MblMwDataSignal::subscribe() {
     if (this->header.is_readable()) {
         this->header.disable_silent();
     } else {
-        uint8_t command[3] = { header.module_id, header.register_id, 1 };
-        SEND_COMMAND_BOARD(owner);
+        if (count_subscribers(this) == 1) {
+            uint8_t command[3] = { header.module_id, header.register_id, 1 };
+            SEND_COMMAND_BOARD(owner);
+        }
     }
 }
 
@@ -51,8 +72,10 @@ void MblMwDataSignal::unsubscribe() {
     if (this->header.is_readable()) {
         this->header.enable_silent();
     } else {
-        uint8_t command[3] = { header.module_id, header.register_id, 0 };
-        SEND_COMMAND_BOARD(owner);
+        if (!count_subscribers(this)) {
+            uint8_t command[3] = { header.module_id, header.register_id, 0 };
+            SEND_COMMAND_BOARD(owner);
+        }
     }
 }
 
@@ -105,6 +128,14 @@ void MblMwDataSignal::make_unsigned() {
     is_signed= 0;
     if (signed_to_unsigned.count(interpreter)) {
         interpreter= signed_to_unsigned.at(interpreter);
+    }
+}
+
+MblMwDataSignal* mbl_mw_datasignal_get_component(const MblMwDataSignal* signal, uint8_t index) {
+    try {
+        return signal->components.at(index);
+    } catch (out_of_range) {
+        return nullptr;
     }
 }
 

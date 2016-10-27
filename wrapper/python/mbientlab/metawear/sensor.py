@@ -1,5 +1,10 @@
 from ctypes import c_int, c_ushort, c_ubyte, c_void_p, Structure
 
+class Accelerometer:
+    ACCEL_X_AXIS_INDEX = 0
+    ACCEL_Y_AXIS_INDEX = 1
+    ACCEL_Z_AXIS_INDEX = 2
+
 class AccelerometerBosch:
     FSR_2G= 0
     FSR_4G= 1
@@ -118,6 +123,10 @@ class BarometerBme280:
 
 # Constants for configuring the BMI160 gyro
 class GyroBmi160:
+    ROTATION_X_AXIS_INDEX = 0
+    ROTATION_Y_AXIS_INDEX = 1
+    ROTATION_Z_AXIS_INDEX = 2
+
     ODR_25HZ= 6
     ODR_50HZ= 7
     ODR_100HZ= 8
@@ -172,12 +181,21 @@ class Gpio:
     PIN_CHANGE_TYPE_ANY= 3
 
 class MagnetometerBmm150:
+    BFIELD_X_AXIS_INDEX = 0 
+    BFIELD_Y_AXIS_INDEX = 1 
+    BFIELD_Z_AXIS_INDEX = 2
+
     POWER_PRESET_LOW_POWER= 0
     POWER_PRESET_REGULAR= 1
     POWER_PRESET_ENHANCED_REGULAR= 2
-    POWER_PRESET_HIGH_ACCURACY= 3;
+    POWER_PRESET_HIGH_ACCURACY= 3
 
 class ColorDetectorTcs34725:
+    ADC_CLEAR_INDEX = 0 
+    ADC_RED_INDEX = 1 
+    ADC_GREEN_INDEX = 2
+    ADC_BLUE_INDEX = 3
+
     GAIN_1X= 0
     GAIN_4X= 1
     GAIN_16X= 2

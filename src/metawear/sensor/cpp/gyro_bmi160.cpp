@@ -19,6 +19,10 @@ using std::memset;
 using std::piecewise_construct;
 using std::vector;
 
+#define CREATE_ROT_SIGNAL_SINGLE(offset) CREATE_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION_SINGLE_AXIS, 1, offset)
+#define CREATE_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_ROT_RESPONSE_HEADER, board, interpreter, \
+        FirmwareConverter::BMI160_ROTATION, channels, 2, 1, offset)
+
 const float FSR_SCALE[5]= {16.4f, 32.8f, 65.6f, 131.2f, 262.4f}, PACKED_ROT_REVISION= 1;
 const ResponseHeader GYRO_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA)),
     GYRO_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::PACKED_DATA));
@@ -47,10 +51,19 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
             board->module_config.emplace(MBL_MW_MODULE_GYRO, new_config);
         }
 
-        if (!board->module_events.count(GYRO_ROT_RESPONSE_HEADER)) {
-            board->module_events[GYRO_ROT_RESPONSE_HEADER] = new MblMwDataSignal(GYRO_ROT_RESPONSE_HEADER, board,
-                DataInterpreter::BMI160_ROTATION, FirmwareConverter::BMI160_ROTATION, 3, 2, 1, 0);
+        MblMwDataSignal* rotation;
+        if (board->module_events.count(GYRO_ROT_RESPONSE_HEADER)) {
+            rotation = dynamic_cast<MblMwDataSignal*>(board->module_events[GYRO_ROT_RESPONSE_HEADER]);
+        } else {
+            rotation = CREATE_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION, 3, 0);
+            board->module_events[GYRO_ROT_RESPONSE_HEADER] = rotation;
         }
+        if (!rotation->components.size()) {
+            rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(0));
+            rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(2));
+            rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(4));
+        }
+
         board->responses[GYRO_ROT_RESPONSE_HEADER]= response_handler_data_no_id;
 
         if (board->module_info.at(MBL_MW_MODULE_GYRO).revision >= PACKED_ROT_REVISION) {

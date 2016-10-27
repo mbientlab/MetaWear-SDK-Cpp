@@ -43,8 +43,8 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.5.21
-            └── libmetawear.so.0.5.21
+            ├── libmetawear.so.0 -> libmetawear.so.0.6.0
+            └── libmetawear.so.0.6.0
 
 ```
 
@@ -91,15 +91,17 @@ python3 -m unittest discover -s test
 ................................................................................
 ................................................................................
 ................................................................................
-.....................................................................
+................................................................................
+...
 ----------------------------------------------------------------------
-Ran 309 tests in 6.024s
+Ran 323 tests in 6.104s
 
 OK
+
 ```
 
 ## MSBuild ##
-When testing with MSBuild, it is important that the `Configuration` property matches the installed Python's target platform as well.  For example, if 64-bit Python is installed, set the `Configuration` property to x64 when running the `Test` target otherwise MSBuild will use the x86 dll which will cause all of the tests to fail.
+When testing with MSBuild, it is important that the `Platform` property matches the installed Python's target platform as well.  For example, if 64-bit Python is installed, set the `Platform` property to x64 when running the `Test` target otherwise MSBuild will use the x86 dll which will cause all of the tests to fail.
 
 ```bat
 metawear-cpp-api>msbuild MetaWear.Win32.vcxproj /p:Platform=x64 /t:Test
@@ -120,14 +122,15 @@ FinalizeBuildStatus:
   Deleting file "build\x64\Debug\MetaWear.Win32\MetaWear.Win32.tlog\unsuccessfulbuild".
   Touching "build\x64\Debug\MetaWear.Win32\MetaWear.Win32.tlog\MetaWear.Win32.lastbuildstate".
 Test:
-  python -m unittest discover -s test
+  python3 -m unittest discover -s test
   .....................................................................................................................
   .....................................................................................................................
-  ...........................................................................
+  .........................................................................................
   ----------------------------------------------------------------------
-  Ran 309 tests in 7.017s
+  Ran 323 tests in 6.104s
 
   OK
+
 Done Building Project "MetaWear.Win32.vcxproj" (Test target(s)).
 
 

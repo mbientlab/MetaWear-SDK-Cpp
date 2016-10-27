@@ -1,6 +1,6 @@
 from common import TestMetaWearBase
 from mbientlab.metawear.core import CartesianFloat
-from mbientlab.metawear.sensor import AccelerometerMma8452q
+from mbientlab.metawear.sensor import Accelerometer, AccelerometerMma8452q
 from ctypes import create_string_buffer
 
 class TestMma8452qConfiguration(TestMetaWearBase):
@@ -44,14 +44,6 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
 
         self.accel_data_signal= self.libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_signal(self.board)
 
-#    def test_get_acceleration_data_mg(self):
-#        response_bytes= create_string_buffer(b'\x03\x04\xb3\xff\x39\xfb\x62\x06')
-#        response_cs= CartesianShort() 
-#        expected= CartesianShort(x= -77, y= -1223, z= 1634)
-#
-#        libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_mg(byref(response_cs), response_bytes)
-#        self.assertEqual(response_cs, expected)
-
     def test_get_acceleration_data_g(self):
         response= create_string_buffer(b'\x03\x04\x56\xfa\x05\xf6\x18\x03', 8)
         expected= CartesianFloat(x= -1.450, y= -2.555, z= 0.792)
@@ -60,6 +52,34 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
         self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
 
         self.assertEqual(self.data_cartesian_float, expected)
+
+    def test_handle_data_component(self):
+        response= create_string_buffer(b'\x03\x04\x56\xfa\x05\xf6\x18\x03', 8)
+        tests= [
+            {
+                'expected': -1.450,
+                'index': Accelerometer.ACCEL_X_AXIS_INDEX,
+                'name': 'x-axis'
+            },
+            {
+                'expected': -2.555,
+                'index': Accelerometer.ACCEL_Y_AXIS_INDEX,
+                'name': 'y-axis'
+            },
+            {
+                'expected': 0.792,
+                'index': Accelerometer.ACCEL_Z_AXIS_INDEX,
+                'name': 'z-axis'
+            }
+        ]
+
+        for test in tests:
+            with self.subTest(odr= test['name']):
+                acc_component = self.libmetawear.mbl_mw_datasignal_get_component(self.accel_data_signal, test['index'])
+                self.libmetawear.mbl_mw_datasignal_subscribe(acc_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+                
+                self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.001)
 
     def test_stream_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]

@@ -29,6 +29,11 @@ namespace MbientLab.MetaWear.Core {
         public const int ERROR_TIMEOUT = 16;
     }
 
+    public class Settings {
+        public const byte BATTERY_VOLTAGE_INDEX = 0,
+                BATTERY_CHARGE_INDEX = 1;
+    }
+
     public enum Module {
         SWITCH = 1,
         LED,

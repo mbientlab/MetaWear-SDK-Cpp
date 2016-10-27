@@ -7,6 +7,8 @@
 
 #include "peripheral_common.h"
 
+#include "metawear/core/datasignal_fwd.h"
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -18,11 +20,23 @@ extern "C" {
  */
 METAWEAR_API void mbl_mw_ibeacon_set_major(const MblMwMetaWearBoard *board, uint16_t major);
 /**
+ * Sets the iBeacon advertising major number
+ * @param board     Pointer to the board to send the command to
+ * @param major     DataSignal output to use as the new major number
+ */
+METAWEAR_API void mbl_mw_ibeacon_set_major_signal(MblMwMetaWearBoard *board, const MblMwDataSignal* major);
+/**
  * Sets the iBeacon advertising minor number
  * @param board     Pointer to the board to send the command to
  * @param minor     New advertising minor number
  */
 METAWEAR_API void mbl_mw_ibeacon_set_minor(const MblMwMetaWearBoard *board, uint16_t minor);
+/**
+ * Sets the iBeacon advertising minor number
+ * @param board     Pointer to the board to send the command to
+ * @param minor     DataSignal output to use as the new minor number
+ */
+METAWEAR_API void mbl_mw_ibeacon_set_minor_signal(MblMwMetaWearBoard *board, const MblMwDataSignal* minor);
 /**
  * Sets the iBeacon advertising period
  * @param board     Pointer to the board to send the command to

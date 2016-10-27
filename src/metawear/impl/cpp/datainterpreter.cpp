@@ -19,12 +19,20 @@ struct CartesianShort {
     int16_t x, y, z;
 };
 
-#define CAST_INT32(x) if ((response[len - 1] & 0x80) == 0x80) {\
-    x= -1;\
-} else {\
-    x= 0;\
-}\
-memcpy(&x, response, min(len, (uint8_t) sizeof(x)))
+#define CAST_INT32(x) uint8_t max_pos= log_data ? min(len, signal->length()) : min(len, (uint8_t) (signal->offset + signal->length()));\
+    x= (response[max_pos - 1] & 0x80) == 0x80 ? -1 : 0;\
+    if (log_data) {\
+        memcpy(&x, response, max_pos);\
+    } else {\
+        memcpy(&x, response + signal->offset, max_pos - signal->offset);\
+    }
+
+#define CAST_UINT32(x) if (log_data) {\
+        memcpy(&x, response, sizeof(uint32_t));\
+    } else {\
+        uint8_t max_pos= min(len, (uint8_t) (signal->offset + signal->length()));\
+        memcpy(&x, response + signal->offset, max_pos - signal->offset);\
+    }
 
 #define CREATE_MESSAGE(dt_id) MblMwData *msg= (MblMwData*) malloc(sizeof(MblMwData));\
     msg->value= value;\
@@ -35,23 +43,23 @@ memcpy(&x, response, min(len, (uint8_t) sizeof(x)))
 static const float BOSCH_BARO_SCALE= 256.f, TEMPERATURE_SCALE= 8.f, MMA8452Q_ACC_SCALE= 1000.f, BMM150_SCALE= 16.f, BME280_HUMIDITY_SCALE= 1024.f, 
         Q16_16_SCALE= 0x10000;
 
-static MblMwData* convert_to_int32(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    int32_t *value = (int32_t*)malloc(sizeof(int32_t));
-    CAST_INT32(*value);
+static MblMwData* convert_to_int32(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    int32_t *value = (int32_t*) malloc(sizeof(int32_t));
 
+    CAST_INT32(*value)
     CREATE_MESSAGE(MBL_MW_DT_ID_INT32);
 }
 
-static MblMwData* convert_to_uint32(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_uint32(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t *value= (uint32_t*) calloc(1, sizeof(uint32_t));
-    memcpy(value, response, min(len, (uint8_t) sizeof(*value)));
 
+    CAST_UINT32(*value);
     CREATE_MESSAGE(MBL_MW_DT_ID_UINT32);
 }
 
-static MblMwData* convert_to_temperature(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_temperature(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
-    CAST_INT32(unscaled);
+    CAST_INT32(unscaled)
 
     float *value= (float*) malloc(sizeof(float));
     *value= unscaled / TEMPERATURE_SCALE;
@@ -59,7 +67,7 @@ static MblMwData* convert_to_temperature(const MblMwMetaWearBoard *board, const 
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bmp280_pressure(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmp280_pressure(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
@@ -69,7 +77,7 @@ static MblMwData* convert_to_bmp280_pressure(const MblMwMetaWearBoard *board, co
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bmp280_altitude(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmp280_altitude(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
@@ -79,7 +87,7 @@ static MblMwData* convert_to_bmp280_altitude(const MblMwMetaWearBoard *board, co
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_mma8452q_acceleration(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_mma8452q_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort milliG;
     memcpy(&milliG, response, sizeof(milliG));
 
@@ -91,9 +99,9 @@ static MblMwData* convert_to_mma8452q_acceleration(const MblMwMetaWearBoard *boa
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
-static MblMwData* convert_to_mma8452q_acceleration_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_mma8452q_acceleration_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
-    CAST_INT32(unscaled);
+    CAST_INT32(unscaled)
 
     float *value = (float*) malloc(sizeof(float));
     *value = unscaled / MMA8452Q_ACC_SCALE;
@@ -101,9 +109,9 @@ static MblMwData* convert_to_mma8452q_acceleration_single_axis(const MblMwMetaWe
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_mma8452q_acceleration_unsigned_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_mma8452q_acceleration_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled= 0;
-    memcpy(&unscaled, response, min(len, (uint8_t) sizeof(unscaled)));
+    CAST_UINT32(unscaled)
 
     float *value= (float*) malloc(sizeof(float));
     *value = unscaled / MMA8452Q_ACC_SCALE;
@@ -111,11 +119,11 @@ static MblMwData* convert_to_mma8452q_acceleration_unsigned_single_axis(const Mb
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bosch_acceleration(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bosch_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
-    float scale = bosch_get_data_scale(board);
+    float scale = bosch_get_data_scale(signal->owner);
 
     MblMwCartesianFloat *value = (MblMwCartesianFloat*)malloc(sizeof(MblMwCartesianFloat));
     value->x = unscaled.x / scale;
@@ -125,31 +133,31 @@ static MblMwData* convert_to_bosch_acceleration(const MblMwMetaWearBoard *board,
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
-static MblMwData* convert_to_bosch_acceleration_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bosch_acceleration_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
-    CAST_INT32(unscaled);
+    CAST_INT32(unscaled)
 
-    float *value = (float*)malloc(sizeof(float));
-    *value = unscaled / bosch_get_data_scale(board);
+    float *value = (float*) malloc(sizeof(float));
+    *value = unscaled / bosch_get_data_scale(signal->owner);
 
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bosch_acceleration_unsigned_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bosch_acceleration_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled= 0;
-    memcpy(&unscaled, response, min(len, (uint8_t) sizeof(unscaled)));
+    CAST_UINT32(unscaled)
 
     float *value= (float*) malloc(sizeof(float));
-    *value = unscaled / bosch_get_data_scale(board);
+    *value = unscaled / bosch_get_data_scale(signal->owner);
 
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bmi160_rotation(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmi160_rotation(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
-    float scale = bosch_gyro_get_data_scale(board);
+    float scale = bosch_gyro_get_data_scale(signal->owner);
 
     MblMwCartesianFloat *value = (MblMwCartesianFloat*)malloc(sizeof(MblMwCartesianFloat));
     value->x = unscaled.x / scale;
@@ -159,27 +167,27 @@ static MblMwData* convert_to_bmi160_rotation(const MblMwMetaWearBoard *board, co
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
-static MblMwData* convert_to_bmi160_rotation_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmi160_rotation_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
-    CAST_INT32(unscaled);
+    CAST_INT32(unscaled)
 
-    float *value = (float*)malloc(sizeof(float));
-    *value = unscaled / bosch_gyro_get_data_scale(board);
+    float *value = (float*) malloc(sizeof(float));
+    *value = unscaled / bosch_gyro_get_data_scale(signal->owner);
 
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bmi160_rotation_unsigned_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmi160_rotation_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled= 0;
-    memcpy(&unscaled, response, min(len, (uint8_t) sizeof(unscaled)));
+    CAST_UINT32(unscaled)
 
     float *value= (float*) malloc(sizeof(float));
-    *value = unscaled / bosch_gyro_get_data_scale(board);
+    *value = unscaled / bosch_gyro_get_data_scale(signal->owner);
 
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_byte_array(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_byte_array(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwData *msg= (MblMwData*) malloc(sizeof(MblMwData));
     msg->type_id= MBL_MW_DT_ID_BYTE_ARRAY;
     msg->length= len;
@@ -190,7 +198,7 @@ static MblMwData* convert_to_byte_array(const MblMwMetaWearBoard *board, const u
     return msg;
 }
 
-static MblMwData* convert_to_bmm150_b_field(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmm150_b_field(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
@@ -202,9 +210,9 @@ static MblMwData* convert_to_bmm150_b_field(const MblMwMetaWearBoard *board, con
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
-static MblMwData* convert_to_bmm150_b_field_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmm150_b_field_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
-    CAST_INT32(unscaled);
+    CAST_INT32(unscaled)
 
     float *value = (float*) malloc(sizeof(float));
     *value = unscaled / BMM150_SCALE;
@@ -212,9 +220,9 @@ static MblMwData* convert_to_bmm150_b_field_single_axis(const MblMwMetaWearBoard
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bmm150_b_field_unsigned_single_axis(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bmm150_b_field_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled= 0;
-    memcpy(&unscaled, response, min(len, (uint8_t) sizeof(unscaled)));
+    CAST_UINT32(unscaled)
 
     float *value= (float*) malloc(sizeof(float));
     *value = unscaled / BMM150_SCALE;
@@ -222,7 +230,7 @@ static MblMwData* convert_to_bmm150_b_field_unsigned_single_axis(const MblMwMeta
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_battery_state(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_battery_state(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwBatteryState *value= (MblMwBatteryState*) malloc(sizeof(MblMwBatteryState));
     memcpy(&value->voltage, response + 1, 2);
     value->charge= response[0];
@@ -230,14 +238,14 @@ static MblMwData* convert_to_battery_state(const MblMwMetaWearBoard *board, cons
     CREATE_MESSAGE(MBL_MW_DT_ID_BATTERY_STATE);
 }
 
-static MblMwData* convert_to_tcs34725_adc(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_tcs34725_adc(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwTcs34725ColorAdc *value= (MblMwTcs34725ColorAdc*) malloc(sizeof(MblMwTcs34725ColorAdc));
     memcpy(value, response, sizeof(MblMwTcs34725ColorAdc));
 
     CREATE_MESSAGE(MBL_MW_DT_ID_TCS34725_ADC);
 }
 
-static MblMwData* convert_to_bme280_humidity(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bme280_humidity(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
@@ -247,7 +255,7 @@ static MblMwData* convert_to_bme280_humidity(const MblMwMetaWearBoard *board, co
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_q16_16_fixed_point(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_q16_16_fixed_point(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
@@ -275,7 +283,7 @@ unordered_map<DataInterpreter, DataInterpreter> unsigned_to_signed= {
     { DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS, DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS }
 };
 
-unordered_map<DataInterpreter, FnBoardByteArray> data_response_converters = {
+unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters = {
     { DataInterpreter::INT32 , convert_to_int32 },
     { DataInterpreter::UINT32 , convert_to_uint32 },
     { DataInterpreter::TEMPERATURE , convert_to_temperature },

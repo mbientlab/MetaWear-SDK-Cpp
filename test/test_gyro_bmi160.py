@@ -86,6 +86,35 @@ class TestGyroBmi160DataHandler(TestMetaWearBase):
 
         self.assertEqual(self.data_cartesian_float, expected)
 
+    def test_rotation_data_component_handler(self):
+        response= create_string_buffer(b'\x13\x05\x3e\x43\xff\x7f\x00\x80', 8)
+        tests= [
+            {
+                'expected': 262.409,
+                'index': GyroBmi160.ROTATION_X_AXIS_INDEX,
+                'name': 'x-axis'
+            },
+            {
+                'expected': 499.497,
+                'index': GyroBmi160.ROTATION_Y_AXIS_INDEX,
+                'name': 'y-axis'
+            },
+            {
+                'expected': -499.512,
+                'index': GyroBmi160.ROTATION_Z_AXIS_INDEX,
+                'name': 'z-axis'
+            }
+        ]
+
+        for test in tests:
+            with self.subTest(odr= test['name']):
+                rot_component = self.libmetawear.mbl_mw_datasignal_get_component(self.gyro_rot_data_signal, test['index'])
+                self.libmetawear.mbl_mw_datasignal_subscribe(rot_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160.FSR_500DPS)
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+                
+                self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.001)
+
 class TestGyroBmi160HighFreqDataHandler(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD

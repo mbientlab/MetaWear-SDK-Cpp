@@ -2,9 +2,9 @@ import copy
 from common import TestMetaWearBase
 from ctypes import byref
 #from datetime import datetime
-from logdata import Bmi160Accelerometer
+from logdata import *
 from mbientlab.metawear.core import *
-from mbientlab.metawear.sensor import AccelerometerBosch
+from mbientlab.metawear.sensor import AccelerometerBosch, GyroBmi160
 #from time import mktime
 import threading
 
@@ -131,18 +131,14 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
         self.data_time_offsets= []
         self.prev_time= -1
 
+        self.download_handler= LogDownloadHandler(received_progress_update = cast(None, Fn_Uint_Uint), \
+                received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
+        self.logger_ready= Fn_VoidPtr(self.logger_ready_handler)
+
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
 
         super().setUp()
-
-    def acc_data_progress_update_handler(self, entries_left, total_entries):
-        if (entries_left == 0):
-            self.assertEqual(self.logged_data, Bmi160Accelerometer.expected_values)
-
-    def data_epoch_progress_update_handler(self, entries_left, total_entries):
-        if (entries_left == 0):
-            self.assertEqual(self.data_time_offsets, Bmi160Accelerometer.expected_offsets)
 
     def cartesian_float_data_handler(self, data):
         if (self.prev_time == -1):
@@ -163,26 +159,60 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
 
 class TestAccelerometerLogging(TestAccelerometerLoggingBase):
     def test_acc_data(self):
-        progress_update= Fn_Uint_Uint(self.acc_data_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, \
-                received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
-
-        logger_ready= Fn_VoidPtr(self.logger_ready_handler)
-
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, logger_ready)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_ready)
+
+        self.assertEqual(self.logged_data, Bmi160Accelerometer.expected_values)
 
     def test_epoch_calc(self):
-        progress_update= Fn_Uint_Uint(self.data_epoch_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, \
-                received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
-
-        logger_ready= Fn_VoidPtr(self.logger_ready_handler)
-
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, logger_ready)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_ready)
+
+        self.assertEqual(self.data_time_offsets, Bmi160Accelerometer.expected_offsets)
+
+class TestGyroYAxisLoggingBase(TestMetaWearBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.logged_data= []
+        self.download_handler= LogDownloadHandler(received_progress_update = cast(None, Fn_Uint_Uint), \
+                received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray), received_unhandled_entry = cast(None, Fn_DataPtr))
+        self.logger_ready= Fn_VoidPtr(self.logger_ready_handler)
+
+    def setUp(self):        
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
+    def float_data_handler(self, data):
+        self.logged_data.append(cast(data.contents.value, POINTER(c_float)).contents.value)
+
+    def logger_ready_handler(self, logger):
+        cartesian_float_data= Fn_DataPtr(self.float_data_handler)
+        self.libmetawear.mbl_mw_logger_subscribe(logger, cartesian_float_data)
+        self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
+
+        byte_buffer= []
+        for line in Bmi160GyroYAxis.log_responses:
+            byte_buffer.append(self.to_string_buffer(line))
+
+        for buffer in byte_buffer:
+            self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, buffer.raw, len(buffer.raw))
+
+class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
+    def test_gyro_data(self):
+        rot_signal= self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
+        roy_y_signal = self.libmetawear.mbl_mw_datasignal_get_component(rot_signal, GyroBmi160.ROTATION_Y_AXIS_INDEX)
+        self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160.FSR_250DPS)
+
+        self.libmetawear.mbl_mw_datasignal_log(roy_y_signal, self.logger_ready)
+
+        # why doesn't unittest come with an assertAlmostEqual for list of floats?
+        self.assertEqual(len(self.logged_data), len(Bmi160GyroYAxis.expected_values))
+        for a, b in zip(self.logged_data, Bmi160GyroYAxis.expected_values):
+            self.assertAlmostEqual(a, b, delta = 0.001)
 
 class TestLoggerSetup(TestMetaWearBase):
     def logger_ready_handler(self, logger):

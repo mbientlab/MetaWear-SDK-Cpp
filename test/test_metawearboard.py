@@ -1,10 +1,11 @@
 from common import TestMetaWearBase
 from ctypes import byref, cast, create_string_buffer, c_ubyte, c_uint, POINTER
+from logdata import *
 from mbientlab.metawear.core import *
 from mbientlab.metawear.processor import *
 from mbientlab.metawear.sensor import Gpio
 from test_dataprocessor import TestGpioFeedbackSetup
-from test_logging import TestAccelerometerLoggingBase
+from test_logging import TestAccelerometerLoggingBase, TestGyroYAxisLoggingBase
 import serializedstate
 import threading
 
@@ -150,7 +151,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         super().__init__(*args, **kwargs)
 
         self.expected_state= [
-            0x00, 
+            0x01, 
             0x03, 0x01, 0x01, 
             0x01, 0x31, 
             0x18, 
@@ -178,12 +179,17 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
             0x17, 0xff, 0xff,
             0x18, 0xff, 0xff,
             0xfe, 0xff, 0xff,
-            0x05, 
-            0x03, 0x04, 0xff, 0x00, 0x07, 0x02, 0x03, 0x02, 0x01, 0x00, 
+            0x0a, 
+            0x03, 0x04, 0xff, 0x00, 0x07, 0x02, 0x03, 0x02, 0x01, 0x00,
+            0x03, 0x04, 0xff, 0x00, 0x08, 0x02, 0x01, 0x02, 0x01, 0x00, 
+            0x03, 0x04, 0xff, 0x00, 0x08, 0x02, 0x01, 0x02, 0x01, 0x02, 
+            0x03, 0x04, 0xff, 0x00, 0x08, 0x02, 0x01, 0x02, 0x01, 0x04,  
             0x03, 0x19, 0xff, 0x00, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00,
             0x03, 0x9a, 0xff, 0x00, 0x01, 0x00, 0x01, 0x02, 0x00, 0x00,
             0x11, 0x0a, 0xff, 0x00, 
             0x11, 0x8c, 0xff, 0x00, 0x0e, 0x00, 0x01, 0x03, 0x00, 0x00,
+            0x11, 0x8c, 0xff, 0x00, 0x0e, 0x00, 0x01, 0x02, 0x00, 0x01,
+            0x11, 0x8c, 0xff, 0x00, 0x0e, 0x00, 0x01, 0x01, 0x00, 0x00,
             0x01,
             0x03, 0x28, 0x03, 0x07, 0x30, 0x81, 0x0b, 0xc0, 0x00, 0x14, 0x14, 0x14, 0x40, 0x0a, 0x18, 0x48, 0x08, 0x11, 0x00, 0x00, 
             0x01, 
@@ -202,13 +208,10 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         state_array_size= c_uint(0)
         state_ptr= cast(self.libmetawear.mbl_mw_metawearboard_serialize(self.board, byref(state_array_size)), POINTER(c_ubyte * state_array_size.value))
 
-        python_array= []
+        self.python_array= []
         for i in range(0, state_array_size.value):
-            python_array.append(state_ptr.contents[i])
+            self.python_array.append(state_ptr.contents[i])
         self.libmetawear.mbl_mw_memory_free(state_ptr)
-
-        self.maxDiff= None
-        self.assertEqual(python_array[0:148], self.expected_state[0:148])
 
     def test_teardown_serialize(self):
         state_buffer= self.to_string_buffer(self.expected_state)
@@ -217,6 +220,9 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
 
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_ready)
+
+        self.maxDiff= None
+        self.assertEqual(self.python_array[0:198], self.expected_state[0:198])
 
 class TestMetaWearBoardDeserialize(TestMetaWearBase):
     def setUp(self):
@@ -301,16 +307,12 @@ class TestDeserializeAccelerometerLog(TestAccelerometerLoggingBase):
         self.acc_logger= self.libmetawear.mbl_mw_logger_lookup_id(self.board, 0)
 
     def test_acc_data(self):
-        progress_update= Fn_Uint_Uint(self.acc_data_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray))
-
         self.logger_ready_handler(self.acc_logger)
+        self.assertEqual(self.logged_data, Bmi160Accelerometer.expected_values)
 
     def test_epoch_calc(self):
-        progress_update= Fn_Uint_Uint(self.data_epoch_progress_update_handler)
-        self.download_handler= LogDownloadHandler(received_progress_update = progress_update, received_unknown_entry = cast(None, Fn_Ubyte_LongLong_ByteArray))
-
         self.logger_ready_handler(self.acc_logger)
+        self.assertEqual(self.data_time_offsets, Bmi160Accelerometer.expected_offsets)
 
     def test_remove_logger(self):
         expected_cmds= [
@@ -321,7 +323,33 @@ class TestDeserializeAccelerometerLog(TestAccelerometerLoggingBase):
         self.libmetawear.mbl_mw_logger_remove(self.acc_logger)
         self.assertEqual(self.command_history, expected_cmds)
 
-class TestDeserializeDataProcessor(TestMetaWearBase):
+class TestDeserializeGyroYAxisLog(TestGyroYAxisLoggingBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
+
+        state_buffer= self.to_string_buffer(serializedstate.gyro_y_axis_logging_state)
+        self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, state_buffer, len(state_buffer.raw))
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+        self.gyro_y_logger= self.libmetawear.mbl_mw_logger_lookup_id(self.board, 0)
+
+    def test_gyro_data(self):
+        self.logger_ready_handler(self.gyro_y_logger)
+
+        # why doesn't unittest come with an assertAlmostEqual for list of floats?
+        self.assertEqual(len(self.logged_data), len(Bmi160GyroYAxis.expected_values))
+        for a, b in zip(self.logged_data, Bmi160GyroYAxis.expected_values):
+            self.assertAlmostEqual(a, b, delta = 0.001)
+
+    def test_remove_logger(self):
+        expected_cmds= [
+            [0x0b, 0x03, 0x00]
+        ]
+
+        self.libmetawear.mbl_mw_logger_remove(self.gyro_y_logger)
+        self.assertEqual(self.command_history, expected_cmds)
+
+class TestDeserializeActivityHandler(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
@@ -345,6 +373,7 @@ class TestDeserializeDataProcessor(TestMetaWearBase):
     def test_remove_processor_chain(self):
         expected_cmds= [
             [0x9, 0x6, 0x2],
+            [0x9, 0x6, 0x4],
             [0x9, 0x6, 0x3],
             [0x9, 0x6, 0x1]
         ]
@@ -362,7 +391,7 @@ class TestDeserializeDataProcessor(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(processor_state, self.sensor_data_handler)
         self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
 
-        self.assertAlmostEqual(self.data_float.value, expected, places= 4)
+        self.assertAlmostEqual(self.data_float.value, expected, delta= 0.0001)
 
     def test_timer_data(self):
         response= create_string_buffer(b'\x09\x03\x03\xfe\x3f\xb7\x01', 7)
@@ -372,7 +401,7 @@ class TestDeserializeDataProcessor(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(processor, self.sensor_data_handler)
         self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
 
-        self.assertAlmostEqual(self.data_float.value, expected, places= 4)
+        self.assertAlmostEqual(self.data_float.value, expected, delta= 0.0001)
 
 class TestSerializeMultiComparator(TestMetaWearBase):
     def setUp(self):
@@ -389,16 +418,16 @@ class TestSerializeMultiComparator(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_multi_comparator_create(adc_signal, Comparator.OPERATION_GTE, Comparator.MODE_REFERENCE, references, 
                 len(references), comp_created_ptr)
 
+        self.assertEqual(self.python_array[0:385], serializedstate.multi_comparator_state[0:385])
+
     def comp_created_cmd_check(self, comparator):
         state_array_size= c_uint(0)
         state_ptr= cast(self.libmetawear.mbl_mw_metawearboard_serialize(self.board, byref(state_array_size)), POINTER(c_ubyte * state_array_size.value))
 
-        python_array= []
+        self.python_array= []
         for i in range(0, state_array_size.value):
-            python_array.append(state_ptr.contents[i])
+            self.python_array.append(state_ptr.contents[i])
         self.libmetawear.mbl_mw_memory_free(state_ptr)
-
-        self.assertEqual(python_array[211:234], serializedstate.multi_comparator_state[211:234])
 
 class TestDeserializeMultiComparator(TestMetaWearBase):
     def setUp(self):

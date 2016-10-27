@@ -292,7 +292,7 @@ class TestMetaWearBase(unittest.TestCase):
             self.data_uint32= c_uint()
             self.data_uint32.value= data_ptr.contents.value
         elif (data.contents.type_id == DataTypeId.FLOAT):
-            data_ptr= cast(data.contents.value, POINTER(c_float));
+            data_ptr= cast(data.contents.value, POINTER(c_float))
             self.data_float= c_float()
             self.data_float.value= data_ptr.contents.value
         elif (data.contents.type_id == DataTypeId.CARTESIAN_FLOAT):

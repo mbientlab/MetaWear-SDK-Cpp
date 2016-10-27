@@ -7,14 +7,27 @@
 #include "metawear/core/cpp/register.h"
 #include "metawear/core/cpp/responseheader.h"
 
+#define CREATE_BFIELD_SIGNAL_SINGLE(offset) CREATE_BFIELD_SIGNAL(DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS, 1, offset)
+#define CREATE_BFIELD_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(BMM150_MAG_DATA_RESPONSE_HEADER, board, interpreter, \
+        FirmwareConverter::BOSCH_MAGNETOMETER, channels, 2, 1, offset)
+
 const ResponseHeader BMM150_MAG_DATA_RESPONSE_HEADER(MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::MAG_DATA));
 
 void init_magnetometer_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_MAGNETOMETER) && board->module_info.at(MBL_MW_MODULE_MAGNETOMETER).present) {
-        if (!board->module_events.count(BMM150_MAG_DATA_RESPONSE_HEADER)) {
-            board->module_events[BMM150_MAG_DATA_RESPONSE_HEADER] = new MblMwDataSignal(BMM150_MAG_DATA_RESPONSE_HEADER, board,
-                DataInterpreter::BMM150_B_FIELD, FirmwareConverter::BOSCH_MAGNETOMETER, 3, 2, 1, 0);
+        MblMwDataSignal* bfield;
+        if (board->module_events.count(BMM150_MAG_DATA_RESPONSE_HEADER)) {
+            bfield = dynamic_cast<MblMwDataSignal*>(board->module_events[BMM150_MAG_DATA_RESPONSE_HEADER]);
+        } else {
+            bfield = CREATE_BFIELD_SIGNAL(DataInterpreter::BMM150_B_FIELD, 3, 0);
+            board->module_events[BMM150_MAG_DATA_RESPONSE_HEADER] = bfield;
         }
+        if (!bfield->components.size()) {
+            bfield->components.push_back(CREATE_BFIELD_SIGNAL_SINGLE(0));
+            bfield->components.push_back(CREATE_BFIELD_SIGNAL_SINGLE(2));
+            bfield->components.push_back(CREATE_BFIELD_SIGNAL_SINGLE(4));
+        }
+
         board->responses[BMM150_MAG_DATA_RESPONSE_HEADER] = response_handler_data_no_id;
     }
 }

@@ -1,4 +1,6 @@
+#include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
+
 #include "metawear/peripheral/ibeacon.h"
 
 #include <cstring>
@@ -23,8 +25,24 @@ void mbl_mw_ibeacon_set_major(const MblMwMetaWearBoard *board, uint16_t major) {
     SET_PARAM_USHORT(IBEACON_MAJOR, &major);
 }
 
+void mbl_mw_ibeacon_set_major_signal(MblMwMetaWearBoard *board, const MblMwDataSignal* major) {
+    EventDataParameter signal_data_token= {major->length(), major->offset, 0};
+
+    set_data_token(board, &signal_data_token);
+    mbl_mw_ibeacon_set_major(board, 0);
+    clear_data_token(board);
+}
+
 void mbl_mw_ibeacon_set_minor(const MblMwMetaWearBoard *board, uint16_t minor) {
     SET_PARAM_USHORT(IBEACON_MINOR, &minor);
+}
+
+void mbl_mw_ibeacon_set_minor_signal(MblMwMetaWearBoard *board, const MblMwDataSignal* minor) {
+    EventDataParameter signal_data_token= {minor->length(), minor->offset, 0};
+
+    set_data_token(board, &signal_data_token);
+    mbl_mw_ibeacon_set_minor(board, 0);
+    clear_data_token(board);
 }
 
 void mbl_mw_ibeacon_set_period(const MblMwMetaWearBoard *board, uint16_t period) {

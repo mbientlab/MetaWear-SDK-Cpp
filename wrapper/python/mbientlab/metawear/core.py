@@ -90,6 +90,10 @@ class LogDownloadHandler(Structure):
         ("received_unhandled_entry", Fn_DataPtr)
     ]
 
+class Settings:
+    BATTERY_VOLTAGE_INDEX = 0
+    BATTERY_CHARGE_INDEX = 1
+
 # Python wrapper for the MblMwDataCartesianFloat struct
 class CartesianFloat(Structure):
     _fields_= [
@@ -110,26 +114,6 @@ class CartesianFloat(Structure):
 
     def __str__(self):
         return "(%.3f, %.3f, %.3f)" % (self.x, self.y, self.z)
-
-    def __deepcopy__(self, memo):
-        return CartesianFloat(x= self.x, y= self.y, z= self.z)
-
-# Python wrapper for the MblMwDataCartesianShort struct
-class CartesianShort(Structure):
-    _fields_= [
-        ("x", c_short),
-        ("y", c_short),
-        ("z", c_short)
-    ]
-
-    def __eq__(self, other):
-        return (self.x == other.x) and (self.y == other.y) and (self.z == other.z)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __str__(self):
-        return "(%d, %d, %d)" % (self.x, self.y, self.z)
 
     def __deepcopy__(self, memo):
         return CartesianFloat(x= self.x, y= self.y, z= self.z)

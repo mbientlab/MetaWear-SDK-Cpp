@@ -3,7 +3,7 @@ from ctypes import *
 from mbientlab.metawear.core import Fn_VoidPtr, Fn_VoidPtr_Int, Status
 from mbientlab.metawear.peripheral import Led
 from mbientlab.metawear.processor import *
-from mbientlab.metawear.sensor import Gpio, MultiChannelTemperature
+from mbientlab.metawear.sensor import Accelerometer, Gpio, MultiChannelTemperature
 import threading
 
 class TestSwitchLedController(TestMetaWearBase):
@@ -250,6 +250,45 @@ class TestDataCollector(TestMetaWearBase):
 
     def passthrough_processor_created(self, signal):
         self.assertEqual(self.command_history, self.expected_cmds)
+
+class TestAccAxisProcessing(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.firmware_revision= create_string_buffer(b'1.2.3', 5)
+
+        super().setUp()
+
+        self.libmetawear.mbl_mw_acc_set_range(self.board, 16.0)
+        self.acc_signal = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+
+    def test_acc_z_pulse_setup(self):
+        expected_cmds= [
+            [0x09, 0x02, 0x03, 0x04, 0xff, 0x24, 0x0b, 0x01, 0x00, 0x01, 0x00, 0x08, 0x00, 0x00, 0x10, 0x00],
+            [0x09, 0x07, 0x00, 0x01],
+            [0x09, 0x03, 0x01]
+        ]
+
+        acc_z_signal = self.libmetawear.mbl_mw_datasignal_get_component(self.acc_signal, Accelerometer.ACCEL_Z_AXIS_INDEX)
+        self.libmetawear.mbl_mw_dataprocessor_pulse_create(acc_z_signal, Pulse.OUTPUT_AREA, 1.0, 16, 
+                Fn_VoidPtr(lambda p: self.libmetawear.mbl_mw_datasignal_subscribe(p, self.sensor_data_handler)))
+
+        self.assertEqual(self.command_history, expected_cmds)
+
+
+    def test_acc_y_threshold(self):
+        expected_cmds= [
+            [0x09, 0x02, 0x03, 0x04, 0xff, 0x22, 0x0d, 0x0d, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00],
+            [0x09, 0x02, 0x09, 0x03, 0x00, 0x00, 0x06, 0x01, 0x01],
+            [0x09, 0x07, 0x01, 0x01],
+            [0x09, 0x03, 0x01]
+        ]
+
+        ths_created= Fn_VoidPtr(lambda t: self.libmetawear.mbl_mw_dataprocessor_comparator_create(t, Comparator.OPERATION_EQ, 1.0, comp_created))
+        comp_created= Fn_VoidPtr(lambda c: self.libmetawear.mbl_mw_datasignal_subscribe(c, self.sensor_data_handler)) 
+        acc_y_signal = self.libmetawear.mbl_mw_datasignal_get_component(self.acc_signal, Accelerometer.ACCEL_Y_AXIS_INDEX)
+        self.libmetawear.mbl_mw_dataprocessor_threshold_create(acc_y_signal, Threshold.MODE_BINARY, 1.0, 0.0, ths_created)
+
+        self.assertEqual(self.command_history, expected_cmds)
 
 class TestGpioAdcPulse(TestMetaWearBase):
     def setUp(self):

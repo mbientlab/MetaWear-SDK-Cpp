@@ -18,7 +18,11 @@ using std::memcpy;
 using std::memset;
 using std::piecewise_construct;
 
-uint8_t MMA8452Q_DEFAULT_CONFIG[]= {
+#define CREATE_ACC_SIGNAL_SINGLE(offset) CREATE_ACC_SIGNAL(DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS, 1, offset)
+#define CREATE_ACC_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(MMA8452Q_ACCEL_RESPONSE_HEADER, board, interpreter, \
+        FirmwareConverter::MMA8452Q_ACCELERATION, channels, 2, 1, offset)
+
+const uint8_t MMA8452Q_DEFAULT_CONFIG[]= {
     0x00, 0x00, 0x18, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00,
     0x00, 0x80, 0x00, 0x44, 0x84,
@@ -100,9 +104,18 @@ const ResponseHeader MMA8452Q_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER,
     MMA8452Q_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::PACKED_ACC_DATA));
 
 void init_accelerometer_mma8452q(MblMwMetaWearBoard *board) {
-    if (!board->module_events.count(MMA8452Q_ACCEL_RESPONSE_HEADER)) {
-        board->module_events[MMA8452Q_ACCEL_RESPONSE_HEADER] = new MblMwDataSignal(MMA8452Q_ACCEL_RESPONSE_HEADER, board, 
-            DataInterpreter::MMA8452Q_ACCELERATION, FirmwareConverter::MMA8452Q_ACCELERATION, 3, 2, 1, 0);
+    MblMwDataSignal* acc;
+    
+    if (board->module_events.count(MMA8452Q_ACCEL_RESPONSE_HEADER)) {
+        acc = dynamic_cast<MblMwDataSignal*>(board->module_events[MMA8452Q_ACCEL_RESPONSE_HEADER]);
+    } else {
+        acc = CREATE_ACC_SIGNAL(DataInterpreter::MMA8452Q_ACCELERATION, 3, 0);
+        board->module_events[MMA8452Q_ACCEL_RESPONSE_HEADER] = acc;
+    } 
+    if (!acc->components.size()) {
+        acc->components.push_back(CREATE_ACC_SIGNAL_SINGLE(0));
+        acc->components.push_back(CREATE_ACC_SIGNAL_SINGLE(2));
+        acc->components.push_back(CREATE_ACC_SIGNAL_SINGLE(4));
     }
 
     if (!board->module_config.count(MBL_MW_MODULE_ACCELEROMETER)) {

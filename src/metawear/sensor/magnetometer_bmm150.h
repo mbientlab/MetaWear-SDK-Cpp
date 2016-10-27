@@ -11,6 +11,13 @@
 extern "C" {
 #endif
 
+//@{
+/** Indices for component values of the bfield data signal, used with mbl_mw_datasignal_get_component */
+const uint8_t MBL_MW_MAG_BFIELD_X_AXIS_INDEX = 0, 
+        MBL_MW_MAG_BFIELD_Y_AXIS_INDEX = 1, 
+        MBL_MW_MAG_BFIELD_Z_AXIS_INDEX = 2;
+//@}
+
 /**
  * Preset power modes recommended by Bosch
  * <table>

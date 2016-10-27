@@ -2,6 +2,11 @@ using System;
 using System.Runtime.InteropServices;
 
 namespace MbientLab.MetaWear.Sensor {
+    public class Accelerometer {
+        public const byte ACCEL_X_AXIS_INDEX = 0,
+                ACCEL_Y_AXIS_INDEX = 1,
+                ACCEL_Z_AXIS_INDEX = 2;
+    }
     public class AccelerometerBosch {
         public enum FullScaleRange {
             FSR_2G = 0,
@@ -178,6 +183,10 @@ namespace MbientLab.MetaWear.Sensor {
     }
 
     public class GyroBmi160 {
+        public const byte ROTATION_X_AXIS_INDEX = 0,
+                ROTATION_Y_AXIS_INDEX = 1,
+                ROTATION_Z_AXIS_INDEX = 2;
+
         public enum OutputDataRate {
             ODR_25HZ = 6,
             ODR_50HZ,
@@ -247,6 +256,11 @@ namespace MbientLab.MetaWear.Sensor {
     }
 
     public class ColorDetectorTcs34725 {
+        public const byte ADC_CLEAR_INDEX = 0,
+                ADC_RED_INDEX = 1,
+                ADC_GREEN_INDEX = 2,
+                ADC_BLUE_INDEX = 3;
+
         public enum Gain {
             GAIN_1X = 0,
             GAIN_4X,
@@ -256,6 +270,10 @@ namespace MbientLab.MetaWear.Sensor {
     }
 
     public class MagnetometerBmm150 {
+        public const byte BFIELD_X_AXIS_INDEX = 0,
+                BFIELD_Y_AXIS_INDEX = 1,
+                BFIELD_Z_AXIS_INDEX = 2;
+
         public enum PowerPreset {
             LOW_POWER= 0,
             REGULAR,

@@ -22,12 +22,13 @@
 #endif
 
 #if defined _WINDLL || defined METAWEAR_DLL // defined if METAWEAR is compiled as a DLL
+#ifdef METAWEAR_DLL_EXPORTS
 /** Indicates the function should be exported to the symbol table  */
-#ifdef METAWEAR_DLL_EXPORTS // defined if we are building the METAWEAR DLL (instead of using it)
 #define METAWEAR_API METAWEAR_HELPER_DLL_EXPORT
 #else
 #define METAWEAR_API METAWEAR_HELPER_DLL_IMPORT
 #endif // METAWEAR_DLL_EXPORTS
+/** Indicates the function is only to be used by the API */
 #define METAWEAR_LOCAL METAWEAR_HELPER_DLL_LOCAL
 #else // METAWEAR_DLL is not defined: this means METAWEAR is a static lib.
 #define METAWEAR_API

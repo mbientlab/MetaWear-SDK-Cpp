@@ -4,7 +4,6 @@
 
 #include "metawear/core/data.h"
 #include "metawear/core/datasignal_fwd.h"
-#include "metawear/core/metawearboard_fwd.h"
 
 enum class DataInterpreter : uint8_t {
     INT32,
@@ -58,8 +57,8 @@ namespace std {
 extern std::unordered_map<DataInterpreter, DataInterpreter> signed_to_unsigned;
 extern std::unordered_map<DataInterpreter, DataInterpreter> unsigned_to_signed;
 
-typedef MblMwData* (*FnBoardByteArray)(const MblMwMetaWearBoard*, const uint8_t*, uint8_t);
-extern std::unordered_map<DataInterpreter, FnBoardByteArray> data_response_converters;
+typedef MblMwData* (*FnBoolDataSignalByteArray)(bool log_data, const MblMwDataSignal*, const uint8_t*, uint8_t);
+extern std::unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters;
 
 typedef float (*FnDataSignalFloat)(const MblMwDataSignal*, float);
 extern std::unordered_map<FirmwareConverter, FnDataSignalFloat> number_to_firmware_converters;

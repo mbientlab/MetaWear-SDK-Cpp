@@ -79,6 +79,29 @@ class TestMagnetometerBmm150Data(TestMetaWearBase):
         signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
 
+    def test_b_field_component_subscribe(self):
+        # expect only 1 subscribe & unsubscribe commands to be issued
+        expected_cmds= [
+            [0x15, 0x05, 0x01],
+            [0x15, 0x05, 0x00]
+        ]
+
+        signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+
+        indices= [MagnetometerBmm150.BFIELD_X_AXIS_INDEX, MagnetometerBmm150.BFIELD_Y_AXIS_INDEX, MagnetometerBmm150.BFIELD_Z_AXIS_INDEX]
+        for i in indices:
+            component= self.libmetawear.mbl_mw_datasignal_get_component(signal, i)
+            self.libmetawear.mbl_mw_datasignal_subscribe(component, self.sensor_data_handler)
+
+        for i in indices:
+            component= self.libmetawear.mbl_mw_datasignal_get_component(signal, i)
+            self.libmetawear.mbl_mw_datasignal_unsubscribe(component)
+
+        self.libmetawear.mbl_mw_datasignal_unsubscribe(signal)
+
+        self.assertEqual(self.command_history, expected_cmds)
+
     def test_b_field_unsubscribe(self):
         expected= [0x15, 0x05, 0x00]
 
@@ -91,6 +114,35 @@ class TestMagnetometerBmm150Data(TestMetaWearBase):
 
         signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
-        status= self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
 
         self.assertEqual(self.data_cartesian_float, expected)
+
+    def test_b_field_component_data(self):
+        response= create_string_buffer(b'\x15\x05\x4e\xf0\x53\x0a\x75\x04', 8)
+        tests= [
+            {
+                'expected': -251.1250,
+                'index': MagnetometerBmm150.BFIELD_X_AXIS_INDEX,
+                'name': 'x-axis'
+            },
+            {
+                'expected': 165.1875,
+                'index': MagnetometerBmm150.BFIELD_Y_AXIS_INDEX,
+                'name': 'y-axis'
+            },
+            {
+                'expected': 71.3125,
+                'index': MagnetometerBmm150.BFIELD_Z_AXIS_INDEX,
+                'name': 'z-axis'
+            }
+        ]
+
+        for test in tests:
+            with self.subTest(odr= test['name']):
+                signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
+                signal_component = self.libmetawear.mbl_mw_datasignal_get_component(signal, test['index'])
+                self.libmetawear.mbl_mw_datasignal_subscribe(signal_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+
+                self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.001)

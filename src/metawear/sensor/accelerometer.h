@@ -11,6 +11,13 @@
 extern "C" {
 #endif
 
+//@{
+/** Indices for component values of the acceleration data signal, used with mbl_mw_datasignal_get_component */
+const uint8_t MBL_MW_ACC_ACCEL_X_AXIS_INDEX = 0, 
+        MBL_MW_ACC_ACCEL_Y_AXIS_INDEX = 1, 
+        MBL_MW_ACC_ACCEL_Z_AXIS_INDEX = 2;
+//@}
+
 /**
  * Retrieves the data signal representing acceleration data
  * @param board     Board to retrieve the signal from

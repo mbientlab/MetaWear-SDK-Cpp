@@ -19,52 +19,6 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_memory_free(IntPtr ptr);
 
         /// <summary>
-        /// Subscribes to a data stream, processing messages with the given handler
-        /// </summary>
-        /// <param name="signal">Data signal to subscribe to</param>
-        /// <param name="received_data">Callback function to handle data received from the signal</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_subscribe(IntPtr signal, Fn_IntPtr received_data);
-
-        /// <summary>
-        /// Unsubscribes from a data stream
-        /// </summary>
-        /// <param name="signal">Data signal to unsubscribe from</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_unsubscribe(IntPtr signal);
-
-        /// <summary>
-        /// Check if the data signal can be explicitly read
-        /// </summary>
-        /// <param name="signal">Data signal to check</param>
-        /// <returns>Zero if not readable</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_datasignal_is_readable(IntPtr signal);
-
-        /// <summary>
-        /// Reads data from sensor represented by the data signal.  Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function
-        /// </summary>
-        /// <param name="signal">Data signal to read from</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_read(IntPtr signal);
-
-        /// <summary>
-        /// Reads data from sensor represented by the data signal.  Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function.  This variant is for reads that require additional parameters.
-        /// </summary>
-        /// <param name="signal">Data signal to read from</param>
-        /// <param name="parameters">Additional parameters required for the read operation</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_read_with_parameters(IntPtr signal, IntPtr parameters);
-
-        /// <summary>
-        /// Creates an MblMwDataLogger for the signal
-        /// </summary>
-        /// <param name="signal">Data signal to log</param>
-        /// <param name="logger_ready">Callback function to be executed when the logger is created</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_datasignal_log(IntPtr signal, Fn_IntPtr logger_ready);
-
-        /// <summary>
         /// Issues a soft reset
         /// </summary>
         /// <param name="board">Pointer to the board to send the command to</param>
@@ -185,75 +139,6 @@ namespace MbientLab.MetaWear {
         /// <param name="received_data">Callback function to handle data received from the logger</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_logger_subscribe(IntPtr logger, Fn_IntPtr received_data);
-
-        /// <summary>
-        /// Retrieves an event pointer representing a disconnect event
-        /// </summary>
-        /// <param name="board">Board the event is fired on</param>
-        /// <returns>Pointer to the disconnect event</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_settings_get_disconnect_event(IntPtr board);
-
-        /// <summary>
-        /// Retrieves the data signal representing battery state
-        /// </summary>
-        /// <param name="board">Board the battery state is from</param>
-        /// <returns>Pointer to the battery state signal</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_settings_get_battery_state_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the advertisement name
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="device_name">Byte array containing the device name</param>
-        /// <param name="len">Length of the array</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_settings_set_device_name(IntPtr board, byte[] device_name, byte len);
-
-        /// <summary>
-        /// Sets the advertising interval
-        /// </summary>
-        /// <param name="board">Board to set the ad interval</param>
-        /// <param name="interval">Advertisement interval</param>
-        /// <param name="timeout">Advertisement timeout</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_settings_set_ad_interval(IntPtr board, ushort interval, byte timeout);
-
-        /// <summary>
-        /// Sets advertising transmitting power.  If a non valid value is set, the nearest valid value will be used instead
-        /// </summary>
-        /// <param name="board">Board to set the TX power</param>
-        /// <param name="tx_power">Valid values are</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_settings_set_tx_power(IntPtr board, sbyte tx_power);
-
-        /// <summary>
-        /// Starts advertising
-        /// </summary>
-        /// <param name="board">Board to start btle advertisement</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_settings_start_advertising(IntPtr board);
-
-        /// <summary>
-        /// Sets scan response
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="response">Scan response as a byte array</param>
-        /// <param name="len">Length of the array</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_settings_set_scan_response(IntPtr board, byte[] response, byte len);
-
-        /// <summary>
-        /// Sets connection parameters
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="min_conn_interval">Connection interval lower bound</param>
-        /// <param name="max_conn_interval">Connection interval upper bound</param>
-        /// <param name="latency">Number of connection intervals to skip</param>
-        /// <param name="timeout">Max time between data exchanges until the connection is considered to be lost</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_settings_set_connection_parameters(IntPtr board, float min_conn_interval, float max_conn_interval, ushort latency, ushort timeout);
 
         /// <summary>
         /// Creates a timer that will run for a set number of repetitions.  A pointer representing the timer will be passed to the user through a callback function
@@ -409,8 +294,133 @@ namespace MbientLab.MetaWear {
         /// <param name="board">Board to deserialize</param>
         /// <param name="state">Byte array holding the the information state</param>
         /// <param name="size">Byte array size</param>
+        /// <returns>MBL_MW_STATUS_OK if successful</returns>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_deserialize(IntPtr board, byte[] state, uint size);
+        public static extern int mbl_mw_metawearboard_deserialize(IntPtr board, byte[] state, uint size);
+
+        /// <summary>
+        /// Retrieves an event pointer representing a disconnect event
+        /// </summary>
+        /// <param name="board">Board the event is fired on</param>
+        /// <returns>Pointer to the disconnect event</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_settings_get_disconnect_event(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing battery state
+        /// </summary>
+        /// <param name="board">Board the battery state is from</param>
+        /// <returns>Pointer to the battery state signal</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_settings_get_battery_state_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the advertisement name
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="device_name">Byte array containing the device name</param>
+        /// <param name="len">Length of the array</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_settings_set_device_name(IntPtr board, byte[] device_name, byte len);
+
+        /// <summary>
+        /// Sets the advertising interval
+        /// </summary>
+        /// <param name="board">Board to set the ad interval</param>
+        /// <param name="interval">Advertisement interval</param>
+        /// <param name="timeout">Advertisement timeout</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_settings_set_ad_interval(IntPtr board, ushort interval, byte timeout);
+
+        /// <summary>
+        /// Sets advertising transmitting power.  If a non valid value is set, the nearest valid value will be used instead
+        /// </summary>
+        /// <param name="board">Board to set the TX power</param>
+        /// <param name="tx_power">Valid values are</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_settings_set_tx_power(IntPtr board, sbyte tx_power);
+
+        /// <summary>
+        /// Starts advertising
+        /// </summary>
+        /// <param name="board">Board to start btle advertisement</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_settings_start_advertising(IntPtr board);
+
+        /// <summary>
+        /// Sets scan response
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="response">Scan response as a byte array</param>
+        /// <param name="len">Length of the array</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_settings_set_scan_response(IntPtr board, byte[] response, byte len);
+
+        /// <summary>
+        /// Sets connection parameters
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="min_conn_interval">Connection interval lower bound</param>
+        /// <param name="max_conn_interval">Connection interval upper bound</param>
+        /// <param name="latency">Number of connection intervals to skip</param>
+        /// <param name="timeout">Max time between data exchanges until the connection is considered to be lost</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_settings_set_connection_parameters(IntPtr board, float min_conn_interval, float max_conn_interval, ushort latency, ushort timeout);
+
+        /// <summary>
+        /// Retrieves an individual value from a multi-valued datasignal i.e. MblMwCartesianFloat datasignal is 3 float values. These individual signals can use the full suite of
+        /// </summary>
+        /// <param name="signal">Data signal to lookup</param>
+        /// <param name="index">Index of the component to return</param>
+        /// <returns>Signal component</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_datasignal_get_component(IntPtr signal, byte index);
+
+        /// <summary>
+        /// Subscribes to a data stream, processing messages with the given handler
+        /// </summary>
+        /// <param name="signal">Data signal to subscribe to</param>
+        /// <param name="received_data">Callback function to handle data received from the signal</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_datasignal_subscribe(IntPtr signal, Fn_IntPtr received_data);
+
+        /// <summary>
+        /// Unsubscribes from a data stream
+        /// </summary>
+        /// <param name="signal">Data signal to unsubscribe from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_datasignal_unsubscribe(IntPtr signal);
+
+        /// <summary>
+        /// Check if the data signal can be explicitly read
+        /// </summary>
+        /// <param name="signal">Data signal to check</param>
+        /// <returns>Zero if not readable</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_datasignal_is_readable(IntPtr signal);
+
+        /// <summary>
+        /// Reads data from sensor represented by the data signal.  Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function
+        /// </summary>
+        /// <param name="signal">Data signal to read from</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_datasignal_read(IntPtr signal);
+
+        /// <summary>
+        /// Reads data from sensor represented by the data signal.  Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function.  This variant is for reads that require additional parameters.
+        /// </summary>
+        /// <param name="signal">Data signal to read from</param>
+        /// <param name="parameters">Additional parameters required for the read operation</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_datasignal_read_with_parameters(IntPtr signal, IntPtr parameters);
+
+        /// <summary>
+        /// Creates an MblMwDataLogger for the signal
+        /// </summary>
+        /// <param name="signal">Data signal to log</param>
+        /// <param name="logger_ready">Callback function to be executed when the logger is created</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_datasignal_log(IntPtr signal, Fn_IntPtr logger_ready);
 
         /// <summary>
         /// Drives a motor
@@ -428,68 +438,6 @@ namespace MbientLab.MetaWear {
         /// <param name="pulse_width_ms">How long to run the buzzer</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_haptic_start_buzzer(IntPtr board, ushort pulse_width_ms);
-
-        /// <summary>
-        /// Sets the iBeacon advertising major number
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="major">New advertising major number</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_major(IntPtr board, ushort major);
-
-        /// <summary>
-        /// Sets the iBeacon advertising minor number
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="minor">New advertising minor number</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_minor(IntPtr board, ushort minor);
-
-        /// <summary>
-        /// Sets the iBeacon advertising period
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="period">New advertising period</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_period(IntPtr board, ushort period);
-
-        /// <summary>
-        /// Sets the iBeacon advertising transmitting power
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="tx_power">New advertising transmitting power</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_tx_power(IntPtr board, sbyte tx_power);
-
-        /// <summary>
-        /// Sets the iBeacon advertising receiving power
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="rx_power">New advertising receiving power</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_rx_power(IntPtr board, sbyte rx_power);
-
-        /// <summary>
-        /// Sets the iBeacon advertising UUID
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        /// <param name="ad_uuid">Byte representation of the UUID in little endian ordering</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_set_uuid(IntPtr board, byte[] ad_uuid);
-
-        /// <summary>
-        /// Enables iBeacon mode.  You will need to disconnect from the board to advertise as an iBeacon
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_enable(IntPtr board);
-
-        /// <summary>
-        /// Disables iBeacon mode
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_ibeacon_disable(IntPtr board);
 
         /// <summary>
         /// Loads the struct with a preset configuration
@@ -639,6 +587,84 @@ namespace MbientLab.MetaWear {
         /// <param name="strand">Strand to stop LED rotation</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_neopixel_stop_rotation(IntPtr board, byte strand);
+
+        /// <summary>
+        /// Sets the iBeacon advertising major number
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="major">New advertising major number</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_major(IntPtr board, ushort major);
+
+        /// <summary>
+        /// Sets the iBeacon advertising major number
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="major">DataSignal output to use as the new major number</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_major_signal(IntPtr board, IntPtr major);
+
+        /// <summary>
+        /// Sets the iBeacon advertising minor number
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="minor">New advertising minor number</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_minor(IntPtr board, ushort minor);
+
+        /// <summary>
+        /// Sets the iBeacon advertising minor number
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="minor">DataSignal output to use as the new minor number</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_minor_signal(IntPtr board, IntPtr minor);
+
+        /// <summary>
+        /// Sets the iBeacon advertising period
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="period">New advertising period</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_period(IntPtr board, ushort period);
+
+        /// <summary>
+        /// Sets the iBeacon advertising transmitting power
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="tx_power">New advertising transmitting power</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_tx_power(IntPtr board, sbyte tx_power);
+
+        /// <summary>
+        /// Sets the iBeacon advertising receiving power
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="rx_power">New advertising receiving power</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_rx_power(IntPtr board, sbyte rx_power);
+
+        /// <summary>
+        /// Sets the iBeacon advertising UUID
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        /// <param name="ad_uuid">Byte representation of the UUID in little endian ordering</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_set_uuid(IntPtr board, byte[] ad_uuid);
+
+        /// <summary>
+        /// Enables iBeacon mode.  You will need to disconnect from the board to advertise as an iBeacon
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_enable(IntPtr board);
+
+        /// <summary>
+        /// Disables iBeacon mode
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_ibeacon_disable(IntPtr board);
 
         /// <summary>
         /// Create an accumulator whose output is the same size as the input.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -1055,73 +1081,6 @@ namespace MbientLab.MetaWear {
         public static extern int mbl_mw_dataprocessor_time_modify_period(IntPtr time_delay, uint period);
 
         /// <summary>
-        /// Retrieves the data signal representing acceleration data
-        /// </summary>
-        /// <param name="board">Board to retrieve the signal from</param>
-        /// <returns>Pointer to the acceleration data signal</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_acc_get_acceleration_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Retrieves a special data signal representing high frequency (>100Hz) acceleration data.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from mbl_mw_acc_get_acceleration_data_signal.
-        /// </summary>
-        /// <param name="board">Board to retrieve the signal from</param>
-        /// <returns>Pointer to a high frequency data signal</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_acc_get_high_freq_acceleration_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the output data rate.  If an invalid odr is used, the closest valid value will be used.
-        /// </summary>
-        /// <param name="board">Board to configure</param>
-        /// <param name="odr">Output data rate</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern float mbl_mw_acc_set_odr(IntPtr board, float odr);
-
-        /// <summary>
-        /// Sets the full scale range.  IF an invalid range is used, the closet valid value will be used.
-        /// </summary>
-        /// <param name="board">Board to configure</param>
-        /// <param name="range">Sampling range</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern float mbl_mw_acc_set_range(IntPtr board, float range);
-
-        /// <summary>
-        /// Writes the acceleration settings to the board
-        /// </summary>
-        /// <param name="board">Board to configure</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_write_acceleration_config(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to active mode
-        /// </summary>
-        /// <param name="board">Board the accelerometer is on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_start(IntPtr board);
-
-        /// <summary>
-        /// Switches the accelerometer to standby mode
-        /// </summary>
-        /// <param name="board">Board the accelerometer is on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_stop(IntPtr board);
-
-        /// <summary>
-        /// Enables acceleration sampling
-        /// </summary>
-        /// <param name="board">Board to enable acceleration sampling on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_enable_acceleration_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disables acceleration sampling
-        /// </summary>
-        /// <param name="board">Board to disable acceleration sampling on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_acc_disable_acceleration_sampling(IntPtr board);
-
-        /// <summary>
         /// Retrieves the data signal representing acceleration data from a Bosch accelerometer
         /// </summary>
         /// <param name="board">Pointer to the board to retrieve the signal from</param>
@@ -1469,50 +1428,6 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_baro_bosch_stop(IntPtr board);
 
         /// <summary>
-        /// Retrieves the data signal representing detected ADC values for clear, red, green, and blue
-        /// </summary>
-        /// <param name="board">Board the sensor resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_cd_tcs34725_get_adc_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the integration time
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="time">New integration time to use</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_set_integration_time(IntPtr board, float time);
-
-        /// <summary>
-        /// Sets the analog gain scale
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="gain">New gain scale to use</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_set_gain(IntPtr board, ColorDetectorTcs34725.Gain gain);
-
-        /// <summary>
-        /// Enable the illuminator LED
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_enable_illuminator_led(IntPtr board);
-
-        /// <summary>
-        /// Disable the illuminator LED
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_disable_illuminator_led(IntPtr board);
-
-        /// <summary>
-        /// Writes the configuration to the sensor
-        /// </summary>
-        /// <param name="board">Board the sensor resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_cd_tcs34725_write_config(IntPtr board);
-
-        /// <summary>
         /// Retrieves a data signal representing analog data
         /// </summary>
         /// <param name="board">Board to receive data from</param>
@@ -1588,65 +1503,6 @@ namespace MbientLab.MetaWear {
         public static extern void mbl_mw_gpio_stop_pin_monitoring(IntPtr board, byte pin);
 
         /// <summary>
-        /// Retrieves the data signal representing BMI160 rotation data
-        /// </summary>
-        /// <param name="board">Pointer to the board to retrieve the signal from</param>
-        /// <returns>Pointer to the board</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_gyro_bmi160_get_rotation_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Retrieves a special data signal representing high frequency (>100Hz) rotation data for the BMI160 IMU.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with a rotation data signal, use the signal from mbl_mw_gyro_bmi160_get_rotation_data_signal.
-        /// </summary>
-        /// <param name="board">Pointer to the board to retrieve the signal from</param>
-        /// <returns>Pointer to a high frequency data signal</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the output data rate
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="odr">Output data rate value to assign</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_set_odr(IntPtr board, GyroBmi160.OutputDataRate odr);
-
-        /// <summary>
-        /// Sets the rotation range
-        /// </summary>
-        /// <param name="board">Pointer to the board to modify</param>
-        /// <param name="range">New rotation range</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_set_range(IntPtr board, GyroBmi160.FullScaleRange range);
-
-        /// <summary>
-        /// Writes the configuration to the sendor
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_write_config(IntPtr board);
-
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_start(IntPtr board);
-
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_stop(IntPtr board);
-
-        /// <summary>
-        /// Enables rotation sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_enable_rotation_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disables rotation sampling
-        /// </summary>
-        /// <param name="board">Pointer to the board to send the command to</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_gyro_bmi160_disable_rotation_sampling(IntPtr board);
-
-        /// <summary>
         /// Retrieves the data signal representing humidity data
         /// </summary>
         /// <param name="board">Board the humidity sensor resides on</param>
@@ -1682,50 +1538,6 @@ namespace MbientLab.MetaWear {
         /// <param name="length">Number of bytes</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_i2c_write(IntPtr board, byte device_addr, byte register_addr, byte[] value, byte length);
-
-        /// <summary>
-        /// Retrieves the data signal representing B field strength
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        /// <returns>Pointer to the data signal</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_mag_bmm150_get_b_field_data_signal(IntPtr board);
-
-        /// <summary>
-        /// Sets the power mode to one of the recommended presets
-        /// </summary>
-        /// <param name="board">Board to modify</param>
-        /// <param name="preset">New preset power mode to use</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_set_power_preset(IntPtr board, MagnetometerBmm150.PowerPreset preset);
-
-        /// <summary>
-        /// Enable B field sampling
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_enable_b_field_sampling(IntPtr board);
-
-        /// <summary>
-        /// Disable B field sampling
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_disable_b_field_sampling(IntPtr board);
-
-        /// <summary>
-        /// Switches the magnetometer into normal mode
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_start(IntPtr board);
-
-        /// <summary>
-        /// Switches the magnetometer into sleep mode
-        /// </summary>
-        /// <param name="board">Board the magnetometer resides on</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_stop(IntPtr board);
 
         /// <summary>
         /// Retrieves the data signal representing a temperature source
@@ -1830,5 +1642,219 @@ namespace MbientLab.MetaWear {
         /// <returns>Pointer to the switch data signal</returns>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr mbl_mw_switch_get_state_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing BMI160 rotation data
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        /// <returns>Pointer to the board</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_gyro_bmi160_get_rotation_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves a special data signal representing high frequency (>100Hz) rotation data for the BMI160 IMU.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with a rotation data signal, use the signal from mbl_mw_gyro_bmi160_get_rotation_data_signal.
+        /// </summary>
+        /// <param name="board">Pointer to the board to retrieve the signal from</param>
+        /// <returns>Pointer to a high frequency data signal</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the output data rate
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="odr">Output data rate value to assign</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_set_odr(IntPtr board, GyroBmi160.OutputDataRate odr);
+
+        /// <summary>
+        /// Sets the rotation range
+        /// </summary>
+        /// <param name="board">Pointer to the board to modify</param>
+        /// <param name="range">New rotation range</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_set_range(IntPtr board, GyroBmi160.FullScaleRange range);
+
+        /// <summary>
+        /// Writes the configuration to the sendor
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_write_config(IntPtr board);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_start(IntPtr board);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_stop(IntPtr board);
+
+        /// <summary>
+        /// Enables rotation sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_enable_rotation_sampling(IntPtr board);
+
+        /// <summary>
+        /// Disables rotation sampling
+        /// </summary>
+        /// <param name="board">Pointer to the board to send the command to</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_gyro_bmi160_disable_rotation_sampling(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing detected ADC values for clear, red, green, and blue
+        /// </summary>
+        /// <param name="board">Board the sensor resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_cd_tcs34725_get_adc_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the integration time
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="time">New integration time to use</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_set_integration_time(IntPtr board, float time);
+
+        /// <summary>
+        /// Sets the analog gain scale
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="gain">New gain scale to use</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_set_gain(IntPtr board, ColorDetectorTcs34725.Gain gain);
+
+        /// <summary>
+        /// Enable the illuminator LED
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_enable_illuminator_led(IntPtr board);
+
+        /// <summary>
+        /// Disable the illuminator LED
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_disable_illuminator_led(IntPtr board);
+
+        /// <summary>
+        /// Writes the configuration to the sensor
+        /// </summary>
+        /// <param name="board">Board the sensor resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_cd_tcs34725_write_config(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing B field strength
+        /// </summary>
+        /// <param name="board">Board the magnetometer resides on</param>
+        /// <returns>Pointer to the data signal</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_mag_bmm150_get_b_field_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the power mode to one of the recommended presets
+        /// </summary>
+        /// <param name="board">Board to modify</param>
+        /// <param name="preset">New preset power mode to use</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_mag_bmm150_set_power_preset(IntPtr board, MagnetometerBmm150.PowerPreset preset);
+
+        /// <summary>
+        /// Enable B field sampling
+        /// </summary>
+        /// <param name="board">Board the magnetometer resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_mag_bmm150_enable_b_field_sampling(IntPtr board);
+
+        /// <summary>
+        /// Disable B field sampling
+        /// </summary>
+        /// <param name="board">Board the magnetometer resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_mag_bmm150_disable_b_field_sampling(IntPtr board);
+
+        /// <summary>
+        /// Switches the magnetometer into normal mode
+        /// </summary>
+        /// <param name="board">Board the magnetometer resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_mag_bmm150_start(IntPtr board);
+
+        /// <summary>
+        /// Switches the magnetometer into sleep mode
+        /// </summary>
+        /// <param name="board">Board the magnetometer resides on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_mag_bmm150_stop(IntPtr board);
+
+        /// <summary>
+        /// Retrieves the data signal representing acceleration data
+        /// </summary>
+        /// <param name="board">Board to retrieve the signal from</param>
+        /// <returns>Pointer to the acceleration data signal</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_get_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Retrieves a special data signal representing high frequency (>100Hz) acceleration data.  This signal is only for streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from mbl_mw_acc_get_acceleration_data_signal.
+        /// </summary>
+        /// <param name="board">Board to retrieve the signal from</param>
+        /// <returns>Pointer to a high frequency data signal</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_acc_get_high_freq_acceleration_data_signal(IntPtr board);
+
+        /// <summary>
+        /// Sets the output data rate.  If an invalid odr is used, the closest valid value will be used.
+        /// </summary>
+        /// <param name="board">Board to configure</param>
+        /// <param name="odr">Output data rate</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern float mbl_mw_acc_set_odr(IntPtr board, float odr);
+
+        /// <summary>
+        /// Sets the full scale range.  IF an invalid range is used, the closet valid value will be used.
+        /// </summary>
+        /// <param name="board">Board to configure</param>
+        /// <param name="range">Sampling range</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern float mbl_mw_acc_set_range(IntPtr board, float range);
+
+        /// <summary>
+        /// Writes the acceleration settings to the board
+        /// </summary>
+        /// <param name="board">Board to configure</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_write_acceleration_config(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to active mode
+        /// </summary>
+        /// <param name="board">Board the accelerometer is on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_start(IntPtr board);
+
+        /// <summary>
+        /// Switches the accelerometer to standby mode
+        /// </summary>
+        /// <param name="board">Board the accelerometer is on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_stop(IntPtr board);
+
+        /// <summary>
+        /// Enables acceleration sampling
+        /// </summary>
+        /// <param name="board">Board to enable acceleration sampling on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_enable_acceleration_sampling(IntPtr board);
+
+        /// <summary>
+        /// Disables acceleration sampling
+        /// </summary>
+        /// <param name="board">Board to disable acceleration sampling on</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_acc_disable_acceleration_sampling(IntPtr board);
     };
 }

@@ -102,3 +102,37 @@ class TestColorDetectorTcs34725Data(TestMetaWearBase):
         self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
 
         self.assertEqual(self.data_tcs34725_adc, expected)
+
+    def test_color_adc_component_data(self):
+        response= create_string_buffer(b'\x17\x81\xa2\x01\x7b\x00\x9a\x00\x7c\x00', 10)
+        tests= [
+            {
+                'expected': 418,
+                'index': ColorDetectorTcs34725.ADC_CLEAR_INDEX,
+                'name': 'clear'
+            },
+            {
+                'expected': 123,
+                'index': ColorDetectorTcs34725.ADC_RED_INDEX,
+                'name': 'red'
+            },
+            {
+                'expected': 154,
+                'index': ColorDetectorTcs34725.ADC_GREEN_INDEX,
+                'name': 'green'
+            },
+            {
+                'expected': 124,
+                'index': ColorDetectorTcs34725.ADC_BLUE_INDEX,
+                'name': 'blue'
+            }
+        ]
+
+        for test in tests:
+            with self.subTest(odr= test['name']):
+                signal_component = self.libmetawear.mbl_mw_datasignal_get_component(self.adc_signal, test['index'])
+
+                self.libmetawear.mbl_mw_datasignal_subscribe(signal_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+
+                self.assertEqual(self.data_uint32.value, test['expected'])

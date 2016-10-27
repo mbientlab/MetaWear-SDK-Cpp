@@ -8,6 +8,8 @@
 #include "event_private.h"
 
 struct MblMwDataSignal : public MblMwEvent {
+    static uint8_t count_subscribers(const MblMwDataSignal* signal);
+
     MblMwDataSignal(uint8_t** state_stream, MblMwMetaWearBoard *owner);
     MblMwDataSignal(const MblMwEvent& event);
     MblMwDataSignal(const ResponseHeader& header, MblMwMetaWearBoard *owner, DataInterpreter interpreter, uint8_t n_channels, 
@@ -30,6 +32,8 @@ struct MblMwDataSignal : public MblMwEvent {
     void make_unsigned();
 
     MblMwFnData handler;
+    std::vector<MblMwDataSignal*> components;
+
     DataInterpreter interpreter;
     FirmwareConverter converter;
     uint8_t n_channels;

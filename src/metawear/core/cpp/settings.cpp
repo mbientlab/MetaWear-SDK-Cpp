@@ -26,9 +26,18 @@ const ResponseHeader SETTINGS_BATTERY_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SETTIN
 
 void init_settings_module(MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= BATTERY_REVISION) {
-        if (!board->module_events.count(SETTINGS_BATTERY_STATE_RESPONSE_HEADER)) {
-            board->module_events[SETTINGS_BATTERY_STATE_RESPONSE_HEADER] =
-                new MblMwDataSignal(SETTINGS_BATTERY_STATE_RESPONSE_HEADER, board, DataInterpreter::SETTINGS_BATTERY_STATE, 1, 3, 0, 0);
+        MblMwDataSignal* battery;
+        if (board->module_events.count(SETTINGS_BATTERY_STATE_RESPONSE_HEADER)) {
+            battery = dynamic_cast<MblMwDataSignal*>(board->module_events[SETTINGS_BATTERY_STATE_RESPONSE_HEADER]);
+        } else {
+            battery = new MblMwDataSignal(SETTINGS_BATTERY_STATE_RESPONSE_HEADER, board, DataInterpreter::SETTINGS_BATTERY_STATE, 1, 3, 0, 0);
+            board->module_events[SETTINGS_BATTERY_STATE_RESPONSE_HEADER] = battery;
+        }
+        if (!battery->components.size()) {
+            // MBL_MW_MODULE_SETTINGS_BATT_VOLTAGE_INDEX
+            battery->components.push_back(new MblMwDataSignal(SETTINGS_BATTERY_STATE_RESPONSE_HEADER, board, DataInterpreter::UINT32, 1, 2, 0, 1));
+            // MBL_MW_MODULE_SETTINGS_BATT_CHARGE_INDEX
+            battery->components.push_back(new MblMwDataSignal(SETTINGS_BATTERY_STATE_RESPONSE_HEADER, board, DataInterpreter::UINT32, 1, 1, 0, 0));
         }
         board->responses[SETTINGS_BATTERY_STATE_RESPONSE_HEADER] = response_handler_data_no_id;
     }

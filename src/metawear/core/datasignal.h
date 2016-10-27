@@ -16,6 +16,15 @@ extern "C" {
 #endif
 
 /**
+ * Retrieves an individual value from a multi-valued datasignal i.e. MblMwCartesianFloat datasignal is 3 float values.  
+ * These individual signals can use the full suite of 
+ * @param signal                Data signal to lookup
+ * @param index                 Index of the component to return
+ * @return Signal component, null if signal is signle valued
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_datasignal_get_component(const MblMwDataSignal* signal, uint8_t index);
+
+/**
  * Subscribes to a data stream, processing messages with the given handler
  * @param signal                Data signal to subscribe to
  * @param received_data         Callback function to handle data received from the signal

@@ -1,6 +1,6 @@
 from common import TestMetaWearBase
 from mbientlab.metawear.core import CartesianFloat
-from mbientlab.metawear.sensor import AccelerometerBma255, AccelerometerBosch
+from mbientlab.metawear.sensor import Accelerometer, AccelerometerBma255, AccelerometerBosch
 from ctypes import create_string_buffer
 
 class TestAccBma255Config(TestMetaWearBase):
@@ -137,3 +137,32 @@ class TestAccBma255Data(TestMetaWearBase):
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
         status= self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
         self.assertEqual(self.data_cartesian_float, expected)
+
+    def test_handle_data_component(self):
+        response= create_string_buffer(b'\x03\x04\xe1\xb3\xa1\x24\xb1\x2e', 8)
+        tests= [
+            {
+                'expected': -4.7576,
+                'index': Accelerometer.ACCEL_X_AXIS_INDEX,
+                'name': 'x-axis'
+            },
+            {
+                'expected': 2.2893,
+                'index': Accelerometer.ACCEL_Y_AXIS_INDEX,
+                'name': 'y-axis'
+            },
+            {
+                'expected': 2.9182,
+                'index': Accelerometer.ACCEL_Z_AXIS_INDEX,
+                'name': 'z-axis'
+            }
+        ]
+
+        for test in tests:
+            with self.subTest(odr= test['name']):
+                acc_component = self.libmetawear.mbl_mw_datasignal_get_component(self.signal, test['index'])
+                self.libmetawear.mbl_mw_datasignal_subscribe(acc_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
+                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+
+                self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.0001)

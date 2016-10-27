@@ -15,6 +15,10 @@
 
 using std::calloc;
 
+#define CREATE_ADC_SIGNAL_SINGLE(offset) CREATE_ADC_SIGNAL(DataInterpreter::UINT32, 1, offset)
+#define CREATE_ADC_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(CD_TCS34725_ADC_RESPONSE_HEADER, board, interpreter, \
+        FirmwareConverter::DEFAULT, channels, 2, 0, offset)
+
 const ResponseHeader CD_TCS34725_ADC_RESPONSE_HEADER(MBL_MW_MODULE_COLOR_DETECTOR, READ_REGISTER(ORDINAL(ColorDetectorTcs34725Register::RGB_COLOR)));
 
 struct Tcs34725Config {
@@ -32,10 +36,21 @@ void init_colordetector_module(MblMwMetaWearBoard *board) {
             board->module_config.emplace(MBL_MW_MODULE_COLOR_DETECTOR, new_config);
         }
 
-        if (!board->module_events.count(CD_TCS34725_ADC_RESPONSE_HEADER)) {
-            board->module_events[CD_TCS34725_ADC_RESPONSE_HEADER] = new MblMwDataSignal(CD_TCS34725_ADC_RESPONSE_HEADER, board,
-                DataInterpreter::TCS34725_COLOR_ADC, 4, 2, 0, 0);
+        MblMwDataSignal* adc;
+        if (board->module_events.count(CD_TCS34725_ADC_RESPONSE_HEADER)) { 
+            adc = dynamic_cast<MblMwDataSignal*>(board->module_events[CD_TCS34725_ADC_RESPONSE_HEADER]);
+        } else {
+            adc = CREATE_ADC_SIGNAL(DataInterpreter::TCS34725_COLOR_ADC, 4, 0);
+            board->module_events[CD_TCS34725_ADC_RESPONSE_HEADER] = adc;
         }
+
+        if (!adc->components.size()) {
+            adc->components.push_back(CREATE_ADC_SIGNAL_SINGLE(0));
+            adc->components.push_back(CREATE_ADC_SIGNAL_SINGLE(2));
+            adc->components.push_back(CREATE_ADC_SIGNAL_SINGLE(4));
+            adc->components.push_back(CREATE_ADC_SIGNAL_SINGLE(6));
+        }
+        
         board->responses[CD_TCS34725_ADC_RESPONSE_HEADER]= response_handler_data_no_id;
     }
 }

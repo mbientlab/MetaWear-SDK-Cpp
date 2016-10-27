@@ -64,7 +64,7 @@ int32_t mbl_mw_dataprocessor_counter_create(MblMwEvent *source, MblMwFnDataProce
 }
 int32_t mbl_mw_dataprocessor_counter_create_size(MblMwEvent *source, uint8_t size, MblMwFnDataProcessor processor_created) {
     if (MblMwDataSignal* src_signal= dynamic_cast<MblMwDataSignal*>(source)) {
-        return create_accumulator_processor(src_signal, 1, 1, DataProcessorType::COUNTER, processor_created);
+        return create_accumulator_processor(src_signal, 1, size, DataProcessorType::COUNTER, processor_created);
     }
 
     MblMwDataSignal event_signal(*source);

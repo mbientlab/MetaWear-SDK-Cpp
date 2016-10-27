@@ -11,6 +11,14 @@
 extern "C" {
 #endif
 
+//@{
+/** Indices for component values of the color adc data signal, used with mbl_mw_datasignal_get_component */
+const uint8_t MBL_MW_CD_TCS34725_ADC_CLEAR_INDEX = 0, 
+        MBL_MW_CD_TCS34725_ADC_RED_INDEX = 1, 
+        MBL_MW_CD_TCS34725_ADC_GREEN_INDEX = 2,
+        MBL_MW_CD_TCS34725_ADC_BLUE_INDEX = 3;
+//@}
+
 /**
  * Available analog gain scale values
  */

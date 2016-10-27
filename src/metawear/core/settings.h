@@ -17,6 +17,12 @@
 extern "C" {
 #endif
 
+//@{
+///< Indices for component values of the battery data signal, to be used with mbl_mw_datasignal_get_component
+const uint8_t MBL_MW_SETTINGS_BATTERY_VOLTAGE_INDEX = 0,
+        MBL_MW_SETTINGS_BATTERY_CHARGE_INDEX = 1;
+//@}
+
 /**
  * Retrieves an event pointer representing a disconnect event
  * @param board         Board the event is fired on

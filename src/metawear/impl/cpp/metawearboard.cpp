@@ -64,22 +64,27 @@ const uint16_t MAX_TIME_PER_RESPONSE= 4000;
 
 #define CLEAR_READ_MODIFIERS(x) (x & 0x3f)
 
+#define INVOKE_SIGNAL_HANDLER(s) if (s->handler != nullptr) {\
+    MblMwData* data = data_response_converters.at(s->interpreter)(false, s, response, len);\
+    data->epoch= epoch;\
+    s->handler(data);\
+    free(data->value);\
+    free(data);\
+    handled= true;\
+}
+
 static inline int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     try {
         auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
-        if (signal->handler == nullptr) {
-            return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
+        bool handled= false;
+        int64_t epoch= duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+
+        INVOKE_SIGNAL_HANDLER(signal)
+        for(auto it: signal->components) {
+            INVOKE_SIGNAL_HANDLER(it)
         }
 
-        MblMwData* data = data_response_converters.at(signal->interpreter)(board, response, len);
-        data->epoch= duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-
-        signal->handler(data);
-
-        free(data->value);
-        free(data);
-
-        return MBL_MW_STATUS_OK;
+        return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     } catch (exception) {
         return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     }
@@ -102,7 +107,7 @@ int32_t response_handler_packed_data(MblMwMetaWearBoard *board, const uint8_t *r
         }
 
         for(uint8_t i= 2; i < len; i+= CARTESIAN_FLOAT_SIZE) {
-            MblMwData* data = data_response_converters.at(signal->interpreter)(board, response + i, len - i);
+            MblMwData* data = data_response_converters.at(signal->interpreter)(false, signal, response + i, len - i);
             data->epoch= duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
             signal->handler(data);
@@ -195,7 +200,7 @@ const vector<MblMwGattChar> BOARD_DEV_INFO_CHARS = {
     DEV_INFO_MODEL_CHAR
 };
 
-const uint8_t SERIALIZATION_FORMAT = 0;
+const uint8_t INIT_SERIALIZATION_FORMAT = 0, SIGNAL_COMPONENT_SERIALIZATION_FORMAT = 1;
 
 MblMwMetaWearBoard::MblMwMetaWearBoard() : logger_state(nullptr, [](void *ptr) -> void { tear_down_logging(ptr, false); }), 
         timer_state(nullptr, [](void *ptr) -> void { free_timer_module(ptr); }),
@@ -406,7 +411,7 @@ int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblM
 uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_t* size) {
     vector<uint8_t> serialized_state;
 
-    serialized_state.push_back(SERIALIZATION_FORMAT);
+    serialized_state.push_back(SIGNAL_COMPONENT_SERIALIZATION_FORMAT);
     
     board->firmware_revision.serialize(serialized_state);
 
@@ -427,16 +432,30 @@ uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_
     }
 
     {
+        uint8_t n_events= 0;
+        vector<uint8_t> event_states;
         vector<ResponseHeader> sorted_keys;
         for (auto it : board->module_events) {
             sorted_keys.emplace_back(it.first.module_id, it.first.register_id, it.first.data_id);
         }
         sort(sorted_keys.begin(), sorted_keys.end());
 
-        serialized_state.push_back((uint8_t)board->module_events.size());
         for (auto it : sorted_keys) {
-            board->module_events.at(it)->serialize(serialized_state);
+            board->module_events.at(it)->serialize(event_states);
+            n_events++;
+
+            // serialize component signals after the main signal
+            // rely on this ordering to restore the components vector
+            if (MblMwDataSignal* signal= dynamic_cast<MblMwDataSignal*>(board->module_events.at(it))) {
+                for(auto component: signal->components) {
+                    component->serialize(event_states);
+                    n_events++;
+                }
+            }
         }
+
+        serialized_state.push_back(n_events);
+        serialized_state.insert(serialized_state.end(), event_states.begin(), event_states.end());
     }
 
     {
@@ -461,11 +480,11 @@ uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_
     return state_bytes;
 }
 
-void mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size) {
-    uint8_t* current_addr = state;
+int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size) {
+    uint8_t *current_addr = state, format = *current_addr;
 
-    if (*current_addr != SERIALIZATION_FORMAT) {
-        return;
+    if (format != INIT_SERIALIZATION_FORMAT && format != SIGNAL_COMPONENT_SERIALIZATION_FORMAT) {
+        return MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT;
     }
 
     board->firmware_revision.deserialize(&(++current_addr));
@@ -540,7 +559,13 @@ void mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state,
 
         ResponseHeader header_copy(saved_event->header);
         header_copy.disable_silent();
-        board->module_events.emplace(header_copy, saved_event);
+
+        if (board->module_events.count(header_copy)) {
+            auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events[saved_event->header]);
+            signal->components.push_back(dynamic_cast<MblMwDataSignal*>(saved_event));
+        } else {
+            board->module_events.emplace(header_copy, saved_event);
+        }
     }
 
     uint8_t module_config_size= *current_addr;
@@ -551,5 +576,7 @@ void mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state,
         fn(board, &current_addr);
     }
 
-    deserialize_logging(board, &current_addr);
+    deserialize_logging(board, (format == SIGNAL_COMPONENT_SERIALIZATION_FORMAT), &current_addr);
+
+    return MBL_MW_STATUS_OK;
 }

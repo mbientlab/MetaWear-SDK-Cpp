@@ -24,6 +24,10 @@ using std::piecewise_construct;
 using std::unordered_map;
 using std::vector;
 
+#define CREATE_ACC_SIGNAL_SINGLE(offset) CREATE_ACC_SIGNAL(DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS, 1, offset)
+#define CREATE_ACC_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(BOSCH_ACCEL_RESPONSE_HEADER, board, interpreter, \
+        FirmwareConverter::BOSCH_ACCELERATION, channels, 2, 1, offset)
+
 const uint8_t BMI160_DEFAULT_CONFIG[]= {
     0x28, 0x03,
     0x07, 0x30, 0x81, 0x0b, 0xc0,
@@ -183,10 +187,19 @@ static inline void init_accelerometer_bosch(MblMwMetaWearBoard *board, void *con
         free(config);
     }
 
-    if (!board->module_events.count(BOSCH_ACCEL_RESPONSE_HEADER)) {
-        board->module_events[BOSCH_ACCEL_RESPONSE_HEADER] = new MblMwDataSignal(BOSCH_ACCEL_RESPONSE_HEADER, board, 
-            DataInterpreter::BOSCH_ACCELERATION, FirmwareConverter::BOSCH_ACCELERATION, 3, 2, 1, 0);
+    MblMwDataSignal* acc;
+    if (board->module_events.count(BOSCH_ACCEL_RESPONSE_HEADER)) { 
+        acc = dynamic_cast<MblMwDataSignal*>(board->module_events[BOSCH_ACCEL_RESPONSE_HEADER]);
+    } else {
+        acc = CREATE_ACC_SIGNAL(DataInterpreter::BOSCH_ACCELERATION, 3, 0);
+        board->module_events[BOSCH_ACCEL_RESPONSE_HEADER] = acc;
     }
+    if (!acc->components.size()) {
+        acc->components.push_back(CREATE_ACC_SIGNAL_SINGLE(0));
+        acc->components.push_back(CREATE_ACC_SIGNAL_SINGLE(2));
+        acc->components.push_back(CREATE_ACC_SIGNAL_SINGLE(4));
+    }
+
     board->responses[BOSCH_ACCEL_RESPONSE_HEADER]= response_handler_data_no_id;
 
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).revision >= PACKED_ACC_REVISION) {

@@ -41,17 +41,18 @@ using std::vector;
 
 #define GET_LOGGER_STATE(board) static_pointer_cast<LoggerState>(board->logger_state)
 
-const uint8_t REVISION_EXTENDED_LOGGING= 2, ENTRY_ID_MASK= 0x1f, RESET_UID_MASK= 0x7, LOG_ENTRY_SIZE= (uint8_t) sizeof(uint32_t);
+const uint8_t REVISION_EXTENDED_LOGGING= 2, ENTRY_ID_MASK= 0x1f, RESET_UID_MASK= 0x7, 
+        LOG_ENTRY_SIZE= (uint8_t) sizeof(uint32_t), ROOT_SIGNAL_INDEX= 0xff;
 const float TICK_TIME_STEP= (48.f / 32768.f) * 1000.f;         ///< milliseconds
 
 static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len);
 
 struct MblMwDataLogger {
-    MblMwDataLogger(uint8_t** state_stream, MblMwMetaWearBoard* board);
+    MblMwDataLogger(uint8_t** state_stream, bool deserialize_component, MblMwMetaWearBoard* board);
     MblMwDataLogger(MblMwDataSignal* source, MblMwFnDataLoggerPtr logger_ready);
 
     void add_entry_id(uint8_t id);
-    void process_log_data(const MblMwMetaWearBoard* board, uint8_t id, int64_t epoch, uint32_t data);
+    void process_log_data(uint8_t id, int64_t epoch, uint32_t data);
     void serialize(vector<uint8_t>& state) const;
 
     inline uint8_t get_id() const {
@@ -173,7 +174,7 @@ static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const 
         if (!state->latest_tick.count(entry_id) || state->latest_tick.at(entry_id) < entry_tick) {
             state->latest_tick[entry_id]= entry_tick;
             if (state->data_loggers.count(entry_id)) {
-                state->data_loggers.at(entry_id)->process_log_data(board, entry_id, 
+                state->data_loggers.at(entry_id)->process_log_data(entry_id, 
                         duration_cast<milliseconds>(timestamp_copy.time_since_epoch()).count(), data);
             } else if (state->log_download_handler.received_unknown_entry != nullptr) {
                 state->log_download_handler.received_unknown_entry(entry_id, 
@@ -232,10 +233,21 @@ void TimeReference::serialize(vector<uint8_t>& state) const {
     state.push_back(reset_uid);
 }
 
-MblMwDataLogger::MblMwDataLogger(uint8_t** state_stream, MblMwMetaWearBoard* board) : data_handler(nullptr), logger_ready(nullptr) {
+MblMwDataLogger::MblMwDataLogger(uint8_t** state_stream, bool deserialize_component, MblMwMetaWearBoard* board) : data_handler(nullptr), logger_ready(nullptr) {
+    uint8_t signal_index;
+    
+    if (deserialize_component) {
+        signal_index = **state_stream;
+        (*state_stream)++;
+    } else {
+        signal_index = ROOT_SIGNAL_INDEX;
+    }
+
     ResponseHeader source_header(state_stream);
     source_header.disable_silent();
-    source = dynamic_cast<MblMwDataSignal*>(board->module_events.at(source_header));
+
+    auto root = dynamic_cast<MblMwDataSignal*>(board->module_events.at(source_header));
+    source = (signal_index == ROOT_SIGNAL_INDEX) ? root : root->components.at(signal_index);
 
     uint8_t n_entry_ids = **state_stream;
     for (uint8_t i = 0; i < n_entry_ids; i++) {
@@ -271,7 +283,7 @@ void MblMwDataLogger::add_entry_id(uint8_t id) {
     }
 }
 
-void MblMwDataLogger::process_log_data(const MblMwMetaWearBoard* board, uint8_t id, int64_t epoch, uint32_t data) {
+void MblMwDataLogger::process_log_data(uint8_t id, int64_t epoch, uint32_t data) {
     entries.at(id).push(data);
     
     bool ready= true;
@@ -286,13 +298,13 @@ void MblMwDataLogger::process_log_data(const MblMwMetaWearBoard* board, uint8_t 
             entries.at(it).pop();
         }
 
-        MblMwData* data = data_response_converters.at(source->interpreter)(board, merged.data(), (uint8_t) merged.size());
+        MblMwData* data = data_response_converters.at(source->interpreter)(true, source, merged.data(), (uint8_t) merged.size());
         data->epoch= epoch;
 
         MblMwFnData unhandled_callback;
         if (data_handler != nullptr) {
             data_handler(data);
-        } else if ((unhandled_callback= GET_LOGGER_STATE(board)->log_download_handler.received_unhandled_entry) != nullptr) {
+        } else if ((unhandled_callback= GET_LOGGER_STATE(source->owner)->log_download_handler.received_unhandled_entry) != nullptr) {
             unhandled_callback(data);
         }
 
@@ -302,6 +314,18 @@ void MblMwDataLogger::process_log_data(const MblMwMetaWearBoard* board, uint8_t 
 }
 
 void MblMwDataLogger::serialize(vector<uint8_t>& state) const {
+    auto root= dynamic_cast<MblMwDataSignal*>(source->owner->module_events.at(source->header));
+    if (source == root) {
+        state.push_back(ROOT_SIGNAL_INDEX);
+    } else {
+        uint8_t i= 0;
+        for(auto it: root->components) {
+            if (it == source) break;
+            i++;
+        }
+
+        state.push_back(i);
+    }
     source->header.serialize(state);
 
     state.push_back((uint8_t) entry_ids.size());
@@ -500,7 +524,7 @@ void serialize_logging(const MblMwMetaWearBoard* board, std::vector<uint8_t>& st
     }
 }
 
-void deserialize_logging(MblMwMetaWearBoard* board, uint8_t** state_stream) {
+void deserialize_logging(MblMwMetaWearBoard* board, bool deserialize_component, uint8_t** state_stream) {
     if (board->logger_state) {
         GET_LOGGER_STATE(board)->clear_data_loggers();
     } else {
@@ -519,7 +543,7 @@ void deserialize_logging(MblMwMetaWearBoard* board, uint8_t** state_stream) {
     uint8_t n_loggers = **state_stream;
     (*state_stream)++;
     for (uint8_t i = 0; i < n_loggers; i++) {
-        MblMwDataLogger* saved_loggable = new MblMwDataLogger(state_stream, board);
+        MblMwDataLogger* saved_loggable = new MblMwDataLogger(state_stream, deserialize_component, board);
 
         for (auto it : saved_loggable->entry_ids) {
             saved_log_state->data_loggers[it] = saved_loggable;

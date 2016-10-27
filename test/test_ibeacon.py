@@ -1,4 +1,5 @@
 from common import TestMetaWearBase
+from mbientlab.metawear.core import Fn_VoidPtr
 import uuid
 
 class TestIBeacon(TestMetaWearBase):
@@ -7,6 +8,26 @@ class TestIBeacon(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_ibeacon_set_major(self.board, 78);
         self.assertEqual(self.command, expected)
+
+    def counter_created(self, counter):
+        self.counter= counter
+        
+    def test_set_major_signal(self):
+        expected= [
+            [0x09, 0x02, 0x01, 0x01, 0xff, 0x00, 0x02, 0x13],
+            [0x0a, 0x02, 0x09, 0x03, 0x00, 0x07, 0x03, 0x02, 0x09, 0x00],
+            [0x0a, 0x03, 0x00, 0x00]
+        ]
+
+        switch= self.libmetawear.mbl_mw_switch_get_state_data_signal(self.board)
+        self.callback= Fn_VoidPtr(self.counter_created)
+
+        self.libmetawear.mbl_mw_dataprocessor_counter_create_size(switch, 4, self.callback)
+        self.libmetawear.mbl_mw_event_record_commands(self.counter)
+        self.libmetawear.mbl_mw_ibeacon_set_major_signal(self.board, self.counter)
+        self.libmetawear.mbl_mw_event_end_record(self.counter, self.commands_recorded_fn)
+
+        self.assertEqual(self.command_history, expected)
 
     def test_set_minor(self):
         expected= [0x07, 0x04, 0x1d, 0x1d]
