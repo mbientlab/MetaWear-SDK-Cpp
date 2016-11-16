@@ -33,3 +33,33 @@ typedef struct {
     uint16_t green;         ///< ADC value from a green filtered diode
     uint16_t blue;          ///< ADC value from a blue filtered diode
 } MblMwTcs34725ColorAdc;
+
+/**
+ * 4-element float vector holding Euler angles, all values are in degrees
+ */
+typedef struct {
+    float heading;
+    float pitch;
+    float roll;
+    float yaw;
+} MblMwEulerAngles;
+
+/**
+ * 4-element float vector containing a normalized quaternion value
+ */
+typedef struct {
+    float w;
+    float x;
+    float y;
+    float z;
+} MblMwQuaternion;
+
+/**
+ * Variant of the MblMwCartesianFloat struct that also reports data accuracy
+ */
+typedef struct {
+    float x;
+    float y;
+    float z;
+    uint8_t accuracy;
+} MblMwCorrectedCartesianFloat;

@@ -54,11 +54,25 @@ const uint8_t MBL_MW_MAG_BFIELD_X_AXIS_INDEX = 0,
  * </table>
  */
 typedef enum {
-    MWL_MW_MAG_BMM_150_PP_LOW_POWER= 0,
-    MWL_MW_MAG_BMM_150_PP_REGULAR,
-    MWL_MW_MAG_BMM_150_PP_ENHANCED_REGULAR,
-    MWL_MW_MAG_BMM_150_PP_HIGH_ACCURACY
-} MblMwMagBmm150PowerPreset;
+    MBL_MW_MAG_BMM150_PRESET_LOW_POWER= 0,
+    MBL_MW_MAG_BMM150_PRESET_REGULAR,
+    MBL_MW_MAG_BMM150_PRESET_ENHANCED_REGULAR,
+    MBL_MW_MAG_BMM150_PRESET_HIGH_ACCURACY
+} MblMwMagBmm150Preset;
+
+/**
+ * Available output data rates for the BMM150 magnetometer
+ */
+typedef enum {
+    MBL_MW_MAG_BMM150_ODR_10_HZ = 0,
+    MBL_MW_MAG_BMM150_ODR_2_HZ,
+    MBL_MW_MAG_BMM150_ODR_6_HZ,
+    MBL_MW_MAG_BMM150_ODR_8_HZ,
+    MBL_MW_MAG_BMM150_ODR_15_HZ,
+    MBL_MW_MAG_BMM150_ODR_20_HZ,
+    MBL_MW_MAG_BMM150_ODR_25_HZ,
+    MBL_MW_MAG_BMM150_ODR_30_HZ
+} MblMwMagBmm150OutputDataRate;
 
 /**
  * Retrieves the data signal representing B field strength
@@ -67,11 +81,20 @@ typedef enum {
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_b_field_data_signal(const MblMwMetaWearBoard *board);
 /**
+ * Manually configure the sensor, only for advanced users.  It is recommended that users use one of the preset configurations.
+ * @param board         Calling object
+ * @param xy_reps       Repetitions on the x/y-axis
+ * @param z_reps        Repetitions on the z-axis
+ * @param odr           Sensor data rate
+ */
+METAWEAR_API void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150OutputDataRate odr);
+/**
  * Sets the power mode to one of the recommended presets
  * @param board         Board to modify
  * @param preset        New preset power mode to use
  */
-METAWEAR_API void mbl_mw_mag_bmm150_set_power_preset(const MblMwMetaWearBoard *board, MblMwMagBmm150PowerPreset preset);
+METAWEAR_API void mbl_mw_mag_bmm150_set_preset(const MblMwMetaWearBoard *board, MblMwMagBmm150Preset preset);
+
 /**
  * Enable B field sampling
  * @param board         Board the magnetometer resides on

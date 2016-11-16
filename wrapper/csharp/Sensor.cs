@@ -274,11 +274,22 @@ namespace MbientLab.MetaWear.Sensor {
                 BFIELD_Y_AXIS_INDEX = 1,
                 BFIELD_Z_AXIS_INDEX = 2;
 
-        public enum PowerPreset {
+        public enum Preset {
             LOW_POWER= 0,
             REGULAR,
             ENHANCED_REGULAR,
             HIGH_ACCURACY
+        }
+
+        public enum OutputDataRate {
+            ODR_10_HZ = 0,
+            ODR_2_HZ,
+            ODR_6_HZ,
+            ODR_8_HZ,
+            ODR_15_HZ,
+            ODR_20_HZ,
+            ODR_25_HZ,
+            ODR_30_HZ
         }
     }
 
@@ -320,6 +331,47 @@ namespace MbientLab.MetaWear.Sensor {
             public byte misoPin;
             public byte lsbFirst;
             public byte useNrfPins;
+        }
+    }
+
+    public class SensorFusion {
+        public enum CalibrationAccuracy {
+            UNRELIABLE = 0,
+            LOW,
+            MEDIUM,
+            HIGH
+        }
+
+        public enum Mode {
+            SLEEP = 0,
+            NDOF,
+            IMU_PLUS,
+            COMPASS,
+            M4G
+        }
+
+        public enum AccRange {
+            AR_2G = 0,
+            AR_4G,
+            AR_8G,
+            AR_16G
+        }
+
+        public enum GyroRange {
+            GR_2000DPS = 0,
+            GR_1000DPS,
+            GR_500DPS,
+            GR_250DPS
+        }
+
+        public enum Data {
+            CORRECTED_ACC = 0,
+            CORRECTED_GYRO,
+            CORRECTED_MAG,
+            QUATERION,
+            EULER_ANGLE,
+            GRAVITY_VECTOR,
+            LINEAR_ACC
         }
     }
 }

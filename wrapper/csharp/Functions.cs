@@ -1755,12 +1755,22 @@ namespace MbientLab.MetaWear {
         public static extern IntPtr mbl_mw_mag_bmm150_get_b_field_data_signal(IntPtr board);
 
         /// <summary>
+        /// Manually configure the sensor, only for advanced users.  It is recommended that users use one of the preset configurations.
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        /// <param name="xy_reps">Repetitions on the x</param>
+        /// <param name="z_reps">Repetitions on the z</param>
+        /// <param name="odr">Sensor data rate</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_mag_bmm150_configure(IntPtr board, ushort xy_reps, ushort z_reps, MagnetometerBmm150.OutputDataRate odr);
+
+        /// <summary>
         /// Sets the power mode to one of the recommended presets
         /// </summary>
         /// <param name="board">Board to modify</param>
         /// <param name="preset">New preset power mode to use</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_mag_bmm150_set_power_preset(IntPtr board, MagnetometerBmm150.PowerPreset preset);
+        public static extern void mbl_mw_mag_bmm150_set_preset(IntPtr board, MagnetometerBmm150.Preset preset);
 
         /// <summary>
         /// Enable B field sampling
@@ -1789,6 +1799,75 @@ namespace MbientLab.MetaWear {
         /// <param name="board">Board the magnetometer resides on</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_mag_bmm150_stop(IntPtr board);
+
+        /// <summary>
+        /// Get the data signal object representing data from the sensor fusion algorithm
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        /// <param name="data">Desired sensor fusion data</param>
+        /// <returns>Data signal object</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_sensor_fusion_get_data_signal(IntPtr board, SensorFusion.Data data);
+
+        /// <summary>
+        /// Set the operation mode
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        /// <param name="mode">New operation mode</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_set_mode(IntPtr board, SensorFusion.Mode mode);
+
+        /// <summary>
+        /// Set the accelerometer data range
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        /// <param name="range">New data range of the accelerometer</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_set_acc_range(IntPtr board, SensorFusion.AccRange range);
+
+        /// <summary>
+        /// Set the gyroscope data range
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        /// <param name="range">New data range of the gyroscope</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_set_gyro_range(IntPtr board, SensorFusion.GyroRange range);
+
+        /// <summary>
+        /// Write the module configuration to the board
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_write_config(IntPtr board);
+
+        /// <summary>
+        /// Set a data enable bit
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        /// <param name="data">Sensor fuson data to enable</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_enable_data(IntPtr board, SensorFusion.Data data);
+
+        /// <summary>
+        /// Clear all data enable bits
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_clear_enabled_mask(IntPtr board);
+
+        /// <summary>
+        /// Start sensor fusion
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_start(IntPtr board);
+
+        /// <summary>
+        /// Stop sensor fusion
+        /// </summary>
+        /// <param name="board">Calling object</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_sensor_fusion_stop(IntPtr board);
 
         /// <summary>
         /// Retrieves the data signal representing acceleration data

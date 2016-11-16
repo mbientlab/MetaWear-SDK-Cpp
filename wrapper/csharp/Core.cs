@@ -58,6 +58,7 @@ namespace MbientLab.MetaWear.Core {
         HUMIDITY,
         COLOR_DETECTOR,
         PROXIMITY,
+        SENSOR_FUSION,
         DEBUG = 0xfe
     }
 
@@ -68,7 +69,10 @@ namespace MbientLab.MetaWear.Core {
         INT32,
         BYTE_ARRAY,
         BATTERY_STATE,
-        TCS34725_ADC
+        TCS34725_ADC,
+        EULER_ANGLES,
+        QUATERNION,
+        CORRECTED_CARTESIAN_FLOAT
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -171,6 +175,40 @@ namespace MbientLab.MetaWear.Core {
 
         public override string ToString() {
             return string.Format("{{clear: {0:d}, red: {1:d}, green: {2:d}, blue: {3:d}{4}", clear, red, green, blue, "}");
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct EulerAngle
+    {
+        public float heading, pitch, roll, yaw;
+
+        public override string ToString()
+        {
+            return string.Format("{{heading: {0:F3}, pitch: {1:F3}, roll: {2:F3}, yaw: {3:F3}{4}", heading, pitch, roll, yaw, "}");
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Quaternion
+    {
+        public float w, x, y, z;
+
+        public override string ToString()
+        {
+            return string.Format("{{w: {0:F3}, x: {1:F3}, y: {2:F3}, z: {3:F3}{4}", w, x, y, z, "}");
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CorrectedCartesianFloat
+    {
+        public float x, y, z;
+        public byte accuracy;
+
+        public override string ToString()
+        {
+            return string.Format("{{x: {0:F3}, y: {1:F3}, z: {2:F3}, accuracy: {3:d}{4}", x, y, z, accuracy, "}");
         }
     }
 }

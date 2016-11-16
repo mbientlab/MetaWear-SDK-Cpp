@@ -13,25 +13,25 @@ class TestMagnetometerBmm150(TestMetaWearBase):
         tests= [
             {
                 'expected': [[0x15, 0x04, 0x01, 0x02], [0x15, 0x03, 0x0]] ,
-                'preset': MagnetometerBmm150.POWER_PRESET_LOW_POWER,
+                'preset': MagnetometerBmm150.PRESET_LOW_POWER,
                 'preset_name': 'low power',
                 'offset': 0
             },
             {
                 'expected': [[0x15, 0x04, 0x04, 0x0e], [0x15, 0x03, 0x00]], 
-                'preset': MagnetometerBmm150.POWER_PRESET_REGULAR,
+                'preset': MagnetometerBmm150.PRESET_REGULAR,
                 'preset_name': 'regular',
                 'offset': 2
             },
             {
                 'expected': [[0x15, 0x04, 0x07, 0x1a], [0x15, 0x03, 0x00]], 
-                'preset': MagnetometerBmm150.POWER_PRESET_ENHANCED_REGULAR,
+                'preset': MagnetometerBmm150.PRESET_ENHANCED_REGULAR,
                 'preset_name': 'enhanced regular',
                 'offset': 4
             },
             {
                 'expected': [[0x15, 0x04, 0x17, 0x52], [0x15, 0x03, 0x05]], 
-                'preset': MagnetometerBmm150.POWER_PRESET_HIGH_ACCURACY,
+                'preset': MagnetometerBmm150.PRESET_HIGH_ACCURACY,
                 'preset_name': 'high accuracy',
                 'offset': 6
             },
@@ -40,7 +40,7 @@ class TestMagnetometerBmm150(TestMetaWearBase):
         for test in tests:
             with self.subTest(preset= test['preset_name']):
                 offset= test['offset']
-                self.libmetawear.mbl_mw_mag_bmm150_set_power_preset(self.board, test['preset'])
+                self.libmetawear.mbl_mw_mag_bmm150_set_preset(self.board, test['preset'])
                 self.assertEqual(self.command_history[offset:offset + 2], test['expected'])
 
     def test_enable_b_field_sampling(self):

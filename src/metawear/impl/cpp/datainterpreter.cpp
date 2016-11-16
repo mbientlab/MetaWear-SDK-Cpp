@@ -40,8 +40,24 @@ struct CartesianShort {
     msg->length= sizeof(*value);\
     return msg
 
-static const float BOSCH_BARO_SCALE= 256.f, TEMPERATURE_SCALE= 8.f, MMA8452Q_ACC_SCALE= 1000.f, BMM150_SCALE= 16.f, BME280_HUMIDITY_SCALE= 1024.f, 
-        Q16_16_SCALE= 0x10000;
+#define CONVERT_TO_FLOAT(name, raw_type, scale) static MblMwData* name(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {\
+    raw_type unscaled;\
+    CAST_INT32(unscaled)\
+\
+    float *value= (float*) malloc(sizeof(float));\
+    *value= unscaled / scale;\
+\
+    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);\
+}\
+
+#define RAW_CONVERT(name, type, type_id)  static MblMwData* name(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {\
+    type* value = (type*) malloc(sizeof(type));\
+    memcpy(value, response, sizeof(type));\
+    CREATE_MESSAGE(type_id);\
+}\
+
+const float BOSCH_BARO_SCALE= 256.f, TEMPERATURE_SCALE= 8.f, MMA8452Q_ACC_SCALE= 1000.f, BMM150_SCALE= 16.f, BME280_HUMIDITY_SCALE= 1024.f, 
+        Q16_16_SCALE= 0x10000, SENSOR_FUSION_ACC_SCALE = 1000.f, MSS_TO_G_SCALE = 9.80665f;
 
 static MblMwData* convert_to_int32(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t *value = (int32_t*) malloc(sizeof(int32_t));
@@ -57,36 +73,6 @@ static MblMwData* convert_to_uint32(bool log_data, const MblMwDataSignal* signal
     CREATE_MESSAGE(MBL_MW_DT_ID_UINT32);
 }
 
-static MblMwData* convert_to_temperature(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    int32_t unscaled;
-    CAST_INT32(unscaled)
-
-    float *value= (float*) malloc(sizeof(float));
-    *value= unscaled / TEMPERATURE_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
-static MblMwData* convert_to_bmp280_pressure(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    uint32_t unscaled;
-    memcpy(&unscaled, response, sizeof(unscaled));
-
-    float *value= (float*) malloc(sizeof(float));
-    *value= unscaled / BOSCH_BARO_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
-static MblMwData* convert_to_bmp280_altitude(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    int32_t unscaled;
-    memcpy(&unscaled, response, sizeof(unscaled));
-
-    float *value= (float*) malloc(sizeof(float));
-    *value= unscaled / BOSCH_BARO_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
 static MblMwData* convert_to_mma8452q_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort milliG;
     memcpy(&milliG, response, sizeof(milliG));
@@ -97,26 +83,6 @@ static MblMwData* convert_to_mma8452q_acceleration(bool log_data, const MblMwDat
     value->z= milliG.z / MMA8452Q_ACC_SCALE;
 
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
-}
-
-static MblMwData* convert_to_mma8452q_acceleration_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    int32_t unscaled;
-    CAST_INT32(unscaled)
-
-    float *value = (float*) malloc(sizeof(float));
-    *value = unscaled / MMA8452Q_ACC_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
-static MblMwData* convert_to_mma8452q_acceleration_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    uint32_t unscaled= 0;
-    CAST_UINT32(unscaled)
-
-    float *value= (float*) malloc(sizeof(float));
-    *value = unscaled / MMA8452Q_ACC_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
 static MblMwData* convert_to_bosch_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
@@ -210,26 +176,6 @@ static MblMwData* convert_to_bmm150_b_field(bool log_data, const MblMwDataSignal
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
-static MblMwData* convert_to_bmm150_b_field_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    int32_t unscaled;
-    CAST_INT32(unscaled)
-
-    float *value = (float*) malloc(sizeof(float));
-    *value = unscaled / BMM150_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
-static MblMwData* convert_to_bmm150_b_field_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    uint32_t unscaled= 0;
-    CAST_UINT32(unscaled)
-
-    float *value= (float*) malloc(sizeof(float));
-    *value = unscaled / BMM150_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
 static MblMwData* convert_to_battery_state(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwBatteryState *value= (MblMwBatteryState*) malloc(sizeof(MblMwBatteryState));
     memcpy(&value->voltage, response + 1, 2);
@@ -238,31 +184,47 @@ static MblMwData* convert_to_battery_state(bool log_data, const MblMwDataSignal*
     CREATE_MESSAGE(MBL_MW_DT_ID_BATTERY_STATE);
 }
 
-static MblMwData* convert_to_tcs34725_adc(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    MblMwTcs34725ColorAdc *value= (MblMwTcs34725ColorAdc*) malloc(sizeof(MblMwTcs34725ColorAdc));
-    memcpy(value, response, sizeof(MblMwTcs34725ColorAdc));
+CONVERT_TO_FLOAT(convert_to_temperature, int32_t, TEMPERATURE_SCALE)
 
-    CREATE_MESSAGE(MBL_MW_DT_ID_TCS34725_ADC);
+CONVERT_TO_FLOAT(convert_to_mma8452q_acceleration_single_axis, int32_t, MMA8452Q_ACC_SCALE)
+CONVERT_TO_FLOAT(convert_to_mma8452q_acceleration_unsigned_single_axis, uint32_t, MMA8452Q_ACC_SCALE)
+
+CONVERT_TO_FLOAT(convert_to_bmp280_pressure, uint32_t, BOSCH_BARO_SCALE)
+CONVERT_TO_FLOAT(convert_to_bmp280_altitude, int32_t, BOSCH_BARO_SCALE)
+
+CONVERT_TO_FLOAT(convert_to_bmm150_b_field_single_axis, int32_t, BMM150_SCALE)
+CONVERT_TO_FLOAT(convert_to_bmm150_b_field_unsigned_single_axis, uint32_t, BMM150_SCALE)
+
+CONVERT_TO_FLOAT(convert_to_bme280_humidity, uint32_t, BME280_HUMIDITY_SCALE)
+CONVERT_TO_FLOAT(convert_to_q16_16_fixed_point, int32_t, MBL_MW_DT_ID_FLOAT)
+
+RAW_CONVERT(convert_to_tcs34725_adc, MblMwTcs34725ColorAdc, MBL_MW_DT_ID_TCS34725_ADC)
+
+RAW_CONVERT(convert_to_quaternion, MblMwQuaternion, MBL_MW_DT_ID_QUATERNION)
+RAW_CONVERT(convert_to_euler_angles, MblMwEulerAngles, MBL_MW_DT_ID_EULER_ANGLE)
+RAW_CONVERT(convert_to_corrected_vector3, MblMwCorrectedCartesianFloat, MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT)
+
+static MblMwData* convert_to_vector3(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwCartesianFloat *unscaled = (MblMwCartesianFloat*) response,
+            *value = (MblMwCartesianFloat*) malloc(sizeof(MblMwCartesianFloat));
+
+    value->x = unscaled->x / MSS_TO_G_SCALE;
+    value->y = unscaled->y / MSS_TO_G_SCALE;
+    value->z = unscaled->z / MSS_TO_G_SCALE;
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
-static MblMwData* convert_to_bme280_humidity(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    uint32_t unscaled;
-    memcpy(&unscaled, response, sizeof(unscaled));
+static MblMwData* convert_to_corrected_acc(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwCorrectedCartesianFloat *unscaled = (MblMwCorrectedCartesianFloat*) response,
+            *value = (MblMwCorrectedCartesianFloat*) malloc(sizeof(MblMwCorrectedCartesianFloat));
 
-    float *value= (float*) malloc(sizeof(float));
-    *value= unscaled / BME280_HUMIDITY_SCALE;
+    value->x = unscaled->x / SENSOR_FUSION_ACC_SCALE;
+    value->y = unscaled->y / SENSOR_FUSION_ACC_SCALE;
+    value->z = unscaled->z / SENSOR_FUSION_ACC_SCALE;
+    value->accuracy = unscaled->accuracy;
 
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
-}
-
-static MblMwData* convert_to_q16_16_fixed_point(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    int32_t unscaled;
-    memcpy(&unscaled, response, sizeof(unscaled));
-
-    float *value= (float*) malloc(sizeof(float));
-    *value = unscaled / Q16_16_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
+    CREATE_MESSAGE(MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT);
 }
 
 unordered_map<DataInterpreter, DataInterpreter> signed_to_unsigned= {
@@ -305,7 +267,12 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::SETTINGS_BATTERY_STATE , convert_to_battery_state },
     { DataInterpreter::TCS34725_COLOR_ADC , convert_to_tcs34725_adc },
     { DataInterpreter::BME280_HUMIDITY , convert_to_bme280_humidity },
-    { DataInterpreter::Q16_16_FIXED_POINT , convert_to_q16_16_fixed_point }
+    { DataInterpreter::Q16_16_FIXED_POINT , convert_to_q16_16_fixed_point },
+    { DataInterpreter::SENSOR_FUSION_QUATERION , convert_to_quaternion },
+    { DataInterpreter::SENSOR_FUSION_EULER_ANGLE , convert_to_euler_angles },
+    { DataInterpreter::SENSOR_FUSION_CORRECTED_FLOAT_VECTOR3 , convert_to_corrected_vector3 },
+    { DataInterpreter::SENSOR_FUSION_FLOAT_VECTOR3 , convert_to_vector3 },
+    { DataInterpreter::SENSOR_FUSION_CORRECTED_ACC , convert_to_corrected_acc }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {

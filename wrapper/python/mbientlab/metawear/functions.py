@@ -646,8 +646,11 @@ def setup_libmetawear(libmetawear):
     libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal.restype= c_void_p
     libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal.argtypes= [c_void_p]
 
-    libmetawear.mbl_mw_mag_bmm150_set_power_preset.restype= None
-    libmetawear.mbl_mw_mag_bmm150_set_power_preset.argtypes= [c_void_p, c_int]
+    libmetawear.mbl_mw_mag_bmm150_configure.restype= None
+    libmetawear.mbl_mw_mag_bmm150_configure.argtypes= [c_void_p, c_ushort, c_ushort, c_int]
+
+    libmetawear.mbl_mw_mag_bmm150_set_preset.restype= None
+    libmetawear.mbl_mw_mag_bmm150_set_preset.argtypes= [c_void_p, c_int]
 
     libmetawear.mbl_mw_mag_bmm150_enable_b_field_sampling.restype= None
     libmetawear.mbl_mw_mag_bmm150_enable_b_field_sampling.argtypes= [c_void_p]
@@ -660,6 +663,33 @@ def setup_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_mag_bmm150_stop.restype= None
     libmetawear.mbl_mw_mag_bmm150_stop.argtypes= [c_void_p]
+
+    libmetawear.mbl_mw_sensor_fusion_get_data_signal.restype= c_void_p
+    libmetawear.mbl_mw_sensor_fusion_get_data_signal.argtypes= [c_void_p, c_int]
+
+    libmetawear.mbl_mw_sensor_fusion_set_mode.restype= None
+    libmetawear.mbl_mw_sensor_fusion_set_mode.argtypes= [c_void_p, c_int]
+
+    libmetawear.mbl_mw_sensor_fusion_set_acc_range.restype= None
+    libmetawear.mbl_mw_sensor_fusion_set_acc_range.argtypes= [c_void_p, c_int]
+
+    libmetawear.mbl_mw_sensor_fusion_set_gyro_range.restype= None
+    libmetawear.mbl_mw_sensor_fusion_set_gyro_range.argtypes= [c_void_p, c_int]
+
+    libmetawear.mbl_mw_sensor_fusion_write_config.restype= None
+    libmetawear.mbl_mw_sensor_fusion_write_config.argtypes= [c_void_p]
+
+    libmetawear.mbl_mw_sensor_fusion_enable_data.restype= None
+    libmetawear.mbl_mw_sensor_fusion_enable_data.argtypes= [c_void_p, c_int]
+
+    libmetawear.mbl_mw_sensor_fusion_clear_enabled_mask.restype= None
+    libmetawear.mbl_mw_sensor_fusion_clear_enabled_mask.argtypes= [c_void_p]
+
+    libmetawear.mbl_mw_sensor_fusion_start.restype= None
+    libmetawear.mbl_mw_sensor_fusion_start.argtypes= [c_void_p]
+
+    libmetawear.mbl_mw_sensor_fusion_stop.restype= None
+    libmetawear.mbl_mw_sensor_fusion_stop.argtypes= [c_void_p]
 
     libmetawear.mbl_mw_acc_get_acceleration_data_signal.restype= c_void_p
     libmetawear.mbl_mw_acc_get_acceleration_data_signal.argtypes= [c_void_p]

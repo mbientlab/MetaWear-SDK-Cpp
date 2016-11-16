@@ -38,42 +38,29 @@ MblMwDataSignal* mbl_mw_mag_bmm150_get_b_field_data_signal(const MblMwMetaWearBo
             nullptr;
 }
 
-void mbl_mw_mag_bmm150_set_power_preset(const MblMwMetaWearBoard *board, MblMwMagBmm150PowerPreset preset) {
-    uint8_t data_rate, rep_xy, rep_z;
-    bool write= true;
+void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150OutputDataRate odr) {
+    uint8_t data_rep_cmd[4]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::DATA_REPETITIONS), 
+            static_cast<uint8_t>((xy_reps - 1) / 2), static_cast<uint8_t>(z_reps - 1) };
+    send_command(board, data_rep_cmd, sizeof(data_rep_cmd));
 
+    uint8_t data_rate_cmd[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::DATA_RATE), odr };
+    send_command(board, data_rate_cmd, sizeof(data_rate_cmd));
+}
+
+void mbl_mw_mag_bmm150_set_preset(const MblMwMetaWearBoard *board, MblMwMagBmm150Preset preset) {
     switch (preset) {
-    case MWL_MW_MAG_BMM_150_PP_LOW_POWER:
-        data_rate= 0;
-        rep_xy= 1;
-        rep_z= 2;
+    case MBL_MW_MAG_BMM150_PRESET_LOW_POWER:
+        mbl_mw_mag_bmm150_configure(board, 3, 3, MBL_MW_MAG_BMM150_ODR_10_HZ);
         break;
-    case MWL_MW_MAG_BMM_150_PP_REGULAR:
-        data_rate= 0;
-        rep_xy= 4;
-        rep_z= 14;
+    case MBL_MW_MAG_BMM150_PRESET_REGULAR:
+        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_10_HZ);
         break;
-    case MWL_MW_MAG_BMM_150_PP_ENHANCED_REGULAR:
-        data_rate= 0;
-        rep_xy= 7;
-        rep_z= 26;
+    case MBL_MW_MAG_BMM150_PRESET_ENHANCED_REGULAR:
+        mbl_mw_mag_bmm150_configure(board, 15, 27, MBL_MW_MAG_BMM150_ODR_10_HZ);
         break;
-    case MWL_MW_MAG_BMM_150_PP_HIGH_ACCURACY:
-        data_rate= 5;
-        rep_xy= 23;
-        rep_z= 82;
+    case MBL_MW_MAG_BMM150_PRESET_HIGH_ACCURACY:
+        mbl_mw_mag_bmm150_configure(board, 47, 83, MBL_MW_MAG_BMM150_ODR_20_HZ);
         break;
-    default:
-        write= false;
-        break;
-    }
-
-    if (write) {
-        uint8_t data_rep_cmd[4]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::DATA_REPETITIONS), rep_xy, rep_z };
-        send_command(board, data_rep_cmd, sizeof(data_rep_cmd));
-
-        uint8_t data_rate_cmd[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::DATA_RATE), data_rate };
-        send_command(board, data_rate_cmd, sizeof(data_rate_cmd));
     }
 }
 

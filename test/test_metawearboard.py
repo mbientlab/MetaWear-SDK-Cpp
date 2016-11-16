@@ -60,7 +60,7 @@ class TestMetaWearBoardInitialize(TestMetaWearBase):
             [0x09, 0x80], [0x0a, 0x80], [0x0b, 0x80], [0x0c, 0x80],
             [0x0d, 0x80], [0x0f, 0x80], [0x10, 0x80], [0x11, 0x80],
             [0x12, 0x80], [0x13, 0x80], [0x14, 0x80], [0x15, 0x80],
-            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80],
+            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80], [0x19, 0x80],
             [0xfe, 0x80], [0x0b, 0x84]
         ]
 
@@ -246,7 +246,7 @@ class TestMetaWearBoardDeserialize(TestMetaWearBase):
             [0x09, 0x80], [0x0a, 0x80], [0x0b, 0x80], [0x0c, 0x80],
             [0x0d, 0x80], [0x0f, 0x80], [0x10, 0x80], [0x11, 0x80],
             [0x12, 0x80], [0x13, 0x80], [0x14, 0x80], [0x15, 0x80],
-            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80],
+            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80], [0x19, 0x80],
             [0xfe, 0x80], [0x0b, 0x84]
         ]
 
@@ -418,7 +418,7 @@ class TestSerializeMultiComparator(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_multi_comparator_create(adc_signal, Comparator.OPERATION_GTE, Comparator.MODE_REFERENCE, references, 
                 len(references), comp_created_ptr)
 
-        self.assertEqual(self.python_array[0:385], serializedstate.multi_comparator_state[0:385])
+        self.assertEqual(self.python_array[0:388], serializedstate.multi_comparator_state[0:388])
 
     def comp_created_cmd_check(self, comparator):
         state_array_size= c_uint(0)
@@ -453,4 +453,4 @@ class TestDeserializeMultiComparator(TestMetaWearBase):
             python_array.append(state_ptr.contents[i])
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
-        self.assertEqual(python_array[0:321], serializedstate.multi_comparator_modified_state[0:321])
+        self.assertEqual(python_array[0:378], serializedstate.multi_comparator_modified_state[0:378])

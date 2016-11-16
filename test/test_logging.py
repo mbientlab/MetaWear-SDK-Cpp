@@ -4,7 +4,7 @@ from ctypes import byref
 #from datetime import datetime
 from logdata import *
 from mbientlab.metawear.core import *
-from mbientlab.metawear.sensor import AccelerometerBosch, GyroBmi160
+from mbientlab.metawear.sensor import AccelerometerBosch, GyroBmi160, SensorFusion
 #from time import mktime
 import threading
 
@@ -213,6 +213,42 @@ class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
         self.assertEqual(len(self.logged_data), len(Bmi160GyroYAxis.expected_values))
         for a, b in zip(self.logged_data, Bmi160GyroYAxis.expected_values):
             self.assertAlmostEqual(a, b, delta = 0.001)
+
+class TestSensorFusionLogging(TestMetaWearBase):
+    def logger_ready_handler(self, logger):
+        self.logger = logger
+
+    def setUp(self):
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
+        self.logger_ready = Fn_VoidPtr(self.logger_ready_handler)
+
+        super().setUp()
+
+    def test_quaternion_setup(self):
+        expected_cmds= [
+            [0x0b, 0x02, 0x19, 0x07, 0xff, 0x60],
+            [0x0b, 0x02, 0x19, 0x07, 0xff, 0x64],
+            [0x0b, 0x02, 0x19, 0x07, 0xff, 0x68],
+            [0x0b, 0x02, 0x19, 0x07, 0xff, 0x6c]
+        ]
+
+        signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusion.DATA_QUATERION)
+        self.libmetawear.mbl_mw_datasignal_log(signal, self.logger_ready)
+
+        self.assertEqual(self.command_history, expected_cmds)
+
+    def test_quaternion_setup(self):
+        expected_cmds= [
+            [0x0b, 0x02, 0x19, 0x06, 0xff, 0x60],
+            [0x0b, 0x02, 0x19, 0x06, 0xff, 0x64],
+            [0x0b, 0x02, 0x19, 0x06, 0xff, 0x68],
+            [0x0b, 0x02, 0x19, 0x06, 0xff, 0x0c]
+        ]
+
+        signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusion.DATA_CORRECTED_MAG)
+        self.libmetawear.mbl_mw_datasignal_log(signal, self.logger_ready)
+
+        self.assertEqual(self.command_history, expected_cmds)
 
 class TestLoggerSetup(TestMetaWearBase):
     def logger_ready_handler(self, logger):

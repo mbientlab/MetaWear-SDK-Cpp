@@ -25,6 +25,7 @@ class Module:
     HUMIDITY = 0x16
     COLOR_DETECTOR = 0x17
     PROXIMITY = 0x18
+    SENSOR_FUSION = 0x19
     DEBUG = 0xfe
 
 # Constants identifying the message data types
@@ -36,6 +37,9 @@ class DataTypeId:
     BYTE_ARRAY= 4
     BATTERY_STATE= 5
     TCS34725_ADC= 6
+    EULER_ANGLES= 7
+    QUATERNION= 8
+    CORRECTED_CARTESIAN_FLOAT= 9
 
 # Python wrapper for the MblMwMessage struct
 class Data(Structure):
@@ -94,6 +98,10 @@ class Settings:
     BATTERY_VOLTAGE_INDEX = 0
     BATTERY_CHARGE_INDEX = 1
 
+# taken from https://www.python.org/dev/peps/pep-0485/#proposed-implementation
+def is_close(fst, snd):
+    return abs(fst - snd) <= max( 0.001 * max(abs(fst), abs(snd)), 0.001 )
+
 # Python wrapper for the MblMwDataCartesianFloat struct
 class CartesianFloat(Structure):
     _fields_= [
@@ -102,12 +110,8 @@ class CartesianFloat(Structure):
         ("z", c_float)
     ]
 
-    # taken from https://www.python.org/dev/peps/pep-0485/#proposed-implementation
-    def is_close(fst, snd):
-        return abs(fst - snd) <= max( 0.001 * max(abs(fst), abs(snd)), 0.001 )
-
     def __eq__(self, other):
-        return CartesianFloat.is_close(self.x, other.x) and CartesianFloat.is_close(self.y, other.y) and CartesianFloat.is_close(self.z, other.z)
+        return is_close(self.x, other.x) and is_close(self.y, other.y) and is_close(self.z, other.z)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -155,3 +159,63 @@ class Tcs34725ColorAdc(Structure):
 
     def __deepcopy__(self, memo):
         return Tcs34725ColorAdc(clear= self.clear, red= self.red, green= self.green, blue= self.blue)
+
+class EulerAngle(Structure):
+    _fields_= [
+        ("heading", c_float),
+        ("pitch", c_float),
+        ("roll", c_float),
+        ("yaw", c_float)
+    ]
+
+    def __eq__(self, other):
+        return is_close(self.heading, other.heading) and is_close(self.pitch, other.pitch) and is_close(self.roll, other.roll) and is_close(self.yaw, other.yaw)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "(%.3f, %.3f, %.3f, %.3f)" % (self.heading, self.pitch, self.roll, self.yaw)
+
+    def __deepcopy__(self, memo):
+        return EulerAngle(heading = self.heading, pitch = self.pitch, roll = self.roll, yaw = self.yaw)
+
+class Quaternion(Structure):
+    _fields_= [
+        ("w", c_float),
+        ("x", c_float),
+        ("y", c_float),
+        ("z", c_float)
+    ]
+
+    def __eq__(self, other):
+        return is_close(self.w, other.w) and is_close(self.x, other.x) and is_close(self.y, other.y) and is_close(self.z, other.z)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "(%.3f, %.3f, %.3f, %.3f)" % (self.w, self.x, self.y, self.z)
+
+    def __deepcopy__(self, memo):
+        return Quaternion(w = self.w, x = self.x, y = self.y, z = self.z)
+
+class CorrectedCartesianFloat(Structure):
+    _fields_= [
+        ("x", c_float),
+        ("y", c_float),
+        ("z", c_float),
+        ("accuracy", c_ubyte)
+    ]
+
+    def __eq__(self, other):
+        return is_close(self.x, other.x) and is_close(self.y, other.y) and is_close(self.z, other.z) and self.accuracy == other.accuracy
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "(%.3f, %.3f, %.3f, %d)" % (self.x, self.y, self.z, self.accuracy)
+
+    def __deepcopy__(self, memo):
+        return CorrectedCartesianFloat(x = self.x, y = self.y, z = self.z, accuracy = self.accuracy)

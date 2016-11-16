@@ -42,6 +42,7 @@
 #include "metawear/sensor/cpp/proximity_tsl2671_private.h"
 #include "metawear/sensor/cpp/serialpassthrough_private.h"
 #include "metawear/sensor/cpp/serialpassthrough_register.h"
+#include "metawear/sensor/cpp/sensor_fusion_private.h"
 #include "metawear/sensor/cpp/switch_private.h"
 
 using std::chrono::duration_cast;
@@ -139,7 +140,8 @@ const vector<void(*)(MblMwMetaWearBoard*)> INITIALIZE_FNS = {
     init_dataprocessor_module,
     init_gpio_module,
     init_serialpassthrough_module,
-    init_switch_module
+    init_switch_module,
+    init_sensor_fusion_module
 };
 
 const uint8_t READ_INFO_REGISTER= READ_REGISTER(0x0);
@@ -167,6 +169,7 @@ const vector<vector<uint8_t>> MODULE_DISCOVERY_CMDS= {
     {MBL_MW_MODULE_HUMIDITY, READ_INFO_REGISTER},
     {MBL_MW_MODULE_COLOR_DETECTOR, READ_INFO_REGISTER},
     {MBL_MW_MODULE_PROXIMITY, READ_INFO_REGISTER},
+    {MBL_MW_MODULE_SENSOR_FUSION, READ_INFO_REGISTER},
     {MBL_MW_MODULE_DEBUG, READ_INFO_REGISTER}
 };
 

@@ -17,7 +17,10 @@ typedef enum {
     MBL_MW_DT_ID_INT32,                 ///< Data is a signed integer
     MBL_MW_DT_ID_BYTE_ARRAY,            ///< Data is a byte array
     MBL_MW_DT_ID_BATTERY_STATE,         ///< Data is a BatteryState
-    MBL_MW_DT_ID_TCS34725_ADC           ///< Data is a Tcs34725ColorAdc
+    MBL_MW_DT_ID_TCS34725_ADC,          ///< Data is a Tcs34725ColorAdc
+    MBL_MW_DT_ID_EULER_ANGLE,
+    MBL_MW_DT_ID_QUATERNION,
+    MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT
 } MblMwDataTypeId;
 
 /**
