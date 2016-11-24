@@ -97,6 +97,14 @@ void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
     }
 }
 
+void serialize_sensor_fusion_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
+    SERIALIZE_MODULE_CONFIG(SensorFusionState, MBL_MW_MODULE_SENSOR_FUSION);
+}
+
+void deserialize_sensor_fusion_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
+    DESERIALIZE_MODULE_CONFIG(SensorFusionState, MBL_MW_MODULE_SENSOR_FUSION);
+}
+
 MblMwDataSignal* mbl_mw_sensor_fusion_get_data_signal(const MblMwMetaWearBoard* board, MblMwSensorFusionData data) {
     GET_DATA_SIGNAL(RESPONSE_HEADERS[data]);
 }

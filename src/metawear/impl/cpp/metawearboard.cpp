@@ -179,7 +179,8 @@ const unordered_map<uint8_t, void(*)(const MblMwMetaWearBoard*, vector<uint8_t>&
     { MBL_MW_MODULE_GYRO, serialize_gyro_config },
     { MBL_MW_MODULE_AMBIENT_LIGHT, serialize_ambient_light_config },
     { MBL_MW_MODULE_COLOR_DETECTOR, serialize_colordetector_config },
-    { MBL_MW_MODULE_PROXIMITY, serialize_proximity_config }
+    { MBL_MW_MODULE_PROXIMITY, serialize_proximity_config },
+    { MBL_MW_MODULE_SENSOR_FUSION, serialize_sensor_fusion_config }
 };
 const unordered_map<uint8_t, void(*)(MblMwMetaWearBoard*, uint8_t**)> CONFIG_DESERIALIZATION = {
     { MBL_MW_MODULE_ACCELEROMETER, deserialize_accelerometer_config },
@@ -187,7 +188,8 @@ const unordered_map<uint8_t, void(*)(MblMwMetaWearBoard*, uint8_t**)> CONFIG_DES
     { MBL_MW_MODULE_GYRO, deserialize_gyro_config },
     { MBL_MW_MODULE_AMBIENT_LIGHT, deserialize_ambient_light_config },
     { MBL_MW_MODULE_COLOR_DETECTOR, deserialize_colordetector_config },
-    { MBL_MW_MODULE_PROXIMITY, deserialize_proximity_config }
+    { MBL_MW_MODULE_PROXIMITY, deserialize_proximity_config },
+    { MBL_MW_MODULE_SENSOR_FUSION, deserialize_sensor_fusion_config }
 };
 
 const uint64_t DEVICE_INFO_SERVICE_UUID_HIGH = 0x0000180a00001000;
@@ -470,8 +472,10 @@ uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_
 
         serialized_state.push_back((uint8_t)board->module_config.size());
         for (auto it : sorted_keys) {
-            serialized_state.push_back(it);
-            CONFIG_SERIALIZATION.at(it)(board, serialized_state);
+            if (CONFIG_SERIALIZATION.count(it)) {
+                serialized_state.push_back(it);
+                CONFIG_SERIALIZATION.at(it)(board, serialized_state);
+            }
         }
     }
     
@@ -560,23 +564,25 @@ int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* sta
             break;
         }
 
-        ResponseHeader header_copy(saved_event->header);
-        header_copy.disable_silent();
+        ResponseHeader live_header(saved_event->header);
+        live_header.disable_silent();
 
-        if (board->module_events.count(header_copy)) {
-            auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events[saved_event->header]);
+        if (board->module_events.count(live_header)) {
+            auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events[live_header]);
             signal->components.push_back(dynamic_cast<MblMwDataSignal*>(saved_event));
         } else {
-            board->module_events.emplace(header_copy, saved_event);
+            board->module_events.emplace(live_header, saved_event);
         }
     }
 
     uint8_t module_config_size= *current_addr;
     current_addr++;
     for (uint8_t i= 0; i < module_config_size; i++) {
-        auto fn= CONFIG_DESERIALIZATION.at(*current_addr);
-        current_addr++;
-        fn(board, &current_addr);
+        if (CONFIG_DESERIALIZATION.count(*current_addr)) {
+            auto fn = CONFIG_DESERIALIZATION.at(*current_addr);
+            current_addr++;
+            fn(board, &current_addr);
+        }
     }
 
     deserialize_logging(board, (format == SIGNAL_COMPONENT_SERIALIZATION_FORMAT), &current_addr);
