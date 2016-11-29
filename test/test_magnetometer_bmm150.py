@@ -61,7 +61,7 @@ class TestMagnetometerBmm150(TestMetaWearBase):
         self.libmetawear.mbl_mw_mag_bmm150_start(self.board)
         self.assertEqual(self.command, expected)
 
-    def test_start(self):
+    def test_stop(self):
         expected= [0x15, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_mag_bmm150_stop(self.board)
