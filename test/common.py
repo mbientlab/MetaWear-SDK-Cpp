@@ -25,6 +25,8 @@ class TestMetaWearBase(unittest.TestCase):
         self.initialized_fn= Fn_VoidPtr_Int(self.initialized)
         self.sensor_data_handler= Fn_DataPtr(self.sensorDataHandler)
         self.timer_signal_ready= Fn_VoidPtr(self.timerSignalReady)
+        self.processor_created = Fn_VoidPtr(lambda pointer: self.processors.append(pointer))
+        self.logger_created = Fn_VoidPtr(lambda pointer: self.loggers.append(pointer))
         self.commands_recorded_fn= Fn_VoidPtr_Int(self.commandsRecorded)
 
         self.send_command_fn= Fn_VoidPtr_GattCharPtr_ByteArray(self.commandLogger)
@@ -236,6 +238,8 @@ class TestMetaWearBase(unittest.TestCase):
         self.dataprocId= 0
         self.loggerId= 0
         self.timerSignals= []
+        self.processors= []
+        self.loggers= []
         self.boardType= TestMetaWearBase.METAWEAR_R_BOARD
         
     def setUp(self):

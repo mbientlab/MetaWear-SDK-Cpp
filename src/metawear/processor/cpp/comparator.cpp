@@ -118,7 +118,7 @@ int32_t mbl_mw_dataprocessor_comparator_create_unsigned(MblMwDataSignal *source,
 }
 
 int32_t mbl_mw_dataprocessor_comparator_modify(MblMwDataProcessor *comparator, MblMwComparatorOperation op, float reference) {
-    if (comparator->owner->firmware_revision < MULTI_COMPARE) {
+    if (!(comparator->owner->firmware_revision < MULTI_COMPARE)) {
         return mbl_mw_dataprocessor_multi_comparator_modify(comparator, op, &reference, 1);
     }
 

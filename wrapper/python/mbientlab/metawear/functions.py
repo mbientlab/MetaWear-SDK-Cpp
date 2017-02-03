@@ -79,45 +79,6 @@ def setup_libmetawear(libmetawear):
     libmetawear.mbl_mw_timer_remove.restype= None
     libmetawear.mbl_mw_timer_remove.argtypes= [c_void_p]
 
-    libmetawear.mbl_mw_connection_notify_char_changed.restype= c_int
-    libmetawear.mbl_mw_connection_notify_char_changed.argtypes= [c_void_p, c_void_p, c_ubyte]
-
-    libmetawear.mbl_mw_metawearboard_notify_char_changed.restype= c_int
-    libmetawear.mbl_mw_metawearboard_notify_char_changed.argtypes= [c_void_p, c_void_p, c_ubyte]
-
-    libmetawear.mbl_mw_connection_char_read.restype= None
-    libmetawear.mbl_mw_connection_char_read.argtypes= [c_void_p, c_void_p, c_void_p, c_ubyte]
-
-    libmetawear.mbl_mw_metawearboard_char_read.restype= None
-    libmetawear.mbl_mw_metawearboard_char_read.argtypes= [c_void_p, c_void_p, c_void_p, c_ubyte]
-
-    libmetawear.mbl_mw_metawearboard_create.restype= c_void_p
-    libmetawear.mbl_mw_metawearboard_create.argtypes= [POINTER(BtleConnection)]
-
-    libmetawear.mbl_mw_metawearboard_free.restype= None
-    libmetawear.mbl_mw_metawearboard_free.argtypes= [c_void_p]
-
-    libmetawear.mbl_mw_metawearboard_set_time_for_response.restype= None
-    libmetawear.mbl_mw_metawearboard_set_time_for_response.argtypes= [c_void_p, c_ushort]
-
-    libmetawear.mbl_mw_metawearboard_initialize.restype= None
-    libmetawear.mbl_mw_metawearboard_initialize.argtypes= [c_void_p, Fn_VoidPtr_Int]
-
-    libmetawear.mbl_mw_metawearboard_tear_down.restype= None
-    libmetawear.mbl_mw_metawearboard_tear_down.argtypes= [c_void_p]
-
-    libmetawear.mbl_mw_metawearboard_is_initialized.restype= c_int
-    libmetawear.mbl_mw_metawearboard_is_initialized.argtypes= [c_void_p]
-
-    libmetawear.mbl_mw_metawearboard_lookup_module.restype= c_int
-    libmetawear.mbl_mw_metawearboard_lookup_module.argtypes= [c_void_p, c_int]
-
-    libmetawear.mbl_mw_metawearboard_serialize.restype= c_void_p
-    libmetawear.mbl_mw_metawearboard_serialize.argtypes= [c_void_p, POINTER(c_uint)]
-
-    libmetawear.mbl_mw_metawearboard_deserialize.restype= c_int
-    libmetawear.mbl_mw_metawearboard_deserialize.argtypes= [c_void_p, c_void_p, c_uint]
-
     libmetawear.mbl_mw_settings_get_disconnect_event.restype= c_void_p
     libmetawear.mbl_mw_settings_get_disconnect_event.argtypes= [c_void_p]
 
@@ -162,6 +123,45 @@ def setup_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_datasignal_log.restype= None
     libmetawear.mbl_mw_datasignal_log.argtypes= [c_void_p, Fn_VoidPtr]
+
+    libmetawear.mbl_mw_connection_notify_char_changed.restype= c_int
+    libmetawear.mbl_mw_connection_notify_char_changed.argtypes= [c_void_p, c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_metawearboard_notify_char_changed.restype= c_int
+    libmetawear.mbl_mw_metawearboard_notify_char_changed.argtypes= [c_void_p, c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_connection_char_read.restype= None
+    libmetawear.mbl_mw_connection_char_read.argtypes= [c_void_p, c_void_p, c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_metawearboard_char_read.restype= None
+    libmetawear.mbl_mw_metawearboard_char_read.argtypes= [c_void_p, c_void_p, c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_metawearboard_create.restype= c_void_p
+    libmetawear.mbl_mw_metawearboard_create.argtypes= [POINTER(BtleConnection)]
+
+    libmetawear.mbl_mw_metawearboard_free.restype= None
+    libmetawear.mbl_mw_metawearboard_free.argtypes= [c_void_p]
+
+    libmetawear.mbl_mw_metawearboard_set_time_for_response.restype= None
+    libmetawear.mbl_mw_metawearboard_set_time_for_response.argtypes= [c_void_p, c_ushort]
+
+    libmetawear.mbl_mw_metawearboard_initialize.restype= None
+    libmetawear.mbl_mw_metawearboard_initialize.argtypes= [c_void_p, Fn_VoidPtr_Int]
+
+    libmetawear.mbl_mw_metawearboard_tear_down.restype= None
+    libmetawear.mbl_mw_metawearboard_tear_down.argtypes= [c_void_p]
+
+    libmetawear.mbl_mw_metawearboard_is_initialized.restype= c_int
+    libmetawear.mbl_mw_metawearboard_is_initialized.argtypes= [c_void_p]
+
+    libmetawear.mbl_mw_metawearboard_lookup_module.restype= c_int
+    libmetawear.mbl_mw_metawearboard_lookup_module.argtypes= [c_void_p, c_int]
+
+    libmetawear.mbl_mw_metawearboard_serialize.restype= c_void_p
+    libmetawear.mbl_mw_metawearboard_serialize.argtypes= [c_void_p, POINTER(c_uint)]
+
+    libmetawear.mbl_mw_metawearboard_deserialize.restype= c_int
+    libmetawear.mbl_mw_metawearboard_deserialize.argtypes= [c_void_p, c_void_p, c_uint]
 
     libmetawear.mbl_mw_haptic_start_motor.restype= None
     libmetawear.mbl_mw_haptic_start_motor.argtypes= [c_void_p, c_float, c_ushort]

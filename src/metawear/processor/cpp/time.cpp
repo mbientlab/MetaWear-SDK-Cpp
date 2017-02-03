@@ -1,3 +1,5 @@
+#include "metawear/core/module.h"
+#include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/processor/time.h"
 
 #include "processor_private_common.h"
@@ -15,8 +17,15 @@ struct TimeDelayConfig {
     uint8_t period[4];
 };
 
+const uint8_t TIME_PASSTHROUGH_REVISION = 1;
+
 int32_t mbl_mw_dataprocessor_time_create(MblMwDataSignal *source, MblMwTimeMode mode, uint32_t period,
         MblMwFnDataProcessor processor_created) {
+    bool hasPassthrough = source->owner->module_info.at(MBL_MW_MODULE_DATA_PROCESSOR).revision >= TIME_PASSTHROUGH_REVISION;
+    if (source->length() > PROCESSOR_MAX_LENGTH && (!hasPassthrough || mode == MBL_MW_TIME_DIFFERENTIAL)) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
+
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
 
     if (mode == MBL_MW_TIME_DIFFERENTIAL) {
@@ -29,7 +38,7 @@ int32_t mbl_mw_dataprocessor_time_create(MblMwDataSignal *source, MblMwTimeMode 
     TimeDelayConfig *config = (TimeDelayConfig*) malloc(sizeof(TimeDelayConfig));
     *((uint8_t*) config)= 0;
     config->length= source->length() - 1;
-    config->mode= mode;
+    config->mode= (mode == MBL_MW_TIME_ABSOLUTE) && hasPassthrough ? 2 : mode;
     memcpy(((uint8_t*)(config)) + 1, &period, sizeof(period));
     create_processor(source, config, sizeof(TimeDelayConfig), DataProcessorType::TIME, new_processor, processor_created);
 

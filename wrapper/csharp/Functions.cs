@@ -199,105 +199,6 @@ namespace MbientLab.MetaWear {
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_timer_remove(IntPtr timer);
 
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_connection_notify_char_changed(IntPtr board, byte[] value, byte len);
-
-        /// <summary>
-        /// Handles changes from the MetaWear notify characteristic.  All characteristic changes from the notify characteristic must be forwarded to this function
-        /// </summary>
-        /// <param name="board">Board the characteristic change is from</param>
-        /// <param name="value">Byte array containing the new characteristic value</param>
-        /// <param name="len">Length of the array</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_metawearboard_notify_char_changed(IntPtr board, byte[] value, byte len);
-
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_connection_char_read(IntPtr board, IntPtr characteristic, byte[] value, byte length);
-
-        /// <summary>
-        /// Handles responses from a gatt characteristic read issued by a MblMwMetaWearBoard object.  All characteristic values read must be forwarded to this function.
-        /// </summary>
-        /// <param name="board">Board the response is from</param>
-        /// <param name="characteristic">Characteristic that was read</param>
-        /// <param name="value">Byte array containing the characteristic value</param>
-        /// <param name="length">Length of the array</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_char_read(IntPtr board, IntPtr characteristic, byte[] value, byte length);
-
-        /// <summary>
-        /// Creates an instance of the MblMwMetaWearBoard struct
-        /// </summary>
-        /// <param name="connection">Connection struct the new MblMwMetaWearBoard variable will use for btle communication</param>
-        /// <returns>Pointer to the newly created struct</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_metawearboard_create(ref BtleConnection connection);
-
-        /// <summary>
-        /// Frees the memory allocated for the struct
-        /// </summary>
-        /// <param name="board">Pointer to the memory to free</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_free(IntPtr board);
-
-        /// <summary>
-        /// Sets how long the API should wait before a required response is received.  You should increase this value if operations such as API initialization, creating timer, loggers, and data processors, and recording commands consistently time out.
-        /// </summary>
-        /// <param name="board">Board to configure</param>
-        /// <param name="response_time_ms">How long to wait</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_set_time_for_response(IntPtr board, ushort response_time_ms);
-
-        /// <summary>
-        /// Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
-        /// </summary>
-        /// <param name="board">Board to initialize</param>
-        /// <param name="initialized">Callback function to be executed when the board is initialized</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_initialize(IntPtr board, Fn_IntPtr_Int initialized);
-
-        /// <summary>
-        /// Removes all data processors and timers from the MetaWear board
-        /// </summary>
-        /// <param name="board">Board to tear down</param>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void mbl_mw_metawearboard_tear_down(IntPtr board);
-
-        /// <summary>
-        /// Checks if the board is initialized
-        /// </summary>
-        /// <param name="board">Board to check</param>
-        /// <returns>Zero if not initialized</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_metawearboard_is_initialized(IntPtr board);
-
-        /// <summary>
-        /// Checks module type i.e. what kind of accelerometer is being used
-        /// </summary>
-        /// <param name="board">Board to check</param>
-        /// <param name="module">Module to lookup</param>
-        /// <returns>Module type used by the board</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_metawearboard_lookup_module(IntPtr board, Module module);
-
-        /// <summary>
-        /// Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
-        /// </summary>
-        /// <param name="board">Board to serialize</param>
-        /// <param name="size">Pointer to where the size of the returned byte array will be written to</param>
-        /// <returns>Byte array of the serialized state</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr mbl_mw_metawearboard_serialize(IntPtr board, ref uint size);
-
-        /// <summary>
-        /// Deserializes API state.  This function must be executed before calling mbl_mw_metawearboard_initialize.
-        /// </summary>
-        /// <param name="board">Board to deserialize</param>
-        /// <param name="state">Byte array holding the the information state</param>
-        /// <param name="size">Byte array size</param>
-        /// <returns>MBL_MW_STATUS_OK if successful</returns>
-        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_metawearboard_deserialize(IntPtr board, byte[] state, uint size);
-
         /// <summary>
         /// Retrieves an event pointer representing a disconnect event
         /// </summary>
@@ -421,6 +322,105 @@ namespace MbientLab.MetaWear {
         /// <param name="logger_ready">Callback function to be executed when the logger is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void mbl_mw_datasignal_log(IntPtr signal, Fn_IntPtr logger_ready);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_connection_notify_char_changed(IntPtr board, byte[] value, byte len);
+
+        /// <summary>
+        /// Handles changes from the MetaWear notify characteristic.  All characteristic changes from the notify characteristic must be forwarded to this function
+        /// </summary>
+        /// <param name="board">Board the characteristic change is from</param>
+        /// <param name="value">Byte array containing the new characteristic value</param>
+        /// <param name="len">Length of the array</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_metawearboard_notify_char_changed(IntPtr board, byte[] value, byte len);
+
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_connection_char_read(IntPtr board, IntPtr characteristic, byte[] value, byte length);
+
+        /// <summary>
+        /// Handles responses from a gatt characteristic read issued by a MblMwMetaWearBoard object.  All characteristic values read must be forwarded to this function.
+        /// </summary>
+        /// <param name="board">Board the response is from</param>
+        /// <param name="characteristic">Characteristic that was read</param>
+        /// <param name="value">Byte array containing the characteristic value</param>
+        /// <param name="length">Length of the array</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_metawearboard_char_read(IntPtr board, IntPtr characteristic, byte[] value, byte length);
+
+        /// <summary>
+        /// Creates an instance of the MblMwMetaWearBoard struct
+        /// </summary>
+        /// <param name="connection">Connection struct the new MblMwMetaWearBoard variable will use for btle communication</param>
+        /// <returns>Pointer to the newly created struct</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_metawearboard_create(ref BtleConnection connection);
+
+        /// <summary>
+        /// Frees the memory allocated for the struct
+        /// </summary>
+        /// <param name="board">Pointer to the memory to free</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_metawearboard_free(IntPtr board);
+
+        /// <summary>
+        /// Sets how long the API should wait before a required response is received.  You should increase this value if operations such as API initialization, creating timer, loggers, and data processors, and recording commands consistently time out.
+        /// </summary>
+        /// <param name="board">Board to configure</param>
+        /// <param name="response_time_ms">How long to wait</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_metawearboard_set_time_for_response(IntPtr board, ushort response_time_ms);
+
+        /// <summary>
+        /// Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
+        /// </summary>
+        /// <param name="board">Board to initialize</param>
+        /// <param name="initialized">Callback function to be executed when the board is initialized</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_metawearboard_initialize(IntPtr board, Fn_IntPtr_Int initialized);
+
+        /// <summary>
+        /// Removes all data processors and timers from the MetaWear board
+        /// </summary>
+        /// <param name="board">Board to tear down</param>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void mbl_mw_metawearboard_tear_down(IntPtr board);
+
+        /// <summary>
+        /// Checks if the board is initialized
+        /// </summary>
+        /// <param name="board">Board to check</param>
+        /// <returns>Zero if not initialized</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_metawearboard_is_initialized(IntPtr board);
+
+        /// <summary>
+        /// Checks module type i.e. what kind of accelerometer is being used
+        /// </summary>
+        /// <param name="board">Board to check</param>
+        /// <param name="module">Module to lookup</param>
+        /// <returns>Module type used by the board</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_metawearboard_lookup_module(IntPtr board, Module module);
+
+        /// <summary>
+        /// Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
+        /// </summary>
+        /// <param name="board">Board to serialize</param>
+        /// <param name="size">Pointer to where the size of the returned byte array will be written to</param>
+        /// <returns>Byte array of the serialized state</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr mbl_mw_metawearboard_serialize(IntPtr board, ref uint size);
+
+        /// <summary>
+        /// Deserializes API state.  This function must be executed before calling mbl_mw_metawearboard_initialize.
+        /// </summary>
+        /// <param name="board">Board to deserialize</param>
+        /// <param name="state">Byte array holding the the information state</param>
+        /// <param name="size">Byte array size</param>
+        /// <returns>MBL_MW_STATUS_OK if successful</returns>
+        [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int mbl_mw_metawearboard_deserialize(IntPtr board, byte[] state, uint size);
 
         /// <summary>
         /// Drives a motor
@@ -786,7 +786,7 @@ namespace MbientLab.MetaWear {
         /// <param name="references_length">Number of elements in the references array</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_multi_comparator_create(IntPtr source, Comparator.Operation op, Comparator.Mode mode, ref float references, byte references_length, Fn_IntPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_multi_comparator_create(IntPtr source, Comparator.Operation op, Comparator.Mode mode, float[] references, byte references_length, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Create a multi-value comparator for signed comparisons.  This feature is only available on firmware v1.2.3 and later.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -798,7 +798,7 @@ namespace MbientLab.MetaWear {
         /// <param name="references_length">Number of elements in the references array</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_multi_comparator_create_signed(IntPtr source, Comparator.Operation op, Comparator.Mode mode, ref float references, byte references_length, Fn_IntPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_multi_comparator_create_signed(IntPtr source, Comparator.Operation op, Comparator.Mode mode, float[] references, byte references_length, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Create a multi-value comparator for unsigned comparisons.  This feature is only available on firmware v1.2.3 and later.  A pointer representing the processor will be passed back to the user via a callback function.
@@ -810,7 +810,7 @@ namespace MbientLab.MetaWear {
         /// <param name="references_length">Number of elements in the references array</param>
         /// <param name="processor_created">Callback function to be executed when the processor is created</param>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_multi_comparator_create_unsigned(IntPtr source, Comparator.Operation op, Comparator.Mode mode, ref float references, byte references_length, Fn_IntPtr processor_created);
+        public static extern int mbl_mw_dataprocessor_multi_comparator_create_unsigned(IntPtr source, Comparator.Operation op, Comparator.Mode mode, float[] references, byte references_length, Fn_IntPtr processor_created);
 
         /// <summary>
         /// Modifies the multi-value comparator, changing the operation and reference values.  This feature is only available on firmware v1.2.3 and later.
@@ -821,7 +821,7 @@ namespace MbientLab.MetaWear {
         /// <param name="references_length">Number of elements in the references array</param>
         /// <returns>MBL_MW_STATUS_OK if processor configuration was updated</returns>
         [DllImport(METAWEAR_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int mbl_mw_dataprocessor_multi_comparator_modify(IntPtr comparator, Comparator.Operation op, ref float references, byte references_length);
+        public static extern int mbl_mw_dataprocessor_multi_comparator_modify(IntPtr comparator, Comparator.Operation op, float[] references, byte references_length);
 
         /// <summary>
         /// Create a counter with an output size of 1 byte.  A pointer representing the processor will be passed back to the user via a callback function.

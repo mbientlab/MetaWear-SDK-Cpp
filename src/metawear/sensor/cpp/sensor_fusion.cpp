@@ -49,12 +49,14 @@ struct SensorFusionState {
 
 void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
     if (board->module_info.count(MBL_MW_MODULE_SENSOR_FUSION) && board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).present) {
-        SensorFusionState* new_state = (SensorFusionState*) malloc(sizeof(SensorFusionState));
-        new_state->config.mode = MBL_MW_SENSOR_FUSION_MODE_SLEEP;
-        new_state->config.acc_range = MBL_MW_SENSOR_FUSION_ACC_RANGE_16G;
-        new_state->config.gyro_range = MBL_MW_SENSOR_FUSION_GYRO_RANGE_2000DPS;
-        new_state->enable_mask = 0;
-        board->module_config.emplace(MBL_MW_MODULE_SENSOR_FUSION, new_state);
+        if (!board->module_config.count(MBL_MW_MODULE_SENSOR_FUSION)) {
+            SensorFusionState* new_state = (SensorFusionState*) malloc(sizeof(SensorFusionState));
+            new_state->config.mode = MBL_MW_SENSOR_FUSION_MODE_SLEEP;
+            new_state->config.acc_range = MBL_MW_SENSOR_FUSION_ACC_RANGE_16G;
+            new_state->config.gyro_range = MBL_MW_SENSOR_FUSION_GYRO_RANGE_2000DPS;
+            new_state->enable_mask = 0;
+            board->module_config.emplace(MBL_MW_MODULE_SENSOR_FUSION, new_state);
+        }
 
         for(auto& it: RESPONSE_HEADERS) {
             board->responses[it] = response_handler_data_no_id;
