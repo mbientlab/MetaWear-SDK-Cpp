@@ -314,12 +314,15 @@ void MblMwDataLogger::process_log_data(uint8_t id, int64_t epoch, uint32_t data)
 }
 
 void MblMwDataLogger::serialize(vector<uint8_t>& state) const {
-    auto root= dynamic_cast<MblMwDataSignal*>(source->owner->module_events.at(source->header));
+    ResponseHeader copy(source->header);
+    copy.disable_silent();
+
+    auto root = dynamic_cast<MblMwDataSignal*>(source->owner->module_events.at(copy));
     if (source == root) {
         state.push_back(ROOT_SIGNAL_INDEX);
     } else {
-        uint8_t i= 0;
-        for(auto it: root->components) {
+        uint8_t i = 0;
+        for (auto it : root->components) {
             if (it == source) break;
             i++;
         }
@@ -328,7 +331,7 @@ void MblMwDataLogger::serialize(vector<uint8_t>& state) const {
     }
     source->header.serialize(state);
 
-    state.push_back((uint8_t) entry_ids.size());
+    state.push_back((uint8_t)entry_ids.size());
     state.insert(state.end(), entry_ids.begin(), entry_ids.end());
 }
 

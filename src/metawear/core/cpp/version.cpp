@@ -14,6 +14,10 @@ const char SEPARATOR= '.';
 Version::Version() : Version(EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE) {
 }
 
+Version::Version(const string& version) {
+    assign(version);
+}
+
 Version::Version(uint8_t major, uint8_t minor, uint8_t step) {
     this->major= major;
     this->minor= minor;
@@ -38,7 +42,7 @@ bool Version::empty() const {
     return major == EMPTY_VALUE && minor == EMPTY_VALUE && step == EMPTY_VALUE;
 }
 
-void Version::assign(const std::string new_version) {
+void Version::assign(const std::string& new_version) {
     string tempStr;
     vector<string> parts;
     size_t i= 0;

@@ -348,42 +348,38 @@ void mbl_mw_connection_char_read(MblMwMetaWearBoard *board, const MblMwGattChar 
 
 void mbl_mw_metawearboard_char_read(MblMwMetaWearBoard *board, const MblMwGattChar *characteristic, const uint8_t *value, uint8_t length) {
     if (characteristic->uuid_high == DEV_INFO_FIRMWARE_CHAR.uuid_high && characteristic->uuid_low == DEV_INFO_FIRMWARE_CHAR.uuid_low) {
-        if (board->firmware_revision.empty()) {
-            board->firmware_revision.assign(string(value, value + length));
-            board->module_discovery_index= -1;
-        } else {
-            Version current;
-            current.assign(string(value, value + length));
+        Version current(string(value, value + length));
 
-            if (board->firmware_revision == current) {
-                if (mbl_mw_metawearboard_is_initialized(board)) {
-                    board->initialized_timeout->cancel();
-                    board->initialized(board, MBL_MW_STATUS_OK);
-                } else {
-                    board->module_discovery_index = MODULE_DISCOVERY_CMDS.size();
-                    service_discovery_completed(board);
-                }
-                return;
+        if (board->firmware_revision == current) {
+            if (mbl_mw_metawearboard_is_initialized(board)) {
+                board->initialized_timeout->cancel();
+                board->initialized(board, MBL_MW_STATUS_OK);
             } else {
-                board->logger_state.reset();
-                board->timer_state.reset();
-                board->event_state.reset();
-                board->dp_state.reset();
-
-                for (auto it : board->module_events) {
-                    it.second->remove = false;
-                    delete it.second;
-                }
-                board->module_events.clear();
-
-                for (auto it: board->module_config) {
-                    free(it.second);
-                }
-                board->module_config.clear();
-
-                board->module_info.clear();
-                board->module_discovery_index= -1;
+                board->module_discovery_index = MODULE_DISCOVERY_CMDS.size();
+                service_discovery_completed(board);
             }
+            return;
+        } else {
+            board->firmware_revision = current;
+
+            board->logger_state.reset();
+            board->timer_state.reset();
+            board->event_state.reset();
+            board->dp_state.reset();
+
+            for (auto it : board->module_events) {
+                it.second->remove = false;
+                delete it.second;
+            }
+            board->module_events.clear();
+
+            for (auto it : board->module_config) {
+                free(it.second);
+            }
+            board->module_config.clear();
+
+            board->module_info.clear();
+            board->module_discovery_index = -1;
         }
         queue_next_gatt_char(board);
     } else if (characteristic->uuid_high == DEV_INFO_MODEL_CHAR.uuid_high && characteristic->uuid_low == DEV_INFO_MODEL_CHAR.uuid_low) {

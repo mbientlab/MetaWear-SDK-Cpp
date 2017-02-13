@@ -252,6 +252,129 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
 
         self.assertTrue(True)
 
+    def test_deserialize_motion_r_new_fw(self):
+        firmware_state = [0x03, 0x03, 0x01]
+
+        self.firmware_revision= create_string_buffer(b'1.3.3', 5)
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
+
+        state_buffer= self.to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
+        self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, state_buffer.raw, len(state_buffer.raw))
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+
+        state_array_size= c_uint(0)
+        state_ptr= cast(self.libmetawear.mbl_mw_metawearboard_serialize(self.board, byref(state_array_size)), POINTER(c_ubyte * state_array_size.value))
+
+        python_array= []
+        for i in range(0, state_array_size.value):
+            python_array.append(state_ptr.contents[i])
+        self.libmetawear.mbl_mw_memory_free(state_ptr)
+
+        self.assertEqual(python_array[1:4], firmware_state)
+
+    def test_serialize_readable_logger(self):
+        logger_state= [
+            0x1,
+            0xff, 0x04, 0xc1, 0x00, 0x01, 0x00
+        ]
+
+        self.firmware_revision= create_string_buffer(b'1.2.5', 5)
+        self.boardType = TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+
+        readable_signal = self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, 0)
+        self.libmetawear.mbl_mw_datasignal_log(readable_signal, self.logger_created);
+
+        state_array_size= c_uint(0)
+        state_ptr= cast(self.libmetawear.mbl_mw_metawearboard_serialize(self.board, byref(state_array_size)), POINTER(c_ubyte * state_array_size.value))
+
+        python_array= []
+        for i in range(0, state_array_size.value):
+            python_array.append(state_ptr.contents[i])
+        self.libmetawear.mbl_mw_memory_free(state_ptr)
+
+        print(python_array)
+        self.assertEqual(python_array[368:], logger_state)
+
+    def test_deserialize_readable_logger(self):
+        state = [
+            1, 
+            5, 2, 1, 
+            1, 49, 
+            25, 
+            1, 0, 0, 0, 
+            2, 0, 0, 0, 
+            3, 1, 1, 0, 
+            4, 1, 0, 4, 0, 3, 1, 2, 
+            5, 0, 0, 0, 
+            6, 0, 0, 0, 
+            7, 0, 0, 0, 
+            8, 0, 0, 0, 
+            9, 0, 0, 1, 28, 
+            10, 0, 0, 1, 28, 
+            11, 0, 2, 5, 8, 128, 45, 0, 0, 
+            12, 0, 0, 1, 8, 
+            13, 0, 0, 0, 
+            15, 0, 0, 0, 
+            16, 255, 255, 
+            17, 0, 0, 0, 
+            18, 0, 0, 0, 
+            19, 0, 1, 0, 
+            20, 0, 0, 0, 
+            21, 255, 255, 
+            22, 255, 255, 
+            23, 255, 255, 
+            24, 255, 255, 
+            25, 255, 255, 
+            254, 0, 0, 0, 
+            21, 
+            1, 1, 255, 0, 1, 0, 1, 1, 0, 0, 
+            3, 4, 255, 0, 7, 2, 3, 2, 1, 0, 
+            3, 4, 255, 0, 8, 2, 1, 2, 1, 0, 
+            3, 4, 255, 0, 8, 2, 1, 2, 1, 2, 
+            3, 4, 255, 0, 8, 2, 1, 2, 1, 4, 
+            3, 25, 255, 0, 1, 0, 1, 1, 0, 0, 
+            3, 28, 255, 0, 7, 2, 3, 2, 1, 0, 
+            3, 218, 255, 0, 1, 0, 1, 2, 0, 0, 
+            4, 193, 0, 0, 2, 6, 1, 2, 1, 0, 
+            4, 193, 1, 0, 2, 6, 1, 2, 1, 0, 
+            4, 193, 2, 0, 2, 6, 1, 2, 1, 0, 
+            4, 193, 3, 0, 2, 6, 1, 2, 1, 0, 
+            18, 1, 255, 0, 3, 3, 1, 4, 0, 0, 
+            18, 2, 255, 0, 4, 3, 1, 4, 1, 0, 
+            18, 193, 255, 0, 3, 3, 1, 4, 0, 0, 
+            19, 5, 255, 0, 5, 4, 3, 2, 1, 0, 
+            19, 5, 255, 0, 6, 4, 1, 2, 1, 0, 
+            19, 5, 255, 0, 6, 4, 1, 2, 1, 2, 
+            19, 5, 255, 0, 6, 4, 1, 2, 1, 4, 
+            19, 7, 255, 0, 5, 4, 3, 2, 1, 0, 
+            20, 3, 255, 0, 1, 0, 1, 4, 0, 0, 
+            4, 
+            3, 40, 3, 7, 48, 129, 11, 192, 0, 20, 20, 20, 64, 10, 24, 72, 8, 17, 0, 0, 
+            18, 44, 0, 
+            19, 40, 0, 
+            20, 0, 3, 
+            1, 
+            226, 118, 142, 47, 90, 1, 0, 0, 21, 4, 0, 0, 5, 
+            1, 
+            255, 4, 193, 0, 1, 0
+        ]
+
+        self.firmware_revision= create_string_buffer(b'1.2.5', 5)
+        self.boardType = TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        state_buffer= self.to_string_buffer(state)
+        self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, state_buffer.raw, len(state_buffer.raw))
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+
+        logger = self.libmetawear.mbl_mw_logger_lookup_id(self.board, 0);
+        self.libmetawear.mbl_mw_logger_subscribe(logger, self.sensor_data_handler);
+
+        buffer = create_string_buffer(b'\x0b\x07\xa0\x37\x43\x00\x00\xc8\x00\x00\x00', 11)
+        self.libmetawear.mbl_mw_metawearboard_notify_char_changed(self.board, buffer.raw, len(buffer))
+
+        self.assertAlmostEqual(self.data_float.value, 25.0)
+
 class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
