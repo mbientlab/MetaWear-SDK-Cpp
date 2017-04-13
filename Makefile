@@ -12,17 +12,19 @@ SRCS:=$(foreach src_dir, $(MODULES_SRC_DIR), $(shell find $(src_dir) -name \*.cp
 EXPORT_HEADERS:=$(foreach module, $(addprefix $(SOURCE_DIR)/, $(MODULES)), $(shell find $(module) -maxdepth 1 -name \*.h))
 
 CXXFLAGS+=-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -I$(SOURCE_DIR) -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS
-LD_FLAGS:=-s -shared -Wl,
 
 ifeq ($(CONFIGURATION),debug)
     APP_NAME:=$(APP_NAME)_d
     CXXFLAGS+=-g
+    LD_FLAGS:=-g
 else ifeq ($(CONFIGURATION),release)
     CXXFLAGS+=-O3
+    LD_FLAGS:=-s
 else
     $(error Invalid value for "CONFIGURATION", must be 'release' or 'debug')
 endif
 
+LD_FLAGS+=-shared -Wl,
 ifneq ($(KERNEL),Darwin)
     EXTENSION:=so
     LIB_SO_NAME:=lib$(APP_NAME).so

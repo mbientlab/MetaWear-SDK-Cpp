@@ -17,8 +17,8 @@ Target: x86_64-suse-linux
 Thread model: posix
 ```
 ```bat
-C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC>cl
-Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24213.1 for x64
+C:\Program Files (x86)\Microsoft Visual Studio\2017\Community>cl.exe
+Microsoft (R) C/C++ Optimizing Compiler Version 19.10.25019 for x64
 Copyright (C) Microsoft Corporation.  All rights reserved.
 
 usage: cl [ option... ] filename... [ /link linkoption... ]
@@ -48,8 +48,8 @@ dist/
 
 ```
 
-## Visual Studio 2015 ##
-MSBuild files have been provided to build the project as both a Win32 and WinRT dll.  The Win32 dll is for classic Win32 applications whereas the WinRT dll is for Universal Windows apps.  You will need to have [Visual Studio 2015](https://www.visualstudio.com/en-us/products/vs-2015-product-editions.aspx) installed in order to run the build.
+## Visual Studio 2017 ##
+MSBuild files have been provided to build the project as both a Win32 and WinRT dll.  The Win32 dll is for classic Win32 applications whereas the WinRT dll is for Universal Windows apps.  You will need to have [Visual Studio 2017](https://www.visualstudio.com/downloads/) installed in order to run the build.
 
 When calling MSBuild, you can set the `Configuration` and `Platform` properties to control debug/release builds and x86/x64/ARM platforms respectively.  If not specified on the command line, the default action is to build a debug dll targeting the x86 (Win32) platform.  Note that the ARM platform is only available for the WinRT build.
 
