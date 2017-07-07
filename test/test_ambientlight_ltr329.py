@@ -1,5 +1,5 @@
 from common import TestMetaWearBase
-from mbientlab.metawear.sensor import AmbientLightLtr329
+from mbientlab.metawear.cbindings import *
 from ctypes import *
 
 class TestALsLtr329Config(TestMetaWearBase):
@@ -11,30 +11,30 @@ class TestALsLtr329Config(TestMetaWearBase):
     def test_set_gain(self):
         expected= [0x14, 0x02, 0x18, 0x03]
 
-        self.libmetawear.mbl_mw_als_ltr329_set_gain(self.board, AmbientLightLtr329.GAIN_48X)
+        self.libmetawear.mbl_mw_als_ltr329_set_gain(self.board, AlsLtr329Gain._48X)
         self.libmetawear.mbl_mw_als_ltr329_write_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_set_integration_time(self):
         expected= [0x14, 0x02, 0x00, 0x1b]
 
-        self.libmetawear.mbl_mw_als_ltr329_set_integration_time(self.board, AmbientLightLtr329.INTEGRATION_TIME_400MS)
+        self.libmetawear.mbl_mw_als_ltr329_set_integration_time(self.board, AlsLtr329IntegrationTime._400ms)
         self.libmetawear.mbl_mw_als_ltr329_write_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_set_measurement_rate(self):
         expected= [0x14, 0x02, 0x00, 0x05]
 
-        self.libmetawear.mbl_mw_als_ltr329_set_measurement_rate(self.board, AmbientLightLtr329.MEASUREMENT_RATE_2000MS)
+        self.libmetawear.mbl_mw_als_ltr329_set_measurement_rate(self.board, AlsLtr329MeasurementRate._2000ms)
         self.libmetawear.mbl_mw_als_ltr329_write_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_set_all_config(self):
         expected= [0x14, 0x02, 0x0c, 0x28]
 
-        self.libmetawear.mbl_mw_als_ltr329_set_gain(self.board, AmbientLightLtr329.GAIN_8X)
-        self.libmetawear.mbl_mw_als_ltr329_set_integration_time(self.board, AmbientLightLtr329.INTEGRATION_TIME_250MS)
-        self.libmetawear.mbl_mw_als_ltr329_set_measurement_rate(self.board, AmbientLightLtr329.MEASUREMENT_RATE_50MS)
+        self.libmetawear.mbl_mw_als_ltr329_set_gain(self.board, AlsLtr329Gain._8X)
+        self.libmetawear.mbl_mw_als_ltr329_set_integration_time(self.board, AlsLtr329IntegrationTime._250ms)
+        self.libmetawear.mbl_mw_als_ltr329_set_measurement_rate(self.board, AlsLtr329MeasurementRate._50ms)
         self.libmetawear.mbl_mw_als_ltr329_write_config(self.board)
         self.assertListEqual(self.command, expected)
 
@@ -51,7 +51,7 @@ class TestAlsLtr329DataHandler(TestMetaWearBase):
         expected= 11571949
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.ltr329_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.notify_mw_char(response)
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_stream_illuminance_data(self):

@@ -1,9 +1,9 @@
 from common import TestMetaWearBase
-from mbientlab.metawear.sensor import SensorFusion
+from mbientlab.metawear.cbindings import *
 
 class TestSensorFusionConfig(TestMetaWearBase):
-    acc_ranges = [SensorFusion.ACC_RANGE_2G, SensorFusion.ACC_RANGE_4G, SensorFusion.ACC_RANGE_8G, SensorFusion.ACC_RANGE_16G]
-    gyro_ranges = [SensorFusion.GYRO_RANGE_2000DPS, SensorFusion.GYRO_RANGE_1000DPS, SensorFusion.GYRO_RANGE_500DPS, SensorFusion.GYRO_RANGE_250DPS]
+    acc_ranges = [SensorFusionAccRange._2G, SensorFusionAccRange._4G, SensorFusionAccRange._8G, SensorFusionAccRange._16G]
+    gyro_ranges = [SensorFusionGyroRange._2000DPS, SensorFusionGyroRange._1000DPS, SensorFusionGyroRange._500DPS, SensorFusionGyroRange._250DPS]
     config_masks = [
         [0x10, 0x11, 0x12, 0x13],
         [0x20, 0x21, 0x22, 0x23],
@@ -41,9 +41,9 @@ class TestSensorFusionConfig(TestMetaWearBase):
         for test in TestSensorFusionConfig.queue_tests():
             with self.subTest():
                 self.command_history = []
-                self.configure_algorithm(SensorFusion.MODE_NDOF, test['acc_range'], test['gyro_range'])
+                self.configure_algorithm(SensorFusionMode.NDOF, test['acc_range'], test['gyro_range'])
                 expected = [
-                    [0x19, 0x02, SensorFusion.MODE_NDOF, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
+                    [0x19, 0x02, SensorFusionMode.NDOF, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
                     [0x03, 0x03, 0x28, TestSensorFusionConfig.bmi160_acc_range_bitmask[test['acc_range']]],
                     [0x13, 0x03, 0x28, TestSensorFusionConfig.bmi160_rot_range_bitmask[test['gyro_range']]],
                     [0x15, 0x04, 0x04, 0x0e],
@@ -55,9 +55,9 @@ class TestSensorFusionConfig(TestMetaWearBase):
         for test in TestSensorFusionConfig.queue_tests():
             with self.subTest():
                 self.command_history = []
-                self.configure_algorithm(SensorFusion.MODE_IMU_PLUS, test['acc_range'], test['gyro_range'])
+                self.configure_algorithm(SensorFusionMode.IMU_PLUS, test['acc_range'], test['gyro_range'])
                 expected = [
-                    [0x19, 0x02, SensorFusion.MODE_IMU_PLUS, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
+                    [0x19, 0x02, SensorFusionMode.IMU_PLUS, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
                     [0x03, 0x03, 0x28, TestSensorFusionConfig.bmi160_acc_range_bitmask[test['acc_range']]],
                     [0x13, 0x03, 0x28, TestSensorFusionConfig.bmi160_rot_range_bitmask[test['gyro_range']]],
                 ]
@@ -67,9 +67,9 @@ class TestSensorFusionConfig(TestMetaWearBase):
         for test in TestSensorFusionConfig.queue_tests():
             with self.subTest():
                 self.command_history = []
-                self.configure_algorithm(SensorFusion.MODE_COMPASS, test['acc_range'], test['gyro_range'])
+                self.configure_algorithm(SensorFusionMode.COMPASS, test['acc_range'], test['gyro_range'])
                 expected = [
-                    [0x19, 0x02, SensorFusion.MODE_COMPASS, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
+                    [0x19, 0x02, SensorFusionMode.COMPASS, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
                     [0x03, 0x03, 0x26, TestSensorFusionConfig.bmi160_acc_range_bitmask[test['acc_range']]],
                     [0x15, 0x04, 0x04, 0x0e],
                     [0x15, 0x03, 0x6]
@@ -80,9 +80,9 @@ class TestSensorFusionConfig(TestMetaWearBase):
         for test in TestSensorFusionConfig.queue_tests():
             with self.subTest():
                 self.command_history = []
-                self.configure_algorithm(SensorFusion.MODE_M4G, test['acc_range'], test['gyro_range'])
+                self.configure_algorithm(SensorFusionMode.M4G, test['acc_range'], test['gyro_range'])
                 expected = [
-                    [0x19, 0x02, SensorFusion.MODE_M4G, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
+                    [0x19, 0x02, SensorFusionMode.M4G, TestSensorFusionConfig.config_masks[test['gyro_range']][test['acc_range']]],
                     [0x03, 0x03, 0x27, TestSensorFusionConfig.bmi160_acc_range_bitmask[test['acc_range']]],
                     [0x15, 0x04, 0x04, 0x0e],
                     [0x15, 0x03, 0x6]

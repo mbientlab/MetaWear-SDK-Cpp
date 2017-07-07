@@ -15,9 +15,9 @@ extern "C" {
  * Operation modes for the processor
  */
 typedef enum {
-    MBL_MW_PASSTHROUGH_ALL = 0,             ///< Allow all data through
-    MBL_MW_PASSTHROUGH_CONDITIONAL,         ///< Only allow data through if count > 0
-    MBL_MW_PASSTHROUGH_COUNT                ///< Only allow a fixed number of data samples through
+    MBL_MW_PASSTHROUGH_MODE_ALL = 0,             ///< Allow all data through
+    MBL_MW_PASSTHROUGH_MODE_CONDITIONAL,         ///< Only allow data through if count > 0
+    MBL_MW_PASSTHROUGH_MODE_COUNT                ///< Only allow a fixed number of data samples through
 } MblMwPassthroughMode;
 
 /**

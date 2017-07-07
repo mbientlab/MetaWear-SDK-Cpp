@@ -1,4 +1,4 @@
-.PHONY: build clean test doc publish
+.PHONY: build clean test doc publish install
 
 include config.mk
 include project_version.mk
@@ -10,8 +10,6 @@ COMMA:=,
 MODULES_SRC_DIR= $(addsuffix /cpp, $(addprefix $(SOURCE_DIR)/, $(MODULES)))
 SRCS:=$(foreach src_dir, $(MODULES_SRC_DIR), $(shell find $(src_dir) -name \*.cpp))
 EXPORT_HEADERS:=$(foreach module, $(addprefix $(SOURCE_DIR)/, $(MODULES)), $(shell find $(module) -maxdepth 1 -name \*.h))
-
-CXXFLAGS+=-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -I$(SOURCE_DIR) -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS
 
 ifeq ($(CONFIGURATION),debug)
     APP_NAME:=$(APP_NAME)_d
@@ -87,19 +85,22 @@ $(DIST_DIR)/$(PUBLISH_NAME_ZIP): $(BUILD_DIR)/$(PUBLISH_NAME)
 	gzip --stdout $< > $@
 
 $(BUILD_DIR)/$(PUBLISH_NAME): build
-	tar -cf $@ $(WRAPPER_DIR)
+	tar -cf $@ $(BINDINGS_DIR)
 	tar -rf $@ --transform 's,$(SOURCE_DIR),include,' $(EXPORT_HEADERS)
 	tar -rf $@ -C $(DIST_DIR) .
 
 clean:
-	rm -Rf $(BUILD_DIR) $(DIST_DIR) $(EXT_LIBS_DIR)
+	rm -Rf $(BUILD_DIR) $(DIST_DIR)
 
 doc:
 	rm -Rf $(DOC_DIR)
 	mkdir $(DOC_DIR)
 	doxygen Doxyfile
 
-export PYTHONPATH=$(WRAPPER_DIR)/python
+install: $(APP_OUTPUT)
+	install $(APP_OUTPUT) /usr/local/lib/$(LIB_SO_NAME)
+
+export PYTHONPATH=$(BINDINGS_DIR)/python/
 export METAWEAR_LIB_SO_NAME=$(APP_OUTPUT)
 
 test: build

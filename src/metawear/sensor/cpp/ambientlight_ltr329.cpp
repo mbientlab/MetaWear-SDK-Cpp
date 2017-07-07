@@ -36,7 +36,7 @@ void init_ambient_light_module(MblMwMetaWearBoard *board) {
             Ltr329Config* new_config = (Ltr329Config*)malloc(sizeof(Ltr329Config));
 
             memset(new_config, 0, sizeof(Ltr329Config));
-            new_config->als_measurement_rate = MBL_MW_ALS_LTR329_RATE_500MS;
+            new_config->als_measurement_rate = MBL_MW_ALS_LTR329_RATE_500ms;
             board->module_config.emplace(MBL_MW_MODULE_AMBIENT_LIGHT, new_config);
         }
 

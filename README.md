@@ -2,19 +2,12 @@
 This project is a C++ implementation of the MetaWear protocol.  If compiled as a shared library, it can be used with any language that supports calling C functions from a shared library, such as C# and Python.  The library only constructs the bytes for communicating with the MetaWear platform, it **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target device.
 
 # Build #
-Building the project has been tested on \*nix systems with GCC 4.8.5 and Clang 3.7.0, and on Windows with Visual Studio Community 2015.  
+Building the project has been tested on \*nix systems with Clang 4.0.0, and on Windows with Visual Studio Community 2017.  
 
 ```sh
-> gcc --version
-gcc (SUSE Linux) 4.8.5
-Copyright (C) 2015 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
 > clang++ --version
-clang version 3.7.0 (tags/RELEASE_370/final 246586)
-Target: x86_64-suse-linux
-Thread model: posix
+clang version 4.0.1 (tags/RELEASE_401/final 305264)
+Target: x86_64-unknown-linux-gnu
 ```
 ```bat
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Community>cl.exe
@@ -30,8 +23,8 @@ Linux users can build the project by invoking GNU make; the default action is to
 ```sh
 > make
 
-# build using clang++ as the compiler
-> make CXX=clang++
+# build using g++ as the compiler
+> make CXX=g++
 ```
 
 Upon a successful compile, the library will be placed in the newly created "dist" directory.
@@ -43,8 +36,8 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.7.0
-            └── libmetawear.so.0.7.0
+            ├── libmetawear.so.0 -> libmetawear.so.0.8.0
+            └── libmetawear.so.0.8.0
 
 ```
 
@@ -92,12 +85,11 @@ python3 -m unittest discover -s test
 ................................................................................
 ................................................................................
 ................................................................................
-.........
+............................
 ----------------------------------------------------------------------
-Ran 329 tests in 6.292s
+Ran 348 tests in 17.743s
 
 OK
-
 ```
 
 ## MSBuild ##
@@ -105,38 +97,4 @@ When testing with MSBuild, it is important that the `Platform` property matches 
 
 ```bat
 metawear-cpp-api>msbuild MetaWear.Win32.vcxproj /p:Platform=x64 /t:Test
-Microsoft (R) Build Engine version 14.0.25420.1
-Copyright (C) Microsoft Corporation. All rights reserved.
-
-Build started 9/13/2016 10:59:12 PM.
-Project "MetaWear.Win32.vcxproj" on node 1 (Test target(s)).
-InitializeBuildStatus:
-  Creating "build\x64\Debug\MetaWear.Win32\MetaWear.Win32.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
-ClCompile:
-  All outputs are up-to-date.
-Link:
-  All outputs are up-to-date.
-  MetaWear.Win32.vcxproj -> dist\Debug\lib\x64\MetaWear.Win32.dll
-  MetaWear.Win32.vcxproj -> dist\Debug\lib\x64\MetaWear.Win32.pdb (Full PDB)
-FinalizeBuildStatus:
-  Deleting file "build\x64\Debug\MetaWear.Win32\MetaWear.Win32.tlog\unsuccessfulbuild".
-  Touching "build\x64\Debug\MetaWear.Win32\MetaWear.Win32.tlog\MetaWear.Win32.lastbuildstate".
-Test:
-  python3 -m unittest discover -s test
-  .....................................................................................................................
-  .....................................................................................................................
-  ...............................................................................................
-  ----------------------------------------------------------------------
-  Ran 329 tests in 6.292s
-
-  OK
-
-Done Building Project "MetaWear.Win32.vcxproj" (Test target(s)).
-
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:07.68
 ```

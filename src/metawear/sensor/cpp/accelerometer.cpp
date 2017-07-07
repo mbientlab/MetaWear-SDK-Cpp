@@ -75,12 +75,16 @@ MblMwDataSignal* mbl_mw_acc_get_acceleration_data_signal(const MblMwMetaWearBoar
 }
 
 MblMwDataSignal* mbl_mw_acc_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard *board) {
+    return mbl_mw_acc_get_packed_acceleration_data_signal(board);
+}
+
+MblMwDataSignal* mbl_mw_acc_get_packed_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
-        return mbl_mw_acc_mma8452q_get_high_freq_acceleration_data_signal(board);
+        return mbl_mw_acc_mma8452q_get_packed_acceleration_data_signal(board);
     case MBL_MW_MODULE_ACC_TYPE_BMI160:
     case MBL_MW_MODULE_ACC_TYPE_BMA255:
-        return mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(board);
+        return mbl_mw_acc_bosch_get_packed_acceleration_data_signal(board);
     }
     return nullptr;
 }

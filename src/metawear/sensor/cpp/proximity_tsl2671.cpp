@@ -32,7 +32,7 @@ void init_proximity_module(MblMwMetaWearBoard *board) {
             new_config->integration_time = 0xff;
             new_config->n_pulses = 1;
             new_config->receiver_channel = MBL_MW_PROXIMITY_TSL2671_CHANNEL_1;
-            new_config->transmitter_current = MBL_MW_PROXIMITY_TSL2671_CURRENT_25MA;
+            new_config->transmitter_current = MBL_MW_PROXIMITY_TSL2671_CURRENT_25mA;
             board->module_config.emplace(MBL_MW_MODULE_PROXIMITY, new_config);
         }
 

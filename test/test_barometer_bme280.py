@@ -1,6 +1,6 @@
 from barometer_bosch_base import BarometerBoschBase
 from common import TestMetaWearBase
-from mbientlab.metawear.sensor import BarometerBme280, BarometerBosch
+from mbientlab.metawear.cbindings import *
 
 class TestBarometerBme280Config(BarometerBoschBase.TestBarometerBoschConfig):
     def setUp(self):
@@ -12,42 +12,42 @@ class TestBarometerBme280Config(BarometerBoschBase.TestBarometerBoschConfig):
         tests= [
             {
                 'expected': [0x12, 0x03, 0x2c, 0x00],
-                'standby_time': BarometerBme280.STANDBY_TIME_0_5MS,
+                'standby_time': BaroBme280StandbyTime._0_5ms,
                 'time': '0.5ms'
             },
             {
                 'expected': [0x12, 0x03, 0x2c, 0x20],
-                'standby_time': BarometerBme280.STANDBY_TIME_62_5MS,
+                'standby_time': BaroBme280StandbyTime._62_5ms,
                 'time': '62.5ms'
             },
             {
                 'expected': [0x12, 0x03, 0x2c, 0x40],
-                'standby_time': BarometerBme280.STANDBY_TIME_125MS,
+                'standby_time': BaroBme280StandbyTime._125ms,
                 'time': '125ms'
             },
             {
                 'expected': [0x12, 0x03, 0x2c, 0x60],
-                'standby_time': BarometerBme280.STANDBY_TIME_250MS,
+                'standby_time': BaroBme280StandbyTime._250ms,
                 'time': '250ms'
             },
             {
                 'expected': [0x12, 0x03, 0x2c, 0x80],
-                'standby_time': BarometerBme280.STANDBY_TIME_500MS,
+                'standby_time': BaroBme280StandbyTime._500ms,
                 'time': '500ms'
             },
             {
                 'expected': [0x12, 0x03, 0x2c, 0xa0],
-                'standby_time': BarometerBme280.STANDBY_TIME_1000MS,
+                'standby_time': BaroBme280StandbyTime._1000ms,
                 'time': '1000ms'
             },
             {
                 'expected': [0x12, 0x03, 0x2c, 0xc0],
-                'standby_time': BarometerBme280.STANDBY_TIME_10MS,
+                'standby_time': BaroBme280StandbyTime._10ms,
                 'time': '2000ms'
             },
             {
                 'expected': [0x12, 0x03, 0x2c, 0xe0],
-                'standby_time': BarometerBme280.STANDBY_TIME_20MS,
+                'standby_time': BaroBme280StandbyTime._20ms,
                 'time': '4000ms'
             }
         ]

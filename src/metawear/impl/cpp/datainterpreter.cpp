@@ -196,7 +196,7 @@ CONVERT_TO_FLOAT(convert_to_bmm150_b_field_single_axis, int32_t, BMM150_SCALE)
 CONVERT_TO_FLOAT(convert_to_bmm150_b_field_unsigned_single_axis, uint32_t, BMM150_SCALE)
 
 CONVERT_TO_FLOAT(convert_to_bme280_humidity, uint32_t, BME280_HUMIDITY_SCALE)
-CONVERT_TO_FLOAT(convert_to_q16_16_fixed_point, int32_t, MBL_MW_DT_ID_FLOAT)
+CONVERT_TO_FLOAT(convert_to_q16_16_fixed_point, int32_t, Q16_16_SCALE)
 
 RAW_CONVERT(convert_to_tcs34725_adc, MblMwTcs34725ColorAdc, MBL_MW_DT_ID_TCS34725_ADC)
 

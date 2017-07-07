@@ -1,8 +1,9 @@
-from mbientlab.metawear.core import * 
-from mbientlab.metawear.functions import setup_libmetawear
 from ctypes import *
+from mbientlab.metawear.cbindings import *
+from threading import Timer, Event
 import copy
 import os
+import queue
 import unittest
 
 class TestMetaWearBase(unittest.TestCase):
@@ -17,20 +18,22 @@ class TestMetaWearBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.libmetawear= CDLL(os.environ["METAWEAR_LIB_SO_NAME"])
-        setup_libmetawear(cls.libmetawear)
+        init_libmetawear(cls.libmetawear)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.initialized_fn= Fn_VoidPtr_Int(self.initialized)
-        self.sensor_data_handler= Fn_DataPtr(self.sensorDataHandler)
-        self.timer_signal_ready= Fn_VoidPtr(self.timerSignalReady)
-        self.processor_created = Fn_VoidPtr(lambda pointer: self.processors.append(pointer))
-        self.logger_created = Fn_VoidPtr(lambda pointer: self.loggers.append(pointer))
-        self.commands_recorded_fn= Fn_VoidPtr_Int(self.commandsRecorded)
+        self.events = {"processor" : Event(), "event" : Event(), "log" : Event(), "timer" : Event() }
 
-        self.send_command_fn= Fn_VoidPtr_GattCharPtr_ByteArray(self.commandLogger)
-        self.read_gatt_char_fn= Fn_VoidPtr_GattCharPtr(self.read_gatt_char)
+        self.initialized_fn= FnVoid_VoidP_Int(self.initialized)
+        self.sensor_data_handler= FnVoid_DataP(self.sensorDataHandler)
+        self.timer_signal_ready= FnVoid_VoidP(self.timer_created)
+        self.processor_handler = FnVoid_VoidP(self.processor_created)
+        self.logger_created = FnVoid_VoidP(self.logger_ready)
+        self.commands_recorded_fn= FnVoid_VoidP_Int(self.commandsRecorded)
+
+        self.send_command_fn= FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte(self.commandLogger)
+        self.read_gatt_char_fn= FnVoid_VoidP_GattCharP(self.read_gatt_char)
         self.btle_connection= BtleConnection(write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn)
 
         self.metawear_rg_services= {
@@ -196,7 +199,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x15: create_string_buffer(b'\x15\x80', 2),
             0x16: create_string_buffer(b'\x16\x80\x00\x00', 4),
             0x17: create_string_buffer(b'\x17\x80\x00\x00', 4),
-            0x18: create_string_buffer(b'\x18\x80', 4),
+            0x18: create_string_buffer(b'\x18\x80', 2),
             0x19: create_string_buffer(b'\x19\x80', 2),
             0xfe: create_string_buffer(b'\xfe\x80\x00\x00', 4),
         }
@@ -232,14 +235,17 @@ class TestMetaWearBase(unittest.TestCase):
 
         self.command_history= []
         self.full_history= []
+        self.pending_responses = queue.Queue()
 
         self.eventId= 0
         self.timerId= 0
         self.dataprocId= 0
         self.loggerId= 0
+        self.macroId = 0
         self.timerSignals= []
         self.processors= []
         self.loggers= []
+        self.event_status = []
         self.boardType= TestMetaWearBase.METAWEAR_R_BOARD
         
     def setUp(self):
@@ -250,10 +256,21 @@ class TestMetaWearBase(unittest.TestCase):
         self.libmetawear.mbl_mw_metawearboard_free(self.board)
 
     def commandsRecorded(self, event, status):
+        self.event_status.append(status)
+        self.events["event"].set()
         self.recorded= True
 
-    def timerSignalReady(self, timer_signal):
+    def processor_created(self, pointer):
+        self.processors.append(pointer)
+        self.events["processor"].set()
+
+    def logger_ready(self, pointer):
+        self.loggers.append(pointer)
+        self.events["log"].set()
+
+    def timer_created(self, timer_signal):
         self.timerSignals.append(timer_signal)
+        self.events["timer"].set()
 
     def initialized(self, board, status):
         self.init_status= status;
@@ -271,15 +288,17 @@ class TestMetaWearBase(unittest.TestCase):
             elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD):
                 model_number= create_string_buffer(b'5', 1)
 
-            self.libmetawear.mbl_mw_connection_char_read(self.board, characteristic, model_number.raw, len(model_number.raw))
+            bytes = cast(model_number.raw, POINTER(c_ubyte))
+            self.libmetawear.mbl_mw_connection_char_read(self.board, characteristic, bytes, len(model_number.raw))
         elif (characteristic.contents.uuid_high == 0x00002a2600001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
-            self.libmetawear.mbl_mw_connection_char_read(self.board, characteristic, self.firmware_revision.raw, len(self.firmware_revision.raw))
+            bytes = cast(self.firmware_revision.raw, POINTER(c_ubyte))
+            self.libmetawear.mbl_mw_connection_char_read(self.board, characteristic, bytes, len(self.firmware_revision.raw))
 
-    def commandLogger(self, board, characteristic, command, length):
+    def commandLogger(self, board, writeType, characteristic, command, length):
         self.command= []
         for i in range(0, length):
             self.command.append(command[i])
-
+            
         self.full_history.append(self.command)
         if (command[1] == 0x80):
             if (self.boardType == TestMetaWearBase.METAWEAR_RG_BOARD and command[0] in self.metawear_rg_services):
@@ -296,37 +315,46 @@ class TestMetaWearBase(unittest.TestCase):
                 service_response= self.metawear_environment_services[command[0]]
             elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD and command[0] in self.metawear_motion_r_services):
                 service_response= self.metawear_motion_r_services[command[0]]
+            else:
+                raise RuntimeError('Unrecognized module or board: ' + command[0])
 
-            self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, service_response.raw, len(service_response))
+            self.notify_mw_char(service_response)
         elif (command[0] == 0xb and command[1] == 0x84):
-            reference_tick= create_string_buffer(b'\x0b\x84\x15\x04\x00\x00\x05', 7)
-            self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, reference_tick.raw, len(reference_tick))
+            self.notify_mw_char(create_string_buffer(b'\x0b\x84\x15\x04\x00\x00\x05', 7))
         else:
             # ignore module discovey commands
             self.command_history.append(self.command)
+            response = None
             if (command[0] == 0xc and command[1] == 0x2):
                 response= create_string_buffer(b'\x0c\x02', 3)
                 response[2]= self.timerId
                 self.timerId+= 1
-                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
             elif (command[0] == 0xa and command[1] == 0x3):
                 response= create_string_buffer(b'\x0a\x02', 3)
                 response[2]= self.eventId
                 self.eventId+= 1
-                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
             elif (command[0] == 0x9 and command[1] == 0x2):
                 response= create_string_buffer(b'\x09\x02', 3)
                 response[2]= self.dataprocId
                 self.dataprocId+= 1
-                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+            elif (command[0] == 0xf and command[1] == 0x2):
+                response= create_string_buffer(b'\x0f\x02', 3)
+                response[2]= self.macroId
+                self.macroId+= 1
             elif (command[0] == 0xb and command[1] == 0x2):
                 response= create_string_buffer(b'\x0b\x02', 3)
                 response[2]= self.loggerId
                 self.loggerId+= 1
-                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
             elif (command[0] == 0xb and command[1] == 0x85):
-                response= create_string_buffer(b'\x0b\x85\x9e\x01\x00\x00', 6)
-                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+                self.notify_mw_char(create_string_buffer(b'\x0b\x85\x9e\x01\x00\x00', 6))
+                response= None
+
+            def send_response():
+                self.notify_mw_char(self.pending_responses.get())
+
+            if (response != None):
+                self.pending_responses.put(response)
+                Timer(0.025, send_response).start()
 
     def sensorDataHandler(self, data):
         if (data.contents.type_id == DataTypeId.UINT32):
@@ -334,6 +362,11 @@ class TestMetaWearBase(unittest.TestCase):
             self.data_uint32= c_uint()
             self.data_uint32.value= data_ptr.contents.value
             self.data = self.data_uint32
+        elif (data.contents.type_id == DataTypeId.INT32):
+            data_ptr= cast(data.contents.value, POINTER(c_int))
+            self.data_int32= c_int()
+            self.data_int32.value= data_ptr.contents.value
+            self.data = self.data_int32
         elif (data.contents.type_id == DataTypeId.FLOAT):
             data_ptr= cast(data.contents.value, POINTER(c_float))
             self.data_float= c_float()
@@ -359,8 +392,8 @@ class TestMetaWearBase(unittest.TestCase):
             data_ptr= cast(data.contents.value, POINTER(Tcs34725ColorAdc))
             self.data_tcs34725_adc= copy.deepcopy(data_ptr.contents)
             self.data = self.data_tcs34725_adc
-        elif (data.contents.type_id == DataTypeId.EULER_ANGLES):
-            data_ptr= cast(data.contents.value, POINTER(EulerAngle))
+        elif (data.contents.type_id == DataTypeId.EULER_ANGLE):
+            data_ptr= cast(data.contents.value, POINTER(EulerAngles))
             self.data= copy.deepcopy(data_ptr.contents)
         elif (data.contents.type_id == DataTypeId.QUATERNION):
             data_ptr= cast(data.contents.value, POINTER(Quaternion))
@@ -379,3 +412,7 @@ class TestMetaWearBase(unittest.TestCase):
             i= i + 1
 
         return buffer
+
+    def notify_mw_char(self, buffer):
+        bytes = cast(buffer, POINTER(c_ubyte))
+        return self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, bytes, len(buffer.raw))

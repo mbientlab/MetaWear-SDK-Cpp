@@ -1,17 +1,17 @@
 from common import TestMetaWearBase
-from mbientlab.metawear.peripheral import NeoPixel
+from mbientlab.metawear.cbindings import *
 
 class TestNeoPixelInit(TestMetaWearBase):
     def test_init_slow_strand(self):
         expected= [0x06, 0x01, 0x01, 0x03, 0x00, 0x1e]
 
-        self.libmetawear.mbl_mw_neopixel_init_slow_strand(self.board, 1, 0, 30, NeoPixel.COLOR_ORDERING_WS2811_GBR)
+        self.libmetawear.mbl_mw_neopixel_init_slow_strand(self.board, 1, 0, 30, NeoPixelColorOrdering.WS2811_GBR)
         self.assertEqual(self.command, expected)
 
     def test_init_fast_strand(self):
         expected= [0x06, 0x01, 0x02, 0x05, 0x01, 0x3c]
 
-        self.libmetawear.mbl_mw_neopixel_init_fast_strand(self.board, 2, 1, 60, NeoPixel.COLOR_ORDERING_WS2811_RBG)
+        self.libmetawear.mbl_mw_neopixel_init_fast_strand(self.board, 2, 1, 60, NeoPixelColorOrdering.WS2811_RBG)
         self.assertEqual(self.command, expected)
 
     def test_free_strand(self):
@@ -24,7 +24,7 @@ class TestNeoPixelRotate(TestMetaWearBase):
     def test_rotate(self):
         expected= [0x06, 0x05, 0x00, 0x01, 0x4b, 0xE8, 0x03]
 
-        self.libmetawear.mbl_mw_neopixel_rotate(self.board, 0, 75, 1000, NeoPixel.ROT_DIRECTION_AWAY)
+        self.libmetawear.mbl_mw_neopixel_rotate(self.board, 0, 75, 1000, NeoPixelRotDirection.AWAY)
         self.assertEqual(self.command, expected)
 
     def test_rotate_away(self):
@@ -36,7 +36,7 @@ class TestNeoPixelRotate(TestMetaWearBase):
     def test_rotate_indefinitely(self):
         expected= [0x06, 0x05, 0x01, 0x00, 0xff, 0xfa, 0x00]
 
-        self.libmetawear.mbl_mw_neopixel_rotate_indefinitely(self.board, 1, 250, NeoPixel.ROT_DIRECTION_TOWARDS)
+        self.libmetawear.mbl_mw_neopixel_rotate_indefinitely(self.board, 1, 250, NeoPixelRotDirection.TOWARDS)
         self.assertEqual(self.command, expected)
 
     def test_stop_rotatation(self):

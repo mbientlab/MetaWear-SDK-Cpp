@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "metawearboard_fwd.h"
+#include "model.h"
 #include "module.h"
 
 #include "metawear/platform/btle_connection.h"
@@ -95,6 +96,11 @@ METAWEAR_API int32_t mbl_mw_metawearboard_is_initialized(const MblMwMetaWearBoar
  * @see MBL_MW_MODULE_ACC_TYPE_BMI160
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblMwModule module);
+/**
+ * Determines the board model of the currently connected device.  Only call this function after the board has been initialized.
+ * @return Board model, MBL_MW_MODEL_NA if unable to determine
+ */
+METAWEAR_API MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board);
 
 /**
 * Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
@@ -111,6 +117,7 @@ METAWEAR_API uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* b
 * @return MBL_MW_STATUS_OK if successful, MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT if failed
 */
 METAWEAR_API int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size);
+
 #ifdef __cplusplus
 }
 #endif

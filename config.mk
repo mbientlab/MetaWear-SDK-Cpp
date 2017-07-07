@@ -1,5 +1,5 @@
-APP_NAME=metawear
-MODULES=metawear/platform metawear/core metawear/peripheral metawear/processor metawear/sensor metawear/impl
+APP_NAME?=metawear
+MODULES?=metawear/platform metawear/core metawear/peripheral metawear/processor metawear/sensor metawear/impl metawear/dfu
 
 KERNEL?=$(shell uname -s)
 
@@ -16,10 +16,12 @@ ifndef MACHINE
     endif
 endif
 
+
 DOC_DIR=doc
 
-WRAPPER_DIR?=wrapper
+BINDINGS_DIR?=bindings
 SOURCE_DIR?=src
 BUILD_DIR?=build
 DIST_DIR?=dist
 CONFIGURATION?=release
+CXXFLAGS?=-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -I$(SOURCE_DIR) -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS

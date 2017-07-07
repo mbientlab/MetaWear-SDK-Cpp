@@ -1,6 +1,5 @@
 from common import TestMetaWearBase
-from mbientlab.metawear.core import CartesianFloat
-from mbientlab.metawear.sensor import AccelerometerBmi160, AccelerometerBosch
+from mbientlab.metawear.cbindings import *
 from ctypes import create_string_buffer
 
 class TestAccBmi160Config(TestMetaWearBase):
@@ -13,62 +12,62 @@ class TestAccBmi160Config(TestMetaWearBase):
         tests= [
             {
                 'expected': [0x03, 0x03, 0x81, 0x03],
-                'odr': AccelerometerBmi160.ODR_0_78125HZ,
+                'odr': AccBmi160Odr._0_78125Hz,
                 'odr_name': '0.78125Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x82, 0x03],
-                'odr': AccelerometerBmi160.ODR_1_5625HZ,
+                'odr': AccBmi160Odr._1_5625Hz,
                 'odr_name': '1.5625Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x83, 0x03],
-                'odr': AccelerometerBmi160.ODR_3_125HZ,
+                'odr': AccBmi160Odr._3_125Hz,
                 'odr_name': '3.125Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x84, 0x03],
-                'odr': AccelerometerBmi160.ODR_6_25HZ,
+                'odr': AccBmi160Odr._6_25Hz,
                 'odr_name': '6.25Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x25, 0x03],
-                'odr': AccelerometerBmi160.ODR_12_5HZ,
+                'odr': AccBmi160Odr._12_5Hz,
                 'odr_name': '12.5Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x26, 0x03],
-                'odr': AccelerometerBmi160.ODR_25HZ,
+                'odr': AccBmi160Odr._25Hz,
                 'odr_name': '25Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x27, 0x03],
-                'odr': AccelerometerBmi160.ODR_50HZ,
+                'odr': AccBmi160Odr._50Hz,
                 'odr_name': '50Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x28, 0x03],
-                'odr': AccelerometerBmi160.ODR_100HZ,
+                'odr': AccBmi160Odr._100Hz,
                 'odr_name': '100Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x29, 0x03],
-                'odr': AccelerometerBmi160.ODR_200HZ,
+                'odr': AccBmi160Odr._200Hz,
                 'odr_name': '200Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x2a, 0x03],
-                'odr': AccelerometerBmi160.ODR_400HZ,
+                'odr': AccBmi160Odr._400Hz,
                 'odr_name': '400Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x2b, 0x03],
-                'odr': AccelerometerBmi160.ODR_800HZ,
+                'odr': AccBmi160Odr._800Hz,
                 'odr_name': '800Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x2c, 0x03],
-                'odr': AccelerometerBmi160.ODR_1600HZ,
+                'odr': AccBmi160Odr._1600Hz,
                 'odr_name': '1600Hz'
             }
         ]
@@ -82,15 +81,15 @@ class TestAccBmi160Config(TestMetaWearBase):
     def test_set_range(self):
         expected= [0x03, 0x03, 0x28, 0x0c]
 
-        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_16G)
+        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._16G)
         self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
         self.assertListEqual(self.command, expected)
 
     def test_set_odr_and_range(self):
         expected= [0x03, 0x03, 0x29, 0x08]
 
-        self.libmetawear.mbl_mw_acc_bmi160_set_odr(self.board, AccelerometerBmi160.ODR_200HZ)
-        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
+        self.libmetawear.mbl_mw_acc_bmi160_set_odr(self.board, AccBmi160Odr._200Hz)
+        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
         self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
         self.assertListEqual(self.command, expected)
 
@@ -119,8 +118,8 @@ class TestBmi160AccelerationData(TestMetaWearBase):
         expected= CartesianFloat(x= -1.872, y= -2.919, z= -1.495)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_4G)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
+        self.notify_mw_char(response)
         self.assertEqual(self.data_cartesian_float, expected)
 
     def test_subscribe_acceleration_data(self):
@@ -141,7 +140,7 @@ class TestBmi160HighFreqAccData(TestMetaWearBase):
 
         super().setUp()
 
-        self.accel_data_signal= self.libmetawear.mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(self.board)
+        self.accel_data_signal= self.libmetawear.mbl_mw_acc_bosch_get_packed_acceleration_data_signal(self.board)
 
     def sensorDataHandler(self, data):
         super().sensorDataHandler(data)
@@ -154,8 +153,8 @@ class TestBmi160HighFreqAccData(TestMetaWearBase):
 
         self.cartesian_float_values= []
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
+        self.notify_mw_char(response)
         self.assertEqual(self.cartesian_float_values, expected_values)
 
     def test_subscribe(self):
@@ -180,17 +179,17 @@ class TestBmi160StepCounterSetup(TestMetaWearBase):
         tests= [
             {
                 'expected': [0x03, 0x18, 0x15, 0x0b],
-                'mode': AccelerometerBmi160.STEP_COUNTER_MODE_NORMAL,
+                'mode': AccBmi160StepCounterMode.NORMAL,
                 'mode_name': 'normal'
             },
             {
                 'expected': [0x03, 0x18, 0x2d, 0x08],
-                'mode': AccelerometerBmi160.STEP_COUNTER_MODE_SENSITIVE,
+                'mode': AccBmi160StepCounterMode.SENSITIVE,
                 'mode_name': 'sensitive'
             },
             {
                 'expected': [0x03, 0x18, 0x1d, 0x0f],
-                'mode': AccelerometerBmi160.STEP_COUNTER_MODE_ROBUST,
+                'mode': AccBmi160StepCounterMode.ROBUST,
                 'mode_name': 'robust'
             }
         ]
@@ -215,7 +214,7 @@ class TestBmi160StepCounterData(TestMetaWearBase):
         expected= 43
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.step_counter_signal, self.sensor_data_handler)
-        status= self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.notify_mw_char(response)
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_read_step_counter(self):
@@ -268,5 +267,5 @@ class TestBmi160StepDetectorData(TestMetaWearBase):
         expected= 1
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.step_detector_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.notify_mw_char(response)
         self.assertEqual(self.data_uint32.value, expected)

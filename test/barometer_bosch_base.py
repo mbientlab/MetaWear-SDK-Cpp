@@ -1,6 +1,6 @@
 from common import TestMetaWearBase
 from ctypes import create_string_buffer
-from mbientlab.metawear.sensor import BarometerBosch
+from mbientlab.metawear.cbindings import *
 
 class BarometerBoschBase:
     class TestBarometerBoschConfig(TestMetaWearBase):
@@ -8,27 +8,27 @@ class BarometerBoschBase:
             tests= [
                 {
                     'expected': [0x12, 0x03, 0x24, 0x00],
-                    'oversampling': BarometerBosch.OVERSAMPLING_ULTRA_LOW_POWER,
+                    'oversampling': BaroBoschOversampling.ULTRA_LOW_POWER,
                     'oversampling_name': 'ultra low power'
                 },
                 {
                     'expected': [0x12, 0x03, 0x28, 0x00],
-                    'oversampling': BarometerBosch.OVERSAMPLING_LOW_POWER,
+                    'oversampling': BaroBoschOversampling.LOW_POWER,
                     'oversampling_name': 'low power'
                 },
                 {
                     'expected': [0x12, 0x03, 0x2c, 0x00],
-                    'oversampling': BarometerBosch.OVERSAMPLING_STANDARD,
+                    'oversampling': BaroBoschOversampling.STANDARD,
                     'oversampling_name': 'standard'
                 },
                 {
                     'expected': [0x12, 0x03, 0x30, 0x00],
-                    'oversampling': BarometerBosch.OVERSAMPLING_HIGH,
+                    'oversampling': BaroBoschOversampling.HIGH,
                     'oversampling_name': 'high'
                 },
                 {
                     'expected': [0x12, 0x03, 0x54, 0x00],
-                    'oversampling': BarometerBosch.OVERSAMPLING_ULTRA_HIGH,
+                    'oversampling': BaroBoschOversampling.ULTRA_HIGH,
                     'oversampling_name': 'ultra high'
                 }
             ]
@@ -43,27 +43,27 @@ class BarometerBoschBase:
             tests= [
                 {
                     'expected': [0x12, 0x03, 0x2c, 0x00],
-                    'filter': BarometerBosch.IIR_FILTER_OFF,
+                    'filter': BaroBoschIirFilter.OFF,
                     'iir_filter': 'off'
                 },
                 {
                     'expected': [0x12, 0x03, 0x2c, 0x04],
-                    'filter': BarometerBosch.IIR_FILTER_AVG_2,
+                    'filter': BaroBoschIirFilter.AVG_2,
                     'iir_filter': 'avg 2'
                 },
                 {
                     'expected': [0x12, 0x03, 0x2c, 0x08],
-                    'filter': BarometerBosch.IIR_FILTER_AVG_4,
+                    'filter': BaroBoschIirFilter.AVG_4,
                     'iir_filter': 'avg 4'
                 },
                 {
                     'expected': [0x12, 0x03, 0x2c, 0x0c],
-                    'filter': BarometerBosch.IIR_FILTER_AVG_8,
+                    'filter': BaroBoschIirFilter.AVG_8,
                     'iir_filter': 'avg 8'
                 },
                 {
                     'expected': [0x12, 0x03, 0x2c, 0x10],
-                    'filter': BarometerBosch.IIR_FILTER_AVG_16,
+                    'filter': BaroBoschIirFilter.AVG_16,
                     'iir_filter': 'avg 16'
                 }
             ]
@@ -97,7 +97,7 @@ class BarometerBoschBase:
             expected= 101173.828125
 
             self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, self.sensor_data_handler)
-            self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+            self.notify_mw_char(response)
             self.assertAlmostEqual(self.data_float.value, expected)
 
         def test_pressure_subscribe(self):
@@ -123,7 +123,7 @@ class BarometerBoschBase:
             expected= -480.8828125
 
             self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, self.sensor_data_handler)
-            self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+            self.notify_mw_char(response)
             self.assertAlmostEqual(self.data_float.value, expected)
 
         def test_altitude_subscribe(self):

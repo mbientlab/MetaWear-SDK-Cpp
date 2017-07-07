@@ -1,6 +1,5 @@
 from common import TestMetaWearBase
-from mbientlab.metawear.core import CartesianFloat
-from mbientlab.metawear.sensor import Accelerometer, AccelerometerBma255, AccelerometerBosch
+from mbientlab.metawear.cbindings import *
 from ctypes import create_string_buffer
 
 class TestAccBma255Config(TestMetaWearBase):
@@ -13,22 +12,22 @@ class TestAccBma255Config(TestMetaWearBase):
         tests= [
             {
                 'expected': [0x03, 0x03, 0x0a, 0x03],
-                'range': AccelerometerBosch.FSR_2G,
+                'range': AccBoschRange._2G,
                 'range_name': '2g'
             },
             {
                 'expected': [0x03, 0x03, 0x0a, 0x05],
-                'range': AccelerometerBosch.FSR_4G,
+                'range': AccBoschRange._4G,
                 'range_name': '4g'
             },
             {
                 'expected': [0x03, 0x03, 0x0a, 0x08],
-                'range': AccelerometerBosch.FSR_8G,
+                'range': AccBoschRange._8G,
                 'range_name': '8g'
             },
             {
                 'expected': [0x03, 0x03, 0x0a, 0x0c],
-                'range': AccelerometerBosch.FSR_16G,
+                'range': AccBoschRange._16G,
                 'range_name': '16g'
             }
         ]
@@ -43,42 +42,42 @@ class TestAccBma255Config(TestMetaWearBase):
         tests= [
             {
                 'expected': [0x03, 0x03, 0x08, 0x03],
-                'odr': AccelerometerBma255.ODR_15_62HZ,
+                'odr': AccBma255Odr._15_62Hz,
                 'odr_name': '15.62Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x09, 0x03],
-                'odr': AccelerometerBma255.ODR_31_26HZ,
+                'odr': AccBma255Odr._31_26Hz,
                 'odr_name': '31.26Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x0a, 0x03],
-                'odr': AccelerometerBma255.ODR_62_5HZ,
+                'odr': AccBma255Odr._62_5Hz,
                 'odr_name': '62.5Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x0b, 0x03],
-                'odr': AccelerometerBma255.ODR_125HZ,
+                'odr': AccBma255Odr._125Hz,
                 'odr_name': '125Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x0c, 0x03],
-                'odr': AccelerometerBma255.ODR_250HZ,
+                'odr': AccBma255Odr._250Hz,
                 'odr_name': '250Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x0d, 0x03],
-                'odr': AccelerometerBma255.ODR_500HZ,
+                'odr': AccBma255Odr._500Hz,
                 'odr_name': '500Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x0e, 0x03],
-                'odr': AccelerometerBma255.ODR_1000HZ,
+                'odr': AccBma255Odr._1000Hz,
                 'odr_name': '1000Hz'
             },
             {
                 'expected': [0x03, 0x03, 0x0f, 0x03],
-                'odr': AccelerometerBma255.ODR_2000HZ,
+                'odr': AccBma255Odr._2000Hz,
                 'odr_name': '2000Hz'
             }
         ]
@@ -92,8 +91,8 @@ class TestAccBma255Config(TestMetaWearBase):
     def test_set_odr_and_range(self):
         expected= [0x03, 0x03, 0x0c, 0x05]
 
-        self.libmetawear.mbl_mw_acc_bma255_set_odr(self.board, AccelerometerBma255.ODR_250HZ)
-        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_4G)
+        self.libmetawear.mbl_mw_acc_bma255_set_odr(self.board, AccBma255Odr._250Hz)
+        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
         self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
         self.assertListEqual(self.command, expected)
 
@@ -134,8 +133,8 @@ class TestAccBma255Data(TestMetaWearBase):
         expected= CartesianFloat(x= -4.7576, y= 2.2893, z= 2.9182)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
-        status= self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
+        self.notify_mw_char(response)
         self.assertEqual(self.data_cartesian_float, expected)
 
     def test_handle_data_component(self):
@@ -143,17 +142,17 @@ class TestAccBma255Data(TestMetaWearBase):
         tests= [
             {
                 'expected': -4.7576,
-                'index': Accelerometer.ACCEL_X_AXIS_INDEX,
+                'index': Const.ACC_ACCEL_X_AXIS_INDEX,
                 'name': 'x-axis'
             },
             {
                 'expected': 2.2893,
-                'index': Accelerometer.ACCEL_Y_AXIS_INDEX,
+                'index': Const.ACC_ACCEL_Y_AXIS_INDEX,
                 'name': 'y-axis'
             },
             {
                 'expected': 2.9182,
-                'index': Accelerometer.ACCEL_Z_AXIS_INDEX,
+                'index': Const.ACC_ACCEL_Z_AXIS_INDEX,
                 'name': 'z-axis'
             }
         ]
@@ -162,8 +161,8 @@ class TestAccBma255Data(TestMetaWearBase):
             with self.subTest(odr= test['name']):
                 acc_component = self.libmetawear.mbl_mw_datasignal_get_component(self.signal, test['index'])
                 self.libmetawear.mbl_mw_datasignal_subscribe(acc_component, self.sensor_data_handler)
-                self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_8G)
-                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+                self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
+                self.notify_mw_char(response)
 
                 self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.0001)
 
@@ -173,7 +172,7 @@ class TestBma255HighFreqAccdata(TestMetaWearBase):
 
         super().setUp()
 
-        self.accel_data_signal= self.libmetawear.mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(self.board)
+        self.accel_data_signal= self.libmetawear.mbl_mw_acc_bosch_get_packed_acceleration_data_signal(self.board)
         
     def sensorDataHandler(self, data):
         super().sensorDataHandler(data)
@@ -186,8 +185,8 @@ class TestBma255HighFreqAccdata(TestMetaWearBase):
 
         self.cartesian_float_values= []
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccelerometerBosch.FSR_4G)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
+        self.notify_mw_char(response)
         self.assertEqual(self.cartesian_float_values, expected_values)
 
     def test_subscribe(self):

@@ -136,10 +136,10 @@ void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
         mbl_mw_acc_write_acceleration_config(board);
 
         mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBmi160Range) (state->config.gyro_range - 1));
-        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BMI160_ODR_100HZ);
+        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BMI160_ODR_100Hz);
         mbl_mw_gyro_bmi160_write_config(board);
 
-        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25_HZ);
+        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
         break;
     case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
         mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
@@ -147,7 +147,7 @@ void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
         mbl_mw_acc_write_acceleration_config(board);
 
         mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBmi160Range) (state->config.gyro_range - 1));
-        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BMI160_ODR_100HZ);
+        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BMI160_ODR_100Hz);
         mbl_mw_gyro_bmi160_write_config(board);
         break;
     case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
@@ -155,14 +155,14 @@ void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
         mbl_mw_acc_set_odr(board, 25.f);
         mbl_mw_acc_write_acceleration_config(board);
 
-        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25_HZ);
+        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
         break;
     case MBL_MW_SENSOR_FUSION_MODE_M4G:
         mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
         mbl_mw_acc_set_odr(board, 50.f);
         mbl_mw_acc_write_acceleration_config(board);
 
-        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25_HZ);
+        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
     }
 }
 

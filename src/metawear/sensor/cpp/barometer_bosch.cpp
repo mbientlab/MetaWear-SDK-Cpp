@@ -40,10 +40,10 @@ void init_barometer_module(MblMwMetaWearBoard *board) {
         if (!board->module_config.count(MBL_MW_MODULE_BAROMETER)) {
             BoschBaroConfig* new_config = (BoschBaroConfig*)calloc(1, sizeof(BoschBaroConfig));
 
-            new_config->pressure_oversampling = MBL_MW_BARO_BOSCH_OVERSAMPLE_STANDARD;
+            new_config->pressure_oversampling = MBL_MW_BARO_BOSCH_OVERSAMPLING_STANDARD;
             new_config->iir_filter = MBL_MW_BARO_BOSCH_IIR_FILTER_OFF;
             new_config->standby_time = 0;       ///< Set standby time to 0.5ms, which is enum 0 for both bmp280 and bme280
-            new_config->temperature_oversampling = MBL_MW_BARO_BOSCH_OVERSAMPLE_ULTRA_LOW_POWER;
+            new_config->temperature_oversampling = MBL_MW_BARO_BOSCH_OVERSAMPLING_ULTRA_LOW_POWER;
 
             board->module_config.emplace(MBL_MW_MODULE_BAROMETER, new_config);
         }
@@ -93,8 +93,8 @@ void mbl_mw_baro_bosch_set_oversampling(MblMwMetaWearBoard *board, MblMwBaroBosc
     auto config= (BoschBaroConfig*) board->module_config.at(MBL_MW_MODULE_BAROMETER);
 
     config->pressure_oversampling= oversampling;
-    if (oversampling == MBL_MW_BARO_BOSCH_OVERSAMPLE_ULTRA_HIGH) {
-        config->temperature_oversampling= MBL_MW_BARO_BOSCH_OVERSAMPLE_LOW_POWER;
+    if (oversampling == MBL_MW_BARO_BOSCH_OVERSAMPLING_ULTRA_HIGH) {
+        config->temperature_oversampling= MBL_MW_BARO_BOSCH_OVERSAMPLING_LOW_POWER;
     }
 }
 

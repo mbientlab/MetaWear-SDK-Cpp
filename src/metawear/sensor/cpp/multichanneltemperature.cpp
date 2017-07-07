@@ -41,7 +41,7 @@ MblMwTemperatureSource mbl_mw_multi_chnl_temp_get_source(const MblMwMetaWearBoar
     try {
         return (MblMwTemperatureSource) board->module_info.at(MBL_MW_MODULE_TEMPERATURE).extra.at(channel);
     } catch (out_of_range) {
-        return MBL_MW_TEMP_SOURCE_INVALID;
+        return MBL_MW_TEMPERATURE_SOURCE_INVALID;
     }
 }
 

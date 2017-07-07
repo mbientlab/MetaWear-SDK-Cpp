@@ -15,14 +15,14 @@ extern "C" {
  * Available SPI clock frequencies
  */
 typedef enum {
-    MBL_MW_SPI_FREQUENCY_125_KHZ = 0,
-    MBL_MW_SPI_FREQUENCY_250_KHZ,
-    MBL_MW_SPI_FREQUENCY_500_KHZ,
-    MBL_MW_SPI_FREQUENCY_1_MHZ,
-    MBL_MW_SPI_FREQUENCY_2_MHZ,
-    MBL_MW_SPI_FREQUENCY_4_MHZ,
-    MBL_MW_SPI_FREQUENCY_8_MHZ
-} MBL_MW_SPI_FREQUENCY;
+    MBL_MW_SPI_FREQUENCY_125KHz = 0,
+    MBL_MW_SPI_FREQUENCY_250KHz,
+    MBL_MW_SPI_FREQUENCY_500KHz,
+    MBL_MW_SPI_FREQUENCY_1MHz,
+    MBL_MW_SPI_FREQUENCY_2MHz,
+    MBL_MW_SPI_FREQUENCY_4MHz,
+    MBL_MW_SPI_FREQUENCY_8MHz
+} MblMwSpiFrequency;
 
 /**
  * Available SPI modes, see <a href="https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus#Mode_numbers">SPI Wiki page</a> 
@@ -33,14 +33,14 @@ typedef enum {
     MBL_MW_SPI_MODE_1,              ///< clock polarity 0, clock phase 1
     MBL_MW_SPI_MODE_2,              ///< clock polarity 1, clock phase 0
     MBL_MW_SPI_MODE_3               ///< clock polarity 1, clock phase 1
-} MBL_MW_SPI_MODE;
+} MblMwSpiMode;
 
 /**
  * Parameters required for an SPI operation
  */
 typedef struct {
-    MBL_MW_SPI_MODE mode;               ///< spi mode
-    MBL_MW_SPI_FREQUENCY frequency;     ///< spi frequency
+    MblMwSpiMode mode;                  ///< spi mode
+    MblMwSpiFrequency frequency;        ///< spi frequency
     uint8_t *data;                      ///< Data to write through the bus, if set with a read, will write the data before performing the read
     uint8_t data_length;                ///< Length of the data array
     uint8_t slave_select_pin;           ///< pin for slave select

@@ -1,6 +1,6 @@
 from ctypes import byref, create_string_buffer
 from common import TestMetaWearBase
-from mbientlab.metawear.peripheral import Led
+from mbientlab.metawear.cbindings import *
 
 class TestLedControl(TestMetaWearBase):
     def test_play(self):
@@ -36,28 +36,28 @@ class TestLedControl(TestMetaWearBase):
 class TestLedPattern(TestMetaWearBase):
     def test_blink_pattern(self):
         expected= [0x02, 0x03, 0x00, 0x02, 0x1f, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00, 0x00, 0xf4, 0x01, 0x00, 0x00, 0x0a]
-        pattern= Led.Pattern(delay_time_ms= 5000, repeat_count= 10)
+        pattern= LedPattern(delay_time_ms= 5000, repeat_count= 10)
 
-        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_BLINK)
-        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_GREEN)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.BLINK)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.GREEN)
 
         self.assertEqual(self.command, expected)
 
     def test_solid_pattern(self):
         expected= [0x02, 0x03, 0x01, 0x02, 0x1f, 0x1f, 0x00, 0x00, 0xf4, 0x01, 0x00, 0x00, 0xE8, 0x03, 0x00, 0x00, 0x14]
-        pattern= Led.Pattern(delay_time_ms= 10000, repeat_count= 20)
+        pattern= LedPattern(delay_time_ms= 10000, repeat_count= 20)
 
-        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_SOLID)
-        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_RED)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.SOLID)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.RED)
 
         self.assertEqual(self.command, expected)
 
     def test_pulse_pattern(self):
         expected= [0x02, 0x03, 0x02, 0x02, 0x1f, 0x00, 0xd5, 0x02, 0xf4, 0x01, 0xd5, 0x02, 0xd0, 0x07, 0x00, 0x00, 0x28]
-        pattern= Led.Pattern(delay_time_ms= 12345, repeat_count= 40)
+        pattern= LedPattern(delay_time_ms= 12345, repeat_count= 40)
 
-        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_PULSE)
-        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_BLUE)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.PULSE)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.BLUE)
 
         self.assertEqual(self.command, expected)
 
@@ -68,27 +68,27 @@ class TestLedDelayedPattern(TestMetaWearBase):
 
     def test_blink_pattern(self):
         expected= [0x02, 0x03, 0x00, 0x02, 0x1f, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00, 0x00, 0xf4, 0x01, 0x88, 0x13, 0x0a]
-        pattern= Led.Pattern(delay_time_ms= 5000, repeat_count= 10)
+        pattern= LedPattern(delay_time_ms= 5000, repeat_count= 10)
 
-        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_BLINK)
-        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_GREEN)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.BLINK)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.GREEN)
 
         self.assertEqual(self.command, expected)
 
     def test_solid_pattern(self):
         expected= [0x02, 0x03, 0x01, 0x02, 0x1f, 0x1f, 0x00, 0x00, 0xf4, 0x01, 0x00, 0x00, 0xE8, 0x03, 0x10, 0x27, 0x14]
-        pattern= Led.Pattern(delay_time_ms= 10000, repeat_count= 20)
+        pattern= LedPattern(delay_time_ms= 10000, repeat_count= 20)
 
-        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_SOLID)
-        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_RED)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.SOLID)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.RED)
 
         self.assertEqual(self.command, expected)
 
     def test_pulse_pattern(self):
         expected= [0x02, 0x03, 0x02, 0x02, 0x1f, 0x00, 0xd5, 0x02, 0xf4, 0x01, 0xd5, 0x02, 0xd0, 0x07, 0x39, 0x30, 0x28]
-        pattern= Led.Pattern(delay_time_ms= 12345, repeat_count= 40)
+        pattern= LedPattern(delay_time_ms= 12345, repeat_count= 40)
 
-        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), Led.PRESET_PULSE)
-        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), Led.COLOR_BLUE)
+        self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.PULSE)
+        self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.BLUE)
 
         self.assertEqual(self.command, expected)

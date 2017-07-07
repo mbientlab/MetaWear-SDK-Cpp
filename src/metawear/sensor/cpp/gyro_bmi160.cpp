@@ -23,7 +23,8 @@ using std::vector;
 #define CREATE_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_ROT_RESPONSE_HEADER, board, interpreter, \
         FirmwareConverter::BMI160_ROTATION, channels, 2, 1, offset)
 
-const float FSR_SCALE[5]= {16.4f, 32.8f, 65.6f, 131.2f, 262.4f}, PACKED_ROT_REVISION= 1;
+const float FSR_SCALE[5]= {16.4f, 32.8f, 65.6f, 131.2f, 262.4f};
+const uint8_t PACKED_ROT_REVISION= 1;
 const ResponseHeader GYRO_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA)),
     GYRO_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::PACKED_DATA));
 
@@ -46,8 +47,8 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
 
             memset(new_config, 0, sizeof(GyroBmi160Config));
             new_config->gyr_bwp = 2;
-            new_config->gyr_odr = MBL_MW_GYRO_BMI160_ODR_100HZ;
-            new_config->gyr_range = MBL_MW_GYRO_BMI160_FSR_2000DPS;
+            new_config->gyr_odr = MBL_MW_GYRO_BMI160_ODR_100Hz;
+            new_config->gyr_range = MBL_MW_GYRO_BMI160_RANGE_2000dps;
             board->module_config.emplace(MBL_MW_MODULE_GYRO, new_config);
         }
 
@@ -81,6 +82,10 @@ MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWear
 }
 
 MblMwDataSignal* mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(const MblMwMetaWearBoard *board) {
+    return mbl_mw_gyro_bmi160_get_packed_rotation_data_signal(board);
+}
+
+MblMwDataSignal* mbl_mw_gyro_bmi160_get_packed_rotation_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(GYRO_PACKED_ROT_RESPONSE_HEADER);
 }
 

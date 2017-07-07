@@ -28,26 +28,26 @@ typedef enum {
  * Measurement time for each cycle
  */
 typedef enum {
-    MBL_MW_ALS_LTR329_TIME_100MS= 0,    ///< Default setting
-    MBL_MW_ALS_LTR329_TIME_50MS,
-    MBL_MW_ALS_LTR329_TIME_200MS,
-    MBL_MW_ALS_LTR329_TIME_400MS,
-    MBL_MW_ALS_LTR329_TIME_150MS,
-    MBL_MW_ALS_LTR329_TIME_250MS,
-    MBL_MW_ALS_LTR329_TIME_300MS,
-    MBL_MW_ALS_LTR329_TIME_350MS
+    MBL_MW_ALS_LTR329_TIME_100ms= 0,    ///< Default setting
+    MBL_MW_ALS_LTR329_TIME_50ms,
+    MBL_MW_ALS_LTR329_TIME_200ms,
+    MBL_MW_ALS_LTR329_TIME_400ms,
+    MBL_MW_ALS_LTR329_TIME_150ms,
+    MBL_MW_ALS_LTR329_TIME_250ms,
+    MBL_MW_ALS_LTR329_TIME_300ms,
+    MBL_MW_ALS_LTR329_TIME_350ms
 } MblMwAlsLtr329IntegrationTime;
 
 /**
  * How frequently to update the illuminance data.
  */
 typedef enum {
-    MBL_MW_ALS_LTR329_RATE_50MS= 0,
-    MBL_MW_ALS_LTR329_RATE_100MS,
-    MBL_MW_ALS_LTR329_RATE_200MS,
-    MBL_MW_ALS_LTR329_RATE_500MS,       ///< Default setting
-    MBL_MW_ALS_LTR329_RATE_1000MS,
-    MBL_MW_ALS_LTR329_RATE_2000MS
+    MBL_MW_ALS_LTR329_RATE_50ms= 0,
+    MBL_MW_ALS_LTR329_RATE_100ms,
+    MBL_MW_ALS_LTR329_RATE_200ms,
+    MBL_MW_ALS_LTR329_RATE_500ms,       ///< Default setting
+    MBL_MW_ALS_LTR329_RATE_1000ms,
+    MBL_MW_ALS_LTR329_RATE_2000ms
 } MblMwAlsLtr329MeasurementRate;
 
 /**

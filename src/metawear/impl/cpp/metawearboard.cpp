@@ -17,6 +17,7 @@
 #include "metawear/core/cpp/event_register.h"
 #include "metawear/core/cpp/logging_register.h"
 #include "metawear/core/cpp/logging_private.h"
+#include "metawear/core/cpp/macro_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/core/cpp/register.h"
 #include "metawear/core/cpp/responseheader.h"
@@ -107,9 +108,10 @@ int32_t response_handler_packed_data(MblMwMetaWearBoard *board, const uint8_t *r
             return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
         }
 
+        int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         for(uint8_t i= 2; i < len; i+= CARTESIAN_FLOAT_SIZE) {
             MblMwData* data = data_response_converters.at(signal->interpreter)(false, signal, response + i, len - i);
-            data->epoch= duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+            data->epoch= now;
 
             signal->handler(data);
 
@@ -141,7 +143,8 @@ const vector<void(*)(MblMwMetaWearBoard*)> INITIALIZE_FNS = {
     init_gpio_module,
     init_serialpassthrough_module,
     init_switch_module,
-    init_sensor_fusion_module
+    init_sensor_fusion_module,
+    init_macro_module
 };
 
 const uint8_t READ_INFO_REGISTER= READ_REGISTER(0x0);
@@ -211,6 +214,7 @@ MblMwMetaWearBoard::MblMwMetaWearBoard() : logger_state(nullptr, [](void *ptr) -
         timer_state(nullptr, [](void *ptr) -> void { free_timer_module(ptr); }),
         event_state(nullptr, [](void *ptr) -> void { free_event_module(ptr); }), 
         dp_state(nullptr, [](void *ptr) -> void { free_dataprocessor_module(ptr); }),
+        macro_state(nullptr, [](void *ptr) -> void { free_macro_module(ptr); }),
         time_per_response(150), module_discovery_index(-1) {
 }
 
@@ -390,7 +394,12 @@ void mbl_mw_metawearboard_char_read(MblMwMetaWearBoard *board, const MblMwGattCh
 
 void send_command(const MblMwMetaWearBoard* board, const uint8_t* command, uint8_t len) {
     if (!record_command(board, command, len)) {
-        board->btle_conn.write_gatt_char(board, &METAWEAR_COMMAND_CHAR, command, len);
+        board->btle_conn.write_gatt_char(
+            board, 
+            command[0] == MBL_MW_MODULE_MACRO ? MBL_MW_GATT_CHAR_WRITE_WITH_RESPONSE : MBL_MW_GATT_CHAR_WRITE_WITHOUT_RESPONSE,
+            &METAWEAR_COMMAND_CHAR, command, len
+        );
+        record_macro(board, command, len);
     }
 }
 
@@ -407,6 +416,49 @@ int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblM
     } catch (exception) {
         return MBL_MW_MODULE_TYPE_NA;
     }
+}
+
+MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board) {
+    if (board->module_number.empty()) {
+        return MBL_MW_MODEL_NA;
+    }
+
+    if (board->module_number == "0") {
+        return MBL_MW_MODEL_METAWEAR_R;
+    }
+    if (board->module_number == "1") {
+        if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_BAROMETER) != MBL_MW_MODULE_TYPE_NA && 
+                mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_AMBIENT_LIGHT) != MBL_MW_MODULE_TYPE_NA) {
+            return MBL_MW_MODEL_METAWEAR_RPRO;
+        }
+        return MBL_MW_MODEL_METAWEAR_RG;
+    }
+    if (board->module_number == "2") {
+        if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_MAGNETOMETER) != MBL_MW_MODULE_TYPE_NA) {
+            return MBL_MW_MODEL_METAWEAR_CPRO;
+        }
+        if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_PROXIMITY) != MBL_MW_MODULE_TYPE_NA) {
+            return MBL_MW_MODEL_METADETECT;
+        }
+        if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_HUMIDITY) != MBL_MW_MODULE_TYPE_NA) {
+            return MBL_MW_MODEL_METAENV;
+        }
+        return MBL_MW_MODEL_METAWEAR_C;
+    }
+    if (board->module_number == "3") {
+        return MBL_MW_MODEL_METAHEALTH;
+    }
+    if (board->module_number == "4") {
+        return MBL_MW_MODEL_METATRACKER;
+    }
+    if (board->module_number == "5") {
+        return MBL_MW_MODEL_METAMOTION_R;
+    }
+    if (board->module_number == "6") {
+        return MBL_MW_MODEL_METAMOTION_C;
+    }
+
+    return MBL_MW_MODEL_NA;
 }
 
 uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_t* size) {

@@ -13,6 +13,11 @@
 extern "C" {
 #endif
 
+typedef enum {
+    MBL_MW_GATT_CHAR_WRITE_WITH_RESPONSE = 0,
+    MBL_MW_GATT_CHAR_WRITE_WITHOUT_RESPONSE
+} MblMwGattCharWriteType;
+
 /**
  * UUIDs identifying a gatt characteristic and its parent service
  */
@@ -34,7 +39,8 @@ typedef struct {
      * @param value             Value to write as a byte array
      * @param length            Length of the byte array
      */
-    void (*write_gatt_char)(const void* caller, const MblMwGattChar* characteristic, const uint8_t* value, uint8_t length);
+    void (*write_gatt_char)(const void* caller, MblMwGattCharWriteType writeType, const MblMwGattChar* characteristic, 
+            const uint8_t* value, uint8_t length);
     /**
      * Reads the value of the characteristic from the device
      * @param caller                Object using this function pointer

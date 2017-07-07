@@ -1,7 +1,6 @@
 from common import TestMetaWearBase
 from ctypes import create_string_buffer
-from mbientlab.metawear.core import Fn_VoidPtr_Int, Status
-from mbientlab.metawear.sensor import Gpio
+from mbientlab.metawear.cbindings import *
 import threading
 
 class TestEvent(TestMetaWearBase):
@@ -14,9 +13,12 @@ class TestEvent(TestMetaWearBase):
 
         temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, 1)
         self.libmetawear.mbl_mw_timer_create(self.board, 2718281828, 45904, 0, self.timer_signal_ready)
+        self.events["timer"].wait()
+
         self.libmetawear.mbl_mw_event_record_commands(self.timerSignals[0])
         self.libmetawear.mbl_mw_datasignal_read(temp_signal)
         self.libmetawear.mbl_mw_event_end_record(self.timerSignals[0], self.commands_recorded_fn)
+        self.events["event"].wait()
 
         self.assertEqual(self.command_history, expected_cmds)
 
@@ -26,13 +28,16 @@ class TestEvent(TestMetaWearBase):
             [0x0a, 0x02, 0x0c, 0x06, 0x01, 0x05, 0xc7, 0x01],
             [0x0a, 0x03, 0x02]
         ]
-        adc_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 2, Gpio.ANALOG_READ_MODE_ADC)
+        adc_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 2, GpioAnalogReadMode.ADC)
 
         self.timerId= 1
         self.libmetawear.mbl_mw_timer_create_indefinite(self.board, 667408, 1, self.timer_signal_ready)
+        self.events["timer"].wait()
+
         self.libmetawear.mbl_mw_event_record_commands(self.timerSignals[0])
         self.libmetawear.mbl_mw_datasignal_read(adc_signal)
         self.libmetawear.mbl_mw_event_end_record(self.timerSignals[0], self.commands_recorded_fn)
+        self.events["event"].wait()
 
         self.assertEqual(self.command_history, expected_cmds)
 
@@ -47,42 +52,43 @@ class TestEvent(TestMetaWearBase):
         ]
 
         self.libmetawear.mbl_mw_timer_create(self.board, 8854, 18782, 1, self.timer_signal_ready)
-        self.libmetawear.mbl_mw_timer_create_indefinite(self.board, 125663706, 0, self.timer_signal_ready)
+        self.events["timer"].wait()
 
-        abs_ref_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 3, Gpio.ANALOG_READ_MODE_ABS_REF)
+        self.events["timer"].clear()
+        self.libmetawear.mbl_mw_timer_create_indefinite(self.board, 125663706, 0, self.timer_signal_ready)
+        self.events["timer"].wait()
+
+        abs_ref_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 3, GpioAnalogReadMode.ABS_REF)
         self.libmetawear.mbl_mw_event_record_commands(self.timerSignals[0])
         self.libmetawear.mbl_mw_datasignal_read(abs_ref_signal)
         self.libmetawear.mbl_mw_event_end_record(self.timerSignals[0], self.commands_recorded_fn)
+        self.events["event"].wait()
 
+        self.events["event"].clear()
         temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, 0)
         self.libmetawear.mbl_mw_event_record_commands(self.timerSignals[1])
         self.libmetawear.mbl_mw_datasignal_read(temp_signal)
         self.libmetawear.mbl_mw_event_end_record(self.timerSignals[1], self.commands_recorded_fn)
+        self.events["event"].wait()
 
         self.assertEqual(self.command_history, expected_cmds)
 
 class TestEventTimeout(TestMetaWearBase):
-    def commands_recorded(self, event, status):
-        self.received_status= status
-        self.e.set()
-        
-    def commandLogger(self, board, characteristic, command, length):
+    def commandLogger(self, board, writeType, characteristic, command, length):
         if (command[0] == 0xa and command[1] == 0x3):
-            response= create_string_buffer(b'\x0a\x00', 2)
-            self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+            self.notify_mw_char(create_string_buffer(b'\x0a\x00', 2))
         else:
-            super().commandLogger(board, characteristic, command, length)
+            super().commandLogger(board, writeType, characteristic, command, length)
 
     def test_timeout(self):
         self.e= threading.Event()
 
-        commands_recorded_handler= Fn_VoidPtr_Int(self.commands_recorded)
         signal= self.libmetawear.mbl_mw_switch_get_state_data_signal(self.board)
 
-        abs_ref_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 3, Gpio.ANALOG_READ_MODE_ABS_REF)
+        abs_ref_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 3, GpioAnalogReadMode.ABS_REF)
         self.libmetawear.mbl_mw_event_record_commands(signal)
         self.libmetawear.mbl_mw_datasignal_read(abs_ref_signal)
-        self.libmetawear.mbl_mw_event_end_record(signal, commands_recorded_handler)
-        self.e.wait()
+        self.libmetawear.mbl_mw_event_end_record(signal, self.commands_recorded_fn)
+        self.events["event"].wait()
 
-        self.assertEqual(self.received_status, Status.ERROR_TIMEOUT)
+        self.assertEqual(self.event_status[0], Const.STATUS_ERROR_TIMEOUT)

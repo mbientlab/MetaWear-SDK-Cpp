@@ -17,11 +17,11 @@ extern "C" {
  * on all boards
  */
 typedef enum {
-    MBL_MW_TEMP_SOURCE_INVALID= -1,         ///< Invalid temperature source
-    MBL_MW_TEMP_SOURCE_NRF_DIE= 0,          ///< Temperature from the nRF chip
-    MBL_MW_TEMP_SOURCE_EXT_THERM,           ///< Tempertaure from an external thermistor
-    MBL_MW_TEMP_SOURCE_BMP280,              ///< Temperature from the BMP280 sensor
-    MBL_MW_TEMP_SOURCE_PRESET_THERM         ///< Temperature from an internal thremistor
+    MBL_MW_TEMPERATURE_SOURCE_INVALID= -1,         ///< Invalid temperature source
+    MBL_MW_TEMPERATURE_SOURCE_NRF_DIE= 0,          ///< Temperature from the nRF chip
+    MBL_MW_TEMPERATURE_SOURCE_EXT_THERM,           ///< Tempertaure from an external thermistor
+    MBL_MW_TEMPERATURE_SOURCE_BMP280,              ///< Temperature from the BMP280 sensor
+    MBL_MW_TEMPERATURE_SOURCE_PRESET_THERM         ///< Temperature from an internal thremistor
 } MblMwTemperatureSource;
 
 /**

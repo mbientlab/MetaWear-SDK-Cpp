@@ -1,6 +1,6 @@
 from common import TestMetaWearBase
-from ctypes import c_float, create_string_buffer
-from mbientlab.metawear.sensor import ProximityTsl2671
+from ctypes import *
+from mbientlab.metawear.cbindings import *
 
 class TestProximityTsl2671Config(TestMetaWearBase):
     def setUp(self):
@@ -12,17 +12,17 @@ class TestProximityTsl2671Config(TestMetaWearBase):
         tests= [
             {
                 'expected': [0x18, 0x02, 0xff, 0x01, 0x90],
-                'channel': ProximityTsl2671.CHANNEL_0,
+                'channel': ProximityTsl2671Channel._0,
                 'channel_name': '0'
             },
             {
                 'expected': [0x18, 0x02, 0xff, 0x01, 0xa0],
-                'channel': ProximityTsl2671.CHANNEL_1,
+                'channel': ProximityTsl2671Channel._1,
                 'channel_name': '1'
             },
             {
                 'expected': [0x18, 0x02, 0xff, 0x01, 0xb0],
-                'channel': ProximityTsl2671.CHANNEL_BOTH,
+                'channel': ProximityTsl2671Channel.BOTH,
                 'channel_name': 'both'
             }
         ]
@@ -37,22 +37,22 @@ class TestProximityTsl2671Config(TestMetaWearBase):
         tests= [
             {
                 'expected': [0x18, 0x02, 0xff, 0x01, 0xe0],
-                'current': ProximityTsl2671.CURRENT_12_5MA,
+                'current': ProximityTsl2671Current._12_5mA,
                 'current_name': '12.5mA'
             },
             {
                 'expected': [0x18, 0x02, 0xff, 0x01, 0xa0],
-                'current': ProximityTsl2671.CURRENT_25MA,
+                'current': ProximityTsl2671Current._25mA,
                 'current_name': '25mA'
             },
             {
                 'expected': [0x18, 0x02, 0xff, 0x01, 0x60],
-                'current': ProximityTsl2671.CURRENT_50MA,
+                'current': ProximityTsl2671Current._50mA,
                 'current_name': '50mA'
             },
             {
                 'expected': [0x18, 0x02, 0xff, 0x01, 0x20],
-                'current': ProximityTsl2671.CURRENT_100MA,
+                'current': ProximityTsl2671Current._100mA,
                 'current_name': '100mA'
             }
         ]
@@ -114,9 +114,8 @@ class TestProximityTsl2671Data(TestMetaWearBase):
 
     def test_proximity_data(self):
         expected= 1522
-        response= create_string_buffer(b'\x18\x81\xf2\x05', 4)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.proximity, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+        self.notify_mw_char(create_string_buffer(b'\x18\x81\xf2\x05', 4))
 
         self.assertEqual(self.data_uint32.value, expected)

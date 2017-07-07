@@ -20,17 +20,15 @@ class TestSwitch(TestMetaWearBase):
         self.assertEqual(self.command, expected)
 
     def test_mbl_mw_switch_get_data_pushed(self):
-        response= create_string_buffer(b'\x01\x01\x01', 3)
         expected= 1
         
         self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.notify_mw_char(create_string_buffer(b'\x01\x01\x01', 3))
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_mbl_mw_switch_get_data_released(self):
-        response= create_string_buffer(b'\x01\x01\x00', 3)
         expected= 0
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response))
+        self.notify_mw_char(create_string_buffer(b'\x01\x01\x00', 3))
         self.assertEqual(self.data_uint32.value, expected)

@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MetaWearWin32</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.14393.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformMinVersion>10.0.15063.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
@@ -86,7 +86,7 @@
     </SetEnv>
 
     <SetEnv Name   ="PYTHONPATH"
-            Value  ="wrapper\python"
+            Value  ="bindings\python"
             Prefix ="false">
     </SetEnv>
     <Exec Command="python -m unittest discover -s test" />

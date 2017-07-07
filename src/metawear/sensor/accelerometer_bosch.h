@@ -21,42 +21,42 @@ const uint8_t MBL_MW_MODULE_ACC_TYPE_BMA255 = 3;            ///< Constant identi
  * Available g-ranges on the Bosch accelerometers
  */
 typedef enum {
-    MBL_MW_ACC_BOSCH_FSR_2G= 0,    ///< +/- 2g
-    MBL_MW_ACC_BOSCH_FSR_4G,       ///< +/- 4g
-    MBL_MW_ACC_BOSCH_FSR_8G,       ///< +/- 8g
-    MBL_MW_ACC_BOSCH_FSR_16G       ///< +/- 16g
+    MBL_MW_ACC_BOSCH_RANGE_2G= 0,    ///< +/- 2g
+    MBL_MW_ACC_BOSCH_RANGE_4G,       ///< +/- 4g
+    MBL_MW_ACC_BOSCH_RANGE_8G,       ///< +/- 8g
+    MBL_MW_ACC_BOSCH_RANGE_16G       ///< +/- 16g
 } MblMwAccBoschRange;
 
 /**
  * Available ouput data rates on the BMI160 accelerometer
  */
 typedef enum {
-    MBL_MW_ACC_BMI160_ODR_0_78125HZ= 0,
-    MBL_MW_ACC_BMI160_ODR_1_5625HZ,
-    MBL_MW_ACC_BMI160_ODR_3_125HZ,
-    MBL_MW_ACC_BMI160_ODR_6_25HZ,
-    MBL_MW_ACC_BMI160_ODR_12_5HZ,
-    MBL_MW_ACC_BMI160_ODR_25HZ,
-    MBL_MW_ACC_BMI160_ODR_50HZ,
-    MBL_MW_ACC_BMI160_ODR_100HZ,
-    MBL_MW_ACC_BMI160_ODR_200HZ,
-    MBL_MW_ACC_BMI160_ODR_400HZ,
-    MBL_MW_ACC_BMI160_ODR_800HZ,
-    MBL_MW_ACC_BMI160_ODR_1600HZ
+    MBL_MW_ACC_BMI160_ODR_0_78125Hz= 0,
+    MBL_MW_ACC_BMI160_ODR_1_5625Hz,
+    MBL_MW_ACC_BMI160_ODR_3_125Hz,
+    MBL_MW_ACC_BMI160_ODR_6_25Hz,
+    MBL_MW_ACC_BMI160_ODR_12_5Hz,
+    MBL_MW_ACC_BMI160_ODR_25Hz,
+    MBL_MW_ACC_BMI160_ODR_50Hz,
+    MBL_MW_ACC_BMI160_ODR_100Hz,
+    MBL_MW_ACC_BMI160_ODR_200Hz,
+    MBL_MW_ACC_BMI160_ODR_400Hz,
+    MBL_MW_ACC_BMI160_ODR_800Hz,
+    MBL_MW_ACC_BMI160_ODR_1600Hz
 } MblMwAccBmi160Odr;
 
 /**
  * Available ouput data rates on the BMA255 accelerometer
  */
 typedef enum {
-    MBL_MW_ACC_BMA255_ODR_15_62HZ= 0,
-    MBL_MW_ACC_BMA255_ODR_31_26HZ,
-    MBL_MW_ACC_BMA255_ODR_62_5HZ,
-    MBL_MW_ACC_BMA255_ODR_125HZ,
-    MBL_MW_ACC_BMA255_ODR_250HZ,
-    MBL_MW_ACC_BMA255_ODR_500HZ,
-    MBL_MW_ACC_BMA255_ODR_1000HZ,
-    MBL_MW_ACC_BMA255_ODR_2000HZ
+    MBL_MW_ACC_BMA255_ODR_15_62Hz= 0,
+    MBL_MW_ACC_BMA255_ODR_31_26Hz,
+    MBL_MW_ACC_BMA255_ODR_62_5Hz,
+    MBL_MW_ACC_BMA255_ODR_125Hz,
+    MBL_MW_ACC_BMA255_ODR_250Hz,
+    MBL_MW_ACC_BMA255_ODR_500Hz,
+    MBL_MW_ACC_BMA255_ODR_1000Hz,
+    MBL_MW_ACC_BMA255_ODR_2000Hz
 } MblMwAccBma255Odr;
 
 /**
@@ -78,13 +78,15 @@ typedef enum {
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_acceleration_data_signal(const MblMwMetaWearBoard* board);
 /**
- * Retrieves a special data signal representing high frequency (>100Hz) acceleration data for a Bosch accelerometer.  This signal is only for 
- * streaming and cannot use logging nor data processing.  To use those features with an acceleration data signal, use the signal from 
- * mbl_mw_acc_bosch_get_acceleration_data_signal.
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to a high frequency data signal
+ * @deprecated As of v0.8.0 and will be removed in v1.0.0.  Use mbl_mw_acc_bosch_get_packed_acceleration_data_signal instead.
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Variant of acceleration data that packs multiple data samples into 1 BLE packet to increase the
+ * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
+ * @return Pointer to the data singal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_packed_acceleration_data_signal(const MblMwMetaWearBoard *board);
 /**
  * Retrieves the data signal representing data from the BMI160 step counter
  * @param board     Pointer to the board to retrieve the signal from

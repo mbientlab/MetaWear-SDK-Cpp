@@ -74,10 +74,11 @@ static inline int32_t create_math(MblMwDataSignal *source, MblMwMathOperation op
         if (new_processor->interpreter != DataInterpreter::INT32 && new_processor->interpreter != DataInterpreter::UINT32) {
             new_processor->interpreter = DataInterpreter::BYTE_ARRAY;
         }
-        if (new_processor->converter != FirmwareConverter::DEFAULT) {
-            new_processor->converter = FirmwareConverter::DEFAULT;
-        }
+        new_processor->converter = FirmwareConverter::DEFAULT;
         break;
+    case MBL_MW_MATH_OP_CONSTANT:
+        new_processor->interpreter = DataInterpreter::INT32;
+        new_processor->converter = FirmwareConverter::DEFAULT;
     default:
         break;
     }
@@ -87,7 +88,6 @@ static inline int32_t create_math(MblMwDataSignal *source, MblMwMathOperation op
     case MBL_MW_MATH_OP_ADD:
     case MBL_MW_MATH_OP_SUBTRACT:
     case MBL_MW_MATH_OP_MODULUS:
-    case MBL_MW_MATH_OP_CONSTANT:
         scaled_rhs= (int32_t) number_to_firmware_converters.at(source->converter)(source, rhs);
         break;
     default:

@@ -29,7 +29,7 @@ struct MblMwMetaWearBoard {
     std::unordered_map<uint8_t, ModuleInfo> module_info;
     std::unordered_map<uint8_t, void*> module_config;
 
-    std::shared_ptr<void> logger_state, timer_state, event_state, dp_state;
+    std::shared_ptr<void> logger_state, timer_state, event_state, dp_state, macro_state;
     MblMwFnBoardPtrInt initialized;
     Task* initialized_timeout;
     MblMwBtleConnection btle_conn;

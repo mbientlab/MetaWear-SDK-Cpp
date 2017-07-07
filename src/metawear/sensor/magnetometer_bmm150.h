@@ -64,22 +64,29 @@ typedef enum {
  * Available output data rates for the BMM150 magnetometer
  */
 typedef enum {
-    MBL_MW_MAG_BMM150_ODR_10_HZ = 0,
-    MBL_MW_MAG_BMM150_ODR_2_HZ,
-    MBL_MW_MAG_BMM150_ODR_6_HZ,
-    MBL_MW_MAG_BMM150_ODR_8_HZ,
-    MBL_MW_MAG_BMM150_ODR_15_HZ,
-    MBL_MW_MAG_BMM150_ODR_20_HZ,
-    MBL_MW_MAG_BMM150_ODR_25_HZ,
-    MBL_MW_MAG_BMM150_ODR_30_HZ
-} MblMwMagBmm150OutputDataRate;
+    MBL_MW_MAG_BMM150_ODR_10Hz = 0,
+    MBL_MW_MAG_BMM150_ODR_2Hz,
+    MBL_MW_MAG_BMM150_ODR_6Hz,
+    MBL_MW_MAG_BMM150_ODR_8Hz,
+    MBL_MW_MAG_BMM150_ODR_15Hz,
+    MBL_MW_MAG_BMM150_ODR_20Hz,
+    MBL_MW_MAG_BMM150_ODR_25Hz,
+    MBL_MW_MAG_BMM150_ODR_30Hz
+} MblMwMagBmm150Odr;
 
 /**
  * Retrieves the data signal representing B field strength
- * @param board         Board the magnetometer resides on
+ * @param board         Calling object
  * @return Pointer to the data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_b_field_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Variant of B field data that packs multiple data samples into 1 BLE packet to increase the
+ * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
+ * @param board         Calling object
+ * @return Pointer to the data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_packed_b_field_data_signal(const MblMwMetaWearBoard *board);
 /**
  * Manually configure the sensor, only for advanced users.  It is recommended that users use one of the preset configurations.
  * @param board         Calling object
@@ -87,7 +94,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_b_field_data_signal(const Mb
  * @param z_reps        Repetitions on the z-axis
  * @param odr           Sensor data rate
  */
-METAWEAR_API void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150OutputDataRate odr);
+METAWEAR_API void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150Odr odr);
 /**
  * Sets the power mode to one of the recommended presets
  * @param board         Board to modify

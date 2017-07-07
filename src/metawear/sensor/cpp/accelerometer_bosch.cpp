@@ -273,6 +273,10 @@ MblMwDataSignal* mbl_mw_acc_bosch_get_acceleration_data_signal(const MblMwMetaWe
 }
 
 MblMwDataSignal* mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard* board) {
+    return mbl_mw_acc_bosch_get_packed_acceleration_data_signal(board);
+}
+
+MblMwDataSignal* mbl_mw_acc_bosch_get_packed_acceleration_data_signal(const MblMwMetaWearBoard* board) {
     auto implementation= board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation;
     if (implementation != MBL_MW_MODULE_ACC_TYPE_BMI160 && implementation != MBL_MW_MODULE_ACC_TYPE_BMA255) {
         return nullptr;
@@ -292,7 +296,7 @@ void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi160Odr odr)
     auto config= (AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER);
 
     config->set_output_data_rate(odr);
-    if (odr < MBL_MW_ACC_BMI160_ODR_12_5HZ) {
+    if (odr < MBL_MW_ACC_BMI160_ODR_12_5Hz) {
         config->acc.us= 1;
         config->acc.bwp= 0;
     } else {

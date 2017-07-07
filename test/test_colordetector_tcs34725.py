@@ -1,7 +1,6 @@
 from common import TestMetaWearBase
 from ctypes import c_float, create_string_buffer
-from mbientlab.metawear.core import Tcs34725ColorAdc
-from mbientlab.metawear.sensor import ColorDetectorTcs34725
+from mbientlab.metawear.cbindings import *
 
 class TestColorDetectorTcs34725Config(TestMetaWearBase):
     def setUp(self):
@@ -13,22 +12,22 @@ class TestColorDetectorTcs34725Config(TestMetaWearBase):
         tests= [
             {
                 'expected': [0x17, 0x02, 0xff, 0x00, 0x00],
-                'gain': ColorDetectorTcs34725.GAIN_1X,
+                'gain': ColorDetectorTcs34725Gain._1X,
                 'gain_name': '1x'
             },
             {
                 'expected': [0x17, 0x02, 0xff, 0x01, 0x00],
-                'gain': ColorDetectorTcs34725.GAIN_4X,
+                'gain': ColorDetectorTcs34725Gain._4X,
                 'gain_name': '4x'
             },
             {
                 'expected': [0x17, 0x02, 0xff, 0x02, 0x00],
-                'gain': ColorDetectorTcs34725.GAIN_16X,
+                'gain': ColorDetectorTcs34725Gain._16X,
                 'gain_name': '16x'
             },
             {
                 'expected': [0x17, 0x02, 0xff, 0x03, 0x00],
-                'gain': ColorDetectorTcs34725.GAIN_60X,
+                'gain': ColorDetectorTcs34725Gain._60X,
                 'gain_name': '60x'
             },
         ]
@@ -99,7 +98,7 @@ class TestColorDetectorTcs34725Data(TestMetaWearBase):
         response= create_string_buffer(b'\x17\x81\xa2\x01\x7b\x00\x9a\x00\x7c\x00', 10)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.adc_signal, self.sensor_data_handler)
-        self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+        self.notify_mw_char(response)
 
         self.assertEqual(self.data_tcs34725_adc, expected)
 
@@ -108,22 +107,22 @@ class TestColorDetectorTcs34725Data(TestMetaWearBase):
         tests= [
             {
                 'expected': 418,
-                'index': ColorDetectorTcs34725.ADC_CLEAR_INDEX,
+                'index': Const.CD_TCS34725_ADC_CLEAR_INDEX,
                 'name': 'clear'
             },
             {
                 'expected': 123,
-                'index': ColorDetectorTcs34725.ADC_RED_INDEX,
+                'index': Const.CD_TCS34725_ADC_RED_INDEX,
                 'name': 'red'
             },
             {
                 'expected': 154,
-                'index': ColorDetectorTcs34725.ADC_GREEN_INDEX,
+                'index': Const.CD_TCS34725_ADC_GREEN_INDEX,
                 'name': 'green'
             },
             {
                 'expected': 124,
-                'index': ColorDetectorTcs34725.ADC_BLUE_INDEX,
+                'index': Const.CD_TCS34725_ADC_BLUE_INDEX,
                 'name': 'blue'
             }
         ]
@@ -133,6 +132,6 @@ class TestColorDetectorTcs34725Data(TestMetaWearBase):
                 signal_component = self.libmetawear.mbl_mw_datasignal_get_component(self.adc_signal, test['index'])
 
                 self.libmetawear.mbl_mw_datasignal_subscribe(signal_component, self.sensor_data_handler)
-                self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, response.raw, len(response.raw))
+                self.notify_mw_char(response) 
 
                 self.assertEqual(self.data_uint32.value, test['expected'])

@@ -1,6 +1,6 @@
 from ctypes import create_string_buffer
 from datetime import datetime
-from mbientlab.metawear.core import CartesianFloat
+from mbientlab.metawear.cbindings import CartesianFloat
 
 class Bmi160Accelerometer:
     log_responses= [

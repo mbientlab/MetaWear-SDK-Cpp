@@ -23,25 +23,25 @@ const uint8_t MBL_MW_GYRO_ROTATION_X_AXIS_INDEX = 0,
  * Available output data rates on the BMI160 gyro
  */
 typedef enum {
-    MBL_MW_GYRO_BMI160_ODR_25HZ= 6,
-    MBL_MW_GYRO_BMI160_ODR_50HZ,
-    MBL_MW_GYRO_BMI160_ODR_100HZ,
-    MBL_MW_GYRO_BMI160_ODR_200HZ,
-    MBL_MW_GYRO_BMI160_ODR_400HZ,
-    MBL_MW_GYRO_BMI160_ODR_800HZ,
-    MBL_MW_GYRO_BMI160_ODR_1600HZ,
-    MBL_MW_GYRO_BMI160_ODR_3200HZ
+    MBL_MW_GYRO_BMI160_ODR_25Hz= 6,
+    MBL_MW_GYRO_BMI160_ODR_50Hz,
+    MBL_MW_GYRO_BMI160_ODR_100Hz,
+    MBL_MW_GYRO_BMI160_ODR_200Hz,
+    MBL_MW_GYRO_BMI160_ODR_400Hz,
+    MBL_MW_GYRO_BMI160_ODR_800Hz,
+    MBL_MW_GYRO_BMI160_ODR_1600Hz,
+    MBL_MW_GYRO_BMI160_ODR_3200Hz
 } MblMwGyroBmi160Odr;
 
 /**
  * Available degrees per second ranges on the BMI160 gyro
  */
 typedef enum {
-    MBL_MW_GYRO_BMI160_FSR_2000DPS= 0,      ///< +/-2000 degrees per second
-    MBL_MW_GYRO_BMI160_FSR_1000DPS,         ///< +/-1000 degrees per second
-    MBL_MW_GYRO_BMI160_FSR_500DPS,          ///< +/-500 degrees per second
-    MBL_MW_GYRO_BMI160_FSR_250DPS,          ///< +/-250 degrees per second
-    MBL_MW_GYRO_BMI160_FSR_125DPS           ///< +/-125 degrees per second
+    MBL_MW_GYRO_BMI160_RANGE_2000dps= 0,      ///< +/-2000 degrees per second
+    MBL_MW_GYRO_BMI160_RANGE_1000dps,         ///< +/-1000 degrees per second
+    MBL_MW_GYRO_BMI160_RANGE_500dps,          ///< +/-500 degrees per second
+    MBL_MW_GYRO_BMI160_RANGE_250dps,          ///< +/-250 degrees per second
+    MBL_MW_GYRO_BMI160_RANGE_125dps           ///< +/-125 degrees per second
 } MblMwGyroBmi160Range;
 
 /**
@@ -51,13 +51,15 @@ typedef enum {
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWearBoard *board);
 /**
- * Retrieves a special data signal representing high frequency (>100Hz) rotation data for the BMI160 IMU.  This signal is only for streaming and cannot 
- * use logging nor data processing.  To use those features with a rotation data signal, use the signal from 
- * mbl_mw_gyro_bmi160_get_rotation_data_signal.
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to a high frequency data signal
+ * @deprecated As of v0.8.0 and will be removed in v1.0.0.  Use mbl_mw_gyro_bmi160_get_packed_rotation_data_signal instead.
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Variant of rotation data that packs multiple data samples into 1 BLE packet to increase the
+ * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
+ * @return Pointer to the data singal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_packed_rotation_data_signal(const MblMwMetaWearBoard *board);
 
 /**
  * Sets the output data rate 
