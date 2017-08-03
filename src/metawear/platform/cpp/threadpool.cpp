@@ -7,7 +7,11 @@
 using std::atomic_bool;
 using std::chrono::milliseconds;
 using std::function;
+using std::make_shared;
+using std::shared_ptr;
 using std::thread;
+
+const int64_t INDEFINITE_TIMEOUT= 0;
 
 class TaskImpl : public Task {
 public:
@@ -27,16 +31,17 @@ void TaskImpl::cancel() {
     cancelled= true;
 }
 
-Task* ThreadPool::schedule(function<void(void)> fn, int64_t delay) {
-    TaskImpl* new_task= new TaskImpl();
+shared_ptr<Task> ThreadPool::schedule(function<void(void)> fn, int64_t delay) {
+    shared_ptr<TaskImpl> task(new TaskImpl());
+    if (delay != INDEFINITE_TIMEOUT) {
+        thread th([=]() -> void {
+            std::this_thread::sleep_for(milliseconds(delay));
+            if (!task->cancelled) {
+                fn();
+            }
+        });
+        th.detach();
+    }
 
-    thread th([=](void) -> void {
-        std::this_thread::sleep_for(milliseconds(delay));
-        if (!new_task->cancelled) {
-            fn();
-        }
-        delete new_task;
-    });
-    th.detach();
-    return new_task;
+    return task;
 }

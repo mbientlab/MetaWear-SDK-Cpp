@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-DfuOperations::DfuOperations(const MblMwMetaBootBoard* board, const MblMwDfuDelegate *delegate) : dfuRequests(new DFUOperationsDetails(board)), fileRequests(new FileOperations(*this, board)) {
+DfuOperations::DfuOperations(const MblMwMetaWearBoard* board, const MblMwDfuDelegate *delegate) : dfuRequests(new DFUOperationsDetails(board)), fileRequests(new FileOperations(*this, board)) {
     memcpy(&this->dfuDelegate, delegate, sizeof(MblMwDfuDelegate));
 }
 

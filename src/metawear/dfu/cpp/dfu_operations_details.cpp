@@ -4,9 +4,9 @@
 #include <cmath>
 
 #include "dfu_utility.h"
-#include "metawear/dfu/cpp/metabootboard_def.h"
+#include "metawear/core/cpp/metawearboard_def.h"
 
-DFUOperationsDetails::DFUOperationsDetails(const MblMwMetaBootBoard* board) : bootloaderBoard(board) {
+DFUOperationsDetails::DFUOperationsDetails(const MblMwMetaWearBoard* board) : bootloaderBoard(board) {
 }
 
 void DFUOperationsDetails::startDFU(MblDfuFirmwareTypes firmwareType) {

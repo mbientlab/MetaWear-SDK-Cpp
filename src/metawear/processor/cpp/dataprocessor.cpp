@@ -36,20 +36,22 @@ const uint8_t NO_PARENT = -1;
 const ResponseHeader DATAPROCESSOR_RESPONSE_HEADER(MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY));
 
 static unordered_map<DataProcessorType, uint8_t> type_to_id= {
-    {DataProcessorType::ACCUMULATOR, 0x2},
-    {DataProcessorType::AVERAGE, 0x3},
-    {DataProcessorType::BUFFER, 0xf},
-    {DataProcessorType::COMPARATOR, 0x6},
-    {DataProcessorType::COUNTER, 0x2},
-    {DataProcessorType::DELTA, 0xc},
-    {DataProcessorType::MATH, 0x9},
-    {DataProcessorType::PASSTHROUGH, 0x1},
-    {DataProcessorType::PULSE, 0xb},
-    {DataProcessorType::RMS, 0x7},
-    {DataProcessorType::RSS, 0x7},
-    {DataProcessorType::SAMPLE, 0xa},
-    {DataProcessorType::THRESHOLD, 0xd},
-    {DataProcessorType::TIME, 0x8}
+    { DataProcessorType::ACCUMULATOR, 0x2 },
+    { DataProcessorType::AVERAGE, 0x3 },
+    { DataProcessorType::BUFFER, 0xf },
+    { DataProcessorType::COMPARATOR, 0x6 },
+    { DataProcessorType::COUNTER, 0x2 },
+    { DataProcessorType::DELTA, 0xc },
+    { DataProcessorType::MATH, 0x9 },
+    { DataProcessorType::PASSTHROUGH, 0x1 },
+    { DataProcessorType::PULSE, 0xb },
+    { DataProcessorType::RMS, 0x7 },
+    { DataProcessorType::RSS, 0x7 },
+    { DataProcessorType::SAMPLE, 0xa },
+    { DataProcessorType::THRESHOLD, 0xd },
+    { DataProcessorType::TIME, 0x8 },
+    { DataProcessorType::ACCOUNTER, 0x11 },
+    { DataProcessorType::PACKER, 0x10 }
 };
 
 struct DataProcessorState : public AsyncCreator {

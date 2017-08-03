@@ -3,9 +3,10 @@
 #include "task.h"
 
 #include <functional>
+#include <memory>
 #include <stdint.h>
 
 class ThreadPool {
 public:
-    static Task* schedule(std::function<void(void)> fn, int64_t delay);
+    static std::shared_ptr<Task> schedule(std::function<void(void)> fn, int64_t delay);
 };

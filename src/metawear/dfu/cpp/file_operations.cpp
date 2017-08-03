@@ -4,12 +4,12 @@
 #include "file_operations.h"
 #include "dfu_utility.h"
 
-#include "metawear/dfu/cpp/metabootboard_def.h"
+#include "metawear/core/cpp/metawearboard_def.h"
 
-#include "miniz.c"
+#include "miniz.h"
 #include "json.hpp"
 
-FileOperations::FileOperations(FileOperationsDelegate &fileDelegate, const MblMwMetaBootBoard* board) : binFile(0), fileDelegate(fileDelegate), bootloaderBoard(board), metaDataFile(0) {
+FileOperations::FileOperations(FileOperationsDelegate &fileDelegate, const MblMwMetaWearBoard* board) : binFile(0), fileDelegate(fileDelegate), bootloaderBoard(board), metaDataFile(0) {
 
 }
 
@@ -46,6 +46,7 @@ void FileOperations::openFile(const char* filename)
             bytesInLastPacket = MBL_PACKET_SIZE;
         }
         writingPacketNumber = 0;
+        prevPercentage = -1;
         // Let the delegate know we opened it!
         fileDelegate.onFileOpened(binFileSize);
     } else {
@@ -73,7 +74,10 @@ void FileOperations::writeNextPacket()
         //NSLog(@"packet data: %@",nextPacketData);
         bootloaderBoard->write_gatt_char(&DFU_PACKET_CHAR, nextPacketData, MBL_PACKET_SIZE);
         percentage = (((double)(writingPacketNumber * 20) / (double)(binFileSize)) * 100);
-        fileDelegate.onTransferPercentage(percentage);
+        if (percentage != prevPercentage) {
+            fileDelegate.onTransferPercentage(percentage);
+            prevPercentage = percentage;
+        }
         writingPacketNumber++;
     }
 }

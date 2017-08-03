@@ -2,16 +2,16 @@
 
 #include <stdint.h>
 
-#include "metawear/dfu/metabootboard_fwd.h"
+#include "metawear/core/metawearboard_fwd.h"
 #include "dfu_utility.h"
 
 class DFUOperationsDetails {
     //@property (nonatomic) MBL_DfuFirmwareTypes dfuFirmwareType;
-    const MblMwMetaBootBoard* bootloaderBoard;
+    const MblMwMetaWearBoard* bootloaderBoard;
     MblDfuFirmwareTypes dfuFirmwareType;
     
 public:
-    DFUOperationsDetails(const MblMwMetaBootBoard* board);
+    DFUOperationsDetails(const MblMwMetaWearBoard* board);
     
     //void enableNotification();
     void startDFU(MblDfuFirmwareTypes firmwareType);

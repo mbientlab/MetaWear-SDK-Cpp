@@ -1,4 +1,4 @@
-from common import TestMetaWearBase
+from common import TestMetaWearBase, to_string_buffer
 from ctypes import *
 from mbientlab.metawear.cbindings import *
 import threading
@@ -867,3 +867,212 @@ class TestSensorFusionLimiter(TestMetaWearBase):
         self.events["log"].wait()
 
         self.assertEqual(self.command_history, expected)
+
+class TestAccounter(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
+        self.notify_mw_char(create_string_buffer(b'\x0b\x84\x04\x33\x0d\x00\x03', 7))
+
+        signal = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board);
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create(signal, self.processor_handler)
+        self.events["processor"].wait()
+
+    def test_create(self):
+        expected = [ 0x9, 0x2, 0x3, 0x4, 0xff, 0xa0, 0x11, 0x31, 0x3 ]
+
+        self.assertEqual(self.command, expected)
+
+    def test_data_extraction(self):
+        expected = CartesianFloat(x= 0.0118, y= 0.573, z= -0.795)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], self.sensor_data_handler)
+        self.notify_mw_char(create_string_buffer(b'\x09\x03\x00\xa6\x33\x0d\x00\xc1\x00\xb1\x24\x19\xcd', 13))
+
+        self.assertEqual(self.data, expected)
+
+    def test_time_offset(self):
+        expected = [10, 10, 9, 10, 11]
+
+        offsets = []
+        prev_time = []
+        def handle_sensor_data(data):
+            if len(prev_time) == 0:
+                prev_time.append(data.contents.epoch)
+            else:
+                offsets.append(data.contents.epoch - prev_time[0])
+                prev_time[0] = data.contents.epoch
+
+        fn_wrapper = FnVoid_DataP(handle_sensor_data)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], fn_wrapper)
+
+        responses = [
+            [0x09, 0x03, 0x00, 0xa6, 0x33, 0x0d, 0x00, 0xc1, 0x00, 0xb1, 0x24, 0x19, 0xcd],
+            [0x09, 0x03, 0x00, 0xad, 0x33, 0x0d, 0x00, 0xd4, 0x00, 0x18, 0x25, 0xc0, 0xcc],
+            [0x09, 0x03, 0x00, 0xb4, 0x33, 0x0d, 0x00, 0xc7, 0x00, 0x09, 0x25, 0xb2, 0xcc],
+            [0x09, 0x03, 0x00, 0xba, 0x33, 0x0d, 0x00, 0xc5, 0x00, 0x17, 0x25, 0xbc, 0xcc],
+            [0x09, 0x03, 0x00, 0xc1, 0x33, 0x0d, 0x00, 0xd4, 0x00, 0xe9, 0x24, 0xe4, 0xcc],
+            [0x09, 0x03, 0x00, 0xc8, 0x33, 0x0d, 0x00, 0xaf, 0x00, 0xf7, 0x24, 0xe3, 0xcc]
+        ]
+        for r in responses:
+            self.notify_mw_char(to_string_buffer(r))
+
+        self.assertEqual(offsets, expected)
+
+class TestPacker(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
+        signal = self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, MetaWearRProChannel.ON_BOARD_THERMISTOR);
+        self.libmetawear.mbl_mw_dataprocessor_packer_create(signal, 4, self.processor_handler)
+        self.events["processor"].wait()
+
+    def test_create(self):
+        expected = [0x9, 0x2, 0x4, 0xc1, 0x1, 0x20, 0x10, 0x1, 0x3]
+
+        self.assertEqual(self.command, expected)
+
+    def test_data_extraction(self):
+        expected = [30.625, 30.125, 30.25, 30.25]
+
+        values = []
+        def handle_sensor_data(data):
+            data_ptr= cast(data.contents.value, POINTER(c_float))
+            values.append(data_ptr.contents.value)
+
+        fn_wrapper = FnVoid_DataP(handle_sensor_data)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], fn_wrapper)
+        self.notify_mw_char(create_string_buffer(b'\x09\x03\x00\xf5\x00\xf1\x00\xf2\x00\xf2\x00', 11))
+
+        self.assertEqual(values, expected)
+
+class TestAccounterPackerChain(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
+        signal = self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, MetaWearRProChannel.ON_BOARD_THERMISTOR);
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create(signal, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_packer_create(self.processors[0], 2, self.processor_handler)
+        self.events["processor"].wait()
+
+    def test_create(self):
+        expected = [
+            [0x9, 0x2, 0x4, 0xc1, 0x1, 0x20, 0x11, 0x31, 0x3],
+            [0x9, 0x2, 0x9, 0x3, 0x0, 0xa0, 0x10, 0x5, 0x1]
+        ]
+
+        self.assertEqual(self.command_history, expected)
+
+    def test_data_extraction(self):
+        expected = [29.5, 29.375, 29.875, 29.625]
+
+        values = []
+        def handle_sensor_data(data):
+            data_ptr= cast(data.contents.value, POINTER(c_float))
+            values.append(data_ptr.contents.value)
+
+        fn_wrapper = FnVoid_DataP(handle_sensor_data)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], fn_wrapper)
+        self.notify_mw_char(create_string_buffer(b'\x09\x03\x01\x7b\x64\x02\x00\xec\x00\x92\x64\x02\x00\xeb\x00', 15))
+        self.notify_mw_char(create_string_buffer(b'\x09\x03\x01\xa8\x64\x02\x00\xef\x00\xbf\x64\x02\x00\xed\x00', 15))
+
+        self.assertEqual(values, expected)
+
+    def test_time_offset(self):
+        expected = [33, 33, 33]
+
+        offsets = []
+        prev_time = []
+        def handle_sensor_data(data):
+            if len(prev_time) == 0:
+                prev_time.append(data.contents.epoch)
+            else:
+                offsets.append(data.contents.epoch - prev_time[0])
+                prev_time[0] = data.contents.epoch
+
+        fn_wrapper = FnVoid_DataP(handle_sensor_data)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], fn_wrapper)
+
+        responses = [
+            [0x0b, 0x84, 0xf5, 0x62, 0x02, 0x00, 0x00],
+            [0x09, 0x03, 0x01, 0x7b, 0x64, 0x02, 0x00, 0xec, 0x00, 0x92, 0x64, 0x02, 0x00, 0xeb, 0x00],
+            [0x09, 0x03, 0x01, 0xa8, 0x64, 0x02, 0x00, 0xef, 0x00, 0xbf, 0x64, 0x02, 0x00, 0xed, 0x00]
+        ]
+        for r in responses:
+            self.notify_mw_char(to_string_buffer(r))
+
+        self.assertEqual(offsets, expected)
+
+class TestPackerAccounterChain(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
+        signal = self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, MetaWearRProChannel.ON_BOARD_THERMISTOR);
+        self.libmetawear.mbl_mw_dataprocessor_packer_create(signal, 4, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create(self.processors[0], self.processor_handler)
+        self.events["processor"].wait()
+
+    def test_create(self):
+        expected = [
+            [0x09, 0x02, 0x04, 0xc1, 0x01, 0x20, 0x10, 0x01, 0x03],
+            [0x09, 0x02, 0x09, 0x03, 0x00, 0x20, 0x11, 0x31, 0x03]
+        ]
+
+        self.assertEqual(self.command_history, expected)
+
+    def test_data_extraction(self):
+        expected = [24.5, 24.625, 24.5, 24.375, 24.25, 24.375, 24.5, 24.25]
+
+        values = []
+        def handle_sensor_data(data):
+            data_ptr= cast(data.contents.value, POINTER(c_float))
+            values.append(data_ptr.contents.value)
+
+        fn_wrapper = FnVoid_DataP(handle_sensor_data)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], fn_wrapper)
+
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x01, 0x04, 0x85, 0xa0, 0x00, 0xc4, 0x00, 0xc5, 0x00, 0xc4, 0x00, 0xc3, 0x00]))
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x01, 0x5e, 0x85, 0xa0, 0x00, 0xc2, 0x00, 0xc3, 0x00, 0xc4, 0x00, 0xc2, 0x00]))
+
+        self.assertEqual(values, expected)
+
+    def test_time_offset(self):
+        expected = [0, 0, 0, 132, 0, 0, 0, 132, 0, 0, 0, 133, 0, 0, 0]
+
+        offsets = []
+        prev_time = []
+        def handle_sensor_data(data):
+            if len(prev_time) == 0:
+                prev_time.append(data.contents.epoch)
+            else:
+                offsets.append(data.contents.epoch - prev_time[0])
+                prev_time[0] = data.contents.epoch
+
+        fn_wrapper = FnVoid_DataP(handle_sensor_data)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], fn_wrapper)
+
+        responses = [
+            [0x0b, 0x84, 0x1c, 0x84, 0xa0, 0x00, 0x01],
+            [0x09, 0x03, 0x01, 0x04, 0x85, 0xa0, 0x00, 0xc4, 0x00, 0xc5, 0x00, 0xc4, 0x00, 0xc3, 0x00],
+            [0x09, 0x03, 0x01, 0x5e, 0x85, 0xa0, 0x00, 0xc2, 0x00, 0xc3, 0x00, 0xc4, 0x00, 0xc2, 0x00],
+            [0x09, 0x03, 0x01, 0xb8, 0x85, 0xa0, 0x00, 0xc3, 0x00, 0xc4, 0x00, 0xc3, 0x00, 0xc3, 0x00],
+            [0x09, 0x03, 0x01, 0x13, 0x86, 0xa0, 0x00, 0xc5, 0x00, 0xc3, 0x00, 0xc5, 0x00, 0xc2, 0x00]
+        ]
+        for r in responses:
+            self.notify_mw_char(to_string_buffer(r))
+
+        self.assertEqual(offsets, expected)

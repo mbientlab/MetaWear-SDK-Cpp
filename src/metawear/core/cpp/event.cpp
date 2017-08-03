@@ -8,18 +8,20 @@
 #include "metawearboard_def.h"
 #include "register.h"
 
+#include <memory>
 #include <vector>
 
 using std::forward_as_tuple;
 using std::make_shared;
 using std::piecewise_construct;
+using std::shared_ptr;
 using std::static_pointer_cast;
 using std::vector;
 
 #define GET_EVENT_STATE(board) static_pointer_cast<EventState>(board->event_state)
 
 struct EventState {
-    Task* record_cmd_task;
+    shared_ptr<Task> record_cmd_task;
     MblMwFnEventPtrInt event_recorded_callback;
     MblMwEvent* event_owner;
     const EventDataParameter* data_token;

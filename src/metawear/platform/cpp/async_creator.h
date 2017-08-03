@@ -4,12 +4,13 @@
 #include "metawear/platform/cpp/task.h"
 
 #include <functional>
+#include <memory>
 
 struct AsyncCreator {
     virtual ~AsyncCreator();
 
     ConcurrentQueue<std::function<void (void)>> pending_fns;
-    Task* timeout;
+    std::shared_ptr<Task> timeout;
 
     void create_next(bool force);    
 };

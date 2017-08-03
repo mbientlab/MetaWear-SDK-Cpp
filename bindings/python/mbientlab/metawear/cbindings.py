@@ -377,8 +377,9 @@ class BaroBoschIirFilter:
     AVG_8 = 3
     AVG_16 = 4
 
-FnVoid_VoidP = CFUNCTYPE(None, c_void_p)
 FnVoid_VoidP_Int = CFUNCTYPE(None, c_void_p, c_int)
+FnInt_VoidP_UByteP_UByte = CFUNCTYPE(c_int, c_void_p, POINTER(c_ubyte), c_ubyte)
+FnVoid_VoidP = CFUNCTYPE(None, c_void_p)
 class Data(Structure):
     _fields_ = [
         ("epoch" , c_longlong),
@@ -504,88 +505,6 @@ class CartesianFloat(Structure):
     def __deepcopy__(self, memo):
         return CartesianFloat(x = self.x, y = self.y, z = self.z)
 
-FnVoid = CFUNCTYPE(None)
-FnVoid_Int = CFUNCTYPE(None, c_int)
-FnVoid_charP = CFUNCTYPE(None, c_char_p)
-class DfuDelegate(Structure):
-    _fields_ = [
-        ("on_dfu_started" , FnVoid),
-        ("on_dfu_cancelled" , FnVoid),
-        ("on_transfer_percentage" , FnVoid_Int),
-        ("on_successful_file_transferred" , FnVoid),
-        ("on_error" , FnVoid_charP)
-    ]
-
-    def __eq__(self, other):
-        return (self.on_dfu_started == other.on_dfu_started and self.on_dfu_cancelled == other.on_dfu_cancelled and self.on_transfer_percentage == other.on_transfer_percentage and self.on_successful_file_transferred == other.on_successful_file_transferred and self.on_error == other.on_error)
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __str__(self):
-        return "{on_dfu_started : %d, on_dfu_cancelled : %d, on_transfer_percentage : %d, on_successful_file_transferred : %d, on_error : %d}" % (self.on_dfu_started, self.on_dfu_cancelled, self.on_transfer_percentage, self.on_successful_file_transferred, self.on_error)
-
-    def __deepcopy__(self, memo):
-        return DfuDelegate(on_dfu_started = self.on_dfu_started, on_dfu_cancelled = self.on_dfu_cancelled, on_transfer_percentage = self.on_transfer_percentage, on_successful_file_transferred = self.on_successful_file_transferred, on_error = self.on_error)
-
-class GattChar(Structure):
-    _fields_ = [
-        ("service_uuid_high" , c_ulonglong),
-        ("service_uuid_low" , c_ulonglong),
-        ("uuid_high" , c_ulonglong),
-        ("uuid_low" , c_ulonglong)
-    ]
-
-    def __eq__(self, other):
-        return (self.service_uuid_high == other.service_uuid_high and self.service_uuid_low == other.service_uuid_low and self.uuid_high == other.uuid_high and self.uuid_low == other.uuid_low)
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __str__(self):
-        return "{service_uuid_high : %d, service_uuid_low : %d, uuid_high : %d, uuid_low : %d}" % (self.service_uuid_high, self.service_uuid_low, self.uuid_high, self.uuid_low)
-
-    def __deepcopy__(self, memo):
-        return GattChar(service_uuid_high = self.service_uuid_high, service_uuid_low = self.service_uuid_low, uuid_high = self.uuid_high, uuid_low = self.uuid_low)
-
-class BatteryState(Structure):
-    _fields_ = [
-        ("voltage" , c_ushort),
-        ("charge" , c_ubyte)
-    ]
-
-    def __eq__(self, other):
-        return (self.voltage == other.voltage and self.charge == other.charge)
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __str__(self):
-        return "{voltage : %d, charge : %d}" % (self.voltage, self.charge)
-
-    def __deepcopy__(self, memo):
-        return BatteryState(voltage = self.voltage, charge = self.charge)
-
-class CorrectedCartesianFloat(Structure):
-    _fields_ = [
-        ("x" , c_float),
-        ("y" , c_float),
-        ("z" , c_float),
-        ("accuracy" , c_ubyte)
-    ]
-
-    def __eq__(self, other):
-        return (is_close(self.x, other.x) and is_close(self.y, other.y) and is_close(self.z, other.z) and self.accuracy == other.accuracy)
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __str__(self):
-        return "{x : %.3f, y : %.3f, z : %.3f, accuracy : %d}" % (self.x, self.y, self.z, self.accuracy)
-
-    def __deepcopy__(self, memo):
-        return CorrectedCartesianFloat(x = self.x, y = self.y, z = self.z, accuracy = self.accuracy)
-
 class LedPattern(Structure):
     _fields_ = [
         ("high_intensity" , c_ubyte),
@@ -609,6 +528,44 @@ class LedPattern(Structure):
 
     def __deepcopy__(self, memo):
         return LedPattern(high_intensity = self.high_intensity, low_intensity = self.low_intensity, rise_time_ms = self.rise_time_ms, high_time_ms = self.high_time_ms, fall_time_ms = self.fall_time_ms, pulse_duration_ms = self.pulse_duration_ms, delay_time_ms = self.delay_time_ms, repeat_count = self.repeat_count)
+
+class CorrectedCartesianFloat(Structure):
+    _fields_ = [
+        ("x" , c_float),
+        ("y" , c_float),
+        ("z" , c_float),
+        ("accuracy" , c_ubyte)
+    ]
+
+    def __eq__(self, other):
+        return (is_close(self.x, other.x) and is_close(self.y, other.y) and is_close(self.z, other.z) and self.accuracy == other.accuracy)
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "{x : %.3f, y : %.3f, z : %.3f, accuracy : %d}" % (self.x, self.y, self.z, self.accuracy)
+
+    def __deepcopy__(self, memo):
+        return CorrectedCartesianFloat(x = self.x, y = self.y, z = self.z, accuracy = self.accuracy)
+
+class BatteryState(Structure):
+    _fields_ = [
+        ("voltage" , c_ushort),
+        ("charge" , c_ubyte)
+    ]
+
+    def __eq__(self, other):
+        return (self.voltage == other.voltage and self.charge == other.charge)
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "{voltage : %d, charge : %d}" % (self.voltage, self.charge)
+
+    def __deepcopy__(self, memo):
+        return BatteryState(voltage = self.voltage, charge = self.charge)
 
 class Tcs34725ColorAdc(Structure):
     _fields_ = [
@@ -650,25 +607,47 @@ class EulerAngles(Structure):
     def __deepcopy__(self, memo):
         return EulerAngles(heading = self.heading, pitch = self.pitch, roll = self.roll, yaw = self.yaw)
 
-FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte = CFUNCTYPE(None, c_void_p, c_int, POINTER(GattChar), POINTER(c_ubyte), c_ubyte)
-FnVoid_VoidP_GattCharP = CFUNCTYPE(None, c_void_p, POINTER(GattChar))
-class BtleConnection(Structure):
+class GattChar(Structure):
     _fields_ = [
-        ("write_gatt_char" , FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte),
-        ("read_gatt_char" , FnVoid_VoidP_GattCharP)
+        ("service_uuid_high" , c_ulonglong),
+        ("service_uuid_low" , c_ulonglong),
+        ("uuid_high" , c_ulonglong),
+        ("uuid_low" , c_ulonglong)
     ]
 
     def __eq__(self, other):
-        return (self.write_gatt_char == other.write_gatt_char and self.read_gatt_char == other.read_gatt_char)
+        return (self.service_uuid_high == other.service_uuid_high and self.service_uuid_low == other.service_uuid_low and self.uuid_high == other.uuid_high and self.uuid_low == other.uuid_low)
 
     def __neq__(self, other):
         return not self.__eq__(other)
 
     def __str__(self):
-        return "{write_gatt_char : %d, read_gatt_char : %d}" % (self.write_gatt_char, self.read_gatt_char)
+        return "{service_uuid_high : %d, service_uuid_low : %d, uuid_high : %d, uuid_low : %d}" % (self.service_uuid_high, self.service_uuid_low, self.uuid_high, self.uuid_low)
 
     def __deepcopy__(self, memo):
-        return BtleConnection(write_gatt_char = self.write_gatt_char, read_gatt_char = self.read_gatt_char)
+        return GattChar(service_uuid_high = self.service_uuid_high, service_uuid_low = self.service_uuid_low, uuid_high = self.uuid_high, uuid_low = self.uuid_low)
+
+FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte = CFUNCTYPE(None, c_void_p, c_int, POINTER(GattChar), POINTER(c_ubyte), c_ubyte)
+FnVoid_VoidP_GattCharP_FnIntVoidPtrArray = CFUNCTYPE(None, c_void_p, POINTER(GattChar), FnInt_VoidP_UByteP_UByte)
+FnVoid_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt = CFUNCTYPE(None, c_void_p, POINTER(GattChar), FnInt_VoidP_UByteP_UByte, FnVoid_VoidP_Int)
+class BtleConnection(Structure):
+    _fields_ = [
+        ("write_gatt_char" , FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte),
+        ("read_gatt_char" , FnVoid_VoidP_GattCharP_FnIntVoidPtrArray),
+        ("enable_notifications" , FnVoid_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt)
+    ]
+
+    def __eq__(self, other):
+        return (self.write_gatt_char == other.write_gatt_char and self.read_gatt_char == other.read_gatt_char and self.enable_notifications == other.enable_notifications)
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "{write_gatt_char : %d, read_gatt_char : %d, enable_notifications : %d}" % (self.write_gatt_char, self.read_gatt_char, self.enable_notifications)
+
+    def __deepcopy__(self, memo):
+        return BtleConnection(write_gatt_char = self.write_gatt_char, read_gatt_char = self.read_gatt_char, enable_notifications = self.enable_notifications)
 
 class Quaternion(Structure):
     _fields_ = [
@@ -690,44 +669,66 @@ class Quaternion(Structure):
     def __deepcopy__(self, memo):
         return Quaternion(w = self.w, x = self.x, y = self.y, z = self.z)
 
+FnVoid = CFUNCTYPE(None)
+FnVoid_Int = CFUNCTYPE(None, c_int)
+FnVoid_charP = CFUNCTYPE(None, c_char_p)
+class DfuDelegate(Structure):
+    _fields_ = [
+        ("on_dfu_started" , FnVoid),
+        ("on_dfu_cancelled" , FnVoid),
+        ("on_transfer_percentage" , FnVoid_Int),
+        ("on_successful_file_transferred" , FnVoid),
+        ("on_error" , FnVoid_charP)
+    ]
+
+    def __eq__(self, other):
+        return (self.on_dfu_started == other.on_dfu_started and self.on_dfu_cancelled == other.on_dfu_cancelled and self.on_transfer_percentage == other.on_transfer_percentage and self.on_successful_file_transferred == other.on_successful_file_transferred and self.on_error == other.on_error)
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return "{on_dfu_started : %d, on_dfu_cancelled : %d, on_transfer_percentage : %d, on_successful_file_transferred : %d, on_error : %d}" % (self.on_dfu_started, self.on_dfu_cancelled, self.on_transfer_percentage, self.on_successful_file_transferred, self.on_error)
+
+    def __deepcopy__(self, memo):
+        return DfuDelegate(on_dfu_started = self.on_dfu_started, on_dfu_cancelled = self.on_dfu_cancelled, on_transfer_percentage = self.on_transfer_percentage, on_successful_file_transferred = self.on_successful_file_transferred, on_error = self.on_error)
+
 class Const:
-    DFU_CONTROL_POINT_CHAR = GattChar(service_uuid_high = 0x000015301212EFDE, service_uuid_low = 0x1523785FEABCD123, uuid_high = 0x000015311212EFDE, uuid_low = 0x1523785FEABCD123)
-    MAG_BFIELD_X_AXIS_INDEX = 0
-    CD_TCS34725_ADC_RED_INDEX = 1
-    LED_REPEAT_INDEFINITELY = 255
-    ACC_ACCEL_X_AXIS_INDEX = 0
-    METAWEAR_SERVICE_NOTIFY_CHAR = GattChar(service_uuid_high = 0x326a900085cb9195, service_uuid_low = 0xd9dd464cfbbae75a, uuid_high = 0x326a900685cb9195, uuid_low = 0xd9dd464cfbbae75a)
-    CD_TCS34725_ADC_BLUE_INDEX = 3
-    ACC_ACCEL_Y_AXIS_INDEX = 1
+    MAG_BFIELD_Z_AXIS_INDEX = 2
+    GYRO_ROTATION_X_AXIS_INDEX = 0
+    MODULE_BARO_TYPE_BMP280 = 0
+    MODULE_ACC_TYPE_BMA255 = 3
     MODULE_ACC_TYPE_MMA8452Q = 0
-    STATUS_WARNING_INVALID_RESPONSE = 8
-    MODULE_BARO_TYPE_BME280 = 1
-    SETTINGS_BATTERY_CHARGE_INDEX = 1
-    STATUS_ERROR_TIMEOUT = 16
-    STATUS_WARNING_UNEXPECTED_SENSOR_DATA = 1
-    STATUS_WARNING_INVALID_PROCESSOR_TYPE = 2
-    CD_TCS34725_ADC_CLEAR_INDEX = 0
+    ACC_ACCEL_Y_AXIS_INDEX = 1
+    SENSOR_FUSION_CALIBRATION_ACCURACY_HIGH = 3
+    SENSOR_FUSION_CALIBRATION_ACCURACY_LOW = 1
+    GYRO_ROTATION_Z_AXIS_INDEX = 2
+    MODULE_ACC_TYPE_BMI160 = 1
+    SENSOR_FUSION_CALIBRATION_ACCURACY_UNRELIABLE = 0
+    ACC_ACCEL_Z_AXIS_INDEX = 2
+    GPIO_UNUSED_PIN = 255
+    MODULE_TYPE_NA = -1
+    ACC_ACCEL_X_AXIS_INDEX = 0
+    LED_REPEAT_INDEFINITELY = 255
     MAG_BFIELD_Y_AXIS_INDEX = 1
+    STATUS_WARNING_INVALID_PROCESSOR_TYPE = 2
     STATUS_OK = 0
     SETTINGS_BATTERY_VOLTAGE_INDEX = 0
-    GYRO_ROTATION_Y_AXIS_INDEX = 1
-    STATUS_ERROR_UNSUPPORTED_PROCESSOR = 4
-    STATUS_ERROR_SERIALIZATION_FORMAT = 32
     SENSOR_FUSION_CALIBRATION_ACCURACY_MEDIUM = 2
-    GPIO_UNUSED_PIN = 255
-    ACC_ACCEL_Z_AXIS_INDEX = 2
-    MODULE_ACC_TYPE_BMI160 = 1
-    SENSOR_FUSION_CALIBRATION_ACCURACY_LOW = 1
+    STATUS_ERROR_UNSUPPORTED_PROCESSOR = 4
+    STATUS_WARNING_UNEXPECTED_SENSOR_DATA = 1
+    STATUS_ERROR_TIMEOUT = 16
+    SETTINGS_BATTERY_CHARGE_INDEX = 1
+    MODULE_BARO_TYPE_BME280 = 1
+    STATUS_WARNING_INVALID_RESPONSE = 8
+    STATUS_ERROR_SERIALIZATION_FORMAT = 32
+    STATUS_ERROR_ENABLE_NOTIFY = 64
+    GYRO_ROTATION_Y_AXIS_INDEX = 1
+    CD_TCS34725_ADC_CLEAR_INDEX = 0
+    CD_TCS34725_ADC_RED_INDEX = 1
     CD_TCS34725_ADC_GREEN_INDEX = 2
-    MODULE_TYPE_NA = -1
-    SENSOR_FUSION_CALIBRATION_ACCURACY_UNRELIABLE = 0
-    SENSOR_FUSION_CALIBRATION_ACCURACY_HIGH = 3
-    MODULE_ACC_TYPE_BMA255 = 3
-    MODULE_BARO_TYPE_BMP280 = 0
-    GYRO_ROTATION_X_AXIS_INDEX = 0
-    GYRO_ROTATION_Z_AXIS_INDEX = 2
-    MAG_BFIELD_Z_AXIS_INDEX = 2
-    DFU_PACKET_CHAR = GattChar(service_uuid_high = 0x000015301212EFDE, service_uuid_low = 0x1523785FEABCD123, uuid_high = 0x000015321212EFDE, uuid_low = 0x1523785FEABCD123)
+    MAG_BFIELD_X_AXIS_INDEX = 0
+    CD_TCS34725_ADC_BLUE_INDEX = 3
 
 def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_spi_write.restype = None
@@ -735,9 +736,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_proximity_tsl2671_write_config.restype = None
     libmetawear.mbl_mw_proximity_tsl2671_write_config.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_proximity_tsl2671_set_receiver_channel.restype = None
-    libmetawear.mbl_mw_proximity_tsl2671_set_receiver_channel.argtypes = [c_void_p, c_int]
 
     libmetawear.mbl_mw_proximity_tsl2671_get_adc_data_signal.restype = c_void_p
     libmetawear.mbl_mw_proximity_tsl2671_get_adc_data_signal.argtypes = [c_void_p]
@@ -759,9 +757,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_mag_bmm150_start.restype = None
     libmetawear.mbl_mw_mag_bmm150_start.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_metabootboard_free.restype = None
-    libmetawear.mbl_mw_metabootboard_free.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_mag_bmm150_enable_b_field_sampling.restype = None
     libmetawear.mbl_mw_mag_bmm150_enable_b_field_sampling.argtypes = [c_void_p]
@@ -883,14 +878,20 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_acc_stop.restype = None
     libmetawear.mbl_mw_acc_stop.argtypes = [c_void_p]
 
-    libmetawear.mbl_mw_ibeacon_enable.restype = None
-    libmetawear.mbl_mw_ibeacon_enable.argtypes = [c_void_p]
+    libmetawear.mbl_mw_baro_bosch_get_altitude_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_baro_bosch_get_altitude_data_signal.argtypes = [c_void_p]
 
-    libmetawear.mbl_mw_settings_set_ad_interval.restype = None
-    libmetawear.mbl_mw_settings_set_ad_interval.argtypes = [c_void_p, c_ushort, c_ubyte]
+    libmetawear.mbl_mw_acc_start.restype = None
+    libmetawear.mbl_mw_acc_start.argtypes = [c_void_p]
 
-    libmetawear.mbl_mw_dataprocessor_delta_set_reference.restype = c_int
-    libmetawear.mbl_mw_dataprocessor_delta_set_reference.argtypes = [c_void_p, c_float]
+    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.restype = None
+    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_baro_bmp280_set_standby_time.restype = None
+    libmetawear.mbl_mw_baro_bmp280_set_standby_time.argtypes = [c_void_p, c_int]
+
+    libmetawear.mbl_mw_acc_write_acceleration_config.restype = None
+    libmetawear.mbl_mw_acc_write_acceleration_config.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_acc_disable_acceleration_sampling.restype = None
     libmetawear.mbl_mw_acc_disable_acceleration_sampling.argtypes = [c_void_p]
@@ -900,9 +901,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_ibeacon_set_tx_power.restype = None
     libmetawear.mbl_mw_ibeacon_set_tx_power.argtypes = [c_void_p, c_byte]
-
-    libmetawear.mbl_mw_ibeacon_set_period.restype = None
-    libmetawear.mbl_mw_ibeacon_set_period.argtypes = [c_void_p, c_ushort]
 
     libmetawear.mbl_mw_neopixel_stop_rotation.restype = None
     libmetawear.mbl_mw_neopixel_stop_rotation.argtypes = [c_void_p, c_ubyte]
@@ -922,11 +920,26 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_haptic_start_buzzer.restype = None
     libmetawear.mbl_mw_haptic_start_buzzer.argtypes = [c_void_p, c_ushort]
 
+    libmetawear.mbl_mw_proximity_tsl2671_set_receiver_channel.restype = None
+    libmetawear.mbl_mw_proximity_tsl2671_set_receiver_channel.argtypes = [c_void_p, c_int]
+
+    libmetawear.mbl_mw_metawearboard_perform_dfu.restype = None
+    libmetawear.mbl_mw_metawearboard_perform_dfu.argtypes = [c_void_p, POINTER(DfuDelegate), c_char_p]
+
+    libmetawear.mbl_mw_led_stop_and_clear.restype = None
+    libmetawear.mbl_mw_led_stop_and_clear.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_metawearboard_deserialize.restype = c_int
     libmetawear.mbl_mw_metawearboard_deserialize.argtypes = [c_void_p, POINTER(c_ubyte), c_uint]
 
     libmetawear.mbl_mw_neopixel_clear.restype = None
     libmetawear.mbl_mw_neopixel_clear.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte]
+
+    libmetawear.mbl_mw_metawearboard_get_model_name.restype = c_char_p
+    libmetawear.mbl_mw_metawearboard_get_model_name.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_dataprocessor_multi_comparator_create_signed.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_multi_comparator_create_signed.argtypes = [c_void_p, c_int, c_int, POINTER(c_float), c_ubyte, FnVoid_VoidP]
 
     libmetawear.mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal.argtypes = [c_void_p]
@@ -939,12 +952,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_sensor_fusion_set_mode.restype = None
     libmetawear.mbl_mw_sensor_fusion_set_mode.argtypes = [c_void_p, c_int]
-
-    libmetawear.mbl_mw_led_pause.restype = None
-    libmetawear.mbl_mw_led_pause.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_dataprocessor_passthrough_create.restype = c_int
-    libmetawear.mbl_mw_dataprocessor_passthrough_create.argtypes = [c_void_p, c_int, c_ushort, FnVoid_VoidP]
 
     libmetawear.mbl_mw_cd_tcs34725_write_config.restype = None
     libmetawear.mbl_mw_cd_tcs34725_write_config.argtypes = [c_void_p]
@@ -997,17 +1004,23 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_ibeacon_set_minor.restype = None
     libmetawear.mbl_mw_ibeacon_set_minor.argtypes = [c_void_p, c_ushort]
 
-    libmetawear.mbl_mw_dfu_control_point_char_changed.restype = None
-    libmetawear.mbl_mw_dfu_control_point_char_changed.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
-
     libmetawear.mbl_mw_datasignal_read_with_parameters.restype = None
     libmetawear.mbl_mw_datasignal_read_with_parameters.argtypes = [c_void_p, c_void_p]
 
     libmetawear.mbl_mw_debug_jump_to_bootloader.restype = None
     libmetawear.mbl_mw_debug_jump_to_bootloader.argtypes = [c_void_p]
 
-    libmetawear.mbl_mw_led_stop_and_clear.restype = None
-    libmetawear.mbl_mw_led_stop_and_clear.argtypes = [c_void_p]
+    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.restype = None
+    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_acc_set_odr.restype = c_float
+    libmetawear.mbl_mw_acc_set_odr.argtypes = [c_void_p, c_float]
+
+    libmetawear.mbl_mw_connection_char_read.restype = None
+    libmetawear.mbl_mw_connection_char_read.argtypes = [c_void_p, POINTER(GattChar), POINTER(c_ubyte), c_ubyte]
+
+    libmetawear.mbl_mw_logging_start.restype = None
+    libmetawear.mbl_mw_logging_start.argtypes = [c_void_p, c_ubyte]
 
     libmetawear.mbl_mw_haptic_start_motor.restype = None
     libmetawear.mbl_mw_haptic_start_motor.argtypes = [c_void_p, c_float, c_ushort]
@@ -1021,6 +1034,12 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_datasignal_subscribe.restype = None
     libmetawear.mbl_mw_datasignal_subscribe.argtypes = [c_void_p, FnVoid_DataP]
 
+    libmetawear.mbl_mw_acc_set_range.restype = c_float
+    libmetawear.mbl_mw_acc_set_range.argtypes = [c_void_p, c_float]
+
+    libmetawear.mbl_mw_event_end_record.restype = None
+    libmetawear.mbl_mw_event_end_record.argtypes = [c_void_p, FnVoid_VoidP_Int]
+
     libmetawear.mbl_mw_settings_set_device_name.restype = None
     libmetawear.mbl_mw_settings_set_device_name.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
 
@@ -1029,15 +1048,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_ibeacon_set_minor_signal.restype = None
     libmetawear.mbl_mw_ibeacon_set_minor_signal.argtypes = [c_void_p, c_void_p]
-
-    libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_dataprocessor_math_modify_rhs.restype = c_int
-    libmetawear.mbl_mw_dataprocessor_math_modify_rhs.argtypes = [c_void_p, c_float]
-
-    libmetawear.mbl_mw_datasignal_is_readable.restype = c_int
-    libmetawear.mbl_mw_datasignal_is_readable.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_memory_free.restype = None
     libmetawear.mbl_mw_memory_free.argtypes = [c_void_p]
@@ -1081,12 +1091,6 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_logger_get_id.restype = c_ubyte
     libmetawear.mbl_mw_logger_get_id.argtypes = [c_void_p]
 
-    libmetawear.mbl_mw_ibeacon_set_uuid.restype = None
-    libmetawear.mbl_mw_ibeacon_set_uuid.argtypes = [c_void_p, POINTER(c_ubyte)]
-
-    libmetawear.mbl_mw_gpio_get_digital_input_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_gpio_get_digital_input_data_signal.argtypes = [c_void_p, c_ubyte]
-
     libmetawear.mbl_mw_als_ltr329_write_config.restype = None
     libmetawear.mbl_mw_als_ltr329_write_config.argtypes = [c_void_p]
 
@@ -1107,6 +1111,15 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_settings_get_battery_state_data_signal.restype = c_void_p
     libmetawear.mbl_mw_settings_get_battery_state_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_settings_set_ad_interval.restype = None
+    libmetawear.mbl_mw_settings_set_ad_interval.argtypes = [c_void_p, c_ushort, c_ubyte]
+
+    libmetawear.mbl_mw_ibeacon_enable.restype = None
+    libmetawear.mbl_mw_ibeacon_enable.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_dataprocessor_delta_set_reference.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_delta_set_reference.argtypes = [c_void_p, c_float]
 
     libmetawear.mbl_mw_settings_set_tx_power.restype = None
     libmetawear.mbl_mw_settings_set_tx_power.argtypes = [c_void_p, c_byte]
@@ -1138,11 +1151,11 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_ibeacon_set_major.restype = None
     libmetawear.mbl_mw_ibeacon_set_major.argtypes = [c_void_p, c_ushort]
 
-    libmetawear.mbl_mw_dataprocessor_counter_set_state.restype = c_int
-    libmetawear.mbl_mw_dataprocessor_counter_set_state.argtypes = [c_void_p, c_uint]
-
     libmetawear.mbl_mw_datasignal_unsubscribe.restype = None
     libmetawear.mbl_mw_datasignal_unsubscribe.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_dataprocessor_counter_set_state.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_counter_set_state.argtypes = [c_void_p, c_uint]
 
     libmetawear.mbl_mw_datasignal_get_component.restype = c_void_p
     libmetawear.mbl_mw_datasignal_get_component.argtypes = [c_void_p, c_ubyte]
@@ -1167,6 +1180,27 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_timer_create_indefinite.restype = None
     libmetawear.mbl_mw_timer_create_indefinite.argtypes = [c_void_p, c_uint, c_ubyte, FnVoid_VoidP]
+
+    libmetawear.mbl_mw_gpio_get_digital_input_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_gpio_get_digital_input_data_signal.argtypes = [c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_ibeacon_set_uuid.restype = None
+    libmetawear.mbl_mw_ibeacon_set_uuid.argtypes = [c_void_p, POINTER(c_ubyte)]
+
+    libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_acc_mma8452q_get_acceleration_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_datasignal_is_readable.restype = c_int
+    libmetawear.mbl_mw_datasignal_is_readable.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_dataprocessor_math_modify_rhs.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_math_modify_rhs.argtypes = [c_void_p, c_float]
+
+    libmetawear.mbl_mw_led_pause.restype = None
+    libmetawear.mbl_mw_led_pause.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_dataprocessor_passthrough_create.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_passthrough_create.argtypes = [c_void_p, c_int, c_ushort, FnVoid_VoidP]
 
     libmetawear.mbl_mw_dataprocessor_pulse_modify.restype = c_int
     libmetawear.mbl_mw_dataprocessor_pulse_modify.argtypes = [c_void_p, c_float, c_ushort]
@@ -1273,15 +1307,6 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_accumulator_create_size.restype = c_int
     libmetawear.mbl_mw_dataprocessor_accumulator_create_size.argtypes = [c_void_p, c_ubyte, FnVoid_VoidP]
 
-    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.restype = None
-    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_baro_bmp280_set_standby_time.restype = None
-    libmetawear.mbl_mw_baro_bmp280_set_standby_time.argtypes = [c_void_p, c_int]
-
-    libmetawear.mbl_mw_acc_write_acceleration_config.restype = None
-    libmetawear.mbl_mw_acc_write_acceleration_config.argtypes = [c_void_p]
-
     libmetawear.mbl_mw_als_ltr329_stop.restype = None
     libmetawear.mbl_mw_als_ltr329_stop.argtypes = [c_void_p]
 
@@ -1315,17 +1340,11 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_comparator_modify_signal.restype = c_int
     libmetawear.mbl_mw_dataprocessor_comparator_modify_signal.argtypes = [c_void_p, c_int, c_void_p]
 
-    libmetawear.mbl_mw_metabootboard_create.restype = c_void_p
-    libmetawear.mbl_mw_metabootboard_create.argtypes = [POINTER(BtleConnection), POINTER(DfuDelegate)]
-
     libmetawear.mbl_mw_dataprocessor_multi_comparator_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_multi_comparator_create.argtypes = [c_void_p, c_int, c_int, POINTER(c_float), c_ubyte, FnVoid_VoidP]
 
     libmetawear.mbl_mw_gpio_set_pull_mode.restype = None
     libmetawear.mbl_mw_gpio_set_pull_mode.argtypes = [c_void_p, c_ubyte, c_int]
-
-    libmetawear.mbl_mw_dataprocessor_multi_comparator_create_signed.restype = c_int
-    libmetawear.mbl_mw_dataprocessor_multi_comparator_create_signed.argtypes = [c_void_p, c_int, c_int, POINTER(c_float), c_ubyte, FnVoid_VoidP]
 
     libmetawear.mbl_mw_baro_bosch_set_iir_filter.restype = None
     libmetawear.mbl_mw_baro_bosch_set_iir_filter.argtypes = [c_void_p, c_int]
@@ -1351,23 +1370,8 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_lookup_id.restype = c_void_p
     libmetawear.mbl_mw_dataprocessor_lookup_id.argtypes = [c_void_p, c_ubyte]
 
-    libmetawear.mbl_mw_metabootboard_perform_dfu.restype = None
-    libmetawear.mbl_mw_metabootboard_perform_dfu.argtypes = [c_void_p, c_char_p]
-
     libmetawear.mbl_mw_dataprocessor_math_create_unsigned.restype = c_int
     libmetawear.mbl_mw_dataprocessor_math_create_unsigned.argtypes = [c_void_p, c_int, c_float, FnVoid_VoidP]
-
-    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.restype = None
-    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_connection_char_read.restype = None
-    libmetawear.mbl_mw_connection_char_read.argtypes = [c_void_p, POINTER(GattChar), POINTER(c_ubyte), c_ubyte]
-
-    libmetawear.mbl_mw_logging_start.restype = None
-    libmetawear.mbl_mw_logging_start.argtypes = [c_void_p, c_ubyte]
-
-    libmetawear.mbl_mw_acc_set_odr.restype = c_float
-    libmetawear.mbl_mw_acc_set_odr.argtypes = [c_void_p, c_float]
 
     libmetawear.mbl_mw_datasignal_log.restype = None
     libmetawear.mbl_mw_datasignal_log.argtypes = [c_void_p, FnVoid_VoidP]
@@ -1378,11 +1382,14 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_passthrough_set_count.restype = c_int
     libmetawear.mbl_mw_dataprocessor_passthrough_set_count.argtypes = [c_void_p, c_ushort]
 
-    libmetawear.mbl_mw_baro_bosch_get_altitude_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_baro_bosch_get_altitude_data_signal.argtypes = [c_void_p]
+    libmetawear.mbl_mw_dataprocessor_accounter_create.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_accounter_create.argtypes = [c_void_p, FnVoid_VoidP]
 
-    libmetawear.mbl_mw_acc_start.restype = None
-    libmetawear.mbl_mw_acc_start.argtypes = [c_void_p]
+    libmetawear.mbl_mw_ibeacon_set_period.restype = None
+    libmetawear.mbl_mw_ibeacon_set_period.argtypes = [c_void_p, c_ushort]
+
+    libmetawear.mbl_mw_dataprocessor_packer_create.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_packer_create.argtypes = [c_void_p, c_ubyte, FnVoid_VoidP]
 
     libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses.restype = None
     libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses.argtypes = [c_void_p, c_ubyte]
@@ -1476,10 +1483,4 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_event_end_record.restype = None
-    libmetawear.mbl_mw_event_end_record.argtypes = [c_void_p, FnVoid_VoidP_Int]
-
-    libmetawear.mbl_mw_acc_set_range.restype = c_float
-    libmetawear.mbl_mw_acc_set_range.argtypes = [c_void_p, c_float]
 

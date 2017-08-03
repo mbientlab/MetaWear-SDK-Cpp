@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "metawear/dfu/metabootboard_fwd.h"
+#include "metawear/core/metawearboard_fwd.h"
 
 struct FileOperationsDelegate {
     // define callback interface functions
@@ -16,9 +16,10 @@ struct FileOperationsDelegate {
 class FileOperations {
     uint8_t *binFile;
     int bytesInLastPacket;
+    int prevPercentage;
     
     FileOperationsDelegate &fileDelegate;
-    const MblMwMetaBootBoard* bootloaderBoard;
+    const MblMwMetaWearBoard* bootloaderBoard;
 public:
     size_t binFileSize;
     int numberOfPackets;
@@ -27,7 +28,7 @@ public:
     uint8_t *metaDataFile;
     size_t metaDataFileSize;
     
-    FileOperations(FileOperationsDelegate &fileDelegate, const MblMwMetaBootBoard* board);
+    FileOperations(FileOperationsDelegate &fileDelegate, const MblMwMetaWearBoard* board);
     ~FileOperations();
     
     void openFile(const char* filename);

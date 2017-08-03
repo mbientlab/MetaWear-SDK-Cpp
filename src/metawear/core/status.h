@@ -22,3 +22,5 @@ const int32_t MBL_MW_STATUS_WARNING_INVALID_RESPONSE = 8;
 const int32_t MBL_MW_STATUS_ERROR_TIMEOUT = 16;
 /** Cannot restore API state given the input serialization format */
 const int32_t MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT = 32;
+/** Failed to enable notifications */
+const int32_t MBL_MW_STATUS_ERROR_ENABLE_NOTIFY = 64;

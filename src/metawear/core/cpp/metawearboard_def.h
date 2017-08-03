@@ -12,6 +12,7 @@
 #include "metawear/core/event_fwd.h"
 #include "metawear/core/metawearboard_fwd.h"
 #include "metawear/core/timer_fwd.h"
+#include "metawear/dfu/cpp/dfu_operations.h"
 #include "metawear/platform/btle_connection.h"
 #include "metawear/platform/cpp/task.h"
 
@@ -19,6 +20,9 @@
 #define SEND_COMMAND_BOARD(board) send_command(board, command, sizeof(command))
 
 typedef int32_t (*ResponseHandler)(MblMwMetaWearBoard *board, const uint8_t*, uint8_t);
+/** UUIDs for the MetaWear DFU characteristic */
+const MblMwGattChar DFU_PACKET_CHAR = { 0x000015301212EFDE, 0x1523785FEABCD123, 0x000015321212EFDE, 0x1523785FEABCD123 };
+const MblMwGattChar DFU_CONTROL_POINT_CHAR = { 0x000015301212EFDE, 0x1523785FEABCD123, 0x000015311212EFDE, 0x1523785FEABCD123 };
 
 struct MblMwMetaWearBoard {
     MblMwMetaWearBoard();
@@ -31,13 +35,19 @@ struct MblMwMetaWearBoard {
 
     std::shared_ptr<void> logger_state, timer_state, event_state, dp_state, macro_state;
     MblMwFnBoardPtrInt initialized;
-    Task* initialized_timeout;
+    std::shared_ptr<Task> initialized_timeout;
     MblMwBtleConnection btle_conn;
     Version firmware_revision;
     std::string module_number;
+    std::unique_ptr<DfuOperations> operations;
+    const char* filename;
 
     int64_t time_per_response;
     int8_t module_discovery_index, dev_info_index;
+
+    inline void write_gatt_char(const MblMwGattChar* gatt_char, const uint8_t* value, uint8_t len) const {
+        btle_conn.write_gatt_char(this, MBL_MW_GATT_CHAR_WRITE_WITHOUT_RESPONSE, gatt_char, value, len);
+    }
 };
 
 void send_command(const MblMwMetaWearBoard* board, const uint8_t* command, uint8_t len);

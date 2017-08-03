@@ -27,6 +27,8 @@
 
 #include "metawear/platform/cpp/threadpool.h"
 
+#include "metawear/processor/cpp/accounter_private.h"
+#include "metawear/processor/cpp/packer_private.h"
 #include "metawear/processor/cpp/dataprocessor_register.h"
 #include "metawear/processor/cpp/dataprocessor_private.h"
 
@@ -66,24 +68,91 @@ const uint16_t MAX_TIME_PER_RESPONSE= 4000;
 
 #define CLEAR_READ_MODIFIERS(x) (x & 0x3f)
 
-#define INVOKE_SIGNAL_HANDLER(s) if (s->handler != nullptr) {\
-    MblMwData* data = data_response_converters.at(s->interpreter)(false, s, response, len);\
-    data->epoch= epoch;\
-    s->handler(data);\
-    free(data->value);\
-    free(data);\
-    handled= true;\
+static MblMwDataProcessor* find_processor(MblMwDataProcessor* processor, DataProcessorType key) {
+    MblMwDataProcessor* value = processor;
+    while(value != nullptr) {
+        if (value->type == key) {
+            return value;
+        }
+        value = value->parent();
+    }
+
+    return nullptr;
+}
+
+static int64_t extract_accounter_epoch(MblMwDataProcessor* processor, const uint8_t** start, uint8_t& len) {
+    uint8_t timestampLength = get_accounter_length(processor);
+    // TODO: The logger uses a hardcoded prescaler of 3, upstream we force that value
+    // and assume it to be so here, eventually we will have a prescale aware timestamp
+    // API that works off of the base clock and call get_accounter_prescale(processor);
+    uint32_t tick = 0;
+    memcpy(&tick, *start, timestampLength);
+
+    (*start) += timestampLength;
+    len -= timestampLength;
+
+    return calculate_epoch(processor->owner, tick);
+}
+
+static bool invoke_signal_handler(MblMwDataSignal* signal, int64_t epoch, const uint8_t* response, uint8_t len) {
+    if (signal->handler != nullptr) {
+        MblMwData* data = data_response_converters.at(signal->interpreter)(false, signal, response, len);
+        data->epoch = epoch;
+        signal->handler(data);
+        free(data->value);
+        free(data);
+        return true;
+    }
+    return false;
 }
 
 static inline int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     try {
         auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
         bool handled= false;
-        int64_t epoch= duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        int64_t epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        
+        MblMwDataProcessor* processor = dynamic_cast<MblMwDataProcessor*>(signal);
+        const uint8_t* start = response;
+        if (processor != nullptr) {
+            switch(processor->type) {
+                case DataProcessorType::ACCOUNTER: {
+                    epoch = extract_accounter_epoch(processor, &start, len);
+                    auto parent = find_processor(processor, DataProcessorType::PACKER);
 
-        INVOKE_SIGNAL_HANDLER(signal)
+                    if (parent != nullptr) {
+                        uint8_t i = 0, count = get_packer_count(parent), pack_size = get_packer_length(parent);
+                        do {
+                            handled|= invoke_signal_handler(signal, epoch, start, pack_size);
+                            i++;
+                            start+= pack_size;
+                        } while(i < count);
+                        return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
+                    }
+                    break;
+                }
+                case DataProcessorType::PACKER: {                    
+                    auto parent = find_processor(processor, DataProcessorType::ACCOUNTER);
+                    uint8_t i = 0, count = get_packer_count(processor), 
+                            pack_size = get_packer_length(processor) - (parent == nullptr ? 0 : get_accounter_length(parent));
+                    
+                    do {
+                        int64_t real_epoch = parent == nullptr ? epoch : extract_accounter_epoch(parent, &start, len);
+                        handled|= invoke_signal_handler(signal, real_epoch, start, pack_size);
+                        i++;
+                        len-= pack_size;
+                        start+= pack_size;
+                    } while(i < count);
+                    return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
+                }
+                default:
+                    break;
+            }
+        }
+
+        handled|= invoke_signal_handler(signal, epoch, start, len);
         for(auto it: signal->components) {
-            INVOKE_SIGNAL_HANDLER(it)
+            handled|= invoke_signal_handler(it, epoch, start, len);
         }
 
         return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
@@ -124,28 +193,6 @@ int32_t response_handler_packed_data(MblMwMetaWearBoard *board, const uint8_t *r
         return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     }
 }
-
-const vector<void(*)(MblMwMetaWearBoard*)> INITIALIZE_FNS = {
-    init_accelerometer_module,
-    init_barometer_module,
-    init_gyro_module,
-    init_ambient_light_module,
-    init_multichannel_temp_module,
-    init_logging,
-    init_magnetometer_module,
-    init_settings_module,
-    init_colordetector_module,
-    init_proximity_module,
-    init_humidity_module,
-    init_event_module,
-    init_timer_module,
-    init_dataprocessor_module,
-    init_gpio_module,
-    init_serialpassthrough_module,
-    init_switch_module,
-    init_sensor_fusion_module,
-    init_macro_module
-};
 
 const uint8_t READ_INFO_REGISTER= READ_REGISTER(0x0);
 const vector<vector<uint8_t>> MODULE_DISCOVERY_CMDS= {
@@ -195,8 +242,10 @@ const unordered_map<uint8_t, void(*)(MblMwMetaWearBoard*, uint8_t**)> CONFIG_DES
     { MBL_MW_MODULE_SENSOR_FUSION, deserialize_sensor_fusion_config }
 };
 
-const uint64_t DEVICE_INFO_SERVICE_UUID_HIGH = 0x0000180a00001000;
-const uint64_t DEVICE_INFO_SERVICE_UUID_LOW = 0x800000805f9b34fb;
+const MblMwGattChar METAWEAR_SERVICE_NOTIFY_CHAR = { 0x326a900085cb9195, 0xd9dd464cfbbae75a, 0x326a900685cb9195, 0xd9dd464cfbbae75a };
+
+const uint64_t DEVICE_INFO_SERVICE_UUID_HIGH = 0x0000180a00001000, 
+        DEVICE_INFO_SERVICE_UUID_LOW = 0x800000805f9b34fb;
 
 const MblMwGattChar METAWEAR_COMMAND_CHAR = { METAWEAR_SERVICE_NOTIFY_CHAR.service_uuid_high, METAWEAR_SERVICE_NOTIFY_CHAR.service_uuid_low, 
         0x326a900185cb9195, 0xd9dd464cfbbae75a };
@@ -248,6 +297,27 @@ void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard* board, uint1
     board->time_per_response= response_time_ms > MAX_TIME_PER_RESPONSE ? MAX_TIME_PER_RESPONSE : response_time_ms;
 }
 
+static void(*INITIALIZE_FNS[])(MblMwMetaWearBoard*) = {
+    init_accelerometer_module,
+    init_barometer_module,
+    init_gyro_module,
+    init_ambient_light_module,
+    init_multichannel_temp_module,
+    init_logging,
+    init_magnetometer_module,
+    init_settings_module,
+    init_colordetector_module,
+    init_proximity_module,
+    init_humidity_module,
+    init_event_module,
+    init_timer_module,
+    init_dataprocessor_module,
+    init_gpio_module,
+    init_serialpassthrough_module,
+    init_switch_module,
+    init_sensor_fusion_module,
+    init_macro_module
+};
 static inline void service_discovery_completed(MblMwMetaWearBoard* board) {
     for (auto it : INITIALIZE_FNS) {
         it(board);
@@ -271,23 +341,86 @@ static inline void queue_next_query(MblMwMetaWearBoard *board) {
     }
 }
 
-static inline void queue_next_gatt_char(MblMwMetaWearBoard *board) {
-    board->dev_info_index++;
-    if (board->dev_info_index >= (int8_t) BOARD_DEV_INFO_CHARS.size()) {
-        queue_next_query(board);
+static int32_t model_char_handler(const void* caller, const uint8_t* value, uint8_t length) {
+    MblMwMetaWearBoard* board = (MblMwMetaWearBoard*) caller;
+    ((MblMwMetaWearBoard*) caller)->module_number.assign(value, value + length);
+    queue_next_query(board);
+
+    return MBL_MW_STATUS_OK;
+}
+
+static int32_t firware_char_handler(const void* caller, const uint8_t* value, uint8_t length) {
+    MblMwMetaWearBoard* board = (MblMwMetaWearBoard*) caller;
+    Version current(string(value, value + length));
+
+    if (board->firmware_revision == current) {
+        if (mbl_mw_metawearboard_is_initialized(board)) {
+            board->initialized_timeout->cancel();
+            board->initialized(board, MBL_MW_STATUS_OK);
+        } else {
+            board->module_discovery_index = MODULE_DISCOVERY_CMDS.size();
+            service_discovery_completed(board);
+        }
+        return MBL_MW_STATUS_OK;
     } else {
-        board->btle_conn.read_gatt_char(board, &BOARD_DEV_INFO_CHARS[board->dev_info_index]);
+        board->firmware_revision = current;
+
+        board->logger_state.reset();
+        board->timer_state.reset();
+        board->event_state.reset();
+        board->dp_state.reset();
+
+        for (auto it : board->module_events) {
+            it.second->remove = false;
+            delete it.second;
+        }
+        board->module_events.clear();
+
+        for (auto it : board->module_config) {
+            free(it.second);
+        }
+        board->module_config.clear();
+
+        board->module_info.clear();
+        board->module_discovery_index = -1;
+    }
+    board->btle_conn.read_gatt_char(board, &DEV_INFO_MODEL_CHAR, model_char_handler);
+
+    return MBL_MW_STATUS_OK;
+}
+
+static int32_t char_changed_handler(const void* caller, const uint8_t* value, uint8_t length) {
+    MblMwMetaWearBoard* board = (MblMwMetaWearBoard*) caller;
+    ResponseHeader header(value[0], value[1]);
+
+    if (board->responses.count(header)) {
+        return board->responses.at(header)(board, value, length);
+    } else if (header.register_id == READ_INFO_REGISTER) {
+        board->module_info.emplace(piecewise_construct, forward_as_tuple(value[0]), forward_as_tuple(value, length));
+        queue_next_query(board);
+        return MBL_MW_STATUS_OK;
+    } else {
+        return MBL_MW_STATUS_WARNING_INVALID_RESPONSE;
+    }
+}
+
+static void enable_notify_ready(const void* caller, int32_t value) {
+    auto board = (MblMwMetaWearBoard*) caller;
+
+    if (value == MBL_MW_STATUS_OK) {
+        board->initialized_timeout= ThreadPool::schedule([board](void) -> void {
+            board->initialized(board, MBL_MW_STATUS_ERROR_TIMEOUT);
+        }, (MODULE_DISCOVERY_CMDS.size() + BOARD_DEV_INFO_CHARS.size() + 1) * board->time_per_response);
+        board->btle_conn.read_gatt_char(board, &DEV_INFO_FIRMWARE_CHAR, firware_char_handler);
+    } else {
+        board->initialized(board, MBL_MW_STATUS_ERROR_ENABLE_NOTIFY);
     }
 }
 
 void mbl_mw_metawearboard_initialize(MblMwMetaWearBoard *board, MblMwFnBoardPtrInt initialized) {
     board->initialized = initialized;
     board->dev_info_index = -1;
-
-    board->initialized_timeout= ThreadPool::schedule([board](void) -> void {
-        board->initialized(board, MBL_MW_STATUS_ERROR_TIMEOUT);
-    }, (MODULE_DISCOVERY_CMDS.size() + BOARD_DEV_INFO_CHARS.size() + 1) * board->time_per_response);
-    queue_next_gatt_char(board);
+    board->btle_conn.enable_notifications(board, &METAWEAR_SERVICE_NOTIFY_CHAR, char_changed_handler, enable_notify_ready);
 }
 
 void mbl_mw_metawearboard_tear_down(MblMwMetaWearBoard *board) {
@@ -333,17 +466,7 @@ int32_t mbl_mw_connection_notify_char_changed(MblMwMetaWearBoard *board, const u
 }
 
 int32_t mbl_mw_metawearboard_notify_char_changed(MblMwMetaWearBoard *board, const uint8_t *value, uint8_t len) {
-    ResponseHeader header(value[0], value[1]);
-
-    if (board->responses.count(header)) {
-        return board->responses.at(header)(board, value, len);
-    } else if (header.register_id == READ_INFO_REGISTER) {
-        board->module_info.emplace(piecewise_construct, forward_as_tuple(value[0]), forward_as_tuple(value, len));
-        queue_next_query(board);
-        return MBL_MW_STATUS_OK;
-    } else {
-        return MBL_MW_STATUS_WARNING_INVALID_RESPONSE;
-    }
+    return char_changed_handler(board, value, len);
 }
 
 void mbl_mw_connection_char_read(MblMwMetaWearBoard *board, const MblMwGattChar *characteristic, const uint8_t *value, uint8_t length) {
@@ -352,43 +475,9 @@ void mbl_mw_connection_char_read(MblMwMetaWearBoard *board, const MblMwGattChar 
 
 void mbl_mw_metawearboard_char_read(MblMwMetaWearBoard *board, const MblMwGattChar *characteristic, const uint8_t *value, uint8_t length) {
     if (characteristic->uuid_high == DEV_INFO_FIRMWARE_CHAR.uuid_high && characteristic->uuid_low == DEV_INFO_FIRMWARE_CHAR.uuid_low) {
-        Version current(string(value, value + length));
-
-        if (board->firmware_revision == current) {
-            if (mbl_mw_metawearboard_is_initialized(board)) {
-                board->initialized_timeout->cancel();
-                board->initialized(board, MBL_MW_STATUS_OK);
-            } else {
-                board->module_discovery_index = MODULE_DISCOVERY_CMDS.size();
-                service_discovery_completed(board);
-            }
-            return;
-        } else {
-            board->firmware_revision = current;
-
-            board->logger_state.reset();
-            board->timer_state.reset();
-            board->event_state.reset();
-            board->dp_state.reset();
-
-            for (auto it : board->module_events) {
-                it.second->remove = false;
-                delete it.second;
-            }
-            board->module_events.clear();
-
-            for (auto it : board->module_config) {
-                free(it.second);
-            }
-            board->module_config.clear();
-
-            board->module_info.clear();
-            board->module_discovery_index = -1;
-        }
-        queue_next_gatt_char(board);
+        firware_char_handler(board, value, length);
     } else if (characteristic->uuid_high == DEV_INFO_MODEL_CHAR.uuid_high && characteristic->uuid_low == DEV_INFO_MODEL_CHAR.uuid_low) {
-        board->module_number.assign(value, value + length);
-        queue_next_gatt_char(board);
+        model_char_handler(board, value, length);
     }
 }
 
@@ -459,6 +548,24 @@ MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board) {
     }
 
     return MBL_MW_MODEL_NA;
+}
+
+const char * MODEL_NAMES[] = {
+    "Unknown",
+    "MetaWear R",
+    "MetaWear RG",
+    "MetaWear RPro",
+    "MetaWear C",
+    "MetaWear CPro",
+    "MetaEnvironment",
+    "MetaDetector",
+    "MetaHealth",
+    "MetaTracker",
+    "MetaMotion R",
+    "MetaMotion C"
+};
+const char* mbl_mw_metawearboard_get_model_name(const MblMwMetaWearBoard* board) {
+    return MODEL_NAMES[mbl_mw_metawearboard_get_model(board) + 1];
 }
 
 uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_t* size) {
@@ -636,4 +743,33 @@ int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* sta
     deserialize_logging(board, (format == SIGNAL_COMPONENT_SERIALIZATION_FORMAT), &current_addr);
 
     return MBL_MW_STATUS_OK;
+}
+
+static bool has_suffix(const std::string &str, const std::string &suffix) {
+    return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+static int32_t dfu_char_changed_handler(const void* caller, const uint8_t* value, uint8_t length) {
+    ((MblMwMetaWearBoard*) caller)->operations->processDFUResponse(value, length);
+    return MBL_MW_STATUS_OK;
+}
+
+static void dfu_enable_notify_ready(const void* caller, int32_t value) {
+    auto board = (MblMwMetaWearBoard*) caller;
+
+    if (value == MBL_MW_STATUS_OK) {
+        if (has_suffix(board->filename, "zip")) {
+            board->operations->perfromDFUOnZipFile(board->filename);
+        } else {
+            board->operations->performOldDFUOnFile(board->filename);
+        }
+    } else {
+        board->operations->cancelDFU();
+    }
+}
+
+void mbl_mw_metawearboard_perform_dfu(MblMwMetaWearBoard *board, const MblMwDfuDelegate *delegate, const char *filename) {
+    board->operations.reset(new DfuOperations(board, delegate));
+    board->filename = filename;
+    board->btle_conn.enable_notifications(board, &DFU_CONTROL_POINT_CHAR, dfu_char_changed_handler, dfu_enable_notify_ready);
 }

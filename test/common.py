@@ -33,8 +33,9 @@ class TestMetaWearBase(unittest.TestCase):
         self.commands_recorded_fn= FnVoid_VoidP_Int(self.commandsRecorded)
 
         self.send_command_fn= FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte(self.commandLogger)
-        self.read_gatt_char_fn= FnVoid_VoidP_GattCharP(self.read_gatt_char)
-        self.btle_connection= BtleConnection(write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn)
+        self.read_gatt_char_fn= FnVoid_VoidP_GattCharP_FnIntVoidPtrArray(self.read_gatt_char)
+        self.enable_gatt_notify_fn = FnVoid_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt(self.enable_gatt_notify)
+        self.btle_connection= BtleConnection(write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn, enable_notifications = self.enable_gatt_notify_fn)
 
         self.metawear_rg_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
@@ -275,7 +276,11 @@ class TestMetaWearBase(unittest.TestCase):
     def initialized(self, board, status):
         self.init_status= status;
 
-    def read_gatt_char(self, board, characteristic):
+    def enable_gatt_notify(self, board, characteristic, handler, ready):
+        self.notify_handler = handler;
+        ready(self.board, 0)
+
+    def read_gatt_char(self, board, characteristic, handler):
         if (characteristic.contents.uuid_high == 0x00002a2400001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             if (self.boardType == TestMetaWearBase.METAWEAR_RG_BOARD):
                 model_number= create_string_buffer(b'1', 1)
@@ -289,10 +294,10 @@ class TestMetaWearBase(unittest.TestCase):
                 model_number= create_string_buffer(b'5', 1)
 
             bytes = cast(model_number.raw, POINTER(c_ubyte))
-            self.libmetawear.mbl_mw_connection_char_read(self.board, characteristic, bytes, len(model_number.raw))
+            handler(self.board, bytes, len(model_number.raw))
         elif (characteristic.contents.uuid_high == 0x00002a2600001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             bytes = cast(self.firmware_revision.raw, POINTER(c_ubyte))
-            self.libmetawear.mbl_mw_connection_char_read(self.board, characteristic, bytes, len(self.firmware_revision.raw))
+            handler(self.board, bytes, len(self.firmware_revision.raw))
 
     def commandLogger(self, board, writeType, characteristic, command, length):
         self.command= []
@@ -404,15 +409,15 @@ class TestMetaWearBase(unittest.TestCase):
         else:
             raise RuntimeError('Unrecognized data type id: ' + str(data.contents.type_id))
 
-    def to_string_buffer(self, bytes):
-        buffer= create_string_buffer(len(bytes))
-        i= 0
-        for b in bytes:
-            buffer[i]= b
-            i= i + 1
-
-        return buffer
-
     def notify_mw_char(self, buffer):
         bytes = cast(buffer, POINTER(c_ubyte))
-        return self.libmetawear.mbl_mw_connection_notify_char_changed(self.board, bytes, len(buffer.raw))
+        return self.notify_handler(self.board, bytes, len(buffer.raw))
+
+def to_string_buffer(bytes):
+    buffer= create_string_buffer(len(bytes))
+    i= 0
+    for b in bytes:
+        buffer[i]= b
+        i= i + 1
+
+    return buffer

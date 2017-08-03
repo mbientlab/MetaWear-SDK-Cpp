@@ -1,5 +1,5 @@
 import copy
-from common import TestMetaWearBase
+from common import TestMetaWearBase, to_string_buffer
 from ctypes import byref
 #from datetime import datetime
 from logdata import *
@@ -193,7 +193,7 @@ class TestGyroYAxisLoggingBase(TestMetaWearBase):
         self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
 
         for line in Bmi160GyroYAxis.log_responses:
-            self.notify_mw_char(self.to_string_buffer(line))
+            self.notify_mw_char(to_string_buffer(line))
 
         self.events["log"].set()
 

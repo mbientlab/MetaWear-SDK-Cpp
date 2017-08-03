@@ -85,7 +85,7 @@ struct LoggerState : public AsyncCreator {
     MblMwLogDownloadHandler log_download_handler;
     float log_download_notify_progress;
     uint32_t n_log_entries;
-
+    uint8_t latest_reset_uid;
 
     LoggerState();
 
@@ -103,6 +103,7 @@ static int32_t logging_response_time_received(MblMwMetaWearBoard *board, const u
     memcpy(&tick, response + 2, 4);
     state->log_time_references.erase(response[6]);
     state->log_time_references.emplace(piecewise_construct, forward_as_tuple(response[6]), forward_as_tuple(tick, response[6]));
+    state->latest_reset_uid = response[6];
 
     board->initialized(board, MBL_MW_STATUS_OK);
     return MBL_MW_STATUS_OK;
@@ -157,6 +158,14 @@ static TimeReference mbl_mw_logger_lookup_reset_uid(const MblMwMetaWearBoard* bo
     return logger_state->log_time_references.at(reset_uid);
 }
 
+static int64_t calculate_epoch_inner(uint32_t tick, const TimeReference& reference) {
+    auto timestamp_copy(reference.timestamp);
+    milliseconds time_offset((int64_t)((int32_t)(tick - reference.tick) * TICK_TIME_STEP));
+    timestamp_copy += time_offset;
+
+    return duration_cast<milliseconds>(timestamp_copy.time_since_epoch()).count();
+}
+
 static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto parse_response= [&board, &response](uint8_t offset) -> void {
         auto state= GET_LOGGER_STATE(board);
@@ -164,21 +173,18 @@ static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const 
         uint32_t entry_tick, data;
 
         memcpy(&entry_tick, response + offset + 1, 4);
-        TimeReference reference = mbl_mw_logger_lookup_reset_uid(board, reset_uid);
-        auto timestamp_copy(reference.timestamp);
-        milliseconds time_offset((int64_t) ((int32_t)(entry_tick - reference.tick) * TICK_TIME_STEP));
-        timestamp_copy+= time_offset;
-
         memcpy(&data, response + offset + 5, 4);
 
         if (!state->latest_tick.count(entry_id) || state->latest_tick.at(entry_id) < entry_tick) {
             state->latest_tick[entry_id]= entry_tick;
             if (state->data_loggers.count(entry_id)) {
                 state->data_loggers.at(entry_id)->process_log_data(entry_id, 
-                        duration_cast<milliseconds>(timestamp_copy.time_since_epoch()).count(), data);
+                    calculate_epoch_inner(entry_tick, mbl_mw_logger_lookup_reset_uid(board, reset_uid)), 
+                    data);
             } else if (state->log_download_handler.received_unknown_entry != nullptr) {
                 state->log_download_handler.received_unknown_entry(entry_id, 
-                         duration_cast<milliseconds>(timestamp_copy.time_since_epoch()).count(), (const uint8_t*) &data, sizeof(data));
+                    calculate_epoch_inner(entry_tick, mbl_mw_logger_lookup_reset_uid(board, reset_uid)), 
+                    (const uint8_t*) &data, sizeof(data));
             }
         }
     };
@@ -552,4 +558,8 @@ void deserialize_logging(MblMwMetaWearBoard* board, bool deserialize_component, 
             saved_log_state->data_loggers[it] = saved_loggable;
         }
     }
+}
+
+int64_t calculate_epoch(const MblMwMetaWearBoard* board, uint32_t tick) {
+    return calculate_epoch_inner(tick, mbl_mw_logger_lookup_reset_uid(board, GET_LOGGER_STATE(board)->latest_reset_uid));
 }

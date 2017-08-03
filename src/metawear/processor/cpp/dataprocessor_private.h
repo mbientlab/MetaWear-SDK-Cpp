@@ -22,7 +22,9 @@ enum class DataProcessorType : uint8_t {
     RSS,
     SAMPLE,
     THRESHOLD,
-    TIME
+    TIME,
+    ACCOUNTER,
+    PACKER
 };
 
 struct MblMwDataProcessor : public MblMwDataSignal {

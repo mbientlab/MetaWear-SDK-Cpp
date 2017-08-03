@@ -1,5 +1,4 @@
 from ctypes import create_string_buffer
-from datetime import datetime
 from mbientlab.metawear.cbindings import CartesianFloat
 
 class Bmi160Accelerometer:

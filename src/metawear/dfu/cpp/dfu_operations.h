@@ -16,7 +16,7 @@
 #include "dfu_operations_details.h"
 #include "dfu_utility.h"
 #include "file_operations.h"
-#include "metawear/dfu/metabootboard.h"
+#include "metawear/core/metawearboard.h"
 //#import "MBL_BLEOperations.h"
 
 
@@ -81,7 +81,7 @@ class DfuOperations : public FileOperationsDelegate {
     void onError(const std::string &);
     
 public:
-    DfuOperations(const MblMwMetaBootBoard* board, const MblMwDfuDelegate *delegate);
+    DfuOperations(const MblMwMetaWearBoard* board, const MblMwDfuDelegate *delegate);
     
     //define public methods
     //void setCentralManager:(CBCentralManager *)manager;

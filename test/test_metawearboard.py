@@ -1,11 +1,12 @@
-from common import TestMetaWearBase
-from ctypes import byref, cast, create_string_buffer, c_ubyte, c_uint, POINTER
+from common import TestMetaWearBase, to_string_buffer
+from ctypes import *
 from logdata import *
 from mbientlab.metawear.cbindings import *
 from test_dataprocessor import TestGpioFeedbackSetup
 from test_logging import TestAccelerometerLoggingBase, TestGyroYAxisLoggingBase
 import serializedstate
 import threading
+import unittest
 
 class TestMetaWearBoard(TestMetaWearBase):
     def test_no_response_handler(self):
@@ -255,7 +256,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
 
     def test_deserialize_motion_r(self):
         # just test that deserialization is successful
-        state_buffer= self.to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
+        state_buffer= to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
 
         self.assertTrue(True)
@@ -266,7 +267,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         self.firmware_revision= create_string_buffer(b'1.3.3', 5)
         self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
-        state_buffer= self.to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
+        state_buffer= to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
 
@@ -371,7 +372,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         self.firmware_revision= create_string_buffer(b'1.2.5', 5)
         self.boardType = TestMetaWearBase.METAWEAR_RPRO_BOARD
 
-        state_buffer= self.to_string_buffer(state)
+        state_buffer= to_string_buffer(state)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
 
@@ -438,7 +439,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
     def test_teardown_serialize(self):
-        state_buffer= self.to_string_buffer(self.expected_state)
+        state_buffer= to_string_buffer(self.expected_state)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
 
@@ -462,7 +463,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
 class TestMetaWearBoardDeserialize(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-        self.state= self.to_string_buffer(serializedstate.activity_with_buffer)
+        self.state= to_string_buffer(serializedstate.activity_with_buffer)
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
     def test_deserialize_same_firmware(self):
@@ -496,7 +497,7 @@ class TestDeserializeTimer(TestMetaWearBase):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
-        state_buffer= self.to_string_buffer(serializedstate.timer_two_events)
+        state_buffer= to_string_buffer(serializedstate.timer_two_events)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
 
@@ -536,7 +537,7 @@ class TestDeserializeAccelerometerLog(TestAccelerometerLoggingBase):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
-        state_buffer= self.to_string_buffer(serializedstate.accelerometer_log)
+        state_buffer= to_string_buffer(serializedstate.accelerometer_log)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
         self.acc_logger= self.libmetawear.mbl_mw_logger_lookup_id(self.board, 0)
@@ -563,7 +564,7 @@ class TestDeserializeGyroYAxisLog(TestGyroYAxisLoggingBase):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
-        state_buffer= self.to_string_buffer(serializedstate.gyro_y_axis_logging_state)
+        state_buffer= to_string_buffer(serializedstate.gyro_y_axis_logging_state)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
         self.gyro_y_logger= self.libmetawear.mbl_mw_logger_lookup_id(self.board, 0)
@@ -589,7 +590,7 @@ class TestDeserializeActivityHandler(TestMetaWearBase):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
-        state_buffer= self.to_string_buffer(serializedstate.activity_with_buffer)
+        state_buffer= to_string_buffer(serializedstate.activity_with_buffer)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
 
@@ -668,7 +669,7 @@ class TestDeserializeMultiComparator(TestMetaWearBase):
         self.firmware_revision= create_string_buffer(b'1.2.3', 5)
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
-        state_buffer= self.to_string_buffer(serializedstate.multi_comparator_state)
+        state_buffer= to_string_buffer(serializedstate.multi_comparator_state)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
 
@@ -692,18 +693,18 @@ class TestModel(TestMetaWearBase):
     def setUp(self):
         setup = True
 
-    def test_get_model(self):
-        models = [
-            ["metawear r", TestMetaWearBase.METAWEAR_R_BOARD, Model.METAWEAR_R],
-            ["metawear rg", TestMetaWearBase.METAWEAR_RG_BOARD, Model.METAWEAR_RG],
-            ["metawear rpro", TestMetaWearBase.METAWEAR_RPRO_BOARD, Model.METAWEAR_RPRO],
-            ["metawear cpro", TestMetaWearBase.METAWEAR_CPRO_BOARD, Model.METAWEAR_CPRO],
-            ["metaenv", TestMetaWearBase.METAWEAR_ENV_BOARD, Model.METAENV],
-            ["metadetect", TestMetaWearBase.METAWEAR_DETECT_BOARD, Model.METADETECT],
-            ["metamotion r", TestMetaWearBase.METAWEAR_MOTION_R_BOARD, Model.METAMOTION_R]
+        self.models = [
+            ["metawear r", TestMetaWearBase.METAWEAR_R_BOARD, Model.METAWEAR_R, "MetaWear R"],
+            ["metawear rg", TestMetaWearBase.METAWEAR_RG_BOARD, Model.METAWEAR_RG, "MetaWear RG"],
+            ["metawear rpro", TestMetaWearBase.METAWEAR_RPRO_BOARD, Model.METAWEAR_RPRO, "MetaWear RPro"],
+            ["metawear cpro", TestMetaWearBase.METAWEAR_CPRO_BOARD, Model.METAWEAR_CPRO, "MetaWear CPro"],
+            ["metaenv", TestMetaWearBase.METAWEAR_ENV_BOARD, Model.METAENV, "MetaEnvironment"],
+            ["metadetect", TestMetaWearBase.METAWEAR_DETECT_BOARD, Model.METADETECT, "MetaDetector"],
+            ["metamotion r", TestMetaWearBase.METAWEAR_MOTION_R_BOARD, Model.METAMOTION_R, "MetaMotion R"]
         ]
 
-        for m in models:
+    def test_get_model(self):
+        for m in self.models:
             with self.subTest(model=m[0]):
                 self.boardType = m[1]
                 self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
@@ -711,3 +712,33 @@ class TestModel(TestMetaWearBase):
 
                 actual = self.libmetawear.mbl_mw_metawearboard_get_model(self.board)
                 self.assertEqual(m[2], actual)
+
+    def test_get_model_name(self):
+        for m in self.models:
+            with self.subTest(model=m[0]):
+                self.boardType = m[1]
+                self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
+                self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+
+                actual = self.libmetawear.mbl_mw_metawearboard_get_model_name(self.board)
+                self.assertEqual(m[3], actual.decode("ascii"))
+
+class TestIndefiniteTimeout(TestMetaWearBase):
+    def setUp(self):
+        self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
+        self.init_event = threading.Event()
+
+    def initialized(self, board, status):
+        self.init_status= status;
+        self.init_event.set()
+
+    def commandLogger(self, board, writeType, characteristic, command, length):
+        pass
+
+    @unittest.skip("not waiting forever")
+    def test_infinite_initialize(self):
+        self.libmetawear.mbl_mw_metawearboard_set_time_for_response(self.board, 0)
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+        self.init_event.wait()
+
+        self.assertEqual(self.init_status, Const.STATUS_ERROR_TIMEOUT)
