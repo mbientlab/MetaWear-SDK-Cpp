@@ -52,13 +52,14 @@ endif
 REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)
 REAL_BUILD_DIR:=$(BUILD_DIR)/$(MACHINE)/$(CONFIGURATION)
 MODULES_BUILD_DIR:=$(addprefix $(REAL_BUILD_DIR)/, $(MODULES_SRC_DIR))
+LIBMETAWEAR_JAVASCRIPT_PATH:=$(BINDINGS_DIR)/javascript/libmetawear-path.js
 
 OBJS:=$(addprefix $(REAL_BUILD_DIR)/,$(SRCS:%.cpp=%.o))
 DEPS:=$(OBJS:%.o=%.d)
 
 APP_OUTPUT:=$(REAL_DIST_DIR)/$(LIB_NAME)
 
-build: $(MODULES_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
+build: $(MODULES_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT) $(LIBMETAWEAR_JAVASCRIPT_PATH)
 
 $(REAL_BUILD_DIR)/%.o: %.cpp
 	$(CXX) -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
@@ -90,7 +91,7 @@ $(BUILD_DIR)/$(PUBLISH_NAME): build
 	tar -rf $@ -C $(DIST_DIR) .
 
 clean:
-	rm -Rf $(BUILD_DIR) $(DIST_DIR)
+	rm -Rf $(BUILD_DIR) $(DIST_DIR) $(LIBMETAWEAR_JAVASCRIPT_PATH)
 
 doc:
 	rm -Rf $(DOC_DIR)
@@ -105,3 +106,6 @@ export METAWEAR_LIB_SO_NAME=$(APP_OUTPUT)
 
 test: build
 	python3 -m unittest discover -s test
+
+$(LIBMETAWEAR_JAVASCRIPT_PATH):
+	@echo "module.exports = '$(abspath $(METAWEAR_LIB_SO_NAME))'" > $@
