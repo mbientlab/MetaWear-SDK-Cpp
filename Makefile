@@ -108,4 +108,4 @@ test: build
 	python3 -m unittest discover -s test
 
 $(LIBMETAWEAR_JAVASCRIPT_PATH):
-	@echo "module.exports = '$(abspath $(METAWEAR_LIB_SO_NAME))'" > $@
+	@echo "module.exports = '$(abspath $(METAWEAR_LIB_SO_NAME))';" > $@
