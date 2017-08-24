@@ -12,7 +12,7 @@
 #define CREATE_BFIELD_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(BMM150_MAG_DATA_RESPONSE_HEADER, board, interpreter, \
         FirmwareConverter::BOSCH_MAGNETOMETER, channels, 2, 1, offset)
 
-const uint8_t PACKED_MAG_REVISION = 1;
+const uint8_t PACKED_MAG_REVISION = 1, SUSPEND_REVISION = 2;
 const ResponseHeader BMM150_MAG_DATA_RESPONSE_HEADER(MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::MAG_DATA)),
         BMM150_MAG_PACKED_DATA_RESPONSE_HEADER(MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::PACKED_MAG_DATA));;
 
@@ -52,6 +52,10 @@ MblMwDataSignal* mbl_mw_mag_bmm150_get_packed_b_field_data_signal(const MblMwMet
 }
 
 void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150Odr odr) {
+    if (board->module_info.at(MBL_MW_MODULE_MAGNETOMETER).revision >= SUSPEND_REVISION) {
+        mbl_mw_mag_bmm150_stop(board);
+    }
+
     uint8_t data_rep_cmd[4]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::DATA_REPETITIONS), 
             static_cast<uint8_t>((xy_reps - 1) / 2), static_cast<uint8_t>(z_reps - 1) };
     send_command(board, data_rep_cmd, sizeof(data_rep_cmd));
@@ -95,4 +99,11 @@ void mbl_mw_mag_bmm150_start(const MblMwMetaWearBoard *board) {
 void mbl_mw_mag_bmm150_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::POWER_MODE), 0 };
     SEND_COMMAND;
+}
+
+void mbl_mw_mag_bmm150_suspend(const MblMwMetaWearBoard *board) {
+    if (board->module_info.at(MBL_MW_MODULE_MAGNETOMETER).revision >= SUSPEND_REVISION) {
+        uint8_t command[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::POWER_MODE), 2 };
+        SEND_COMMAND;
+    }
 }

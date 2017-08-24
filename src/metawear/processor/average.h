@@ -12,15 +12,26 @@ extern "C" {
 #endif
 
 /**
- * Create an average processor with a specific sample size.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
+ * @deprecated As of v0.10.0, use mbl_mw_dataprocessor_lowpass_create
+ */
+METAWEAR_API int32_t mbl_mw_dataprocessor_average_create(MblMwDataSignal *source, uint8_t size, MblMwFnDataProcessor processor_created);
+/**
+ * Create a high-pass filter.  A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
- * @param size                  How many data samples to use for computing the running average.  Recommended
+ * @param size                  Number of previous data samples to compare against, Recommended
  *                              to be a power of 2 for faster computation.
  * @param processor_created     Callback function to be executed when the processor is created
  */
-METAWEAR_API int32_t mbl_mw_dataprocessor_average_create(MblMwDataSignal *source, uint8_t size,
-        MblMwFnDataProcessor processor_created);
+METAWEAR_API int32_t mbl_mw_dataprocessor_highpass_create(MblMwDataSignal *source, uint8_t size, MblMwFnDataProcessor processor_created);
+/**
+ * Create a low-pass filter.  A pointer representing the processor will be passed back to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param size                  Number of previous data samples to compare against, Recommended
+ *                              to be a power of 2 for faster computation.
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+METAWEAR_API int32_t mbl_mw_dataprocessor_lowpass_create(MblMwDataSignal *source, uint8_t size, MblMwFnDataProcessor processor_created);
+
 /**
  * Resets the running average
  * @param average       Average processor to reset

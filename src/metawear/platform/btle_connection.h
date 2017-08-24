@@ -71,6 +71,12 @@ typedef struct {
      * @param ready                 Callback function to handle when the enable notify task is completed
      */
     void (*enable_notifications)(const void* caller, const MblMwGattChar* characteristic, MblMwFnIntVoidPtrArray handler, MblMwFnVoidVoidPtrInt ready);
+    /**
+     * Register a handler for disconnect events
+     * @param caller                Object using this function pointer
+     * @param handler               Handler to respond to the disconnect event
+     */
+    void (*on_disconnect)(const void* caller, MblMwFnVoidVoidPtrInt handler);
 } MblMwBtleConnection;
 
 #ifdef __cplusplus

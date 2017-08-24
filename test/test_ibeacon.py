@@ -56,8 +56,8 @@ class TestIBeacon(TestMetaWearBase):
         expected= [0x07, 0x02, 0x5a, 0xe7, 0xba, 0xfb, 0x4c, 0x46, 0xdd, 0xd9, 0x95, 0x91, 0xcb, 0x85, 0x06, 0x90, 0x6a, 0x32]
 
         bytes = uuid.UUID('{326a9006-85cb-9195-d9dd-464cfbbae75a}').bytes[::-1]
-        ad_uuid = cast(bytes, POINTER(c_ubyte))
-        self.libmetawear.mbl_mw_ibeacon_set_uuid(self.board, ad_uuid)
+        ad_uuid = cast(bytes, POINTER(c_ubyte * 16))
+        self.libmetawear.mbl_mw_ibeacon_set_uuid(self.board, ad_uuid.contents)
         self.assertEqual(self.command, expected)
 
     def test_enable(self):

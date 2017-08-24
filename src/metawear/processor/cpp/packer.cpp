@@ -1,6 +1,7 @@
 #include <cstdlib>
 
 #include "packer_private.h"
+#include "metawear/core/cpp/constant.h"
 #include "metawear/processor/packer.h"
 #include "processor_private_common.h"
 
@@ -14,6 +15,9 @@ struct PackerConfig {
 };
 
 METAWEAR_API int32_t mbl_mw_dataprocessor_packer_create(MblMwDataSignal *source, uint8_t count, MblMwFnDataProcessor processor_created) {
+    if (source->length() * count + 3 >= BLE_PACKET_SIZE) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
 
     PackerConfig* config = (PackerConfig*)calloc(1, sizeof(PackerConfig));

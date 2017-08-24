@@ -35,7 +35,9 @@ class TestMetaWearBase(unittest.TestCase):
         self.send_command_fn= FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte(self.commandLogger)
         self.read_gatt_char_fn= FnVoid_VoidP_GattCharP_FnIntVoidPtrArray(self.read_gatt_char)
         self.enable_gatt_notify_fn = FnVoid_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt(self.enable_gatt_notify)
-        self.btle_connection= BtleConnection(write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn, enable_notifications = self.enable_gatt_notify_fn)
+        self.on_disconnect_fn = FnVoid_VoidP_FnVoidVoidPtrInt(self.on_disconnect)
+        self.btle_connection= BtleConnection(write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn, 
+                enable_notifications = self.enable_gatt_notify_fn, on_disconnect = self.on_disconnect_fn)
 
         self.metawear_rg_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
@@ -275,6 +277,9 @@ class TestMetaWearBase(unittest.TestCase):
 
     def initialized(self, board, status):
         self.init_status= status;
+
+    def on_disconnect(self, board, handler):
+        self.dc_handler = handler;
 
     def enable_gatt_notify(self, board, characteristic, handler, ready):
         self.notify_handler = handler;

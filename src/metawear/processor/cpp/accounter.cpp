@@ -3,6 +3,7 @@
 #include "accounter_private.h"
 #include "metawear/processor/accounter.h"
 #include "metawear/core/cpp/metawearboard_def.h"
+#include "metawear/core/cpp/constant.h"
 #include "processor_private_common.h"
 
 using std::calloc;
@@ -17,6 +18,10 @@ struct AccounterConfig {
 
 METAWEAR_API int32_t mbl_mw_dataprocessor_accounter_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
     const uint8_t length = 4;   // Fix to 4 byte length for now
+    if (source->length() + length + 3 >= BLE_PACKET_SIZE) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
+
     MblMwDataProcessor *new_processor = new MblMwDataProcessor(*source);
     new_processor->channel_size+= length;
 

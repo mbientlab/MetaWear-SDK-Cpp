@@ -11,6 +11,22 @@ Input data signals that are marked with a `MblMwCartesianFloat <https://mbientla
 .i.e accelerometer, gyro, and magnetometer data, are limited to only using the :ref:`dataprocessor-math`, :ref:`dataprocessor-rms`, and 
 :ref:`dataprocessor-rss` processors.  Once fed through an RMS or RSS processor however, they can utilize the rest of the data processing functions.
 
+Accounter
+^^^^^^^^^
+The accounter processor adds additional information to the BTLE packet to reconstruct the data's timestamp, typically used with streaming raw 
+accelerometer, gyro, and magnetometer data.  This processor is designed specifically for streaming, do not use with the logger.  ::
+
+    #include "metawear/processor/accounter.h"
+
+    void account_acc_data(MblMwMetaWearBoard* board) {
+        auto signal = mbl_mw_acc_get_acceleration_data_signal(board);
+        mbl_mw_dataprocessor_accounter_create(signal, [](MblMwDataProcessor* accounter) {
+            mbl_mw_datasignal_subscribe((MblMwDataSignal*)accounter, [](const MblMwData* data) {
+                cout << "real time = " << data->epoch << endl;
+            });
+        });
+    }
+
 Accumulator
 -----------
 The accumulator computes a running sum over the inputs.  Users can explicitly specify an output size (1 to 4 bytes) or 
@@ -197,6 +213,23 @@ Constants identifying the output modes are defined in the `MblMwDeltaMode <https
         mbl_mw_dataprocessor_delta_create(adc_signal, MBL_MW_DELTA_MODE_BINARY, 128, proc_created);
     }
 
+High Pass Filter
+----------------
+High pass filters compute the difference of the current value from a running average of the previous N samples.  Output from this processor is delayed 
+until the first N samples have been received.  ::
+
+    #include "metawear/processor/average.h"
+
+    void hpf_acc_data(MblMwMetaWearBoard* board) {
+        auto signal = mbl_mw_acc_get_acceleration_data_signal(board);
+        mbl_mw_dataprocessor_highpass_create(signal, 4, [](MblMwDataProcessor* hpf) {
+            mbl_mw_datasignal_subscribe((MblMwDataSignal*)hpf, [](const MblMwData* data) {
+                auto value = (MblMwCartesianFloat*)data->value;
+                printf("hpf acc = (%.3f, %.3f, %.3f)\n", value->x, value->y, value->z);
+            });
+        });
+    }
+
 .. _dataprocessor-math:
 
 Math
@@ -251,6 +284,27 @@ set the second operand with the output of another data signal. ::
         mbl_mw_event_record_commands((MblMwEvent*) switch_signal);
         mbl_mw_dataprocessor_math_modify_rhs_signal(math_processor, switch_signal);
         mbl_mw_event_end_record((MblMwEvent*) switch_signal, cmds_recorded);
+    }
+
+Packer
+^^^^^^
+The packer processor combines multiple data samples into 1 BLE packet to increase the data throughput.  You can pack between 4 to 8 samples per packet 
+depending on the data size.
+
+Note that if you use the packer processor with raw motion data instead of using their packed data producer variants, you will only be able to combine 2 
+data samples into a packet instead of 3 samples however, you can chain an accounter processor to associate a timestamp with the packed data.  ::
+
+    #include "metawear/processor/packer.h"
+
+    int samples;
+    void pack_data(MblMwDataSignal* signal) {
+        mbl_mw_dataprocessor_packer_create(signal, 4, [](MblMwDataProcessor* packer) {
+            samples = 0;
+            mbl_mw_datasignal_subscribe((MblMwDataSignal*)packer, [](const MblMwData* data) {
+                samples++;
+                cout << "samples = " << samples << endl;
+            });
+        });
     }
 
 Passthrough

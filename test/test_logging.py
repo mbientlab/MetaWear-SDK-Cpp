@@ -129,6 +129,7 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
 
         self.download_handler= LogDownloadHandler(received_progress_update = cast(None, FnVoid_UInt_UInt), \
                 received_unknown_entry = cast(None, FnVoid_UByte_Long_UByteP_UByte), received_unhandled_entry = cast(None, FnVoid_DataP))
+        self.responses = Bmi160Accelerometer.log_responses
 
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
@@ -149,7 +150,7 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
         cartesian_float_data= FnVoid_DataP(self.cartesian_float_data_handler)
         self.libmetawear.mbl_mw_logger_subscribe(logger, cartesian_float_data)
         self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
-        for buffer in Bmi160Accelerometer.log_responses:
+        for buffer in self.responses:
             self.notify_mw_char(buffer)
 
         self.events["log"].set()
@@ -170,6 +171,24 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
         self.events["log"].wait()
 
         self.assertEqual(self.data_time_offsets, Bmi160Accelerometer.expected_offsets)
+
+    def test_rollover(self):
+        responses = [
+            [0x0b, 0x84, 0x15, 0x04, 0x00, 0x00, 0x05],
+            [11, 7, 0xa1, 0xff, 0xff, 0xff, 0xff, 0x91, 0xef, 0, 0, 0xa0, 0xff, 0xff, 0xff, 0xff, 0x80, 0xff, 0xb7, 0xff],
+            [11, 7, 0xa1, 13, 0, 0, 0, 116, 0xef, 0, 0, 0xa0, 13, 0, 0, 0, 125, 0xff, 0xba, 0xff],
+            [11, 8, 0, 0, 0, 0]
+        ]
+
+        self.responses = []
+        for buffer in responses:
+            self.responses.append(to_string_buffer(buffer))
+
+        acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_created)
+        self.events["log"].wait()
+
+        self.assertEqual(self.data_time_offsets, [21])
 
 class TestGyroYAxisLoggingBase(TestMetaWearBase):
     def __init__(self, *args, **kwargs):

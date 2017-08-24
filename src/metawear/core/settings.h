@@ -24,6 +24,32 @@ const uint8_t MBL_MW_SETTINGS_BATTERY_VOLTAGE_INDEX = 0,
 //@}
 
 /**
+ * Types of BLE addresses
+ */
+const uint8_t MBL_MW_ADDRESS_TYPE_PUBLIC = 0,
+        MBL_MW_ADDRESS_TYPE_RANDOM_STATIC = 1,
+        MBL_MW_ADDRESS_TYPE_PRIVATE_RESOLVABLE = 2,
+        MBL_MW_ADDRESS_TYPE_PRIVATE_NON_RESOLVABLE = 3;
+
+/**
+ * Whitelist filter modes
+ */
+typedef enum {
+    MBL_MW_WHITELIST_FILTER_ALLOW_FROM_ANY = 0,
+    MBL_MW_WHITELIST_FILTER_SCAN_REQUESTS = 1,
+    MBL_MW_WHITELIST_FILTER_CONNECTION_REQUESTS = 2,
+    MBL_MW_WHITELIST_FILTER_SCAN_AND_CONNECTION_REQUESTS = 3
+} MblMwWhitelistFilter;
+
+/**
+ * BLE MAC Address
+ */
+typedef struct {
+    uint8_t address_type;       ///< Types of BLE address: MBL_MW_ADDRESS_TYPE_*
+    uint8_t address[6];         ///< MAC Address - Little Endian (LSB First)
+} MblMwBtleAddress;
+
+/**
  * Retrieves an event pointer representing a disconnect event
  * @param board         Board the event is fired on
  * @return Pointer to the disconnect event
@@ -78,6 +104,19 @@ METAWEAR_API void mbl_mw_settings_set_scan_response(const MblMwMetaWearBoard *bo
  */
 METAWEAR_API void mbl_mw_settings_set_connection_parameters(const MblMwMetaWearBoard *board, float min_conn_interval, float max_conn_interval, 
         uint16_t latency, uint16_t timeout);
+/**
+ * Adds MAC Addresses for Whitelist filtering
+ * @param board         Board to modify
+ * @param index         Whitelist MAC address in range [1, 8], must start at 1 and go in increasing order
+ * @param address       Address to add
+ */
+METAWEAR_API void mbl_mw_settings_add_whitelist_address(const MblMwMetaWearBoard *board, uint8_t index, const MblMwBtleAddress *address);
+/**
+ * Sets connection parameters
+ * @param board          Board to modify
+ * @param mode           Whitelist filter mode
+ */
+METAWEAR_API void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, MblMwWhitelistFilter mode);
 
 #ifdef	__cplusplus
 }

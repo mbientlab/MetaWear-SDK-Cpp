@@ -921,6 +921,34 @@ class TestAccounter(TestMetaWearBase):
 
         self.assertEqual(offsets, expected)
 
+    def test_time_rollover(self):
+        expected = [10, 10, 9, 10, 10]
+
+        offsets = []
+        prev_time = []
+        def handle_sensor_data(data):
+            if len(prev_time) == 0:
+                prev_time.append(data.contents.epoch)
+            else:
+                offsets.append(data.contents.epoch - prev_time[0])
+                prev_time[0] = data.contents.epoch
+
+        fn_wrapper = FnVoid_DataP(handle_sensor_data)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], fn_wrapper)
+
+        responses = [
+            [0x09, 0x03, 0x00, 0xff, 0xff, 0xff, 0xff, 0xc1, 0x00, 0xb1, 0x24, 0x19, 0xcd],
+            [0x09, 0x03, 0x00, 0x06, 0x00, 0x00, 0x00, 0xd4, 0x00, 0x18, 0x25, 0xc0, 0xcc],
+            [0x09, 0x03, 0x00, 0x0d, 0x00, 0x00, 0x00, 0xc7, 0x00, 0x09, 0x25, 0xb2, 0xcc],
+            [0x09, 0x03, 0x00, 0x13, 0x00, 0x00, 0x00, 0xc5, 0x00, 0x17, 0x25, 0xbc, 0xcc],
+            [0x09, 0x03, 0x00, 0x1a, 0x00, 0x00, 0x00, 0xd4, 0x00, 0xe9, 0x24, 0xe4, 0xcc],
+            [0x09, 0x03, 0x00, 0x21, 0x00, 0x00, 0x00, 0xaf, 0x00, 0xf7, 0x24, 0xe3, 0xcc]
+        ]
+        for r in responses:
+            self.notify_mw_char(to_string_buffer(r))
+
+        self.assertEqual(offsets, expected)
+
 class TestPacker(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
@@ -1076,3 +1104,29 @@ class TestPackerAccounterChain(TestMetaWearBase):
             self.notify_mw_char(to_string_buffer(r))
 
         self.assertEqual(offsets, expected)
+
+class TestHpf(TestMetaWearBase):
+    def setUp(self):
+        self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x02\x1C', 5)
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
+        signal = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_dataprocessor_highpass_create(signal, 4, self.processor_handler)
+        self.events["processor"].wait()        
+
+    def test_create_acc(self):
+        expected = [
+            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x03, 0x25, 0x04, 0x02]
+        ]
+
+        self.assertEqual(self.command_history, expected)
+
+    def test_acc_hpf_data(self):
+        expected = CartesianFloat(x= -0.00104, y= 0.0025, z= 0.0013)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x00, 0xef, 0xff, 0x29, 0x00, 0x16, 0x00]))
+
+        self.assertEqual(self.data_cartesian_float, expected)

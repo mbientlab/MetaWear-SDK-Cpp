@@ -9,5 +9,7 @@ enum class SettingsRegister : uint8_t {
     PARTIAL_SCAN_RESPONSE,
     CONNECTION_PARAMS,
     DISCONNECT_EVENT,
-    BATTERY_STATE= 0xc
+    BATTERY_STATE = 0xc,
+    WHITELIST_FILTER_MODE = 0x13,
+    WHITELIST_ADDRESSES = 0x14
 };

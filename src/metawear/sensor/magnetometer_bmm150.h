@@ -97,31 +97,37 @@ METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_packed_b_field_data_signal(c
 METAWEAR_API void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150Odr odr);
 /**
  * Sets the power mode to one of the recommended presets
- * @param board         Board to modify
+ * @param board         Calling object
  * @param preset        New preset power mode to use
  */
 METAWEAR_API void mbl_mw_mag_bmm150_set_preset(const MblMwMetaWearBoard *board, MblMwMagBmm150Preset preset);
 
 /**
  * Enable B field sampling
- * @param board         Board the magnetometer resides on
+ * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_mag_bmm150_enable_b_field_sampling(const MblMwMetaWearBoard *board);
 /**
  * Disable B field sampling
- * @param board         Board the magnetometer resides on
+ * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_mag_bmm150_disable_b_field_sampling(const MblMwMetaWearBoard *board);
 /**
  * Switches the magnetometer into normal mode
- * @param board         Board the magnetometer resides on
+ * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_mag_bmm150_start(const MblMwMetaWearBoard *board);
 /**
  * Switches the magnetometer into sleep mode
- * @param board         Board the magnetometer resides on
+ * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_mag_bmm150_stop(const MblMwMetaWearBoard *board);
+/**
+ * Puts the magnetometer in suspend mode.  This function will not issuee the command unless the 
+ * board is running minimum firmware v1.3.4.
+ * @param board         Calling object
+ */
+METAWEAR_API void mbl_mw_mag_bmm150_suspend(const MblMwMetaWearBoard *board);
 
 #ifdef	__cplusplus
 }

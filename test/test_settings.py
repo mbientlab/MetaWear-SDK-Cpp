@@ -167,3 +167,13 @@ class TestSettingsRevision3(TestMetaWearBase):
         self.notify_mw_char(create_string_buffer(b'\x11\x8c\x63\x34\x10', 5))
 
         self.assertEqual(self.data_battery_state, expected)
+
+class TestSettingsRevision6(TestSettings):
+    def setUp(self):
+        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x06', 4)
+        super().setUp()
+
+    def test_set_ad_interval(self):
+        expected= [0x11, 0x02, 0x9b, 0x02, 0x00, 0x0]
+        self.libmetawear.mbl_mw_settings_set_ad_interval(self.board, 417, 0)
+        self.assertEqual(self.command, expected)

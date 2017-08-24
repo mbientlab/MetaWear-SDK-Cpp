@@ -8,6 +8,7 @@
 #include <tuple>
 #include <typeinfo>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "metawear/core/metawearboard.h"
@@ -61,6 +62,7 @@ using std::piecewise_construct;
 using std::sort;
 using std::string;
 using std::unordered_map;
+using std::unordered_set;
 using std::vector;
 
 const uint8_t CARTESIAN_FLOAT_SIZE= 6;
@@ -417,9 +419,23 @@ static void enable_notify_ready(const void* caller, int32_t value) {
     }
 }
 
+const unordered_set<void(*)(MblMwMetaWearBoard*)> MODULE_DISCONNECT_HANDLERS = {
+    disconnect_logging
+};
+
+static void disconnect_handler(const void* caller, int32_t value) {
+    auto board = (MblMwMetaWearBoard*) caller;
+
+    for(auto it: MODULE_DISCONNECT_HANDLERS) {
+        it(board);
+    }
+}
+
 void mbl_mw_metawearboard_initialize(MblMwMetaWearBoard *board, MblMwFnBoardPtrInt initialized) {
     board->initialized = initialized;
     board->dev_info_index = -1;
+
+    board->btle_conn.on_disconnect(board, disconnect_handler);
     board->btle_conn.enable_notifications(board, &METAWEAR_SERVICE_NOTIFY_CHAR, char_changed_handler, enable_notify_ready);
 }
 

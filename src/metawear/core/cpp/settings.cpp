@@ -19,7 +19,7 @@ using std::memcpy;
 using std::vector;
 
 const float AD_INTERVAL_STEP= 0.625f, CONN_INTERVAL_STEP= 1.25f, TIMEOUT_STEP= 10;
-const uint8_t CONN_PARAMS_REVISION= 1, DISCONNECTED_EVENT_REVISION= 2, BATTERY_REVISION= 3;
+const uint8_t CONN_PARAMS_REVISION= 1, DISCONNECTED_EVENT_REVISION= 2, BATTERY_REVISION= 3, WHITELIST_REVISION = 6;
 
 const ResponseHeader SETTINGS_BATTERY_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::BATTERY_STATE))),
         SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::DISCONNECT_EVENT));
@@ -63,15 +63,18 @@ void mbl_mw_settings_set_device_name(const MblMwMetaWearBoard *board, const uint
 }
 
 void mbl_mw_settings_set_ad_interval(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout) {
-    uint8_t command[5]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::AD_INTERVAL), 0, 0, timeout};
+    vector<uint8_t> command = {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::AD_INTERVAL), 0, 0, timeout};
 
-    auto info= board->module_info.find(MBL_MW_MODULE_SETTINGS);
-    if (info->second.revision >= CONN_PARAMS_REVISION) {
+    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= CONN_PARAMS_REVISION) {
         interval/= AD_INTERVAL_STEP;
     }
-    memcpy(command + 2, &interval, sizeof(interval));
+    memcpy(command.data() + 2, &interval, sizeof(interval));
 
-    SEND_COMMAND;
+    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= WHITELIST_REVISION) {
+        command.push_back(0);
+    }
+
+    send_command(board, command.data(), (uint8_t) command.size());
 }
 
 void mbl_mw_settings_set_tx_power(const MblMwMetaWearBoard *board, int8_t tx_power) {
@@ -109,4 +112,19 @@ void mbl_mw_settings_set_connection_parameters(const MblMwMetaWearBoard *board, 
 
     memcpy(command + 2, parameters, sizeof(parameters));
     SEND_COMMAND;
+}
+
+void mbl_mw_settings_add_whitelist_address(const MblMwMetaWearBoard *board, uint8_t index, const MblMwBtleAddress *address) {
+    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= WHITELIST_REVISION) {
+        uint8_t command[10]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::WHITELIST_ADDRESSES), index};
+        memcpy(command + 3, address, sizeof(MblMwBtleAddress));
+        SEND_COMMAND;
+    }
+}
+
+void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, MblMwWhitelistFilter mode) {
+    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= WHITELIST_REVISION) {
+        uint8_t command[3]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::WHITELIST_FILTER_MODE), static_cast<uint8_t>(mode)};
+        SEND_COMMAND;
+    }
 }

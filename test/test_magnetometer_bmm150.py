@@ -66,6 +66,34 @@ class TestMagnetometerBmm150(TestMetaWearBase):
         self.libmetawear.mbl_mw_mag_bmm150_stop(self.board)
         self.assertEqual(self.command, expected)
 
+    def test_suspend(self):
+        # last command should be read time register
+        expected = [0x0b, 0x84]
+
+        self.libmetawear.mbl_mw_mag_bmm150_suspend(self.board)
+        self.assertEqual(self.command, expected)
+
+class TestMagnetometerBmm150Rev2(TestMagnetometerBmm150):
+    def setUp(self):
+        self.metawear_cpro_services[0x15] = create_string_buffer(b'\x15\x80\x00\x02', 4)
+
+        super().setUp()
+
+    def test_preset(self):
+        expected = [
+            [0x15, 0x01, 0x00],
+            [0x15, 0x04, 0x04, 0x0e], 
+            [0x15, 0x03, 0x00]
+        ]
+        self.libmetawear.mbl_mw_mag_bmm150_set_preset(self.board, MagBmm150Preset.REGULAR)
+        self.assertEqual(self.command_history, expected)
+
+    def test_suspend(self):
+        expected = [0x15, 0x01, 0x02]
+
+        self.libmetawear.mbl_mw_mag_bmm150_suspend(self.board)
+        self.assertEqual(self.command, expected)
+
 class TestMagnetometerBmm150Data(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_CPRO_BOARD
