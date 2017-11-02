@@ -87,7 +87,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_logger_get_signal(const MblMwDataLogger* lo
 METAWEAR_API MblMwDataLogger* mbl_mw_logger_lookup_id(const MblMwMetaWearBoard* board, uint8_t id);
 /**
  * Removes the logger from the board
- * @param logger                Logger to remove
+ * @param logger                logger to remove
  */
 METAWEAR_API void mbl_mw_logger_remove(MblMwDataLogger* logger);
 /**
@@ -96,6 +96,13 @@ METAWEAR_API void mbl_mw_logger_remove(MblMwDataLogger* logger);
  * @param received_data         Callback function to handle data received from the logger
  */
 METAWEAR_API void mbl_mw_logger_subscribe(MblMwDataLogger* logger, MblMwFnData received_data);
+/**
+ * Generates a string identifying the data chain the logger is receiving data from.  This string is matched with the 
+ * output of mbl_mw_anonymous_datasignal_get_identifier.
+ * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
+ * @param logger                Calling object
+ */
+METAWEAR_API char* mbl_mw_logger_generate_identifier(const MblMwDataLogger* logger);
 
 #ifdef	__cplusplus
 }

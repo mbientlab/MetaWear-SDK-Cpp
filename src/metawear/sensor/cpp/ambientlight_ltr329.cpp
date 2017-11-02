@@ -9,6 +9,7 @@
 #include "metawear/sensor/ambientlight_ltr329.h"
 #include "ambientlight_ltr329_private.h"
 #include "ambientlight_ltr329_register.h"
+#include "utils.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -18,6 +19,7 @@ using std::malloc;
 using std::memcpy;
 using std::memset;
 using std::piecewise_construct;
+using std::stringstream;
 
 const ResponseHeader LTR329_ILLUMINANCE_RESPONSE_HEADER(MBL_MW_MODULE_AMBIENT_LIGHT, ORDINAL(AmbientLightLtr329Register::OUTPUT));
 
@@ -94,4 +96,12 @@ void mbl_mw_als_ltr329_start(const MblMwMetaWearBoard *board) {
 void mbl_mw_als_ltr329_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_AMBIENT_LIGHT, ORDINAL(AmbientLightLtr329Register::ENABLE), 0};
     SEND_COMMAND;
+}
+
+void create_als_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(AmbientLightLtr329Register::OUTPUT):
+        uri << "illuminance";
+        break;
+    }
 }

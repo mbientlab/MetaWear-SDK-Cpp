@@ -1,4 +1,5 @@
 #include "metawear/core/module.h"
+#include "metawear/core/status.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/core/cpp/metawearboard_macro.h"
@@ -11,12 +12,19 @@
 #include "metawear/sensor/sensor_fusion.h"
 #include "sensor_fusion_private.h"
 #include "sensor_fusion_register.h"
+#include "utils.h"
 
 #include <cstdlib>
 #include <cstring>
+#include <unordered_map>
 
+using std::forward_as_tuple;
 using std::malloc;
 using std::memset;
+using std::piecewise_construct;
+using std::stringstream;
+using std::strlen;
+using std::unordered_map;
 
 #define CORRECTED_ACC_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_CORRECTED_ACC]
 #define CORRECTED_GYRO_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_CORRECTED_GYRO]
@@ -46,6 +54,23 @@ struct SensorFusionState {
     } config;
     uint8_t enable_mask;
 };
+
+struct SensorFusionTransientState {
+    MblMwFnBoardPtrInt read_config_completed;
+};
+
+static unordered_map<const MblMwMetaWearBoard*, SensorFusionTransientState> transient_states;
+
+static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    auto state = (SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION);
+    memcpy(&(state->config), response + 2, sizeof(state->config));
+
+    auto callback = transient_states[board].read_config_completed;
+    transient_states[board].read_config_completed = nullptr;
+    callback(board, MBL_MW_STATUS_OK);
+
+    return 0;
+}
 
 void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
     if (board->module_info.count(MBL_MW_MODULE_SENSOR_FUSION) && board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).present) {
@@ -96,6 +121,12 @@ void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
             board->module_events[LINEAR_ACC_RESPONSE_HEADER] = new MblMwDataSignal(LINEAR_ACC_RESPONSE_HEADER, board, 
                     DataInterpreter::SENSOR_FUSION_FLOAT_VECTOR3, FirmwareConverter::DEFAULT, 3, 4, 1, 0);
         }
+
+        board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::MODE))),
+                forward_as_tuple(received_config_response));
+
+        SensorFusionTransientState newState = {nullptr};
+        transient_states.insert({board, newState});
     }
 }
 
@@ -164,6 +195,12 @@ void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
 
         mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
     }
+}
+
+void mbl_mw_sensor_fusion_read_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed) {
+    transient_states[board].read_config_completed = completed;
+    uint8_t command[2] = { MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::MODE)) };
+    SEND_COMMAND;
 }
 
 void mbl_mw_sensor_fusion_enable_data(MblMwMetaWearBoard* board, MblMwSensorFusionData data) {
@@ -244,6 +281,32 @@ void mbl_mw_sensor_fusion_stop(const MblMwMetaWearBoard* board) {
         mbl_mw_mag_bmm150_stop(board);
         mbl_mw_acc_disable_acceleration_sampling(board);
         mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+        break;
+    }
+}
+
+void create_sensor_fusion_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(SensorFusionRegister::CORRECTED_ACC):
+        uri << "corrected-acceleration";
+        break;
+    case ORDINAL(SensorFusionRegister::CORRECTED_GYRO):
+        uri << "corrected-angular-velocity";
+        break;
+    case ORDINAL(SensorFusionRegister::CORRECTED_MAG):
+        uri << "corrected-magnetic-field";
+        break;
+    case ORDINAL(SensorFusionRegister::QUATERNION):
+        uri << "quaternion";
+        break;
+    case ORDINAL(SensorFusionRegister::EULER_ANGLES):
+        uri << "euler-angles";
+        break;
+    case ORDINAL(SensorFusionRegister::GRAVITY_VECTOR):
+        uri << "gravity";
+        break;
+    case ORDINAL(SensorFusionRegister::LINEAR_ACC):
+        uri << "linear-acceleration";
         break;
     }
 }

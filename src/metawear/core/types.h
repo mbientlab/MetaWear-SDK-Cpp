@@ -63,3 +63,26 @@ typedef struct {
     float z;
     uint8_t accuracy;
 } MblMwCorrectedCartesianFloat;
+
+/**
+ * Internal stack overflow state
+ */
+typedef struct {
+    uint16_t length;
+    uint8_t assert_en;
+} MblMwOverflowState;
+
+/**
+ * Enumeration of sensor orientations
+ * @author Eric Tsai
+ */
+typedef enum {
+    MBL_MW_SENSOR_ORIENTATION_FACE_UP_PORTRAIT_UPRIGHT,
+    MBL_MW_SENSOR_ORIENTATION_FACE_UP_PORTRAIT_UPSIDE_DOWN,
+    MBL_MW_SENSOR_ORIENTATION_FACE_UP_LANDSCAPE_LEFT,
+    MBL_MW_SENSOR_ORIENTATION_FACE_UP_LANDSCAPE_RIGHT,
+    MBL_MW_SENSOR_ORIENTATION_FACE_DOWN_PORTRAIT_UPRIGHT,
+    MBL_MW_SENSOR_ORIENTATION_FACE_DOWN_PORTRAIT_UPSIDE_DOWN,
+    MBL_MW_SENSOR_ORIENTATION_FACE_DOWN_LANDSCAPE_LEFT,
+    MBL_MW_SENSOR_ORIENTATION_FACE_DOWN_LANDSCAPE_RIGHT
+} MblMwSensorOrientation;

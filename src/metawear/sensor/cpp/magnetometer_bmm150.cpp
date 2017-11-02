@@ -1,5 +1,6 @@
 #include "metawear/sensor/magnetometer_bmm150.h"
 #include "magnetometer_bmm150_register.h"
+#include "utils.h"
 
 #include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
@@ -7,6 +8,8 @@
 #include "metawear/core/cpp/metawearboard_macro.h"
 #include "metawear/core/cpp/register.h"
 #include "metawear/core/cpp/responseheader.h"
+
+using std::stringstream;
 
 #define CREATE_BFIELD_SIGNAL_SINGLE(offset) CREATE_BFIELD_SIGNAL(DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS, 1, offset)
 #define CREATE_BFIELD_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(BMM150_MAG_DATA_RESPONSE_HEADER, board, interpreter, \
@@ -105,5 +108,15 @@ void mbl_mw_mag_bmm150_suspend(const MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_MAGNETOMETER).revision >= SUSPEND_REVISION) {
         uint8_t command[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::POWER_MODE), 2 };
         SEND_COMMAND;
+    }
+}
+
+void create_magnetometer_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(MagnetometerBmm150Register::MAG_DATA):
+        uri << "magnetic-field";
+        if (signal->length() <= 2) {
+            uri << "[" << (int) (signal->offset >> 1) << "]";
+        }
     }
 }

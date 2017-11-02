@@ -4,7 +4,10 @@
 #include "metawear/core/status.h"
 #include "metawear/platform/cpp/async_creator.h"
 #include "metawear/platform/cpp/threadpool.h"
+#include "metawear/processor/cpp/dataprocessor_private.h"
+#include "metawear/processor/cpp/dataprocessor_register.h"
 
+#include "anonymous_datasignal_private.h"
 #include "datasignal_private.h"
 #include "logging_private.h"
 #include "logging_register.h"
@@ -13,32 +16,19 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <queue>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <tuple>
 #include <vector>
 
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::system_clock;
-using std::chrono::time_point;
-using std::forward_as_tuple;
-using std::free;
-using std::make_shared;
-using std::malloc;
-using std::memcpy;
-using std::min;
-using std::piecewise_construct;
-using std::queue;
-using std::shared_ptr;
-using std::static_pointer_cast;
-using std::unordered_map;
-using std::unordered_set;
-using std::vector;
+using namespace std;
+using namespace std::chrono;
 
 #define GET_LOGGER_STATE(board) static_pointer_cast<LoggerState>(board->logger_state)
 
@@ -48,11 +38,52 @@ const double TICK_TIME_STEP= (48.0 / 32768.0) * 1000.0;         ///< millisecond
 
 static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len);
 
-struct MblMwDataLogger {
+struct MblMwDataLogger : public MblMwAnonymousDataSignal {
     MblMwDataLogger(uint8_t** state_stream, bool deserialize_component, MblMwMetaWearBoard* board);
     MblMwDataLogger(MblMwDataSignal* source, MblMwFnDataLoggerPtr logger_ready);
 
-    void add_entry_id(uint8_t id);
+    virtual void subscribe(MblMwFnData data_handler);
+    virtual char* get_identifier() const {
+        stringstream stream;
+        MblMwDataSignal* current = source;
+        MblMwDataProcessor* processor;
+        stack<MblMwDataSignal*> parts;
+
+        do {
+            parts.push(current);
+            if ((processor = dynamic_cast<MblMwDataProcessor*>(current)) != nullptr) {
+                current = processor->parent();
+            } else if (current->header.module_id == MBL_MW_MODULE_DATA_PROCESSOR && CLEAR_READ(current->header.register_id) == ORDINAL(DataProcessorRegister::STATE)) {
+                ResponseHeader header(MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY), current->header.data_id);
+                current = dynamic_cast<MblMwDataProcessor*>(current->owner->module_events.at(header))->parent();
+            } else {
+                current = nullptr;
+            }
+        } while(current != nullptr);
+
+        bool first = true;
+        if ((processor = dynamic_cast<MblMwDataProcessor*>(parts.top())) != nullptr) {
+            processor->input->create_uri(stream);
+            first = false;
+        }
+        while(!parts.empty()) {
+            if (!first) {
+                stream << ":";
+            }
+            parts.top()->create_uri(stream);
+
+            first = false;
+            parts.pop();
+        }
+
+        string uri = stream.str();
+        char* buffer = (char*) malloc(uri.size() + 1);
+        strcpy(buffer, uri.data());
+
+        return buffer;
+    }
+
+    void add_entry_id(uint8_t id, bool anonymous);
     void process_log_data(uint8_t id, int64_t epoch, uint32_t data);
     void serialize(vector<uint8_t>& state) const;
 
@@ -60,7 +91,7 @@ struct MblMwDataLogger {
         return entry_ids.front();
     }
 
-    MblMwDataSignal *source;
+    MblMwDataSignal* source;
     uint8_t n_req_entries;
     MblMwFnData data_handler;
     MblMwFnDataLoggerPtr logger_ready;
@@ -82,11 +113,15 @@ struct LoggerState : public AsyncCreator {
     unordered_map<uint8_t, TimeReference> log_time_references;
     unordered_map<uint8_t, uint32_t> latest_tick, rollback_timestamps;
     unordered_map<uint8_t, MblMwDataLogger*> data_loggers;
+    unordered_map<ResponseHeader, uint8_t> placeholder;
+    unordered_map<const MblMwDataSignal*, int8_t> nRemainingLoggers;
+    vector<MblMwAnonymousDataSignal*> anonymous_signals;
     MblMwDataLogger* next_logger;
     MblMwLogDownloadHandler log_download_handler;
     float log_download_notify_progress;
     uint32_t n_log_entries;
-    uint8_t latest_reset_uid;
+    uint8_t latest_reset_uid, queryLogId;
+    bool state_signal;
 
     LoggerState();
 
@@ -111,7 +146,163 @@ static int32_t logging_response_time_received(MblMwMetaWearBoard *board, const u
 }
 
 static int32_t logging_response_entry_id_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    GET_LOGGER_STATE(board)->next_logger->add_entry_id(response[2]);
+    GET_LOGGER_STATE(board)->next_logger->add_entry_id(response[2], false);
+    return 0;
+}
+
+static MblMwDataSignal* guessLogSource(MblMwMetaWearBoard* board, const ResponseHeader& key, uint8_t offset, uint8_t length) {
+    vector<MblMwDataSignal*> possible;
+    auto source = dynamic_cast<MblMwDataSignal*>(board->module_events.at(key));
+
+    possible.push_back(source);
+    possible.insert(possible.end(), source->components.begin(), source->components.end());
+    
+    MblMwDataSignal* original = nullptr;
+    bool multiple = false;
+    for(auto it: possible) {
+        if (it->length() > 4) {
+            original = it;
+            multiple = true;
+        }
+    }
+
+    if (multiple) {
+        auto state = GET_LOGGER_STATE(board);
+        if (offset == 0 && length > LOG_ENTRY_SIZE) {
+            return original;
+        }
+        if (!state->placeholder.count(key) && length == LOG_ENTRY_SIZE) {
+            state->placeholder[key] = length;
+            return original;
+        }
+        if (state->placeholder.count(key)) {
+            uint8_t newLength = (uint8_t) (state->placeholder[key] + length);
+            if (newLength == original->length()) {
+                state->placeholder.erase(key);
+            }
+            return original;
+        }
+    }
+
+    for(auto it: possible) {
+        if (it->offset == offset && it->length() == length) {
+            return it;
+        }
+    }
+    return nullptr;
+}
+
+static void queue_next_logger(MblMwMetaWearBoard* board) {
+    auto state = GET_LOGGER_STATE(board);
+    state->timeout->cancel();
+
+    state->queryLogId++;
+    if (state->queryLogId < board->module_info.at(MBL_MW_MODULE_LOGGING).extra[0]) {
+        state->pending_fns.push([=](void) -> void {
+            state->timeout= ThreadPool::schedule([state, board](void) -> void {
+                board->anon_signals_created(board, nullptr, MBL_MW_STATUS_ERROR_TIMEOUT);
+                state->create_next(true);
+            }, board->time_per_response);
+    
+            uint8_t command[3]= {MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TRIGGER)), state->queryLogId};
+            SEND_COMMAND;
+        });
+    } else {
+        vector<uint8_t> sorted;
+        for (auto it: state->data_loggers) {
+            sorted.push_back(it.first);
+        }
+        sort(sorted.begin(), sorted.end());
+
+        state->anonymous_signals.clear();
+        for(auto it: sorted) {
+            auto val = state->data_loggers[it];
+            auto pos = find(begin(state->anonymous_signals), end(state->anonymous_signals), val);
+            if (pos == end(state->anonymous_signals)) {
+                state->anonymous_signals.push_back(val);
+            }
+        }
+
+        board->anon_signals_created(board, state->anonymous_signals.data(), (uint32_t) state->anonymous_signals.size());
+    }
+    state->create_next(true);
+}
+
+static void log_source_discovered(shared_ptr<LoggerState> state, MblMwDataSignal* source, uint8_t offset) {
+    if (state->state_signal) {
+        source = dynamic_cast<MblMwDataProcessor*>(source)->state;
+    }
+
+    if (!state->nRemainingLoggers.count(source) && source->length() > LOG_ENTRY_SIZE) {
+        state->nRemainingLoggers[source] = (int8_t) ceil((float) (source->length() / LOG_ENTRY_SIZE));
+    }
+
+    MblMwDataLogger* logger = nullptr;
+    for(auto it: state->data_loggers) {
+        auto other = it.second->source;
+        if (other->header == source->header && other->offset == source->offset && 
+                other->is_signed == source->is_signed && other->n_channels == source->n_channels && other->channel_size == source->channel_size) {
+            logger = it.second;
+            break;
+        }
+    }
+
+    if (logger == nullptr || (offset != 0 && !state->nRemainingLoggers.count(source))) {
+        logger = new MblMwDataLogger(source, nullptr);
+    }
+    logger->add_entry_id(state->queryLogId, true);
+    state->data_loggers[state->queryLogId] = logger;
+
+    if (state->nRemainingLoggers.count(source)) {
+        state->nRemainingLoggers[source]--;
+        if (state->nRemainingLoggers[source] < 0) {
+            state->nRemainingLoggers.erase(source);
+        }
+    }
+
+    queue_next_logger(source->owner);
+}
+
+static void processor_synced(MblMwMetaWearBoard* board, stack<ProcessorEntry>& entries) {
+    auto type = guessLogSource(board, entries.top().source, entries.top().offset, entries.top().length);
+    while(!entries.empty()) {
+        auto next = MblMwDataProcessor::transform(type, entries.top().config);
+
+        if (type->header.module_id == MBL_MW_MODULE_DATA_PROCESSOR && CLEAR_READ(type->header.register_id) == ORDINAL(DataProcessorRegister::NOTIFY)) {
+            next->parent_id = type->header.data_id;
+        }
+        next->header.data_id = entries.top().id;
+        board->module_events.emplace(next->header, next);
+        if (next->state != nullptr) {
+            next->state->header.data_id = entries.top().id;
+            board->module_events.emplace(next->state->header, next->state);
+        }
+
+        type = next;
+        entries.pop();
+    }
+
+    log_source_discovered(GET_LOGGER_STATE(board), type, 0);
+}
+
+static int32_t logging_response_read_entry_id(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    auto state = GET_LOGGER_STATE(board);
+
+    if (len > 2) { 
+        uint8_t offset = (uint8_t) (response[5] & 0x1f), length = (uint8_t) (((response[5] >> 5) & 0x3) + 1);
+        ResponseHeader key(response[2], response[3], response[4]);
+
+        state->state_signal = key.module_id == MBL_MW_MODULE_DATA_PROCESSOR && CLEAR_READ(key.register_id) == ORDINAL(DataProcessorRegister::STATE);
+        if (key.module_id == MBL_MW_MODULE_DATA_PROCESSOR && 
+                (key.register_id == ORDINAL(DataProcessorRegister::NOTIFY) || state->state_signal)) {
+            sync_processor_chain(board, key.data_id, processor_synced);
+        } else {
+            log_source_discovered(state, guessLogSource(board, key, offset, length), offset);
+        }
+    } else {
+        queue_next_logger(board);
+    }
+
     return 0;
 }
 
@@ -279,11 +470,15 @@ MblMwDataLogger::MblMwDataLogger(MblMwDataSignal* source, MblMwFnDataLoggerPtr l
         source(source), n_req_entries((source->length() - 1) / sizeof(uint32_t) + 1), data_handler(nullptr), logger_ready(logger_ready) {
 }
 
-void MblMwDataLogger::add_entry_id(uint8_t id) {
+void MblMwDataLogger::subscribe(MblMwFnData data_handler) {
+    this->data_handler = data_handler;
+}
+
+void MblMwDataLogger::add_entry_id(uint8_t id, bool anonymous) {
     entry_ids.push_back(id);
     entries.emplace(id, queue<uint32_t>());
 
-    if ((uint8_t) entry_ids.size() == n_req_entries) {
+    if (!anonymous && (uint8_t) entry_ids.size() == n_req_entries) {
         auto state= GET_LOGGER_STATE(source->owner);
 
         state->timeout->cancel();
@@ -371,6 +566,8 @@ void init_logging(MblMwMetaWearBoard *board) {
         forward_as_tuple(logging_response_time_received));
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::TRIGGER)),
         forward_as_tuple(logging_response_entry_id_received));
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TRIGGER))),
+        forward_as_tuple(logging_response_read_entry_id));
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::LENGTH))),
         forward_as_tuple(logging_response_length_received));
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_NOTIFY)),
@@ -488,6 +685,10 @@ void mbl_mw_logger_subscribe(MblMwDataLogger* loggable, MblMwFnData received_dat
     loggable->data_handler = received_data;
 }
 
+char* mbl_mw_logger_generate_identifier(const MblMwDataLogger* signal) {
+    return signal->get_identifier();
+}
+
 void mbl_mw_datasignal_log(MblMwDataSignal *signal, MblMwFnDataLoggerPtr logger_ready) {
     auto state= GET_LOGGER_STATE(signal->owner);
 
@@ -579,4 +780,21 @@ void deserialize_logging(MblMwMetaWearBoard* board, bool deserialize_component, 
 
 int64_t calculate_epoch(const MblMwMetaWearBoard* board, uint32_t tick) {
     return calculate_epoch_inner(GET_LOGGER_STATE(board), tick, mbl_mw_logger_lookup_reset_uid(board, GET_LOGGER_STATE(board)->latest_reset_uid));
+}
+
+void query_active_loggers(MblMwMetaWearBoard* board) {
+    auto state= GET_LOGGER_STATE(board);
+    state->anonymous_signals.clear();
+    state->queryLogId = 0;
+
+    state->pending_fns.push([=](void) -> void {
+        state->timeout= ThreadPool::schedule([state, board](void) -> void {            
+            board->anon_signals_created(board, nullptr, MBL_MW_STATUS_ERROR_TIMEOUT);
+            state->create_next(true);
+        }, board->time_per_response);
+
+        uint8_t command[3]= {MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TRIGGER)), state->queryLogId};
+        SEND_COMMAND;
+    });
+    state->create_next(false);
 }

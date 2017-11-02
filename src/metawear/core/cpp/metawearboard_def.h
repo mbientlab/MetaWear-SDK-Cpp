@@ -33,8 +33,9 @@ struct MblMwMetaWearBoard {
     std::unordered_map<uint8_t, ModuleInfo> module_info;
     std::unordered_map<uint8_t, void*> module_config;
 
-    std::shared_ptr<void> logger_state, timer_state, event_state, dp_state, macro_state;
+    std::shared_ptr<void> logger_state, timer_state, event_state, dp_state, macro_state, debug_state;
     MblMwFnBoardPtrInt initialized;
+    MblMwFnAnonSignalArray anon_signals_created;
     std::shared_ptr<Task> initialized_timeout;
     MblMwBtleConnection btle_conn;
     Version firmware_revision;
@@ -45,8 +46,8 @@ struct MblMwMetaWearBoard {
     int64_t time_per_response;
     int8_t module_discovery_index, dev_info_index;
 
-    inline void write_gatt_char(const MblMwGattChar* gatt_char, const uint8_t* value, uint8_t len) const {
-        btle_conn.write_gatt_char(this, MBL_MW_GATT_CHAR_WRITE_WITHOUT_RESPONSE, gatt_char, value, len);
+    inline void write_gatt_char(const MblMwGattChar* gatt_char, MblMwGattCharWriteType type, const uint8_t* value, uint8_t len) const {
+        btle_conn.write_gatt_char(this, type, gatt_char, value, len);
     }
 };
 

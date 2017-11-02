@@ -72,6 +72,17 @@ typedef enum {
 } MblMwAccBmi160StepCounterMode;
 
 /**
+ * Calculation modes controlling the conditions that determine the sensor's orientation
+ * @author Eric Tsai
+ */
+typedef enum {
+    /** Default mode */
+    MBL_MW_ACC_BOSCH_ORIENTATION_MODE_SYMMETRICAL,
+    MBL_MW_ACC_BOSCH_ORIENTATION_MODE_HIGH_ASYMMETRICAL,
+    MBL_MW_ACC_BOSCH_ORIENTATION_MODE_LOW_ASYMMETRICAL
+} MblMwAccBoschOrientationMode;
+
+/**
  * Retrieves the data signal representing acceleration data from a Bosch accelerometer
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI160 acceleration data signal
@@ -99,6 +110,12 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_counter_data_signal(con
  * @return Pointer to the board's BMI160 step detector data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_detector_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves the data signal representing data from the orientation detection algorithm
+ * @param board     Calling object
+ * @return Pointer to Bosch's orientation detection data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_orientation_detection_data_signal(const MblMwMetaWearBoard* board);
 
 /**
  * Sets the output data rate for the BMI160 accelerometer
@@ -161,6 +178,34 @@ METAWEAR_API void mbl_mw_acc_bmi160_enable_step_detector(const MblMwMetaWearBoar
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bmi160_disable_step_detector(const MblMwMetaWearBoard *board);
+
+/**
+ * Set the hysteresis offset for portrait/landscape detection
+ * @param board         Calling object
+ * @param hysteresis    New calculation mode
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_orientation_hysteresis(MblMwMetaWearBoard *board, float hysteresis);
+/**
+ * Set the orientation calculation mode
+ * @param board         Calling object
+ * @param mode          New calculation mode
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_orientation_mode(MblMwMetaWearBoard *board, MblMwAccBoschOrientationMode mode);
+/**
+ * Writes the orientation detection settings to the board
+ * @param board     Calling object
+ */
+METAWEAR_API void mbl_mw_acc_bosch_write_orientation_config(const MblMwMetaWearBoard *board);
+/**
+ * Enables orientation detection
+ * @param board     Calling object
+ */
+METAWEAR_API void mbl_mw_acc_bosch_enable_orientation_detection(const MblMwMetaWearBoard *board);
+/**
+ * Disables orientation detection
+ * @param board     Calling object
+ */
+METAWEAR_API void mbl_mw_acc_bosch_disable_orientation_detection(const MblMwMetaWearBoard *board);
 
 /**
  * Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured

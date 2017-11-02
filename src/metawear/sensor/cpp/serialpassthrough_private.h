@@ -2,6 +2,8 @@
 
 #include "metawear/core/cpp/datasignal_private.h"
 
+#include <sstream>
+
 struct MblMwI2cSignal : public MblMwDataSignal {
     MblMwI2cSignal(ResponseHeader header, MblMwMetaWearBoard* owner, uint8_t length);
     MblMwI2cSignal(uint8_t** state_stream, MblMwMetaWearBoard *owner);
@@ -19,3 +21,4 @@ struct MblMwSpiSignal : public MblMwDataSignal {
 };
 
 void init_serialpassthrough_module(MblMwMetaWearBoard *board);
+void create_serialpassthrough_uri(const MblMwDataSignal* signal, std::stringstream& uri);

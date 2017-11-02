@@ -2,6 +2,8 @@
 
 #include "metawear/core/cpp/datasignal_private.h"
 
+#include <sstream>
+
 struct MblMwGpioPinNotifySignal : public MblMwDataSignal {
     MblMwGpioPinNotifySignal(ResponseHeader header, MblMwMetaWearBoard* owner);
     MblMwGpioPinNotifySignal(uint8_t** state_stream, MblMwMetaWearBoard *owner);
@@ -18,3 +20,4 @@ struct MblMwGpioAnalogSignal : public MblMwDataSignal {
 };
 
 void init_gpio_module(MblMwMetaWearBoard *board);
+void create_gpio_uri(const MblMwDataSignal* signal, std::stringstream& uri);

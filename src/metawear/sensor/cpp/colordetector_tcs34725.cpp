@@ -1,6 +1,7 @@
 #include "metawear/sensor/colordetector_tcs34725.h"
 #include "colordetector_tcs34725_private.h"
 #include "colordetector_tcs34725_register.h"
+#include "utils.h"
 
 #include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
@@ -14,6 +15,7 @@
 #include <cstdlib>
 
 using std::calloc;
+using std::stringstream;
 
 #define CREATE_ADC_SIGNAL_SINGLE(offset) CREATE_ADC_SIGNAL(DataInterpreter::UINT32, 1, offset)
 #define CREATE_ADC_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(CD_TCS34725_ADC_RESPONSE_HEADER, board, interpreter, \
@@ -88,4 +90,15 @@ void mbl_mw_cd_tcs34725_write_config(const MblMwMetaWearBoard *board) {
     memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_COLOR_DETECTOR), sizeof(Tcs34725Config));
 
     SEND_COMMAND;
+}
+
+void create_colordetector_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(ColorDetectorTcs34725Register::RGB_COLOR):
+        uri << "color";
+        if (signal->length() <= 2) {
+            uri << "[" << (int) (signal->offset >> 1) << "]";
+        }
+        break;
+    }
 }

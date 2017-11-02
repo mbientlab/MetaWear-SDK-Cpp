@@ -1,6 +1,9 @@
 #include "async_creator.h"
 
 AsyncCreator::~AsyncCreator() {
+    if (timeout.use_count()) {
+        timeout->cancel();
+    }
 }
 
 void AsyncCreator::create_next(bool force) {

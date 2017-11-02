@@ -1,8 +1,10 @@
 #include "metawear/sensor/accelerometer_mma8452q.h"
 #include "accelerometer_mma8452q_private.h"
 #include "accelerometer_mma8452q_register.h"
+#include "utils.h"
 
 #include "metawear/core/module.h"
+#include "metawear/core/status.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/core/cpp/metawearboard_macro.h"
@@ -11,12 +13,16 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <unordered_map>
 
 using std::forward_as_tuple;
 using std::calloc;
 using std::memcpy;
 using std::memset;
 using std::piecewise_construct;
+using std::string;
+using std::stringstream;
+using std::unordered_map;
 
 #define CREATE_ACC_SIGNAL_SINGLE(offset) CREATE_ACC_SIGNAL(DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS, 1, offset)
 #define CREATE_ACC_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(MMA8452Q_ACCEL_RESPONSE_HEADER, board, interpreter, \
@@ -103,6 +109,23 @@ struct Mma8452qConfig {
 const ResponseHeader MMA8452Q_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::DATA_VALUE)),
     MMA8452Q_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::PACKED_ACC_DATA));
 
+struct AccMma8452qState {
+    MblMwFnBoardPtrInt read_config_completed;
+};
+
+static unordered_map<const MblMwMetaWearBoard*, AccMma8452qState> states;
+
+static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    auto config = &((Mma8452qConfig*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc;
+    memcpy(config, response + 2, sizeof(*config));
+
+    auto callback = states[board].read_config_completed;
+    states[board].read_config_completed = nullptr;
+    callback(board, MBL_MW_STATUS_OK);
+    
+    return MBL_MW_STATUS_OK;
+}
+
 void init_accelerometer_mma8452q(MblMwMetaWearBoard *board) {
     MblMwDataSignal* acc;
     
@@ -132,7 +155,10 @@ void init_accelerometer_mma8452q(MblMwMetaWearBoard *board) {
                 DataInterpreter::MMA8452Q_ACCELERATION, FirmwareConverter::MMA8452Q_ACCELERATION, 3, 2, 1, 0);
         }
         board->responses[MMA8452Q_PACKED_ACCEL_RESPONSE_HEADER]= response_handler_packed_data;
-    }    
+    }
+
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerMma8452qRegister::DATA_CONFIG))),
+        forward_as_tuple(received_config_response));
 }
 
 void serialize_accelerometer_mma8452q_config(const MblMwMetaWearBoard* board, std::vector<uint8_t>& state) {
@@ -196,4 +222,21 @@ void mbl_mw_acc_mma8452q_write_acceleration_config(const MblMwMetaWearBoard *boa
     memcpy(command + 2, &config, sizeof(config));
 
     SEND_COMMAND;
+}
+
+void read_accelerometer_mma8452q_acceleration_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed) {
+    states[board].read_config_completed = completed;
+
+    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerMma8452qRegister::DATA_CONFIG))};
+    SEND_COMMAND;
+}
+
+void create_acc_mma8452q_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(AccelerometerMma8452qRegister::DATA_VALUE):
+        uri << "acceleration";
+        if (signal->length() <= 2) {
+            uri << "[" << (int) (signal->offset >> 1) << "]";
+        }
+    }
 }

@@ -7,6 +7,8 @@
 #include "metawear/core/cpp/register.h"
 #include "metawear/core/cpp/responseheader.h"
 
+using std::stringstream;
+
 const ResponseHeader SWITCH_RESPONSE_HEADER(MBL_MW_MODULE_SWITCH, ORDINAL(SwitchRegister::STATE));
 
 MblMwDataSignal* mbl_mw_switch_get_state_data_signal(const MblMwMetaWearBoard *board) {
@@ -21,5 +23,13 @@ void init_switch_module(MblMwMetaWearBoard *board) {
         }
 
         board->responses[SWITCH_RESPONSE_HEADER] = response_handler_data_no_id;
+    }
+}
+
+void create_switch_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(SwitchRegister::STATE):
+        uri << "switch";
+        break;
     }
 }

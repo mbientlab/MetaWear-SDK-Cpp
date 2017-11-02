@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "anonymous_datasignal_fwd.h"
 #include "metawearboard_fwd.h"
 #include "model.h"
 #include "module.h"
@@ -110,6 +111,14 @@ METAWEAR_API uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* b
  * @return MBL_MW_STATUS_OK if successful, MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT if failed
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size);
+
+/**
+ * Reads the current state of the board and creates anonymous data signals based on what data is being logged,  If this task failed, a 
+ * null pointer will be passed into the `anonymous_signals` parameter
+ * @param board         Calling object
+ * @param created       Callback function to be executed once the task is completed.
+ */
+METAWEAR_API void mbl_mw_metawearboard_create_anonymous_datasignals(MblMwMetaWearBoard* board, MblMwFnAnonSignalArray created);
 
 /**
  * Wrapper class containing functions for receiving callbacks throughout the DFU process

@@ -1,4 +1,5 @@
 #include "metawear/core/module.h"
+#include "metawear/core/status.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/core/cpp/metawearboard_macro.h"
@@ -8,15 +9,19 @@
 #include "metawear/sensor/gyro_bmi160.h"
 #include "gyro_bmi160_private.h"
 #include "gyro_bmi160_register.h"
+#include "utils.h"
 
 #include <cstdlib>
 #include <cstring>
+#include <unordered_map>
 
 using std::forward_as_tuple;
 using std::malloc;
 using std::memcpy;
 using std::memset;
 using std::piecewise_construct;
+using std::stringstream;
+using std::unordered_map;
 using std::vector;
 
 #define CREATE_ROT_SIGNAL_SINGLE(offset) CREATE_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION_SINGLE_AXIS, 1, offset)
@@ -35,6 +40,22 @@ struct GyroBmi160Config {
     uint8_t gyr_range : 3;
     uint8_t:5;
 };
+
+struct GyroBmi160State {
+    MblMwFnBoardPtrInt read_config_completed;
+};
+
+static unordered_map<const MblMwMetaWearBoard*, GyroBmi160State> states;
+
+static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    memcpy(board->module_config.at(MBL_MW_MODULE_GYRO), response + 2, sizeof(GyroBmi160Config));
+
+    auto callback = states[board].read_config_completed;
+    states[board].read_config_completed = nullptr;
+    callback(board, MBL_MW_STATUS_OK);
+
+    return MBL_MW_STATUS_OK;
+}
 
 float bosch_gyro_get_data_scale(const MblMwMetaWearBoard *board) {
     return FSR_SCALE[((GyroBmi160Config*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range];
@@ -74,6 +95,12 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
             }
             board->responses[GYRO_PACKED_ROT_RESPONSE_HEADER]= response_handler_packed_data;
         }
+
+        board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi160Register::CONFIG))),
+                forward_as_tuple(received_config_response));
+
+        GyroBmi160State newState = {nullptr};
+        states.insert({board, newState});
     }
 }
 
@@ -111,6 +138,13 @@ void mbl_mw_gyro_bmi160_write_config(const MblMwMetaWearBoard *board) {
     SEND_COMMAND;
 }
 
+void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed) {
+    states[board].read_config_completed = completed;
+
+    uint8_t command[2]= {MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi160Register::CONFIG))};
+    SEND_COMMAND;
+}
+
 void mbl_mw_gyro_bmi160_start(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::POWER_MODE), 1};
     SEND_COMMAND;
@@ -129,4 +163,14 @@ void mbl_mw_gyro_bmi160_enable_rotation_sampling(const MblMwMetaWearBoard *board
 void mbl_mw_gyro_bmi160_disable_rotation_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA_INTERRUPT_ENABLE), 0x0, 0x1};
     SEND_COMMAND;
+}
+
+void create_gyro_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(GyroBmi160Register::DATA):
+        uri << "angular-velocity";
+        if (signal->length() <= 2) {
+            uri << "[" << (int) (signal->offset >> 1) << "]";
+        }
+    }
 }

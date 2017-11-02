@@ -93,6 +93,12 @@ METAWEAR_API void mbl_mw_sensor_fusion_set_gyro_range(MblMwMetaWearBoard* board,
  * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board);
+/**
+ * Pulls the current sensor fusion configuration from the board
+ * @param board         Calling object
+ * @param completed     Callback function that is executed when the task is finished
+ */
+METAWEAR_API void mbl_mw_sensor_fusion_read_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed);
 
 /**
  * Set a data enable bit

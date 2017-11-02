@@ -142,3 +142,14 @@ void mbl_mw_baro_bosch_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_BAROMETER, ORDINAL(BarometerBmp280Register::CYCLIC), 0, 0};
     SEND_COMMAND;
 }
+
+void create_barometer_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(BarometerBmp280Register::PRESSURE):
+        uri << "pressure";
+        break;
+    case ORDINAL(BarometerBmp280Register::ALTITUDE):
+        uri << "altitude";
+        break;
+    }
+}

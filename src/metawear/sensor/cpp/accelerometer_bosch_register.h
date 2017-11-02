@@ -6,6 +6,10 @@ enum class AccelerometerBoschRegister : uint8_t {
     DATA_CONFIG,
     DATA_INTERRUPT,
     DATA_INTERRUPT_CONFIG,
+    
+    ORIENT_INTERRUPT_ENABLE = 0xf,
+    ORIENT_CONFIG,
+    ORIENT_INTERRUPT,
 
     ///<step counter/detector BMI160 only
     STEP_DETECTOR_INTERRUPT_EN= 0x17,

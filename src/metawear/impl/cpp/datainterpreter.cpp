@@ -227,23 +227,20 @@ static MblMwData* convert_to_corrected_acc(bool log_data, const MblMwDataSignal*
     CREATE_MESSAGE(MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT);
 }
 
-unordered_map<DataInterpreter, DataInterpreter> signed_to_unsigned= {
-    { DataInterpreter::INT32, DataInterpreter::UINT32 },
-    { DataInterpreter::BMI160_ROTATION_SINGLE_AXIS, DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS },
-    { DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS, DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS },
-    { DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS, DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS },
-    { DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS, DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS },
-    { DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS, DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS }
-};
+static MblMwData* convert_to_overflow_state(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwOverflowState *value= (MblMwOverflowState*) malloc(sizeof(MblMwOverflowState));
+    memcpy(&value->length, response + 1, 2);
+    value->assert_en= response[0];
 
-unordered_map<DataInterpreter, DataInterpreter> unsigned_to_signed= {
-    { DataInterpreter::UINT32, DataInterpreter::INT32 },
-    { DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS, DataInterpreter::BMI160_ROTATION_SINGLE_AXIS },
-    { DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS, DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS },
-    { DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS, DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS },
-    { DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS, DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS },
-    { DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS, DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS }
-};
+    CREATE_MESSAGE(MBL_MW_DT_ID_OVERFLOW_STATE);
+}
+
+static MblMwData* convert_to_sensor_orientation(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
+    MblMwSensorOrientation *value= (MblMwSensorOrientation*) malloc(sizeof(MblMwSensorOrientation));
+    *value = (MblMwSensorOrientation) (((response[0] & 0x6) >> 1) + 4 * ((response[0] & 0x8) >> 3));
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_SENSOR_ORIENTATION);
+}
 
 unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters = {
     { DataInterpreter::INT32 , convert_to_int32 },
@@ -272,7 +269,9 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::SENSOR_FUSION_EULER_ANGLE , convert_to_euler_angles },
     { DataInterpreter::SENSOR_FUSION_CORRECTED_FLOAT_VECTOR3 , convert_to_corrected_vector3 },
     { DataInterpreter::SENSOR_FUSION_FLOAT_VECTOR3 , convert_to_vector3 },
-    { DataInterpreter::SENSOR_FUSION_CORRECTED_ACC , convert_to_corrected_acc }
+    { DataInterpreter::SENSOR_FUSION_CORRECTED_ACC , convert_to_corrected_acc },
+    { DataInterpreter::DEBUG_OVERFLOW_STATE , convert_to_overflow_state },
+    { DataInterpreter::SENSOR_ORIENTATION, convert_to_sensor_orientation }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {

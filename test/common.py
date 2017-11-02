@@ -64,7 +64,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x17: create_string_buffer(b'\x17\x80', 2),
             0x18: create_string_buffer(b'\x18\x80', 2),
             0x19: create_string_buffer(b'\x19\x80', 2),
-            0xfe: create_string_buffer(b'\xfe\x80\x00\x00', 4)
+            0xfe: create_string_buffer(b'\xfe\x80\x00\x02', 4)
         }
 
         self.metawear_r_services= {
@@ -92,7 +92,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x17: create_string_buffer(b'\x17\x80', 2),
             0x18: create_string_buffer(b'\x18\x80', 2),
             0x19: create_string_buffer(b'\x19\x80', 2),
-            0xfe: create_string_buffer(b'\xFE\x80\x00\x00', 4)
+            0xfe: create_string_buffer(b'\xFE\x80\x00\x02', 4)
         }
 
         self.metawear_rpro_services= {
@@ -120,7 +120,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x17: create_string_buffer(b'\x17\x80', 2),
             0x18: create_string_buffer(b'\x18\x80', 2),
             0x19: create_string_buffer(b'\x19\x80', 2),
-            0xfe: create_string_buffer(b'\xFE\x80\x00\x00', 4)
+            0xfe: create_string_buffer(b'\xFE\x80\x00\x02', 4)
         }
 
         self.metawear_cpro_services= {
@@ -148,7 +148,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x17: create_string_buffer(b'\x17\x80', 2),
             0x18: create_string_buffer(b'\x18\x80', 2),
             0x19: create_string_buffer(b'\x19\x80', 2),
-            0xfe: create_string_buffer(b'\xFE\x80\x00\x00', 4)
+            0xfe: create_string_buffer(b'\xFE\x80\x00\x02', 4)
         }
 
         self.metawear_detector_services= {
@@ -176,7 +176,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x17: create_string_buffer(b'\x17\x80', 2),
             0x18: create_string_buffer(b'\x18\x80\x00\x00', 4),
             0x19: create_string_buffer(b'\x19\x80', 2),
-            0xfe: create_string_buffer(b'\xfe\x80\x00\x00', 4),
+            0xfe: create_string_buffer(b'\xfe\x80\x00\x02', 4),
         }
 
         self.metawear_environment_services= {
@@ -204,7 +204,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x17: create_string_buffer(b'\x17\x80\x00\x00', 4),
             0x18: create_string_buffer(b'\x18\x80', 2),
             0x19: create_string_buffer(b'\x19\x80', 2),
-            0xfe: create_string_buffer(b'\xfe\x80\x00\x00', 4),
+            0xfe: create_string_buffer(b'\xfe\x80\x00\x02', 4),
         }
         self.metawear_motion_r_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
@@ -231,7 +231,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x17: create_string_buffer(b'\x17\x80', 2),
             0x18: create_string_buffer(b'\x18\x80', 2),
             0x19: create_string_buffer(b'\x19\x80\x00\x00\x03\x00\x06\x00\x02\x00\x01\x00', 12),
-            0xfe: create_string_buffer(b'\xfe\x80\x00\x00', 4),
+            0xfe: create_string_buffer(b'\xfe\x80\x00\x02', 4),
         }
 
         self.firmware_revision= create_string_buffer(b'1.1.3', 5)
@@ -372,7 +372,7 @@ class TestMetaWearBase(unittest.TestCase):
             self.data_uint32= c_uint()
             self.data_uint32.value= data_ptr.contents.value
             self.data = self.data_uint32
-        elif (data.contents.type_id == DataTypeId.INT32):
+        elif (data.contents.type_id == DataTypeId.INT32 or data.contents.type_id == DataTypeId.SENSOR_ORIENTATION):
             data_ptr= cast(data.contents.value, POINTER(c_int))
             self.data_int32= c_int()
             self.data_int32.value= data_ptr.contents.value
@@ -411,6 +411,9 @@ class TestMetaWearBase(unittest.TestCase):
         elif (data.contents.type_id == DataTypeId.CORRECTED_CARTESIAN_FLOAT):
             data_ptr= cast(data.contents.value, POINTER(CorrectedCartesianFloat))
             self.data= copy.deepcopy(data_ptr.contents)
+        elif (data.contents.type_id == DataTypeId.OVERFLOW_STATE):
+            data_ptr= cast(data.contents.value, POINTER(OverflowState))
+            self.data= copy.deepcopy(data_ptr.contents)
         else:
             raise RuntimeError('Unrecognized data type id: ' + str(data.contents.type_id))
 
@@ -422,7 +425,7 @@ def to_string_buffer(bytes):
     buffer= create_string_buffer(len(bytes))
     i= 0
     for b in bytes:
-        buffer[i]= b
+        buffer[i]= b & 0xff
         i= i + 1
 
     return buffer

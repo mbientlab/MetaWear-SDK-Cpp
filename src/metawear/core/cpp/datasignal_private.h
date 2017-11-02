@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sstream>
 #include <vector>
 
 #include "metawear/core/datasignal_fwd.h"
@@ -24,6 +25,8 @@ struct MblMwDataSignal : public MblMwEvent {
     virtual void unsubscribe();
     virtual void serialize(std::vector<uint8_t>& state) const;
 
+    virtual void create_uri(std::stringstream& uri) const;
+
     uint8_t length() const;
     uint8_t get_data_ubyte() const;
 
@@ -41,3 +44,5 @@ struct MblMwDataSignal : public MblMwEvent {
     uint8_t is_signed;
     uint8_t offset;
 };
+
+void create_dataprocessor_state_uri(const MblMwDataSignal* signal, std::stringstream& uri);

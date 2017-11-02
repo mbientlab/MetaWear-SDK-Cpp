@@ -1,5 +1,7 @@
 #include <stdexcept>
 
+#include "utils.h"
+
 #include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
@@ -12,6 +14,7 @@
 using std::forward_as_tuple;
 using std::out_of_range;
 using std::piecewise_construct;
+using std::stringstream;
 
 void init_multichannel_temp_module(MblMwMetaWearBoard *board) {
     for(uint8_t channel = 0; channel < (uint8_t) board->module_info.at(MBL_MW_MODULE_TEMPERATURE).extra.size(); channel++) {
@@ -47,4 +50,12 @@ MblMwTemperatureSource mbl_mw_multi_chnl_temp_get_source(const MblMwMetaWearBoar
 
 uint8_t mbl_mw_multi_chnl_temp_get_num_channels(const MblMwMetaWearBoard *board) {
     return (uint8_t) board->module_info.at(MBL_MW_MODULE_TEMPERATURE).extra.size();
+}
+
+void create_temp_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(MultiChannelTempRegister::TEMPERATURE):
+        uri << "temperature[" << (int) signal->header.data_id << "]";
+        break;
+    }
 }

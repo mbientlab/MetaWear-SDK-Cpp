@@ -7,12 +7,15 @@
 #include "utils.h"
 
 #include "metawear/core/module.h"
+#include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/metawearboard_def.h"
 #include "metawear/core/cpp/register.h"
 
 #include <vector>
 
 const float INVALID_SETTING= -1;
+
+using std::stringstream;
 using std::vector;
 
 static const vector<float> MMA8452Q_ODR_VALUES= {800.f, 400.f, 200.f, 100.f, 50.f, 12.5f, 6.25f, 1.56f},
@@ -59,6 +62,18 @@ void deserialize_accelerometer_config(MblMwMetaWearBoard *board, uint8_t** state
         break;
     case MBL_MW_MODULE_ACC_TYPE_BMA255:
         deserialize_accelerometer_bma255_config(board, state_stream);
+        break;
+    }
+}
+
+void create_acc_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->owner->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
+        create_acc_mma8452q_uri(signal, uri);
+        break;
+    case MBL_MW_MODULE_ACC_TYPE_BMI160:
+    case MBL_MW_MODULE_ACC_TYPE_BMA255:
+        create_acc_bosch_uri(signal, uri);
         break;
     }
 }
@@ -134,6 +149,18 @@ void mbl_mw_acc_write_acceleration_config(const MblMwMetaWearBoard* board) {
     case MBL_MW_MODULE_ACC_TYPE_BMI160:
     case MBL_MW_MODULE_ACC_TYPE_BMA255:
         mbl_mw_acc_bosch_write_acceleration_config(board);
+        break;
+    }
+}
+
+void mbl_mw_acc_read_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed) {
+    switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
+        read_accelerometer_mma8452q_acceleration_config(board, completed);
+        break;
+    case MBL_MW_MODULE_ACC_TYPE_BMI160:
+    case MBL_MW_MODULE_ACC_TYPE_BMA255:
+        read_accelerometer_bosch_acceleration_config(board, completed);
         break;
     }
 }

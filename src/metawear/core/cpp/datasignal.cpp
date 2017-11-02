@@ -4,11 +4,26 @@
 #include "datasignal_private.h"
 #include "metawearboard_def.h"
 
+#include "settings_private.h"
+#include "metawear/sensor/cpp/accelerometer_private.h"
+#include "metawear/sensor/cpp/ambientlight_ltr329_private.h"
+#include "metawear/sensor/cpp/barometer_bosch_private.h"
+#include "metawear/sensor/cpp/colordetector_tcs34725_private.h"
+#include "metawear/sensor/cpp/gpio_private.h"
+#include "metawear/sensor/cpp/gyro_bmi160_private.h"
+#include "metawear/sensor/cpp/humidity_bme280_private.h"
+#include "metawear/sensor/cpp/magnetometer_bmm150_private.h"
+#include "metawear/sensor/cpp/multichanneltemperature_private.h"
+#include "metawear/sensor/cpp/proximity_tsl2671_private.h"
+#include "metawear/sensor/cpp/sensor_fusion_private.h"
+#include "metawear/sensor/cpp/serialpassthrough_private.h"
+#include "metawear/sensor/cpp/switch_private.h"
+
 #include <stdexcept>
 
 using std::out_of_range;
+using std::stringstream;
 using std::vector;
-
 
 uint8_t MblMwDataSignal::count_subscribers(const MblMwDataSignal* signal) {
     auto root= dynamic_cast<MblMwDataSignal*>(signal->owner->module_events.at(signal->header));
@@ -104,6 +119,41 @@ void MblMwDataSignal::serialize(vector<uint8_t>& state) const {
     state.push_back(offset);
 }
 
+void MblMwDataSignal::create_uri(stringstream& uri) const {
+    switch(header.module_id) {
+    case MBL_MW_MODULE_SWITCH:
+        return create_switch_uri(this, uri);
+    case MBL_MW_MODULE_ACCELEROMETER:
+        return create_acc_uri(this, uri);
+    case MBL_MW_MODULE_TEMPERATURE:
+        return create_temp_uri(this, uri);
+    case MBL_MW_MODULE_GPIO:
+        return create_gpio_uri(this, uri);
+    case MBL_MW_MODULE_DATA_PROCESSOR:
+        return create_dataprocessor_state_uri(this, uri);
+    case MBL_MW_MODULE_I2C:
+        return create_serialpassthrough_uri(this, uri);
+    case MBL_MW_MODULE_SETTINGS:
+        return create_settings_uri(this, uri);
+    case MBL_MW_MODULE_BAROMETER:
+        return create_barometer_uri(this, uri);
+    case MBL_MW_MODULE_GYRO:
+        return create_gyro_uri(this, uri);
+    case MBL_MW_MODULE_AMBIENT_LIGHT:
+        return create_als_uri(this, uri);
+    case MBL_MW_MODULE_MAGNETOMETER:
+        return create_magnetometer_uri(this, uri);
+    case MBL_MW_MODULE_HUMIDITY:
+        return create_humidity_uri(this, uri);
+    case MBL_MW_MODULE_COLOR_DETECTOR:
+        return create_colordetector_uri(this, uri);
+    case MBL_MW_MODULE_PROXIMITY:
+        return create_proximity_uri(this, uri);
+    case MBL_MW_MODULE_SENSOR_FUSION:
+        return create_sensor_fusion_uri(this, uri);
+    }
+}
+
 uint8_t MblMwDataSignal::length() const {
     return n_channels * channel_size;
 }
@@ -119,15 +169,55 @@ void MblMwDataSignal::set_channel_attr(uint8_t n_channels, uint8_t channel_size)
 
 void MblMwDataSignal::make_signed() {
     is_signed= 1;
-    if (unsigned_to_signed.count(interpreter)) {
-        interpreter= unsigned_to_signed.at(interpreter);
+
+    switch (interpreter) {
+    case DataInterpreter::UINT32:
+        interpreter = DataInterpreter::INT32;
+        break;
+    case DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS:
+        interpreter = DataInterpreter::BMI160_ROTATION_SINGLE_AXIS;
+        break;
+    case DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS:
+        interpreter = DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS;
+        break;
+    case DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS:
+        interpreter = DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS;
+        break;
+    case DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS:
+        interpreter = DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS;
+        break;
+    case DataInterpreter::BOSCH_PRESSURE:
+        interpreter = DataInterpreter::BOSCH_ALTITUDE;
+        break;
+    default:
+        break;
     }
 }
 
 void MblMwDataSignal::make_unsigned() {
     is_signed= 0;
-    if (signed_to_unsigned.count(interpreter)) {
-        interpreter= signed_to_unsigned.at(interpreter);
+
+    switch (interpreter) {
+    case DataInterpreter::INT32:
+        interpreter = DataInterpreter::UINT32;
+        break;
+    case DataInterpreter::BMI160_ROTATION_SINGLE_AXIS:
+        interpreter = DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS;
+        break;
+    case DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS:
+        interpreter = DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS;
+        break;
+    case DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS:
+        interpreter = DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS;
+        break;
+    case DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS:
+        interpreter = DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS;
+        break;
+    case DataInterpreter::BOSCH_ALTITUDE:
+        interpreter = DataInterpreter::BOSCH_PRESSURE;
+        break;
+    default:
+        break;
     }
 }
 

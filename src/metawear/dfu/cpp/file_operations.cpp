@@ -63,7 +63,7 @@ void FileOperations::writeNextPacket()
             uint8_t *nextPacketData = &binFile[writingPacketNumber * MBL_PACKET_SIZE];
             //NSLog(@"writing packet number %d ...",self.writingPacketNumber+1);
             //NSLog(@"packet data: %@",nextPacketData);
-            bootloaderBoard->write_gatt_char(&DFU_PACKET_CHAR, nextPacketData, bytesInLastPacket);
+            bootloaderBoard->write_gatt_char(&DFU_PACKET_CHAR, MBL_MW_GATT_CHAR_WRITE_WITHOUT_RESPONSE, nextPacketData, bytesInLastPacket);
             writingPacketNumber++;
             fileDelegate.onTransferPercentage(100);
             fileDelegate.onAllPacketsTranferred();
@@ -72,7 +72,7 @@ void FileOperations::writeNextPacket()
         uint8_t *nextPacketData = &binFile[writingPacketNumber * MBL_PACKET_SIZE];
         //NSLog(@"writing packet number %d ...",self.writingPacketNumber+1);
         //NSLog(@"packet data: %@",nextPacketData);
-        bootloaderBoard->write_gatt_char(&DFU_PACKET_CHAR, nextPacketData, MBL_PACKET_SIZE);
+        bootloaderBoard->write_gatt_char(&DFU_PACKET_CHAR, MBL_MW_GATT_CHAR_WRITE_WITHOUT_RESPONSE, nextPacketData, MBL_PACKET_SIZE);
         percentage = (((double)(writingPacketNumber * 20) / (double)(binFileSize)) * 100);
         if (percentage != prevPercentage) {
             fileDelegate.onTransferPercentage(percentage);

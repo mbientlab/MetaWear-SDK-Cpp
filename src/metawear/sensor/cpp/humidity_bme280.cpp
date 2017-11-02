@@ -1,6 +1,7 @@
 #include "metawear/sensor/humidity_bme280.h"
 #include "humidity_bme280_private.h"
 #include "humidity_bme280_register.h"
+#include "utils.h"
 
 #include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
@@ -11,6 +12,8 @@
 
 #include <cstring>
 #include <stdint.h>
+
+using std::stringstream;
 
 const ResponseHeader HUMIDITY_BME280_ADC_RESPONSE_HEADER(MBL_MW_MODULE_HUMIDITY, READ_REGISTER(ORDINAL(HumidityBme280Register::HUMIDITY)));
 
@@ -31,4 +34,12 @@ MblMwDataSignal* mbl_mw_humidity_bme280_get_percentage_data_signal(const MblMwMe
 void mbl_mw_humidity_bme280_set_oversampling(const MblMwMetaWearBoard *board, MblMwHumidityBme280Oversampling oversampling) {
     uint8_t command[3]= { MBL_MW_MODULE_HUMIDITY, ORDINAL(HumidityBme280Register::MODE), static_cast<uint8_t>(oversampling) };
     SEND_COMMAND;
+}
+
+void create_humidity_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(HumidityBme280Register::HUMIDITY):
+        uri << "relative-humidity";
+        break;
+    }
 }

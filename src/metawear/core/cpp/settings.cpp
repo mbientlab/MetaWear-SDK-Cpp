@@ -16,6 +16,7 @@
 #include <vector>
 
 using std::memcpy;
+using std::stringstream;
 using std::vector;
 
 const float AD_INTERVAL_STEP= 0.625f, CONN_INTERVAL_STEP= 1.25f, TIMEOUT_STEP= 10;
@@ -126,5 +127,21 @@ void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, 
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= WHITELIST_REVISION) {
         uint8_t command[3]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::WHITELIST_FILTER_MODE), static_cast<uint8_t>(mode)};
         SEND_COMMAND;
+    }
+}
+
+void create_settings_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(SettingsRegister::BATTERY_STATE):
+        uri << "battery";
+        switch(signal->length()) {
+        case 1:
+            uri << "[0]";
+            break;
+        case 2:
+            uri << "[1]";
+            break;
+        }
+        break;
     }
 }

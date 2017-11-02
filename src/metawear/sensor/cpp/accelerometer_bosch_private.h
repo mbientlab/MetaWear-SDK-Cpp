@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sstream>
 #include <stdint.h>
 #include <vector>
 
@@ -15,3 +16,6 @@ void serialize_accelerometer_bma255_config(const MblMwMetaWearBoard* board, std:
 
 void deserialize_accelerometer_bmi160_config(MblMwMetaWearBoard* board, uint8_t** state_stream);
 void deserialize_accelerometer_bma255_config(MblMwMetaWearBoard* board, uint8_t** state_stream);
+
+void read_accelerometer_bosch_acceleration_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed);
+void create_acc_bosch_uri(const MblMwDataSignal* signal, std::stringstream& uri);

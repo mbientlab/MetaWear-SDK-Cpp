@@ -1,6 +1,7 @@
 #include "metawear/sensor/gpio.h"
 #include "gpio_private.h"
 #include "gpio_register.h"
+#include "utils.h"
 
 #include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
@@ -11,6 +12,7 @@
 using std::forward_as_tuple;
 using std::memcpy;
 using std::piecewise_construct;
+using std::stringstream;
 
 static MblMwGpioAnalogReadParameters default_read_parameters= {0xff, 0xff, 0xff, 0x00};
 const uint8_t ENHANCED_ANALOG_REVISION= 2;
@@ -150,4 +152,21 @@ void mbl_mw_gpio_start_pin_monitoring(const MblMwMetaWearBoard* board, uint8_t p
 void mbl_mw_gpio_stop_pin_monitoring(const MblMwMetaWearBoard* board, uint8_t pin) {
     uint8_t command[4]= {MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::PIN_CHANGE_NOTIFY_ENABLE), pin, 0};
     send_command(board, command, sizeof(command));
+}
+
+void create_gpio_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(GpioRegister::READ_AI_ABS_REF):
+        uri << "abs-ref[" << (int) signal->header.data_id << "]";
+        break;
+    case ORDINAL(GpioRegister::READ_AI_ADC):
+        uri << "adc[" << (int) signal->header.data_id << "]";
+        break;
+    case ORDINAL(GpioRegister::READ_DI):
+        uri << "digital[" << (int) signal->header.data_id << "]";
+        break;
+    case ORDINAL(GpioRegister::PIN_CHANGE_NOTIFY):
+        uri << "pin-monitor[" << (int) signal->header.data_id << "]";
+        break;
+    }
 }

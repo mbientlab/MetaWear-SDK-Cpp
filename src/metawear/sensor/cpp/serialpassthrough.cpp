@@ -2,6 +2,7 @@
 #include "metawear/sensor/spi.h"
 #include "serialpassthrough_private.h"
 #include "serialpassthrough_register.h"
+#include "utils.h"
 
 #include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
@@ -14,6 +15,7 @@
 using std::forward_as_tuple;
 using std::memcpy;
 using std::piecewise_construct;
+using std::stringstream;
 using std::vector;
 
 const uint8_t SPI_REVISION= 1;
@@ -128,4 +130,15 @@ void mbl_mw_spi_write(const MblMwMetaWearBoard* board, const MblMwSpiParameters*
     command.insert(command.end(), read_parameters->data, read_parameters->data + read_parameters->data_length);
 
     send_command(board, command.data(), (uint8_t) command.size());
+}
+
+void create_serialpassthrough_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(SerialPassthroughRegister::I2C_READ_WRITE):
+        uri << "i2c[" << (int) signal->header.data_id << "]";
+        break;
+    case ORDINAL(SerialPassthroughRegister::SPI_READ_WRITE):
+        uri << "spi[" << (int) signal->header.data_id << "]";
+        break;
+    }
 }

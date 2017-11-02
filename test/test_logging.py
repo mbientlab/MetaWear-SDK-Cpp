@@ -230,6 +230,25 @@ class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
         for a, b in zip(self.logged_data, Bmi160GyroYAxis.expected_values):
             self.assertAlmostEqual(a, b, delta = 0.001)
 
+class TestLogIdentifiers(TestMetaWearBase):
+    def setUp(self):        
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
+    def test_gyro_z_identifier(self):
+        rot_signal= self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
+        roy_y_signal = self.libmetawear.mbl_mw_datasignal_get_component(rot_signal, Const.GYRO_ROTATION_Z_AXIS_INDEX)
+
+        self.libmetawear.mbl_mw_datasignal_log(roy_y_signal, self.logger_created)
+        self.events["log"].wait()
+
+        raw = self.libmetawear.mbl_mw_logger_generate_identifier(self.loggers[0])
+        actual = cast(raw, c_char_p).value.decode("ascii")
+        self.libmetawear.mbl_mw_memory_free(raw)
+
+        self.assertEqual(actual, "angular-velocity[2]")
+
 class TestSensorFusionLogging(TestMetaWearBase):
     def setUp(self):
         self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD

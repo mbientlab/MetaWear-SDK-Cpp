@@ -15,6 +15,7 @@
 #include "metawear/core/status.h"
 
 #include "metawear/core/cpp/datasignal_private.h"
+#include "metawear/core/cpp/debug_private.h"
 #include "metawear/core/cpp/event_register.h"
 #include "metawear/core/cpp/logging_register.h"
 #include "metawear/core/cpp/logging_private.h"
@@ -28,10 +29,13 @@
 
 #include "metawear/platform/cpp/threadpool.h"
 
-#include "metawear/processor/cpp/accounter_private.h"
-#include "metawear/processor/cpp/packer_private.h"
+#include "metawear/processor/cpp/dataprocessor_config.h"
 #include "metawear/processor/cpp/dataprocessor_register.h"
 #include "metawear/processor/cpp/dataprocessor_private.h"
+
+#include "metawear/sensor/accelerometer.h"
+#include "metawear/sensor/gyro_bmi160.h"
+#include "metawear/sensor/sensor_fusion.h"
 
 #include "metawear/sensor/cpp/accelerometer_private.h"
 #include "metawear/sensor/cpp/ambientlight_ltr329_private.h"
@@ -108,7 +112,7 @@ static bool invoke_signal_handler(MblMwDataSignal* signal, int64_t epoch, const 
     return false;
 }
 
-static inline int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     try {
         auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
         bool handled= false;
@@ -266,6 +270,7 @@ MblMwMetaWearBoard::MblMwMetaWearBoard() : logger_state(nullptr, [](void *ptr) -
         event_state(nullptr, [](void *ptr) -> void { free_event_module(ptr); }), 
         dp_state(nullptr, [](void *ptr) -> void { free_dataprocessor_module(ptr); }),
         macro_state(nullptr, [](void *ptr) -> void { free_macro_module(ptr); }),
+        debug_state(nullptr, [](void *ptr) -> void { free_debug_module(ptr); }),
         time_per_response(150), module_discovery_index(-1) {
 }
 
@@ -318,7 +323,8 @@ static void(*INITIALIZE_FNS[])(MblMwMetaWearBoard*) = {
     init_serialpassthrough_module,
     init_switch_module,
     init_sensor_fusion_module,
-    init_macro_module
+    init_macro_module,
+    init_debug_module
 };
 static inline void service_discovery_completed(MblMwMetaWearBoard* board) {
     for (auto it : INITIALIZE_FNS) {
@@ -745,7 +751,7 @@ int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* sta
             board->module_events.emplace(live_header, saved_event);
         }
     }
-
+    
     uint8_t module_config_size= *current_addr;
     current_addr++;
     for (uint8_t i= 0; i < module_config_size; i++) {
@@ -788,4 +794,28 @@ void mbl_mw_metawearboard_perform_dfu(MblMwMetaWearBoard *board, const MblMwDfuD
     board->operations.reset(new DfuOperations(board, delegate));
     board->filename = filename;
     board->btle_conn.enable_notifications(board, &DFU_CONTROL_POINT_CHAR, dfu_char_changed_handler, dfu_enable_notify_ready);
+}
+
+static void read_sensor_fusion_config_completed(MblMwMetaWearBoard* board, int32_t value) {
+    query_active_loggers(board);
+}
+
+static void read_gyro_config_completed(MblMwMetaWearBoard* board, int32_t value) {
+    if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_SENSOR_FUSION) != MBL_MW_MODULE_TYPE_NA) {
+        mbl_mw_sensor_fusion_read_config(board, read_sensor_fusion_config_completed);
+    }
+    read_sensor_fusion_config_completed(board, MBL_MW_STATUS_OK);
+}
+
+static void read_acc_config_completed(MblMwMetaWearBoard* board, int32_t value) {
+    if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_GYRO) != MBL_MW_MODULE_TYPE_NA) {
+        mbl_mw_gyro_bmi160_read_config(board, read_gyro_config_completed);
+    } else {
+        read_gyro_config_completed(board, MBL_MW_STATUS_OK);
+    }
+}
+
+void mbl_mw_metawearboard_create_anonymous_datasignals(MblMwMetaWearBoard* board, MblMwFnAnonSignalArray created) {
+    board->anon_signals_created = created;
+    mbl_mw_acc_read_config(board, read_acc_config_completed);
 }

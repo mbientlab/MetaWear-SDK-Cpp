@@ -57,3 +57,65 @@ deserializing the state.  ::
     mbl_mw_metawearboard_initialize(board, [](MblMwMetaWearBoard* board, int32_t status) -> void {
         
     });
+
+Anonymous Signals
+-----------------
+Anonymous data signals are a variant of the :ref:`Logger <MblMwDataLogger>` type used to retrieve logged data from a board that was not programmed by 
+the current host device.  Use 
+`mbl_mw_metawearboard_create_anonymous_datasignals <https://mbientlab.com/docs/metawear/cpp/0/metawearboard_8h.html#a218adea4ebd0df4061940325964488b5>`_ 
+to sync the host device with the board's current logger state.  If the function fails, a null pointer will be returned and the uint32_t parameter 
+instead corresponds to a status code from the SDK.
+
+Because of the anonymous nature of the object, users will need to rely on an identifier string to determine what kind of data is being passed to each 
+route.  Generate the identifier string by calling 
+`mbl_mw_logger_generate_identifier <https://mbientlab.com/docs/metawear/cpp/0/logging_8h.html#a86d098570698a184ee93087a6ffc00bb>`_ for each 
+``MblMwDataLogger`` type and match these values with 
+`mbl_mw_anonymous_datasignal_get_identifier <https://mbientlab.com/docs/metawear/cpp/0/anonymous__datasignal_8h.html#a253a854d9b326efc501df320284a6ae6>`_.  ::
+
+    #include "metawear/core/datasignal.h"
+    #include "metawear/core/logging.h"
+    #include "metawear/platform/memory.h"
+    #include "metawear/sensor/gyro_bmi160.h"
+
+    void identifier_demo(MblMwMetaWearBoard* board) {
+        auto gyro = mbl_mw_gyro_bmi160_get_rotation_data_signal(board);
+        auto gyro_y = mbl_mw_datasignal_get_component(gyro, MBL_MW_GYRO_ROTATION_Y_AXIS_INDEX);
+        mbl_mw_datasignal_log(gyro_y, [](MblMwDataLogger* logger) -> void {
+            char* identifier = mbl_mw_logger_generate_identifier(logger);
+            cout << "gyro_y identifier = " << identifier << endl;
+            mbl_mw_memory_free(identifier);
+        });
+    }
+
+::
+
+    #include "metawear/core/anonymous_datasignal.h"
+
+    // Use mbl_mw_metawearboard_create_anonymous_datasignals to retrieve log data from 
+    // another device
+    void anonymous_signal_demo(MblMwMetaWearboard* board) {
+        mbl_mw_metawearboard_create_anonymous_datasignals(board, [](MblMwMetaWearBoard* board, 
+                MblMwAnonymousDataSignal** anonymous_signals, uint32_t size) {
+            if (anonymous_signals == nullptr) {
+                cerr << "Failed to create anonymous signals, status = " << (int32_t) size << endl;
+                return;
+            }
+            for (uint32_t i = 0; i < size; i++) {
+                char* identifier = mbl_mw_anonymous_datasignal_get_identifier(anonymous_signals[i]);
+
+                // identifier earlier extracted from calling
+                // mbl_mw_logger_generate_identifier, use in if-else statements to identify
+                // which anonymous signal represents gyro y-axis data
+                if (!strcmp(identifier, "angular-velocity[1]")) {
+                    mbl_mw_anonymous_datasignal_subscribe(anonymous_signals[i], [](const MblMwData* data) {
+                        printf("gyro y-axis: %.3f", *((float*) data->value));
+                    });
+                }
+
+                mbl_mw_memory_free(identifier);
+            }
+        });
+    }
+
+As the C++ SDK does not yet support all available data sources, you will not be able to use this SDK to sync data from the accelerometer's detection 
+algorithms except the BMI160's step and BMI160/BMA255 orientation detectors.

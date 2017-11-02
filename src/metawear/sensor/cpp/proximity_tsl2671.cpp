@@ -1,6 +1,7 @@
 #include "metawear/sensor/proximity_tsl2671.h"
 #include "proximity_tsl2671_private.h"
 #include "proximity_tsl2671_register.h"
+#include "utils.h"
 
 #include "metawear/core/module.h"
 #include "metawear/core/cpp/datasignal_private.h"
@@ -14,6 +15,7 @@
 #include <cstdlib>
 
 using std::calloc;
+using std::stringstream;
 
 const ResponseHeader PROXIMITY_TSL2671_ADC_RESPONSE_HEADER(MBL_MW_MODULE_PROXIMITY, READ_REGISTER(ORDINAL(ProximityTsl2671Register::PROXIMITY)));
 
@@ -77,4 +79,12 @@ void mbl_mw_proximity_tsl2671_write_config(const MblMwMetaWearBoard *board) {
     memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_PROXIMITY), sizeof(Tsl2671Config));
 
     SEND_COMMAND;
+}
+
+void create_proximity_uri(const MblMwDataSignal* signal, stringstream& uri) {
+    switch(signal->header.register_id) {
+    case ORDINAL(ProximityTsl2671Register::PROXIMITY):
+        uri << "proximity";
+        break;
+    }
 }

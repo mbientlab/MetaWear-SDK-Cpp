@@ -32,7 +32,9 @@ enum class DataInterpreter : uint8_t {
     SENSOR_FUSION_EULER_ANGLE,
     SENSOR_FUSION_CORRECTED_FLOAT_VECTOR3,
     SENSOR_FUSION_FLOAT_VECTOR3,
-    SENSOR_FUSION_CORRECTED_ACC
+    SENSOR_FUSION_CORRECTED_ACC,
+    DEBUG_OVERFLOW_STATE,
+    SENSOR_ORIENTATION
 };
 
 enum class FirmwareConverter : uint8_t {
@@ -58,9 +60,6 @@ namespace std {
         size_t operator()(const FirmwareConverter& key) const;
     };
 }
-
-extern std::unordered_map<DataInterpreter, DataInterpreter> signed_to_unsigned;
-extern std::unordered_map<DataInterpreter, DataInterpreter> unsigned_to_signed;
 
 typedef MblMwData* (*FnBoolDataSignalByteArray)(bool log_data, const MblMwDataSignal*, const uint8_t*, uint8_t);
 extern std::unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters;

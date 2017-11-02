@@ -154,3 +154,24 @@ Alternatively, you can receive notifications for each step detected by calling
 
     mbl_mw_acc_bmi160_enable_step_detector(board);
     mbl_mw_acc_bosch_start(board);
+
+Orientation Detection
+---------------------
+The orientation detector alerts you when the sensor's orientation changes between portrait/landscape and front/back.  Data is represented as an 
+`MblMwSensorOrientation <https://mbientlab.com/docs/metawear/cpp/0/types_8h.html#a2e83167b55d36e1d48d100f342ad529c>`_ enum.
+
+This feature is currently only supported on devices using the BMI160 or BMA255 accelerometers.  
+
+::
+
+    #include "metawear/core/datasignal.h"
+    #include "metawear/core/types.h"
+    #include "metawear/sensor/accelerometer_bosch.h"
+
+    auto signal = mbl_mw_acc_bosch_get_orientation_detection_data_signal(board);
+    mbl_mw_datasignal_subscribe(signal, [](const MblMwData* data) {
+        cout << "orientation = " << *((MblMwSensorOrientation*)data->value) << endl;
+    });
+    mbl_mw_acc_bosch_enable_orientation_detection(board);
+    mbl_mw_acc_bosch_start(board);
+
