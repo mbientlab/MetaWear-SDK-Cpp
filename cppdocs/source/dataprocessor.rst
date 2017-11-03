@@ -12,7 +12,7 @@ Input data signals that are marked with a `MblMwCartesianFloat <https://mbientla
 :ref:`dataprocessor-rss` processors.  Once fed through an RMS or RSS processor however, they can utilize the rest of the data processing functions.
 
 Accounter
-^^^^^^^^^
+---------
 The accounter processor adds additional information to the BTLE packet to reconstruct the data's timestamp, typically used with streaming raw 
 accelerometer, gyro, and magnetometer data.  This processor is designed specifically for streaming, do not use with the logger.  ::
 
@@ -287,7 +287,7 @@ set the second operand with the output of another data signal. ::
     }
 
 Packer
-^^^^^^
+------
 The packer processor combines multiple data samples into 1 BLE packet to increase the data throughput.  You can pack between 4 to 8 samples per packet 
 depending on the data size.
 
