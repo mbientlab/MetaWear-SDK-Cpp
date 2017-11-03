@@ -245,6 +245,52 @@ class TestMultipleLoggers(AnonymousSignalBase):
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 2)
 
+class TestTemperature(AnonymousSignalBase):
+    def sensorDataHandler(self, data):
+        self.actual.append(cast(data.contents.value, POINTER(c_float)).contents.value)
+
+    def commandLogger(self, board, writeType, characteristic, command, length):
+        prev = len(self.full_history)
+        super().commandLogger(board, writeType, characteristic, command, length)
+        curr = len(self.full_history)
+
+        if (prev != curr):
+            if (command[0] == 0xb and command[1] == 0x82):
+                if (command[2] == 0x00):
+                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x00, 0x20]))
+                elif (command[2] == 0x01):
+                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x01, 0x20]))
+                elif (command[2] == 0x02):
+                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x02, 0x20]))
+                elif (command[2] == 0x03):
+                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x03, 0x20]))
+                else:
+                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+
+    def test_sync_loggers(self):
+        self.assertEqual(self.result['length'], 4)
+
+    def test_handle_download(self):
+        expected= [32.25, 0, 31.625, -25.0]
+        self.actual = []
+
+        for x in range(0, 4):
+            self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[x], self.sensor_data_handler)
+
+        self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xa0, 0xbd, 0x25, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0xa3, 0xbd, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+        self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xa1, 0xbd, 0x25, 0x00, 0x00, 0xfd, 0x00, 0x00, 0x00, 0xa2, 0xbd, 0x25, 0x00, 0x00, 0x38, 0xff, 0x00, 0x00]))
+
+        for a, b in zip(self.actual, expected):
+            self.assertAlmostEqual(a, b, delta = 0.001)
+
+    def test_identifier(self):
+        for x in range(0, 4):
+            with self.subTest(source=str(x)):
+                raw = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[x])
+                actual = cast(raw, c_char_p).value.decode("ascii")
+                self.libmetawear.mbl_mw_memory_free(raw)
+                self.assertEqual("temperature[" + str(x) + "]", actual)
+
 class TestTimeout(AnonymousSignalBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD

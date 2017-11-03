@@ -528,7 +528,7 @@ void mbl_mw_acc_bosch_disable_acceleration_sampling(const MblMwMetaWearBoard *bo
 }
 
 void create_acc_bosch_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT):
         uri << "acceleration";
         if (signal->length() <= 2) {

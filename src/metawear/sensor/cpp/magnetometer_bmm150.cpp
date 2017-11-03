@@ -112,7 +112,7 @@ void mbl_mw_mag_bmm150_suspend(const MblMwMetaWearBoard *board) {
 }
 
 void create_magnetometer_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(MagnetometerBmm150Register::MAG_DATA):
         uri << "magnetic-field";
         if (signal->length() <= 2) {

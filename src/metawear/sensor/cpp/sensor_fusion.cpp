@@ -286,7 +286,7 @@ void mbl_mw_sensor_fusion_stop(const MblMwMetaWearBoard* board) {
 }
 
 void create_sensor_fusion_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SensorFusionRegister::CORRECTED_ACC):
         uri << "corrected-acceleration";
         break;

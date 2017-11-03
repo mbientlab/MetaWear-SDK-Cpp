@@ -93,7 +93,7 @@ void mbl_mw_cd_tcs34725_write_config(const MblMwMetaWearBoard *board) {
 }
 
 void create_colordetector_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(ColorDetectorTcs34725Register::RGB_COLOR):
         uri << "color";
         if (signal->length() <= 2) {

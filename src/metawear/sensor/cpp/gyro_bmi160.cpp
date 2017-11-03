@@ -166,7 +166,7 @@ void mbl_mw_gyro_bmi160_disable_rotation_sampling(const MblMwMetaWearBoard *boar
 }
 
 void create_gyro_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(GyroBmi160Register::DATA):
         uri << "angular-velocity";
         if (signal->length() <= 2) {

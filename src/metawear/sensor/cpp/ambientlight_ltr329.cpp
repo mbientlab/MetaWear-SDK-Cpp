@@ -99,7 +99,7 @@ void mbl_mw_als_ltr329_stop(const MblMwMetaWearBoard *board) {
 }
 
 void create_als_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(AmbientLightLtr329Register::OUTPUT):
         uri << "illuminance";
         break;

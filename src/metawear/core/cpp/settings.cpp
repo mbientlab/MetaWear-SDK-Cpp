@@ -131,7 +131,7 @@ void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, 
 }
 
 void create_settings_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SettingsRegister::BATTERY_STATE):
         uri << "battery";
         switch(signal->length()) {

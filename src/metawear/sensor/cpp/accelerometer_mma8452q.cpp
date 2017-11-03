@@ -232,7 +232,7 @@ void read_accelerometer_mma8452q_acceleration_config(const MblMwMetaWearBoard* b
 }
 
 void create_acc_mma8452q_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(AccelerometerMma8452qRegister::DATA_VALUE):
         uri << "acceleration";
         if (signal->length() <= 2) {

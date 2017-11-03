@@ -37,7 +37,7 @@ void mbl_mw_humidity_bme280_set_oversampling(const MblMwMetaWearBoard *board, Mb
 }
 
 void create_humidity_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(HumidityBme280Register::HUMIDITY):
         uri << "relative-humidity";
         break;

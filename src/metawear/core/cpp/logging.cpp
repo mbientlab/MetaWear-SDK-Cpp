@@ -150,7 +150,9 @@ static int32_t logging_response_entry_id_received(MblMwMetaWearBoard *board, con
     return 0;
 }
 
-static MblMwDataSignal* guessLogSource(MblMwMetaWearBoard* board, const ResponseHeader& key, uint8_t offset, uint8_t length) {
+static MblMwDataSignal* guessLogSource(MblMwMetaWearBoard* board, ResponseHeader& key, uint8_t offset, uint8_t length) {
+    key.disable_silent();
+
     vector<MblMwDataSignal*> possible;
     auto source = dynamic_cast<MblMwDataSignal*>(board->module_events.at(key));
 

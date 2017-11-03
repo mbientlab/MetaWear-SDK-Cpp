@@ -27,7 +27,7 @@ void init_switch_module(MblMwMetaWearBoard *board) {
 }
 
 void create_switch_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SwitchRegister::STATE):
         uri << "switch";
         break;

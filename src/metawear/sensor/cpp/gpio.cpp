@@ -155,7 +155,7 @@ void mbl_mw_gpio_stop_pin_monitoring(const MblMwMetaWearBoard* board, uint8_t pi
 }
 
 void create_gpio_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(GpioRegister::READ_AI_ABS_REF):
         uri << "abs-ref[" << (int) signal->header.data_id << "]";
         break;

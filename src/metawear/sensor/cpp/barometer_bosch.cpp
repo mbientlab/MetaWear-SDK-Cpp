@@ -144,7 +144,7 @@ void mbl_mw_baro_bosch_stop(const MblMwMetaWearBoard *board) {
 }
 
 void create_barometer_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(BarometerBmp280Register::PRESSURE):
         uri << "pressure";
         break;

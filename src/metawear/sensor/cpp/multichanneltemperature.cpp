@@ -53,7 +53,7 @@ uint8_t mbl_mw_multi_chnl_temp_get_num_channels(const MblMwMetaWearBoard *board)
 }
 
 void create_temp_uri(const MblMwDataSignal* signal, stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(MultiChannelTempRegister::TEMPERATURE):
         uri << "temperature[" << (int) signal->header.data_id << "]";
         break;

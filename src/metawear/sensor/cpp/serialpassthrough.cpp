@@ -133,7 +133,7 @@ void mbl_mw_spi_write(const MblMwMetaWearBoard* board, const MblMwSpiParameters*
 }
 
 void create_serialpassthrough_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
-    switch(signal->header.register_id) {
+    switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SerialPassthroughRegister::I2C_READ_WRITE):
         uri << "i2c[" << (int) signal->header.data_id << "]";
         break;
