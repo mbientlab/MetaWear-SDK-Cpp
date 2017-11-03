@@ -17,11 +17,16 @@ class AnonymousSignalBase(TestMetaWearBase):
 
         if (prev != curr):
             if (command[0] == 0x03 and command[1] == 0x83):
-                self.notify_mw_char(to_string_buffer([0x03, 0x83, 40, 8]))
+                response = to_string_buffer([0x03, 0x83, 40, 8])
             elif (command[0] == 0x13 and command[1] == 0x83):
-                self.notify_mw_char(to_string_buffer([0x13, 0x83, 40, 3]))
-            elif(command[0] == 0x19 and command[1] == 0x83):
-                self.notify_mw_char(to_string_buffer([0x19, 0x82, 0x1, 0xf]))
+                response = to_string_buffer([0x13, 0x83, 40, 3])
+            elif(command[0] == 0x19 and command[1] == 0x82):
+                response = to_string_buffer([0x19, 0x82, 0x1, 0xf])
+            else:
+                response = None
+
+            if (response != None):
+                self.schedule_response(response)
 
     def sync_loggers(self):
         event = Event()
@@ -46,11 +51,14 @@ class TestAcceleration(AnonymousSignalBase):
         if (prev != curr):
             if (command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x60])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x24]))
+                    response = to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x24])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
+
+                if (response != None):
+                    self.schedule_response(response)
 
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 1)
@@ -74,9 +82,12 @@ class TestGyroY(AnonymousSignalBase):
         if (prev != curr):
             if (command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x22]))
+                    response = to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x22])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
+
+                if (response != None):
+                    self.schedule_response(response)
 
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 1)
@@ -107,15 +118,18 @@ class TestSplitImu(AnonymousSignalBase):
         if (prev != curr):
             if (command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x60])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x60])
                 elif (command[2] == 0x02):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x24]))
+                    response = to_string_buffer([0x0b, 0x82, 0x03, 0x04, 0xff, 0x24])
                 elif (command[2] == 0x03):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x24]))
+                    response = to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x24])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
+
+                if (response != None):
+                    self.schedule_response(response)
 
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 2)
@@ -140,24 +154,28 @@ class TestActivity(AnonymousSignalBase):
         curr = len(self.full_history)
 
         if (prev != curr):
+            response = None
             if (command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x02, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x02, 0x60])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0xc4, 0x03, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0xc4, 0x03, 0x60])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
             elif (command[0] == 0x9 and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x09, 0x82, 0x03, 0x04, 0xff, 0xa0, 0x07, 0xa5, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+                    response = to_string_buffer([0x09, 0x82, 0x03, 0x04, 0xff, 0xa0, 0x07, 0xa5, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x09, 0x82, 0x09, 0x03, 0x00, 0x20, 0x02, 0x07, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+                    response = to_string_buffer([0x09, 0x82, 0x09, 0x03, 0x00, 0x20, 0x02, 0x07, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                 elif (command[2] == 0x02):
-                    self.notify_mw_char(to_string_buffer([0x09, 0x82, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x30, 0x75, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+                    response = to_string_buffer([0x09, 0x82, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x30, 0x75, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                 elif (command[2] == 0x03):
-                    self.notify_mw_char(to_string_buffer([0x09, 0x82, 0x09, 0x03, 0x01, 0x60, 0x0f, 0x03, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+                    response = to_string_buffer([0x09, 0x82, 0x09, 0x03, 0x01, 0x60, 0x0f, 0x03, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
+
+            if (response != None):
+                self.schedule_response(response)
 
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 2)
@@ -199,22 +217,26 @@ class TestQuaternionLimiter(AnonymousSignalBase):
         curr = len(self.full_history)
 
         if (prev != curr):
+            response = None
             if (command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x60])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x64]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x64])
                 elif (command[2] == 0x02):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x68]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x68])
                 elif (command[2] == 0x03):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x6c]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x6c])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
             elif (command[0] == 0x9 and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x09, 0x82, 0x19, 0x07, 0xff, 0xe0, 0x08, 0x17, 0x14, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+                    response = to_string_buffer([0x09, 0x82, 0x19, 0x07, 0xff, 0xe0, 0x08, 0x17, 0x14, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
+
+            if (response != None):
+                self.schedule_response(response)
 
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 1)
@@ -234,13 +256,16 @@ class TestMultipleLoggers(AnonymousSignalBase):
         if (prev != curr):
             if (command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x60])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x24]))
+                    response = to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x24])
                 elif (command[2] == 0x02):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x22]))
+                    response = to_string_buffer([0x0b, 0x82, 0x13, 0x05, 0xff, 0x22])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
+
+                if (response != None):
+                    self.schedule_response(response)
 
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 2)
@@ -257,15 +282,18 @@ class TestTemperature(AnonymousSignalBase):
         if (prev != curr):
             if (command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x00, 0x20]))
+                    response = to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x00, 0x20])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x01, 0x20]))
+                    response = to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x01, 0x20])
                 elif (command[2] == 0x02):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x02, 0x20]))
+                    response = to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x02, 0x20])
                 elif (command[2] == 0x03):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x03, 0x20]))
+                    response = to_string_buffer([0x0b, 0x82, 0x04, 0xc1, 0x03, 0x20])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
+
+                if (response != None):
+                    self.schedule_response(response)
 
     def test_sync_loggers(self):
         self.assertEqual(self.result['length'], 4)
@@ -305,28 +333,32 @@ class TestTimeout(AnonymousSignalBase):
         curr = len(self.full_history)
 
         if (prev != curr):
+            response = None
             if (command[0] == 0x03 and command[1] == 0x83):
-                self.notify_mw_char(to_string_buffer([0x03, 0x83, 40, 8]))
+                response = to_string_buffer([0x03, 0x83, 40, 8])
             elif (command[0] == 0x13 and command[1] == 0x83):
-                self.notify_mw_char(to_string_buffer([0x13, 0x83, 40, 3]))
-            elif(command[0] == 0x19 and command[1] == 0x83):
-                self.notify_mw_char(to_string_buffer([0x19, 0x82, 0x1, 0xf]))
+                response = to_string_buffer([0x13, 0x83, 40, 3])
+            elif(command[0] == 0x19 and command[1] == 0x82):
+                response = to_string_buffer([0x19, 0x82, 0x1, 0xf])
             elif (self.sync_logger and command[0] == 0xb and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x60]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x60])
                 elif (command[2] == 0x01):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x64]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x64])
                 elif (command[2] == 0x02):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x68]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x68])
                 elif (command[2] == 0x03):
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x6c]))
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x00, 0x6c])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x0b, 0x82]))
+                    response = to_string_buffer([0x0b, 0x82])
             elif (self.sync_dataproc and command[0] == 0x9 and command[1] == 0x82):
                 if (command[2] == 0x00):
-                    self.notify_mw_char(to_string_buffer([0x09, 0x82, 0x19, 0x07, 0xff, 0xe0, 0x08, 0x17, 0x14, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+                    response = to_string_buffer([0x09, 0x82, 0x19, 0x07, 0xff, 0xe0, 0x08, 0x17, 0x14, 0x00, 0x00, 0x00, 0xd0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                 else:
-                    self.notify_mw_char(to_string_buffer([0x09, 0x82]))
+                    response = to_string_buffer([0x09, 0x82])
+
+            if (response != None):
+                self.schedule_response(response)
 
     def test_log_sync_timeout(self):
         self.sync_logger = False

@@ -53,21 +53,8 @@
 #include "metawear/sensor/cpp/sensor_fusion_private.h"
 #include "metawear/sensor/cpp/switch_private.h"
 
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::system_clock;
-using std::exception;
-using std::forward_as_tuple;
-using std::free;
-using std::less;
-using std::malloc;
-using std::memcpy;
-using std::piecewise_construct;
-using std::sort;
-using std::string;
-using std::unordered_map;
-using std::unordered_set;
-using std::vector;
+using namespace std;
+using namespace std::chrono;
 
 const uint8_t CARTESIAN_FLOAT_SIZE= 6;
 const uint16_t MAX_TIME_PER_RESPONSE= 4000;
@@ -803,8 +790,9 @@ static void read_sensor_fusion_config_completed(MblMwMetaWearBoard* board, int32
 static void read_gyro_config_completed(MblMwMetaWearBoard* board, int32_t value) {
     if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_SENSOR_FUSION) != MBL_MW_MODULE_TYPE_NA) {
         mbl_mw_sensor_fusion_read_config(board, read_sensor_fusion_config_completed);
+    } else {
+        read_sensor_fusion_config_completed(board, MBL_MW_STATUS_OK);
     }
-    read_sensor_fusion_config_completed(board, MBL_MW_STATUS_OK);
 }
 
 static void read_acc_config_completed(MblMwMetaWearBoard* board, int32_t value) {

@@ -308,7 +308,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.command= []
         for i in range(0, length):
             self.command.append(command[i])
-            
+
         self.full_history.append(self.command)
         if (command[1] == 0x80):
             if (self.boardType == TestMetaWearBase.METAWEAR_RG_BOARD and command[0] in self.metawear_rg_services):
@@ -359,12 +359,8 @@ class TestMetaWearBase(unittest.TestCase):
                 self.notify_mw_char(create_string_buffer(b'\x0b\x85\x9e\x01\x00\x00', 6))
                 response= None
 
-            def send_response():
-                self.notify_mw_char(self.pending_responses.get())
-
             if (response != None):
-                self.pending_responses.put(response)
-                Timer(0.025, send_response).start()
+                self.schedule_response(response)
 
     def sensorDataHandler(self, data):
         if (data.contents.type_id == DataTypeId.UINT32):
@@ -420,6 +416,13 @@ class TestMetaWearBase(unittest.TestCase):
     def notify_mw_char(self, buffer):
         bytes = cast(buffer, POINTER(c_ubyte))
         return self.notify_handler(self.board, bytes, len(buffer.raw))
+
+    def schedule_response(self, response):
+        def send_response():
+            self.notify_mw_char(self.pending_responses.get())
+
+        self.pending_responses.put(response)
+        Timer(0.020, send_response).start()
 
 def to_string_buffer(bytes):
     buffer= create_string_buffer(len(bytes))
