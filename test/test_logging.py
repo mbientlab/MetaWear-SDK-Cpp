@@ -4,7 +4,7 @@ from ctypes import byref
 #from datetime import datetime
 from logdata import *
 from mbientlab.metawear.cbindings import *
-#from time import mktime
+import time
 import threading
 
 class TestLoggingModule(TestMetaWearBase):
@@ -325,3 +325,31 @@ class TestLoggerTimeout(TestMetaWearBase):
 
         self.e.wait()
         self.assertIsNone(self.created_logger)
+
+class TestLogTimestamp(TestMetaWearBase):
+    def initialized(self, board, status):
+        super().initialized(board, status)
+        self.now = int(time.time() * 1000)
+
+    def commandLogger(self, board, writeType, characteristic, command, length):
+        if (command[0] == 0xb and command[1] == 0x84):
+            self.schedule_response(to_string_buffer([0x0b, 0x84, 0xa9, 0x72, 0x04, 0x00, 0x01]))
+        else:
+            super().commandLogger(board, writeType, characteristic, command, length)
+
+    def test_past(self):
+        epoch = []
+        def handler(data):
+            epoch.append(data.contents.epoch)
+
+        acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_created)
+        self.events["log"].wait()
+
+        handler_ptr = FnVoid_DataP(handler)
+        self.libmetawear.mbl_mw_logger_subscribe(self.loggers[0], handler_ptr)
+
+        self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x20, 0x75, 0x1b, 0x04, 0x00, 0x3e, 0x01, 0xcd, 0x01, 0x21, 0x76, 0x1b, 0x04, 0x00, 0xc0, 0x07, 0x00, 0x00]))
+
+        # epoch should be within 32701ms
+        self.assertTrue(abs(epoch[0] - self.now) <= 32701)

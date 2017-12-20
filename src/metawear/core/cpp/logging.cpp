@@ -353,10 +353,13 @@ static TimeReference& mbl_mw_logger_lookup_reset_uid(const MblMwMetaWearBoard* b
     return logger_state->log_time_references.at(reset_uid);
 }
 
+static inline int32_t difference(uint32_t a, uint32_t b) {
+    return (int32_t) (a - b);
+}
 static int64_t calculate_epoch_inner(shared_ptr<LoggerState> state, uint32_t tick, TimeReference& reference) {
     if (state->latest_tick.count(reference.reset_uid) && state->latest_tick.at(reference.reset_uid) > tick) {
         auto latest = state->latest_tick.at(reference.reset_uid);
-        milliseconds offset((int64_t) ((tick - latest + (latest - reference.tick)) * TICK_TIME_STEP));
+        milliseconds offset((int64_t) ((difference(tick, latest) + difference(latest, reference.tick)) * TICK_TIME_STEP));
         reference.timestamp += offset;
         reference.tick = tick;
 
@@ -367,7 +370,7 @@ static int64_t calculate_epoch_inner(shared_ptr<LoggerState> state, uint32_t tic
 
     state->latest_tick[reference.reset_uid]= tick;
     auto timestamp_copy(reference.timestamp);
-    milliseconds time_offset((int64_t) ((tick - reference.tick) * TICK_TIME_STEP));
+    milliseconds time_offset((int64_t) (difference(tick, reference.tick) * TICK_TIME_STEP));
     timestamp_copy += time_offset;
     return duration_cast<milliseconds>(timestamp_copy.time_since_epoch()).count();
 }
