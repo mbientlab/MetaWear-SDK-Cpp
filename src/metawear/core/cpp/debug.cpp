@@ -30,25 +30,27 @@ enum class DebugRegister : uint8_t {
 
 struct DebugState {
     MblMwFnData overflow_state_handler, schedule_queue_handler;
+    void *overflow_state_context;
+    void *schedule_queue_context;
 };
 
 const uint8_t RES_MONITOR_REVISION= 2;
 
 #define GET_DEBUG_STATE(board) static_pointer_cast<DebugState>(board->debug_state)
-#define CAST_RESPONSE(type, handler) auto data = data_response_converters.at(type)(false, nullptr, response + 2, len - 2);\
+#define CAST_RESPONSE(type, context, handler) auto data = data_response_converters.at(type)(false, nullptr, response + 2, len - 2);\
 data->epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();\
 \
-GET_DEBUG_STATE(board)->handler(data);\
+GET_DEBUG_STATE(board)->handler(GET_DEBUG_STATE(board)->context, data);\
 free(data->value);\
 free(data);
 
 static int32_t schedule_queue_status_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    CAST_RESPONSE(DataInterpreter::BYTE_ARRAY, schedule_queue_handler);
+    CAST_RESPONSE(DataInterpreter::BYTE_ARRAY, schedule_queue_context, schedule_queue_handler);
     return MBL_MW_STATUS_OK;
 }
 
 static int32_t overflow_status_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {    
-    CAST_RESPONSE(DataInterpreter::DEBUG_OVERFLOW_STATE, overflow_state_handler);
+    CAST_RESPONSE(DataInterpreter::DEBUG_OVERFLOW_STATE, overflow_state_context, overflow_state_handler);
     return MBL_MW_STATUS_OK;
 }
 
@@ -87,14 +89,20 @@ void mbl_mw_debug_reset_after_gc(const MblMwMetaWearBoard *board) {
     SEND_COMMAND;
 }
 
-void mbl_mw_debug_read_schedule_queue_usage(const MblMwMetaWearBoard *board, MblMwFnData handler) {
+void mbl_mw_debug_enable_power_save(const MblMwMetaWearBoard *board) {
+    uint8_t command[2]= {MBL_MW_MODULE_DEBUG, ORDINAL(DebugRegister::POWER_SAVE)};
+    SEND_COMMAND;
+}
+
+void mbl_mw_debug_read_schedule_queue_usage(const MblMwMetaWearBoard *board, void *context, MblMwFnData handler) {
     if (board->module_info.at(MBL_MW_MODULE_DEBUG).revision >= RES_MONITOR_REVISION) {
+        GET_DEBUG_STATE(board)->schedule_queue_context = context;
         GET_DEBUG_STATE(board)->schedule_queue_handler = handler;
 
         uint8_t command[2]= {MBL_MW_MODULE_DEBUG, READ_REGISTER(ORDINAL(DebugRegister::SCHEDULE_QUEUE))};
         SEND_COMMAND;
     } else {
-        handler(nullptr);
+        handler(context, nullptr);
     }
 }
 
@@ -105,13 +113,14 @@ void mbl_mw_debug_set_stack_overflow_assertion(const MblMwMetaWearBoard *board, 
     }
 }
 
-void mbl_mw_debug_read_stack_overflow_state(const MblMwMetaWearBoard *board, MblMwFnData handler) {
+void mbl_mw_debug_read_stack_overflow_state(const MblMwMetaWearBoard *board, void *context, MblMwFnData handler) {
     if (board->module_info.at(MBL_MW_MODULE_DEBUG).revision >= RES_MONITOR_REVISION) {
+        GET_DEBUG_STATE(board)->overflow_state_context = context;
         GET_DEBUG_STATE(board)->overflow_state_handler = handler;
         
         uint8_t command[2]= {MBL_MW_MODULE_DEBUG, READ_REGISTER(ORDINAL(DebugRegister::STACK_OVERFLOW))};
         SEND_COMMAND;
     } else {
-        handler(nullptr);
+        handler(context, nullptr);
     }
 }

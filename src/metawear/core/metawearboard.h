@@ -23,6 +23,28 @@ extern "C" {
 #endif
 
 /**
+ * Wrapper class holding characteristics under the
+ * <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.device_information.xml">Device Information</a>
+ * GATT service
+ */
+typedef struct {
+    const char* manufacturer;           ///< Device's manufacturer name, characteristic 0x2A29
+    const char* model_number;           ///< Model number assigned by MbientLab, characteristic 0x2A24
+    const char* serial_number;          ///< Device's serial number, characteristic 0x2A25
+    const char* firmware_revision;      ///< Revision of the firmware on the device, characteristic 0x2A26
+    const char* hardware_revision;      ///< Revision of the hardware on the device, characteristic 0x2A27
+} MblMwDeviceInformation;
+
+typedef struct {
+    const char* name;
+    const uint8_t* extra;
+    uint8_t extra_len;
+    uint8_t present;
+    uint8_t implementation;
+    uint8_t revision;
+} MblMwModuleInfo;
+
+/**
  * @deprecated As of v0.5.0 and will be removed in v1.0.0.  Use mbl_mw_metawearboard_notify_char_changed instead.
  */
 METAWEAR_API int32_t mbl_mw_connection_notify_char_changed(MblMwMetaWearBoard *board, const uint8_t *value, uint8_t len);
@@ -61,9 +83,10 @@ METAWEAR_API void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard*
 /**
  * Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
  * @param board         Board to initialize
+ * @param context       Pointer to additional data for the callback function
  * @param initialized   Callback function to be executed when the board is initialized
  */
-METAWEAR_API void mbl_mw_metawearboard_initialize(MblMwMetaWearBoard *board, MblMwFnBoardPtrInt initialized);
+METAWEAR_API void mbl_mw_metawearboard_initialize(MblMwMetaWearBoard *board, void *context, MblMwFnBoardPtrInt initialized);
 /**
  * Removes all data processors and timers from the MetaWear board
  * @param board         Board to tear down
@@ -95,6 +118,20 @@ METAWEAR_API MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard*
  * @return Friendly name representing the board model 
  */
 METAWEAR_API const char* mbl_mw_metawearboard_get_model_name(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves supported characteristics from the Device Information service.  
+ * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
+ * @return Struct holding the characteristics
+ */
+METAWEAR_API const MblMwDeviceInformation* mbl_mw_metawearboard_get_device_information(const MblMwMetaWearBoard* board);
+
+/**
+ * Returns information about the onboard modules
+ * @param board             Calling object
+ * @param size              Pointer to where the size of the returned array will be written to
+ * @return Array of info objects
+ */
+METAWEAR_API MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMetaWearBoard* board, uint32_t* size);
 
 /**
  * Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
@@ -116,19 +153,21 @@ METAWEAR_API int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board,
  * Reads the current state of the board and creates anonymous data signals based on what data is being logged,  If this task failed, a 
  * null pointer will be passed into the `anonymous_signals` parameter
  * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
  * @param created       Callback function to be executed once the task is completed.
  */
-METAWEAR_API void mbl_mw_metawearboard_create_anonymous_datasignals(MblMwMetaWearBoard* board, MblMwFnAnonSignalArray created);
+METAWEAR_API void mbl_mw_metawearboard_create_anonymous_datasignals(MblMwMetaWearBoard* board, void *context, MblMwFnAnonSignalArray created);
 
 /**
  * Wrapper class containing functions for receiving callbacks throughout the DFU process
  */
 typedef struct {
-    void (*on_dfu_started)();
-    void (*on_dfu_cancelled)();
-    void (*on_transfer_percentage)(int32_t percentage);
-    void (*on_successful_file_transferred)();
-    void (*on_error)(const char *errorMessage);
+    void *context;
+    void (*on_dfu_started)(void *context);
+    void (*on_dfu_cancelled)(void *context);
+    void (*on_transfer_percentage)(void *context, int32_t percentage);
+    void (*on_successful_file_transferred)(void *context);
+    void (*on_error)(void *context, const char *errorMessage);
 } MblMwDfuDelegate;
 
 /**

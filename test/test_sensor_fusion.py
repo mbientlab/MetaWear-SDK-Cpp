@@ -58,7 +58,7 @@ class TestSensorFusion(TestMetaWearBase):
         for test in tests:
             with self.subTest(data = test['name']):
                 signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, test['data'])
-                self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
 
                 expected_value = test['expected']
                 self.notify_mw_char(test['response'])

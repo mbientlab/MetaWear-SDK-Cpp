@@ -28,10 +28,14 @@ char* copy_string(const char* src) {
 }
 
 uint8_t closest_index(const vector<float>& values, float key) {
-    vector<float> differences;
-    differences.resize(values.size());
+    return closest_index(values.data(), values.size(), key);
+}
 
-    transform(values.begin(), values.end(), differences.begin(), [key](const float val) {
+uint8_t closest_index(const float* values, size_t len, float key) {
+    vector<float> differences;
+    differences.resize(len);
+
+    transform(values, values + len, differences.begin(), [key](const float val) {
         return fabs(val - key);
     });
     return distance(differences.begin(), min_element(differences.begin(), differences.end()));

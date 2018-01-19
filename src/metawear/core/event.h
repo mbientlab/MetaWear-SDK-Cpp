@@ -31,9 +31,10 @@ METAWEAR_API void mbl_mw_event_record_commands(MblMwEvent *event);
  * Ends command recording.  This function is non-blocking and will asynchronously alert the caller 
  * when the operation is completed.
  * @param event                 Event to end recording for
+ * @param context               Pointer to additional data for the callback function
  * @param commands_recorded     Callback function to be executed when commands have been recorded
  */
-METAWEAR_API void mbl_mw_event_end_record(MblMwEvent *event, MblMwFnEventPtrInt commands_recorded);
+METAWEAR_API void mbl_mw_event_end_record(MblMwEvent *event, void *context, MblMwFnEventPtrInt commands_recorded);
 
 #ifdef	__cplusplus
 }

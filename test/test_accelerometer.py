@@ -36,7 +36,7 @@ class TestGenericAccelerometerBmi160(TestMetaWearBase):
         expected= [0x03, 0x04, 0x01]
 
         signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bmi160_unsubscribe_acceleration_data(self):
@@ -101,7 +101,7 @@ class TestGenericAccelerometerMma8452q(TestMetaWearBase):
         expected= [0x03, 0x04, 0x01]
 
         signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_acc_mma8452q_unsubscribe_acceleration_data(self):
@@ -167,7 +167,7 @@ class TestGenericAccelerometerBma255(TestMetaWearBase):
         expected= [0x03, 0x04, 0x01]
 
         signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_acc_bma255_unsubscribe_acceleration_data(self):

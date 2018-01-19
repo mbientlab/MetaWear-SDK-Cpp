@@ -1,4 +1,4 @@
-from common import TestMetaWearBase
+from common import TestMetaWearBase, to_string_buffer
 from ctypes import *
 from mbientlab.metawear.cbindings import BatteryState, FnVoid_VoidP_Int, LedColor, LedPattern, Const
 
@@ -52,7 +52,7 @@ class TestSettingsRevision1(TestMetaWearBase):
         super().setUp()
 
     def test_set_ad_interval(self):
-        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
 
         expected= [0x11, 0x02, 0x9b, 0x02, 0xb4]
         self.libmetawear.mbl_mw_settings_set_ad_interval(self.board, 417, 180)
@@ -85,7 +85,7 @@ class TestSettingsRevision2(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_record_commands(event)
         self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.BLUE)
         self.libmetawear.mbl_mw_led_play(self.board)
-        self.libmetawear.mbl_mw_event_end_record(event, self.commands_recorded_fn)
+        self.libmetawear.mbl_mw_event_end_record(event, None, self.commands_recorded_fn)
         self.events["event"].wait()
 
         self.assertEqual(self.command_history, expected_cmds)
@@ -93,6 +93,14 @@ class TestSettingsRevision2(TestMetaWearBase):
     def test_battery_state_data_null(self):
         signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
         self.assertEqual(signal, None)
+
+    def test_mac_address(self):
+        signal = self.libmetawear.mbl_mw_settings_get_mac_data_signal(self.board)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([ 0x11, 0x8b, 0x01, 0x07, 0x7b, 0x52, 0x8f, 0xc9, 0xe8 ]))
+        
+        self.assertEqual(self.data, "E8:C9:8F:52:7B:07")
 
 class TestSettingsRevision3(TestMetaWearBase):
     def setUp(self):
@@ -109,7 +117,7 @@ class TestSettingsRevision3(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_event_record_commands(event)
         self.libmetawear.mbl_mw_haptic_start_motor(self.board, 100.0, 3000)
-        self.libmetawear.mbl_mw_event_end_record(event, self.commands_recorded_fn)
+        self.libmetawear.mbl_mw_event_end_record(event, None, self.commands_recorded_fn)
         self.events["event"].wait()
         
         self.assertEqual(self.command_history, expected_cmds)
@@ -131,7 +139,7 @@ class TestSettingsRevision3(TestMetaWearBase):
         voltage = self.libmetawear.mbl_mw_datasignal_get_component(signal, Const.SETTINGS_BATTERY_VOLTAGE_INDEX)
         charge = self.libmetawear.mbl_mw_datasignal_get_component(signal, Const.SETTINGS_BATTERY_CHARGE_INDEX)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(charge, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(charge, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_read(voltage)
         self.libmetawear.mbl_mw_datasignal_read(charge)
 
@@ -155,15 +163,15 @@ class TestSettingsRevision3(TestMetaWearBase):
         for test in tests:
             with self.subTest(odr= test['name']):
                 component = self.libmetawear.mbl_mw_datasignal_get_component(signal, test['index'])
-                self.libmetawear.mbl_mw_datasignal_subscribe(component, self.sensor_data_handler)
-                self.notify_mw_char(create_string_buffer(b'\x11\x8c\x63\x34\x10', 5))                
+                self.libmetawear.mbl_mw_datasignal_subscribe(component, None, self.sensor_data_handler)
+                self.notify_mw_char(create_string_buffer(b'\x11\x8c\x63\x34\x10', 5))
                 self.assertEqual(self.data_uint32.value, test['expected'])
 
     def test_battery_state_data(self):
         expected= BatteryState(voltage= 4148, charge= 99)
 
         signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x11\x8c\x63\x34\x10', 5))
 
         self.assertEqual(self.data_battery_state, expected)

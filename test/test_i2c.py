@@ -15,7 +15,7 @@ class TestI2cR(TestMetaWearBase):
         expected= [0x2a]
 
         signal= self.libmetawear.mbl_mw_i2c_get_data_signal(self.board, 1, 0xa)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x0d\x81\x0a\x2a', 4))
 
         self.assertEqual(self.data_byte_array, expected)

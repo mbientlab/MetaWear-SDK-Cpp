@@ -50,14 +50,14 @@ class TestAlsLtr329DataHandler(TestMetaWearBase):
         response= create_string_buffer(b'\x14\x03\xed\x92\xb0\x00', 6)
         expected= 11571949
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.ltr329_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.ltr329_data_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_stream_illuminance_data(self):
         expected= [0x14, 0x03, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.ltr329_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.ltr329_data_signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_end_stream_illuminance_data(self):

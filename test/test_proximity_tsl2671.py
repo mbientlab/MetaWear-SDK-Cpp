@@ -102,7 +102,7 @@ class TestProximityTsl2671Data(TestMetaWearBase):
     def test_read_adc(self):
         expected= [0x18, 0x81]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.proximity, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.proximity, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_read(self.proximity)
         self.assertEqual(self.command, expected)
 
@@ -115,7 +115,7 @@ class TestProximityTsl2671Data(TestMetaWearBase):
     def test_proximity_data(self):
         expected= 1522
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.proximity, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.proximity, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x18\x81\xf2\x05', 4))
 
         self.assertEqual(self.data_uint32.value, expected)

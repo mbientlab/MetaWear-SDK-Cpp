@@ -104,7 +104,7 @@ class TestMagnetometerBmm150Data(TestMetaWearBase):
         expected= [0x15, 0x05, 0x01]
 
         signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
 
     def test_b_field_component_subscribe(self):
         # expect only 1 subscribe & unsubscribe commands to be issued
@@ -114,12 +114,12 @@ class TestMagnetometerBmm150Data(TestMetaWearBase):
         ]
 
         signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
 
         indices= [Const.MAG_BFIELD_X_AXIS_INDEX, Const.MAG_BFIELD_Y_AXIS_INDEX, Const.MAG_BFIELD_Z_AXIS_INDEX]
         for i in indices:
             component= self.libmetawear.mbl_mw_datasignal_get_component(signal, i)
-            self.libmetawear.mbl_mw_datasignal_subscribe(component, self.sensor_data_handler)
+            self.libmetawear.mbl_mw_datasignal_subscribe(component, None, self.sensor_data_handler)
 
         for i in indices:
             component= self.libmetawear.mbl_mw_datasignal_get_component(signal, i)
@@ -140,7 +140,7 @@ class TestMagnetometerBmm150Data(TestMetaWearBase):
         response= create_string_buffer(b'\x15\x05\x4e\xf0\x53\x0a\x75\x04', 8)
 
         signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
 
         self.assertEqual(self.data_cartesian_float, expected)
@@ -169,7 +169,7 @@ class TestMagnetometerBmm150Data(TestMetaWearBase):
             with self.subTest(odr= test['name']):
                 signal= self.libmetawear.mbl_mw_mag_bmm150_get_b_field_data_signal(self.board)
                 signal_component = self.libmetawear.mbl_mw_datasignal_get_component(signal, test['index'])
-                self.libmetawear.mbl_mw_datasignal_subscribe(signal_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(signal_component, None, self.sensor_data_handler)
                 self.notify_mw_char(response)
 
                 self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.001)
@@ -183,15 +183,15 @@ class TestMagnetometerPackedData(TestMetaWearBase):
 
         self.packed_bfield_data_signal = self.libmetawear.mbl_mw_mag_bmm150_get_packed_b_field_data_signal(self.board)
 
-    def sensorDataHandler(self, data):
-        super().sensorDataHandler(data)
+    def sensorDataHandler(self, context, data):
+        super().sensorDataHandler(context, data)
 
         self.cartesian_float_values.append(self.data_cartesian_float)
 
     def test_subscribe_packed_bfield_data(self):
         expected = [0x15, 0x09, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.packed_bfield_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.packed_bfield_data_signal, None, self.sensor_data_handler)
         self.assertEqual(self.command, expected)
 
     def test_unsubscribe_packed_bfield_data(self):
@@ -207,7 +207,7 @@ class TestMagnetometerPackedData(TestMetaWearBase):
                 CartesianFloat(x = 174.375, y = -133.875, z = -269.687)]
 
         self.cartesian_float_values= []
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.packed_bfield_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.packed_bfield_data_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
 
         self.assertEqual(self.cartesian_float_values, expected)

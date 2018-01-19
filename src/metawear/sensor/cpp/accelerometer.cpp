@@ -38,6 +38,22 @@ void init_accelerometer_module(MblMwMetaWearBoard *board) {
     }
 }
 
+void free_accelerometer_module(MblMwMetaWearBoard *board) {
+    if (!board->module_info.count(MBL_MW_MODULE_ACCELEROMETER)) {
+        return;
+    }
+    
+    switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
+        free_accelerometer_mma8452q(board);
+        break;
+    case MBL_MW_MODULE_ACC_TYPE_BMI160:
+    case MBL_MW_MODULE_ACC_TYPE_BMA255:
+        free_accelerometer_bosch(board);
+        break;
+    }
+}
+
 void serialize_accelerometer_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -153,14 +169,14 @@ void mbl_mw_acc_write_acceleration_config(const MblMwMetaWearBoard* board) {
     }
 }
 
-void mbl_mw_acc_read_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed) {
+void mbl_mw_acc_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
-        read_accelerometer_mma8452q_acceleration_config(board, completed);
+        read_accelerometer_mma8452q_acceleration_config(board, context, completed);
         break;
     case MBL_MW_MODULE_ACC_TYPE_BMI160:
     case MBL_MW_MODULE_ACC_TYPE_BMA255:
-        read_accelerometer_bosch_acceleration_config(board, completed);
+        read_accelerometer_bosch_acceleration_config(board, context, completed);
         break;
     }
 }

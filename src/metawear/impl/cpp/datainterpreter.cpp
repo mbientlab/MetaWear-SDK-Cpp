@@ -242,6 +242,29 @@ static MblMwData* convert_to_sensor_orientation(bool log_data, const MblMwDataSi
     CREATE_MESSAGE(MBL_MW_DT_ID_SENSOR_ORIENTATION);
 }
 
+static MblMwData* convert_to_mac_address(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
+    const int strSize = 17 + 1;
+    const uint8_t offset = len == 7 ? 1 : 0;
+    char *value = (char *)malloc(strSize);
+    sprintf(value, "%02X:%02X:%02X:%02X:%02X:%02X", response[5 + offset], response[4 + offset], 
+        response[3 + offset], response[2 + offset], response[1 + offset], response[0 + offset]);
+    value[strSize - 1] = '\0';
+
+    MblMwData *msg = (MblMwData*)malloc(sizeof(MblMwData));
+    msg->value = value;
+    msg->type_id = MBL_MW_DT_ID_STRING;
+    msg->length = strSize;
+    return msg;
+}
+
+static MblMwData* convert_to_sensor_orientation_mma8452q(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
+    MblMwSensorOrientation *value= (MblMwSensorOrientation*) malloc(sizeof(MblMwSensorOrientation));
+    uint32_t offset = (response[0] & 0x06) >> 1;
+    *value = (MblMwSensorOrientation) (4 * (response[0] & 0x01) + ((offset == 2 || offset == 3) ? offset ^ 0x1 : offset));
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_SENSOR_ORIENTATION);
+}
+
 unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters = {
     { DataInterpreter::INT32 , convert_to_int32 },
     { DataInterpreter::UINT32 , convert_to_uint32 },
@@ -271,7 +294,9 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::SENSOR_FUSION_FLOAT_VECTOR3 , convert_to_vector3 },
     { DataInterpreter::SENSOR_FUSION_CORRECTED_ACC , convert_to_corrected_acc },
     { DataInterpreter::DEBUG_OVERFLOW_STATE , convert_to_overflow_state },
-    { DataInterpreter::SENSOR_ORIENTATION, convert_to_sensor_orientation }
+    { DataInterpreter::SENSOR_ORIENTATION, convert_to_sensor_orientation },
+    { DataInterpreter::MAC_ADDRESS, convert_to_mac_address },
+    { DataInterpreter::SENSOR_ORIENTATION_MMA8452Q, convert_to_sensor_orientation_mma8452q }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {

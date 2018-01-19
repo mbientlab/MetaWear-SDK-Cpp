@@ -66,7 +66,7 @@ struct MblMwDataProcessor : public MblMwDataSignal {
 
 void init_dataprocessor_module(MblMwMetaWearBoard* board);
 void free_dataprocessor_module(void* state);
-void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, MblMwFnDataProcessor processor_created);
+void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, void *context, MblMwFnDataProcessor processor_created);
 void set_processor_state(MblMwDataProcessor *processor, void* new_state, uint8_t size);
 void modify_processor_configuration(MblMwDataProcessor *processor, uint8_t size);
 void sync_processor_chain(MblMwMetaWearBoard* board, uint8_t id, ProcessorEntriesHandler handler);

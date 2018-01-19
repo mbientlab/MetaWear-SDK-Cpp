@@ -81,9 +81,10 @@ METAWEAR_API void mbl_mw_gyro_bmi160_write_config(const MblMwMetaWearBoard *boar
 /**
  * Pulls the current gyro output data rate and data range from the sensor
  * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
  * @param completed     Callback function that is executed when the task is finished
  */
-METAWEAR_API void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed);
+METAWEAR_API void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed);
 
 /**
  * Switches the gyro to active mode.  While in active mode, the gyro cannot be configured

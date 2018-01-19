@@ -18,12 +18,12 @@ class TestIBeacon(TestMetaWearBase):
 
         switch= self.libmetawear.mbl_mw_switch_get_state_data_signal(self.board)
 
-        self.libmetawear.mbl_mw_dataprocessor_counter_create_size(switch, 4, self.processor_handler)
+        self.libmetawear.mbl_mw_dataprocessor_counter_create_size(switch, 4, None, self.processor_handler)
         self.events["processor"].wait()
 
         self.libmetawear.mbl_mw_event_record_commands(self.processors[0])
         self.libmetawear.mbl_mw_ibeacon_set_major_signal(self.board, self.processors[0])
-        self.libmetawear.mbl_mw_event_end_record(self.processors[0], self.commands_recorded_fn)
+        self.libmetawear.mbl_mw_event_end_record(self.processors[0], None, self.commands_recorded_fn)
         self.events["event"].wait()
 
         self.assertEqual(self.command_history, expected)

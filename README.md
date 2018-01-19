@@ -4,7 +4,7 @@ C functions from a shared library, such as Node and Python.  The library only co
 **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target platform.
 
 # Build #
-Building the project has been tested on \*nix systems with Clang 4.0.0, and on Windows with Visual Studio Community 2017.  
+Building the project has been tested on \*nix systems with Clang 4, and on Windows with Visual Studio Community 2017.  
 
 ```sh
 > clang++ --version
@@ -39,8 +39,8 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.11.0
-            └── libmetawear.so.0.11.0
+            ├── libmetawear.so.0 -> libmetawear.so.0.12.0
+            └── libmetawear.so.0.12.0
 
 ```
 
@@ -91,10 +91,11 @@ python3 -m unittest discover -s test
 ................................................................................
 ................................................................................
 ................................................................................
-...................................................s............................
-..........................................................
+................................................................................
+...........s....................................................................
+.....................
 ----------------------------------------------------------------------
-Ran 378 tests in 17.750s
+Ran 421 tests in 22.622s
 
 OK (skipped=1)
 ```

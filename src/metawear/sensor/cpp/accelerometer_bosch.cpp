@@ -187,6 +187,7 @@ struct AccBma255Config {
 
 struct AccBoschState {
     MblMwFnBoardPtrInt read_config_completed;
+    void *read_config_context;
 };
 
 static unordered_map<const MblMwMetaWearBoard*, AccBoschState> states;
@@ -208,8 +209,10 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
     }
 
     auto callback = states[board].read_config_completed;
+    auto context = states[board].read_config_context;
     states[board].read_config_completed = nullptr;
-    callback(board, MBL_MW_STATUS_OK);
+    states[board].read_config_context = nullptr;
+    callback(context, board, MBL_MW_STATUS_OK);
 
     return MBL_MW_STATUS_OK;
 }
@@ -282,6 +285,10 @@ void init_accelerometer_bma255(MblMwMetaWearBoard *board) {
     init_accelerometer_bosch(board, new_config);
 }
 
+void free_accelerometer_bosch(MblMwMetaWearBoard *board) {
+    states.erase(board);
+}
+
 void serialize_accelerometer_bmi160_config(const MblMwMetaWearBoard* board, vector<uint8_t>& state) {
     SERIALIZE_MODULE_CONFIG(AccBmi160Config, MBL_MW_MODULE_ACCELEROMETER);
 }
@@ -298,7 +305,8 @@ void deserialize_accelerometer_bma255_config(MblMwMetaWearBoard* board, uint8_t*
     DESERIALIZE_MODULE_CONFIG(AccBma255Config, MBL_MW_MODULE_ACCELEROMETER);
 }
 
-void read_accelerometer_bosch_acceleration_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed) {
+void read_accelerometer_bosch_acceleration_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
+    states[board].read_config_context = context;
     states[board].read_config_completed = completed;
 
     uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))};

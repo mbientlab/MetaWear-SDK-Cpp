@@ -25,18 +25,18 @@ class TestMetaWearBase(unittest.TestCase):
 
         self.events = {"processor" : Event(), "event" : Event(), "log" : Event(), "timer" : Event() }
 
-        self.initialized_fn= FnVoid_VoidP_Int(self.initialized)
-        self.sensor_data_handler= FnVoid_DataP(self.sensorDataHandler)
-        self.timer_signal_ready= FnVoid_VoidP(self.timer_created)
-        self.processor_handler = FnVoid_VoidP(self.processor_created)
-        self.logger_created = FnVoid_VoidP(self.logger_ready)
-        self.commands_recorded_fn= FnVoid_VoidP_Int(self.commandsRecorded)
+        self.initialized_fn= FnVoid_VoidP_VoidP_Int(self.initialized)
+        self.sensor_data_handler= FnVoid_VoidP_DataP(self.sensorDataHandler)
+        self.timer_signal_ready= FnVoid_VoidP_VoidP(self.timer_created)
+        self.processor_handler = FnVoid_VoidP_VoidP(self.processor_created)
+        self.logger_created = FnVoid_VoidP_VoidP(self.logger_ready)
+        self.commands_recorded_fn= FnVoid_VoidP_VoidP_Int(self.commandsRecorded)
 
-        self.send_command_fn= FnVoid_VoidP_GattCharWriteType_GattCharP_UByteP_UByte(self.commandLogger)
-        self.read_gatt_char_fn= FnVoid_VoidP_GattCharP_FnIntVoidPtrArray(self.read_gatt_char)
-        self.enable_gatt_notify_fn = FnVoid_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt(self.enable_gatt_notify)
-        self.on_disconnect_fn = FnVoid_VoidP_FnVoidVoidPtrInt(self.on_disconnect)
-        self.btle_connection= BtleConnection(write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn, 
+        self.send_command_fn= FnVoid_VoidP_VoidP_GattCharWriteType_GattCharP_UByteP_UByte(self.commandLogger)
+        self.read_gatt_char_fn= FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray(self.read_gatt_char)
+        self.enable_gatt_notify_fn = FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt(self.enable_gatt_notify)
+        self.on_disconnect_fn = FnVoid_VoidP_VoidP_FnVoidVoidPtrInt(self.on_disconnect)
+        self.btle_connection= BtleConnection(context = None, write_gatt_char = self.send_command_fn, read_gatt_char = self.read_gatt_char_fn, 
                 enable_notifications = self.enable_gatt_notify_fn, on_disconnect = self.on_disconnect_fn)
 
         self.metawear_rg_services= {
@@ -253,39 +253,39 @@ class TestMetaWearBase(unittest.TestCase):
         
     def setUp(self):
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
-        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
 
     def tearDown(self):
         self.libmetawear.mbl_mw_metawearboard_free(self.board)
 
-    def commandsRecorded(self, event, status):
+    def commandsRecorded(self, context, event, status):
         self.event_status.append(status)
         self.events["event"].set()
         self.recorded= True
 
-    def processor_created(self, pointer):
+    def processor_created(self, context, pointer):
         self.processors.append(pointer)
         self.events["processor"].set()
 
-    def logger_ready(self, pointer):
+    def logger_ready(self, context, pointer):
         self.loggers.append(pointer)
         self.events["log"].set()
 
-    def timer_created(self, timer_signal):
+    def timer_created(self, context, timer_signal):
         self.timerSignals.append(timer_signal)
         self.events["timer"].set()
 
-    def initialized(self, board, status):
+    def initialized(self, context, board, status):
         self.init_status= status;
 
-    def on_disconnect(self, board, handler):
+    def on_disconnect(self, context, board, handler):
         self.dc_handler = handler;
 
-    def enable_gatt_notify(self, board, characteristic, handler, ready):
+    def enable_gatt_notify(self, context, board, characteristic, handler, ready):
         self.notify_handler = handler;
         ready(self.board, 0)
 
-    def read_gatt_char(self, board, characteristic, handler):
+    def read_gatt_char(self, context, board, characteristic, handler):
         if (characteristic.contents.uuid_high == 0x00002a2400001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             if (self.boardType == TestMetaWearBase.METAWEAR_RG_BOARD):
                 model_number= create_string_buffer(b'1', 1)
@@ -303,8 +303,20 @@ class TestMetaWearBase(unittest.TestCase):
         elif (characteristic.contents.uuid_high == 0x00002a2600001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             bytes = cast(self.firmware_revision.raw, POINTER(c_ubyte))
             handler(self.board, bytes, len(self.firmware_revision.raw))
+        elif (characteristic.contents.uuid_high == 0x00002a2700001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
+            hw = create_string_buffer(b'0.1', 3)
+            bytes = cast(hw.raw, POINTER(c_ubyte))
+            handler(self.board, bytes, len(hw.raw))
+        elif (characteristic.contents.uuid_high == 0x00002a2900001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
+            mft = create_string_buffer(b'deadbeef', 8)
+            bytes = cast(mft.raw, POINTER(c_ubyte))
+            handler(self.board, bytes, len(mft.raw))
+        elif (characteristic.contents.uuid_high == 0x00002a2500001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
+            serial = create_string_buffer(b'cafebabe', 8)
+            bytes = cast(serial.raw, POINTER(c_ubyte))
+            handler(self.board, bytes, len(serial.raw))
 
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         self.command= []
         for i in range(0, length):
             self.command.append(command[i])
@@ -362,7 +374,7 @@ class TestMetaWearBase(unittest.TestCase):
             if (response != None):
                 self.schedule_response(response)
 
-    def sensorDataHandler(self, data):
+    def sensorDataHandler(self, context, data):
         if (data.contents.type_id == DataTypeId.UINT32):
             data_ptr= cast(data.contents.value, POINTER(c_uint))
             self.data_uint32= c_uint()
@@ -410,6 +422,9 @@ class TestMetaWearBase(unittest.TestCase):
         elif (data.contents.type_id == DataTypeId.OVERFLOW_STATE):
             data_ptr= cast(data.contents.value, POINTER(OverflowState))
             self.data= copy.deepcopy(data_ptr.contents)
+        elif (data.contents.type_id == DataTypeId.STRING):
+            data_ptr= cast(data.contents.value, c_char_p)
+            self.data = data_ptr.value.decode("ascii")
         else:
             raise RuntimeError('Unrecognized data type id: ' + str(data.contents.type_id))
 
@@ -432,3 +447,12 @@ def to_string_buffer(bytes):
         i= i + 1
 
     return buffer
+
+def to_ubyte_pointer(bytes):
+    arr = (c_ubyte * len(bytes))()
+    i = 0
+    for b in bytes:
+        arr[i] = b
+        i = i + 1
+
+    return arr

@@ -22,6 +22,7 @@ using std::vector;
 
 struct EventState {
     shared_ptr<Task> record_cmd_task;
+    void *event_recorded_context;
     MblMwFnEventPtrInt event_recorded_callback;
     MblMwEvent* event_owner;
     const EventDataParameter* data_token;
@@ -30,7 +31,7 @@ struct EventState {
     EventState();
 };
 
-EventState::EventState() : event_recorded_callback(nullptr), event_owner(nullptr), data_token(nullptr) {
+EventState::EventState() : event_recorded_context(nullptr), event_recorded_callback(nullptr), event_owner(nullptr), data_token(nullptr) {
 }
 
 MblMwEvent::MblMwEvent(uint8_t** state_stream, MblMwMetaWearBoard *owner) : header(state_stream), owner(owner), remove(true) {
@@ -73,7 +74,7 @@ static int32_t event_command_recorded(MblMwMetaWearBoard *board, const uint8_t *
 
         auto caller = state->event_owner;
         state->event_owner = nullptr;
-        state->event_recorded_callback(caller, MBL_MW_STATUS_OK);
+        state->event_recorded_callback(state->event_recorded_context, caller, MBL_MW_STATUS_OK);
     }
 
     return MBL_MW_STATUS_OK;
@@ -101,14 +102,15 @@ void mbl_mw_event_record_commands(MblMwEvent *event) {
     state->event_config.assign({event->header.module_id, event->header.register_id, event->header.data_id});
 }
 
-void mbl_mw_event_end_record(MblMwEvent *event, MblMwFnEventPtrInt commands_recorded) {
+void mbl_mw_event_end_record(MblMwEvent *event, void *context, MblMwFnEventPtrInt commands_recorded) {
     auto state = GET_EVENT_STATE(event->owner);
 
+    state->event_recorded_context= context;
     state->event_recorded_callback= commands_recorded;
     state->event_config.clear();
     state->record_cmd_task= ThreadPool::schedule([state, event](void) -> void {
         state->event_owner = nullptr;
-        state->event_recorded_callback(event, MBL_MW_STATUS_ERROR_TIMEOUT);
+        state->event_recorded_callback(state->event_recorded_context, event, MBL_MW_STATUS_ERROR_TIMEOUT);
     }, event->commands.size() * event->owner->time_per_response);
 
     for(auto it: event->commands) {

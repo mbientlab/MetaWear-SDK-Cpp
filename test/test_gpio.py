@@ -47,7 +47,7 @@ class TestGpioDigitalData(TestMetaWearBase):
         ]
 
         pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_pin_monitor_data_signal(self.board, 0);
-        self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
 
         for test in tests:
             with self.subTest(changetype=test['change_type']):
@@ -60,7 +60,7 @@ class TestGpioDigitalData(TestMetaWearBase):
         expected= [0x5, 0xa, 0x1]
 
         pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_pin_monitor_data_signal(self.board, 1);
-        self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_unsubscribe(pin_monitor_signal)
         self.assertEqual(self.command, expected)
 
@@ -80,7 +80,7 @@ class TestGpioDigitalData(TestMetaWearBase):
         expected= [0x05, 0x88, 0x04]
 
         di_signal= self.libmetawear.mbl_mw_gpio_get_digital_input_data_signal(self.board, 4)
-        self.libmetawear.mbl_mw_datasignal_subscribe(di_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(di_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_read(di_signal)
         self.assertEqual(self.command, expected)
 
@@ -99,7 +99,7 @@ class TestGpioDigitalData(TestMetaWearBase):
         ]
 
         pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_digital_input_data_signal(self.board, 7);
-        self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
 
         for test in tests:
             with self.subTest(changetype=test['state']):
@@ -116,7 +116,7 @@ class TestGpioAnalogData(TestMetaWearBase):
         for test in tests:
             with self.subTest(readmode=test['mode']):
                 an_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, test['pin'], test['mode'])
-                self.libmetawear.mbl_mw_datasignal_subscribe(an_signal, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(an_signal, None, self.sensor_data_handler)
                 self.libmetawear.mbl_mw_datasignal_read(an_signal)
                 self.assertEqual(self.command, test['expected'])
 
@@ -154,7 +154,7 @@ class TestGpioAnalogData(TestMetaWearBase):
         for test in tests:
             with self.subTest(readmode=test['mode']):
                 pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 1, test['mode']);
-                self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
 
                 self.notify_mw_char(test['response'])
                 self.assertEqual(self.data_uint32.value, test['expected'])
@@ -187,7 +187,7 @@ class TestGpioEnhancedAnalogRead(TestMetaWearBase):
         for test in tests:
             with self.subTest(readmode=test['mode']):
                 an_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, test['pin'], test['mode'])
-                self.libmetawear.mbl_mw_datasignal_subscribe(an_signal, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(an_signal, None, self.sensor_data_handler)
                 self.libmetawear.mbl_mw_datasignal_read_with_parameters(an_signal, byref(parameters))
                 self.assertEqual(self.command, test['expected'])
 
@@ -200,7 +200,7 @@ class TestGpioEnhancedAnalogRead(TestMetaWearBase):
         for test in tests:
             with self.subTest(readmode=test['mode']):
                 virtual_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 0x15, test['mode'])
-                self.libmetawear.mbl_mw_datasignal_subscribe(virtual_signal, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(virtual_signal, None, self.sensor_data_handler)
 
                 self.notify_mw_char(test['response'])
                 self.assertEqual(self.data_uint32.value, test['expected'])

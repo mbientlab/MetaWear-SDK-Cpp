@@ -31,6 +31,10 @@ using std::malloc;
 using std::min;
 using std::memset;
 
+uint8_t get_accounter_type(const MblMwDataProcessor* source) {
+    return ((AccounterConfig*)source->config)->mode;
+}
+
 uint8_t get_accounter_length(const MblMwDataProcessor* source) {
     return ((AccounterConfig*)source->config)->length + 1;
 }
@@ -39,25 +43,32 @@ uint8_t get_accounter_prescale(const MblMwDataProcessor* source) {
     return ((AccounterConfig*)source->config)->prescale + 1;
 }
 
-int32_t mbl_mw_dataprocessor_accounter_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
-    const uint8_t length = 4;   // Fix to 4 byte length for now
-    if (source->length() + length + 3 >= BLE_PACKET_SIZE) {
-        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
-    }
-
+static int32_t create_accounter_processor(MblMwDataSignal *source, uint8_t mode, uint8_t length, void *context, MblMwFnDataProcessor processor_created) {
     AccounterConfig config;
     memset(&config, 0, sizeof(AccounterConfig));
-    config.mode = 0x1;
+    config.mode = mode;
     config.length = (length - 1);
     config.prescale = 0x3; // This is what the logger uses, so we follow suit for now
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::ACCOUNTER), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::ACCOUNTER), &config), context, processor_created);
     
     return MBL_MW_STATUS_OK;
 }
 
+int32_t mbl_mw_dataprocessor_accounter_create(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created) {
+    const uint8_t length = 4;   // Fix to 4 byte length for now
+    return source->length() + length + 3 >= BLE_PACKET_SIZE ? MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR : 
+            create_accounter_processor(source, ACCOUNTER_TIME, length, context, processor_created);
+}
+
+int32_t mbl_mw_dataprocessor_accounter_create_count(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created) {
+    int8_t length = min(4, BLE_PACKET_SIZE - 3 - source->length());
+    return length < 0 ? MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR : 
+            create_accounter_processor(source, ACCOUNTER_COUNT, (uint8_t) length, context, processor_created);
+}
+
 static int32_t create_accumulator_processor(MblMwDataSignal *source, uint8_t n_channels, uint8_t channel_size, 
-        DataProcessorType accum_type, MblMwFnDataProcessor processor_created) {
+        DataProcessorType accum_type, void *context, MblMwFnDataProcessor processor_created) {
     if (source->length() > PROCESSOR_MAX_LENGTH) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -68,18 +79,18 @@ static int32_t create_accumulator_processor(MblMwDataSignal *source, uint8_t n_c
     config.input= (source->length() - 1);
     config.mode= accum_type == DataProcessorType::ACCUMULATOR ? ACCUMULATOR_SUM : ACCUMULATOR_COUNT;
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(accum_type), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(accum_type), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
 
-int32_t mbl_mw_dataprocessor_accumulator_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
+int32_t mbl_mw_dataprocessor_accumulator_create(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created) {
     return create_accumulator_processor(source, source->n_channels, source->channel_size, DataProcessorType::ACCUMULATOR, 
-            processor_created);
+            context, processor_created);
 }
 int32_t mbl_mw_dataprocessor_accumulator_create_size(MblMwDataSignal *source, uint8_t output_size,
-        MblMwFnDataProcessor processor_created) {
-    return create_accumulator_processor(source, source->n_channels, output_size, DataProcessorType::ACCUMULATOR, processor_created);
+        void *context, MblMwFnDataProcessor processor_created) {
+    return create_accumulator_processor(source, source->n_channels, output_size, DataProcessorType::ACCUMULATOR, context, processor_created);
 }
 int32_t mbl_mw_dataprocessor_set_accumulator_state(MblMwDataProcessor *accumulator, float new_running_sum) {
     if (accumulator->type == DataProcessorType::ACCUMULATOR) {
@@ -90,16 +101,16 @@ int32_t mbl_mw_dataprocessor_set_accumulator_state(MblMwDataProcessor *accumulat
     return MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE;
 }
 
-int32_t mbl_mw_dataprocessor_counter_create(MblMwEvent *source, MblMwFnDataProcessor processor_created) {
-    return mbl_mw_dataprocessor_counter_create_size(source, 1, processor_created);
+int32_t mbl_mw_dataprocessor_counter_create(MblMwEvent *source, void *context, MblMwFnDataProcessor processor_created) {
+    return mbl_mw_dataprocessor_counter_create_size(source, 1, context, processor_created);
 }
-int32_t mbl_mw_dataprocessor_counter_create_size(MblMwEvent *source, uint8_t size, MblMwFnDataProcessor processor_created) {
+int32_t mbl_mw_dataprocessor_counter_create_size(MblMwEvent *source, uint8_t size, void *context, MblMwFnDataProcessor processor_created) {
     if (MblMwDataSignal* src_signal= dynamic_cast<MblMwDataSignal*>(source)) {
-        return create_accumulator_processor(src_signal, 1, size, DataProcessorType::COUNTER, processor_created);
+        return create_accumulator_processor(src_signal, 1, size, DataProcessorType::COUNTER, context, processor_created);
     }
 
     MblMwDataSignal event_signal(*source);
-    return create_accumulator_processor(&event_signal, 1, 1, DataProcessorType::COUNTER, processor_created);
+    return create_accumulator_processor(&event_signal, 1, 1, DataProcessorType::COUNTER, context, processor_created);
 }
 int32_t mbl_mw_dataprocessor_counter_set_state(MblMwDataProcessor *counter, uint32_t new_count) {
     if (counter->type == DataProcessorType::COUNTER) {
@@ -109,7 +120,7 @@ int32_t mbl_mw_dataprocessor_counter_set_state(MblMwDataProcessor *counter, uint
     return MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE;
 }
 
-static int32_t apply_average(MblMwDataSignal *source, bool use_hpf, uint8_t size, MblMwFnDataProcessor processor_created) {
+static int32_t apply_average(MblMwDataSignal *source, bool use_hpf, uint8_t size, void *context, MblMwFnDataProcessor processor_created) {
     bool has_hpf = source->owner->module_info.at(MBL_MW_MODULE_DATA_PROCESSOR).revision >= HPF_REVISION;
 
     if (!has_hpf && source->length() > PROCESSOR_MAX_LENGTH) {
@@ -127,20 +138,20 @@ static int32_t apply_average(MblMwDataSignal *source, bool use_hpf, uint8_t size
         config.mode = USE_HPF;
     }
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::AVERAGE), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::AVERAGE), &config), context, processor_created);
     return MBL_MW_STATUS_OK;
 }
 
-int32_t mbl_mw_dataprocessor_average_create(MblMwDataSignal *source, uint8_t size, MblMwFnDataProcessor processor_created) {
-    return mbl_mw_dataprocessor_lowpass_create(source, size, processor_created);
+int32_t mbl_mw_dataprocessor_average_create(MblMwDataSignal *source, uint8_t size, void *context, MblMwFnDataProcessor processor_created) {
+    return mbl_mw_dataprocessor_lowpass_create(source, size, context, processor_created);
 }
 
-int32_t mbl_mw_dataprocessor_highpass_create(MblMwDataSignal *source, uint8_t size, MblMwFnDataProcessor processor_created) {
-    return apply_average(source, true, size, processor_created);
+int32_t mbl_mw_dataprocessor_highpass_create(MblMwDataSignal *source, uint8_t size, void *context, MblMwFnDataProcessor processor_created) {
+    return apply_average(source, true, size, context, processor_created);
 }
 
-int32_t mbl_mw_dataprocessor_lowpass_create(MblMwDataSignal *source, uint8_t size, MblMwFnDataProcessor processor_created) {
-    return apply_average(source, false, size, processor_created);
+int32_t mbl_mw_dataprocessor_lowpass_create(MblMwDataSignal *source, uint8_t size, void *context, MblMwFnDataProcessor processor_created) {
+    return apply_average(source, false, size, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_average_reset(MblMwDataProcessor *average) {
@@ -164,7 +175,7 @@ int32_t mbl_mw_dataprocessor_average_modify_size(MblMwDataProcessor *average, ui
 
 const Version BUFFER_PROCESSOR(1, 1, 0);
 
-int32_t mbl_mw_dataprocessor_buffer_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
+int32_t mbl_mw_dataprocessor_buffer_create(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created) {
     if (source->owner->firmware_revision < BUFFER_PROCESSOR) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -173,13 +184,13 @@ int32_t mbl_mw_dataprocessor_buffer_create(MblMwDataSignal *source, MblMwFnDataP
     memset(&config, 0, sizeof(BufferConfig));
     config.length= source->length() - 1;
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::BUFFER), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::BUFFER), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
 
 static inline int32_t create_combiner(MblMwDataSignal *source, DataProcessorType combiner_type,
-        MblMwFnDataProcessor processor_created) {
+        void *context, MblMwFnDataProcessor processor_created) {
     if (source->n_channels <= 1) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -191,17 +202,17 @@ static inline int32_t create_combiner(MblMwDataSignal *source, DataProcessorType
     config.is_signed= source->is_signed;
     config.mode= combiner_type == DataProcessorType::RMS ? COMBINER_RMS : COMBINER_RSS;
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(combiner_type), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(combiner_type), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
 
-int32_t mbl_mw_dataprocessor_rms_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
-    return create_combiner(source, DataProcessorType::RMS, processor_created);
+int32_t mbl_mw_dataprocessor_rms_create(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created) {
+    return create_combiner(source, DataProcessorType::RMS, context, processor_created);
 }
 
-int32_t mbl_mw_dataprocessor_rss_create(MblMwDataSignal *source, MblMwFnDataProcessor processor_created) {
-    return create_combiner(source, DataProcessorType::RSS, processor_created);
+int32_t mbl_mw_dataprocessor_rss_create(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created) {
+    return create_combiner(source, DataProcessorType::RSS, context, processor_created);
 }
 
 #define SCALE_MULTI_COMP_REFERENCE(cfg, signal, type) for(uint8_t i= 0; i < references_length; i++) {\
@@ -211,7 +222,7 @@ int32_t mbl_mw_dataprocessor_rss_create(MblMwDataSignal *source, MblMwFnDataProc
 }\
 
 static int32_t create_multi_comparator(MblMwDataSignal* source, MblMwComparatorOperation op, MblMwComparatorMode mode, float references[], 
-        uint8_t references_length, uint8_t is_signed, MblMwFnDataProcessor processor_created) {
+        uint8_t references_length, uint8_t is_signed, void *context, MblMwFnDataProcessor processor_created) {
     if (source->owner->firmware_revision < MULTI_COMPARE || source->length() > PROCESSOR_MAX_LENGTH) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -237,13 +248,13 @@ static int32_t create_multi_comparator(MblMwDataSignal* source, MblMwComparatorO
 
     auto new_processor = MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::COMPARATOR), &config);
     new_processor->config_size = 1 + offset;
-    create_processor(source, new_processor, processor_created);
+    create_processor(source, new_processor, context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
 
 static inline int32_t create_comprator(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, uint8_t is_signed, 
-    MblMwFnDataProcessor processor_created) {
+    void *context, MblMwFnDataProcessor processor_created) {
     if (source->length() > PROCESSOR_MAX_LENGTH) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -257,26 +268,26 @@ static inline int32_t create_comprator(MblMwDataSignal *source, MblMwComparatorO
         int32_t scaled_reference= (int32_t) number_to_firmware_converters.at(source->converter)(source, reference);
         memcpy(((uint8_t*)(&config)) + 3, &scaled_reference, sizeof(scaled_reference));
 
-        create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::COMPARATOR), &config), processor_created);
+        create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::COMPARATOR), &config), context, processor_created);
         return MBL_MW_STATUS_OK;
     } else {
-        return create_multi_comparator(source, op, MBL_MW_COMPARATOR_MODE_ABSOLUTE, &reference, 1, is_signed, processor_created);
+        return create_multi_comparator(source, op, MBL_MW_COMPARATOR_MODE_ABSOLUTE, &reference, 1, is_signed, context, processor_created);
     }
 }
 
 int32_t mbl_mw_dataprocessor_comparator_create(MblMwDataSignal *source, MblMwComparatorOperation op, float reference,
-        MblMwFnDataProcessor processor_created) {
-    return create_comprator(source, op, reference, source->is_signed ? 1 : 0, processor_created);
+        void *context, MblMwFnDataProcessor processor_created) {
+    return create_comprator(source, op, reference, source->is_signed ? 1 : 0, context, processor_created);
 }
 
 int32_t  mbl_mw_dataprocessor_comparator_create_signed(MblMwDataSignal *source, MblMwComparatorOperation op, float reference,
-        MblMwFnDataProcessor processor_created) {
-    return create_comprator(source, op, reference, 1, processor_created);
+        void *context, MblMwFnDataProcessor processor_created) {
+    return create_comprator(source, op, reference, 1, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_comparator_create_unsigned(MblMwDataSignal *source, MblMwComparatorOperation op, float reference,
-        MblMwFnDataProcessor processor_created) {
-    return create_comprator(source, op, reference, 0, processor_created);
+        void *context, MblMwFnDataProcessor processor_created) {
+    return create_comprator(source, op, reference, 0, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_comparator_modify(MblMwDataProcessor *comparator, MblMwComparatorOperation op, float reference) {
@@ -336,18 +347,18 @@ int32_t mbl_mw_dataprocessor_comparator_modify_signal(MblMwDataProcessor *compar
 }
 
 int32_t mbl_mw_dataprocessor_multi_comparator_create(MblMwDataSignal* source, MblMwComparatorOperation op, MblMwComparatorMode mode, float references[], 
-        uint8_t references_length, MblMwFnDataProcessor processor_created) {
-    return create_multi_comparator(source, op, mode, references, references_length, source->is_signed ? 1 : 0, processor_created);
+        uint8_t references_length, void *context, MblMwFnDataProcessor processor_created) {
+    return create_multi_comparator(source, op, mode, references, references_length, source->is_signed ? 1 : 0, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_multi_comparator_create_signed(MblMwDataSignal* source, MblMwComparatorOperation op, MblMwComparatorMode mode, 
-        float references[], uint8_t references_length, MblMwFnDataProcessor processor_created) {
-    return create_multi_comparator(source, op, mode, references, references_length, 1, processor_created);
+        float references[], uint8_t references_length, void *context, MblMwFnDataProcessor processor_created) {
+    return create_multi_comparator(source, op, mode, references, references_length, 1, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_multi_comparator_create_unsigned(MblMwDataSignal* source, MblMwComparatorOperation op, MblMwComparatorMode mode, 
-        float references[], uint8_t references_length, MblMwFnDataProcessor processor_created) {
-    return create_multi_comparator(source, op, mode, references, references_length, 0, processor_created);
+        float references[], uint8_t references_length, void *context, MblMwFnDataProcessor processor_created) {
+    return create_multi_comparator(source, op, mode, references, references_length, 0, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_multi_comparator_modify(MblMwDataProcessor *comparator, MblMwComparatorOperation op, float references[], 
@@ -381,7 +392,7 @@ int32_t mbl_mw_dataprocessor_multi_comparator_modify(MblMwDataProcessor *compara
 }
 
 int32_t mbl_mw_dataprocessor_delta_create(MblMwDataSignal *source, MblMwDeltaMode mode, float magnitude,
-        MblMwFnDataProcessor processor_created) {
+       void *context, MblMwFnDataProcessor processor_created) {
     if (source->length() > PROCESSOR_MAX_LENGTH) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -395,7 +406,7 @@ int32_t mbl_mw_dataprocessor_delta_create(MblMwDataSignal *source, MblMwDeltaMod
     config.mode= mode;
     memcpy(((uint8_t*)(&config)) + 1, &scaled_magnitude, sizeof(scaled_magnitude));
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::DELTA), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::DELTA), &config), context, processor_created);
     
     return MBL_MW_STATUS_OK;
 }
@@ -423,7 +434,7 @@ int32_t mbl_mw_dataprocessor_delta_modify_magnitude(MblMwDataProcessor *delta, f
 }
 
 static int32_t create_math(MblMwDataSignal *source, MblMwMathOperation op, float rhs, uint8_t is_signed,
-        MblMwFnDataProcessor processor_created) {
+        void *context, MblMwFnDataProcessor processor_created) {
     if ((source->n_channels > 1 && source->owner->firmware_revision < MULTI_CHANNEL_MATH) || 
             (op == MBL_MW_MATH_OP_CONSTANT && source->owner->firmware_revision < CONST_MATH_OP)) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
@@ -452,28 +463,28 @@ static int32_t create_math(MblMwDataSignal *source, MblMwMathOperation op, float
     
     auto new_processor = MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::MATH), &config);
     ((MathConfig*) new_processor->config)->output= new_processor->channel_size - 1;
-    create_processor(source, new_processor, processor_created);
+    create_processor(source, new_processor, context, processor_created);
     
     return MBL_MW_STATUS_OK;
 }
 
 int32_t mbl_mw_dataprocessor_math_create(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
-        MblMwFnDataProcessor processor_created) {
+        void *context, MblMwFnDataProcessor processor_created) {
     if (source->is_signed) {
-        return mbl_mw_dataprocessor_math_create_signed(source, op, rhs, processor_created);
+        return mbl_mw_dataprocessor_math_create_signed(source, op, rhs, context, processor_created);
     } else {
-        return mbl_mw_dataprocessor_math_create_unsigned(source, op, rhs, processor_created);
+        return mbl_mw_dataprocessor_math_create_unsigned(source, op, rhs, context, processor_created);
     }
 }
 
 int32_t mbl_mw_dataprocessor_math_create_signed(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
-        MblMwFnDataProcessor processor_created) {
-    return create_math(source, op, rhs, 1, processor_created);
+        void *context, MblMwFnDataProcessor processor_created) {
+    return create_math(source, op, rhs, 1, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_math_create_unsigned(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
-        MblMwFnDataProcessor processor_created) {
-    return create_math(source, op, rhs, 0, processor_created);
+        void *context, MblMwFnDataProcessor processor_created) {
+    return create_math(source, op, rhs, 0, context, processor_created);
 }
 
 int32_t mbl_mw_dataprocessor_math_modify_rhs(MblMwDataProcessor *math, float rhs) {
@@ -526,7 +537,7 @@ uint8_t get_packer_count(const MblMwDataProcessor* source) {
     return ((PackerConfig*)source->config)->count + 1;
 }
 
-int32_t mbl_mw_dataprocessor_packer_create(MblMwDataSignal *source, uint8_t count, MblMwFnDataProcessor processor_created) {
+int32_t mbl_mw_dataprocessor_packer_create(MblMwDataSignal *source, uint8_t count, void *context, MblMwFnDataProcessor processor_created) {
     if (source->length() * count + 3 >= BLE_PACKET_SIZE) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -536,18 +547,18 @@ int32_t mbl_mw_dataprocessor_packer_create(MblMwDataSignal *source, uint8_t coun
     config.length = source->length() - 1;
     config.count = count - 1;
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::PACKER), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::PACKER), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
 
 int32_t mbl_mw_dataprocessor_passthrough_create(MblMwDataSignal *source, MblMwPassthroughMode mode, uint16_t count,
-        MblMwFnDataProcessor processor_created) {
+        void *context, MblMwFnDataProcessor processor_created) {
     PassthroughConfig config;
     config.mode= mode;
     memcpy(((uint8_t*)(&config)) + 1, &count, sizeof(count));
     
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::PASSTHROUGH), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::PASSTHROUGH), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
@@ -575,7 +586,7 @@ int32_t mbl_mw_dataprocessor_passthrough_modify(MblMwDataProcessor *passthrough,
 }
 
 int32_t mbl_mw_dataprocessor_pulse_create(MblMwDataSignal *source, MblMwPulseOutput output, float threshold,
-        uint16_t width, MblMwFnDataProcessor processor_created) {
+        uint16_t width, void *context, MblMwFnDataProcessor processor_created) {
     if (source->length() > PROCESSOR_MAX_LENGTH) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -589,7 +600,7 @@ int32_t mbl_mw_dataprocessor_pulse_create(MblMwDataSignal *source, MblMwPulseOut
     memcpy(((uint8_t*)(&config)) + 3, &scaled_threshold, sizeof(scaled_threshold));
     memcpy(((uint8_t*)(&config)) + 7, &width, sizeof(width));
     
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::PULSE), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::PULSE), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
@@ -607,7 +618,7 @@ int32_t mbl_mw_dataprocessor_pulse_modify(MblMwDataProcessor *pulse, float thres
     return MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE;
 }
 
-int32_t mbl_mw_dataprocessor_sample_create(MblMwDataSignal *source, uint8_t bin_size, MblMwFnDataProcessor processor_created) {
+int32_t mbl_mw_dataprocessor_sample_create(MblMwDataSignal *source, uint8_t bin_size, void *context, MblMwFnDataProcessor processor_created) {
     if (source->length() > PROCESSOR_MAX_LENGTH) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -616,7 +627,7 @@ int32_t mbl_mw_dataprocessor_sample_create(MblMwDataSignal *source, uint8_t bin_
     config.length= source->length() - 1;
     config.bin_size= bin_size;
     
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::SAMPLE), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::SAMPLE), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
@@ -633,7 +644,7 @@ int32_t mbl_mw_dataprocessor_sample_modify_bin_size(MblMwDataProcessor *sample_d
 }
 
 int32_t mbl_mw_dataprocessor_threshold_create(MblMwDataSignal *source, MblMwThresholdMode mode, float boundary,
-        float hysteresis, MblMwFnDataProcessor processor_created) {
+        float hysteresis, void *context, MblMwFnDataProcessor processor_created) {
     if (source->length() > PROCESSOR_MAX_LENGTH) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
@@ -650,7 +661,7 @@ int32_t mbl_mw_dataprocessor_threshold_create(MblMwDataSignal *source, MblMwThre
     memcpy(((uint8_t*)(&config)) + 1, &scaled_boundary, sizeof(scaled_boundary));
     memcpy(((uint8_t*)(&config)) + 5, &scaled_hysteresis, sizeof(scaled_hysteresis));
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::THRESHOLD), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::THRESHOLD), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }
@@ -673,7 +684,7 @@ int32_t mbl_mw_dataprocessor_threshold_modify_boundary(MblMwDataProcessor *thres
 const uint8_t TIME_PASSTHROUGH_REVISION = 1;
 
 int32_t mbl_mw_dataprocessor_time_create(MblMwDataSignal *source, MblMwTimeMode mode, uint32_t period,
-        MblMwFnDataProcessor processor_created) {
+        void *context, MblMwFnDataProcessor processor_created) {
     bool hasPassthrough = source->owner->module_info.at(MBL_MW_MODULE_DATA_PROCESSOR).revision >= TIME_PASSTHROUGH_REVISION;
     if (source->length() > PROCESSOR_MAX_LENGTH && (!hasPassthrough || mode == MBL_MW_TIME_DIFFERENTIAL)) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
@@ -686,7 +697,7 @@ int32_t mbl_mw_dataprocessor_time_create(MblMwDataSignal *source, MblMwTimeMode 
 
     memcpy(((uint8_t*)(&config)) + 1, &period, sizeof(period));
 
-    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::TIME), &config), processor_created);
+    create_processor(source, MblMwDataProcessor::transform(source, type_to_id.at(DataProcessorType::TIME), &config), context, processor_created);
 
     return MBL_MW_STATUS_OK;
 }

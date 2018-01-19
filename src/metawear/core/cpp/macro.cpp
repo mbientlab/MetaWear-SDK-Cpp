@@ -26,6 +26,7 @@ struct MacroState {
     MacroState();
 
     MblMwFnBoardPtrInt commands_recorded;
+    void *commands_recorded_context;
     vector<vector<uint8_t>> commands;
     bool is_recording;
     uint8_t exec_on_boot;
@@ -43,7 +44,7 @@ static int32_t macro_add_cmd_response(MblMwMetaWearBoard *board, const uint8_t *
     uint8_t end_cmd[2] = {MBL_MW_MODULE_MACRO, ORDINAL(MacroRegister::END)};
     send_command(board, end_cmd, sizeof(end_cmd));
 
-    state->commands_recorded(board, response[2]);
+    state->commands_recorded(state->commands_recorded_context, board, response[2]);
 
     return MBL_MW_STATUS_OK;
 }
@@ -68,9 +69,10 @@ void mbl_mw_macro_record(MblMwMetaWearBoard *board, uint8_t exec_on_boot) {
     state->exec_on_boot = exec_on_boot == 0 ? 0 : 1;
 }
 
-void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, MblMwFnBoardPtrInt commands_recorded) {
+void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, void *context, MblMwFnBoardPtrInt commands_recorded) {
     auto state = GET_MACRO_STATE(board);
     state->is_recording = false;
+    state->commands_recorded_context = context;
     state->commands_recorded = commands_recorded;
 
     ThreadPool::schedule([state, board](void) -> void {

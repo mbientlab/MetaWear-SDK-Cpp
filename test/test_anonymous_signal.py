@@ -10,9 +10,9 @@ class AnonymousSignalBase(TestMetaWearBase):
 
         self.result = self.sync_loggers()
 
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -31,21 +31,21 @@ class AnonymousSignalBase(TestMetaWearBase):
     def sync_loggers(self):
         event = Event()
         result = {}
-        def created(board, signals, len):
+        def created(context, board, signals, len):
             result['length'] = len
             result['signals'] = cast(signals, POINTER(c_void_p * len)) if signals is not None else None
             event.set()
 
-        self.created_fn = FnVoid_VoidP_VoidP_UInt(created)
-        self.libmetawear.mbl_mw_metawearboard_create_anonymous_datasignals(self.board, self.created_fn)
+        self.created_fn = FnVoid_VoidP_VoidP_VoidP_UInt(created)
+        self.libmetawear.mbl_mw_metawearboard_create_anonymous_datasignals(self.board, None, self.created_fn)
         event.wait()
 
         return result
 
 class TestAcceleration(AnonymousSignalBase):
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -66,17 +66,17 @@ class TestAcceleration(AnonymousSignalBase):
     def test_handle_download(self):
         expected= CartesianFloat(x= 0.060, y= 0.077, z= 0.991)
 
-        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], self.sensor_data_handler)
+        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([11,7,-96,-26,66,0,0,-11,0,61,1,-95,-26,66,0,0,-35,15,0,0]))
         self.assertEqual(self.data_cartesian_float, expected)
 
 class TestGyroY(AnonymousSignalBase):
-    def sensorDataHandler(self, data):
+    def sensorDataHandler(self, context, data):
         self.actual.append(cast(data.contents.value, POINTER(c_float)).contents.value)
 
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -96,23 +96,20 @@ class TestGyroY(AnonymousSignalBase):
         expected= [-0.053, -0.015]
         self.actual = []
 
-        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], self.sensor_data_handler)
+        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([11, 7, 64, 34, 223, 4, 0, 249, 255, 0, 0, 64, 61, 223, 4, 0, 254, 255, 0, 0]))
 
         for a, b in zip(self.actual, expected):
             self.assertAlmostEqual(a, b, delta = 0.001)
 
     def test_identifier(self):
-        raw = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
-        actual = cast(raw, c_char_p).value.decode("ascii")
-        self.libmetawear.mbl_mw_memory_free(raw)
-
-        self.assertEqual(actual, "angular-velocity[1]")
+        actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        self.assertEqual(actual.decode('ascii'), "angular-velocity[1]")
 
 class TestSplitImu(AnonymousSignalBase):
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -135,8 +132,8 @@ class TestSplitImu(AnonymousSignalBase):
         self.assertEqual(self.result['length'], 2)
 
     def test_handle_download(self):
-        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], self.sensor_data_handler)
-        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[1], self.sensor_data_handler)
+        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], None, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[1], None, self.sensor_data_handler)
 
         expected = CartesianFloat(x = 0.060, y = 0.077, z = 0.991)
         self.notify_mw_char(to_string_buffer([11,7,0x60,-26,66,0,0,-11,0,61,1,0x62,-26,66,0,0,-35,15,0,0]))
@@ -148,9 +145,9 @@ class TestSplitImu(AnonymousSignalBase):
         self.assertEqual(self.data_cartesian_float, expected)
 
 class TestActivity(AnonymousSignalBase):
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -181,21 +178,17 @@ class TestActivity(AnonymousSignalBase):
         self.assertEqual(self.result['length'], 2)
 
     def test_check_scheme(self):        
-        raw = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
-        actual = cast(raw, c_char_p).value.decode("ascii")
-        self.libmetawear.mbl_mw_memory_free(raw)
-        self.assertEqual("acceleration:rms?id=0:accumulate?id=1:time?id=2", actual)
+        actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        self.assertEqual("acceleration:rms?id=0:accumulate?id=1:time?id=2", actual.decode('ascii'))
 
-        raw = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[1])
-        actual = cast(raw, c_char_p).value.decode("ascii")
-        self.libmetawear.mbl_mw_memory_free(raw)
-        self.assertEqual("acceleration:rms?id=0:accumulate?id=1:buffer-state?id=3", actual)
+        actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[1])
+        self.assertEqual("acceleration:rms?id=0:accumulate?id=1:buffer-state?id=3", actual.decode('ascii'))
 
     def test_handle_download(self):
         expected= [1.16088868, 1793.6878, 3545.5054]
         self.actual = []
 
-        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], self.sensor_data_handler)
+        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x00, 0x3c, 0xe2, 0x01, 0x00, 0x93, 0x12, 0x00, 0x00, 0x00, 0x48, 0x32, 0x02, 0x00, 0x01, 0x1b, 0x70, 0x00]))
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x00, 0x53, 0x82, 0x02, 0x00, 0x16, 0x98, 0xdd, 0x00]))
 
@@ -205,15 +198,15 @@ class TestActivity(AnonymousSignalBase):
     def test_handle_state_download(self):
         expected = 3521.868
 
-        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[1], self.sensor_data_handler)
+        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[1], None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xc1, 0xe9, 0x06, 0x02, 0x00, 0xe3, 0x1d, 0xdc, 0x00]))
 
         self.assertAlmostEqual(expected, self.data_float.value, delta = 0.001)
 
 class TestQuaternionLimiter(AnonymousSignalBase):
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -242,15 +235,13 @@ class TestQuaternionLimiter(AnonymousSignalBase):
         self.assertEqual(self.result['length'], 1)
 
     def test_check_scheme(self):
-        raw = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
-        actual = cast(raw, c_char_p).value.decode("ascii")
-        self.libmetawear.mbl_mw_memory_free(raw)
-        self.assertEqual("quaternion:time?id=0", actual)
+        actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        self.assertEqual("quaternion:time?id=0", actual.decode('ascii'))
 
 class TestMultipleLoggers(AnonymousSignalBase):
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -271,12 +262,12 @@ class TestMultipleLoggers(AnonymousSignalBase):
         self.assertEqual(self.result['length'], 2)
 
 class TestTemperature(AnonymousSignalBase):
-    def sensorDataHandler(self, data):
+    def sensorDataHandler(self, context, data):
         self.actual.append(cast(data.contents.value, POINTER(c_float)).contents.value)
 
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        super().commandLogger(board, writeType, characteristic, command, length)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -303,7 +294,7 @@ class TestTemperature(AnonymousSignalBase):
         self.actual = []
 
         for x in range(0, 4):
-            self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[x], self.sensor_data_handler)
+            self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[x], None, self.sensor_data_handler)
 
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xa0, 0xbd, 0x25, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0xa3, 0xbd, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xa1, 0xbd, 0x25, 0x00, 0x00, 0xfd, 0x00, 0x00, 0x00, 0xa2, 0xbd, 0x25, 0x00, 0x00, 0x38, 0xff, 0x00, 0x00]))
@@ -314,10 +305,8 @@ class TestTemperature(AnonymousSignalBase):
     def test_identifier(self):
         for x in range(0, 4):
             with self.subTest(source=str(x)):
-                raw = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[x])
-                actual = cast(raw, c_char_p).value.decode("ascii")
-                self.libmetawear.mbl_mw_memory_free(raw)
-                self.assertEqual("temperature[" + str(x) + "]", actual)
+                actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[x])
+                self.assertEqual("temperature[" + str(x) + "]", actual.decode('ascii'))
 
 class TestTimeout(AnonymousSignalBase):
     def setUp(self):
@@ -327,9 +316,9 @@ class TestTimeout(AnonymousSignalBase):
         self.sync_dataproc = True
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
-        TestMetaWearBase.commandLogger(self, board, writeType, characteristic, command, length)
+        TestMetaWearBase.commandLogger(self, context, board, writeType, characteristic, command, length)
         curr = len(self.full_history)
 
         if (prev != curr):
@@ -363,7 +352,7 @@ class TestTimeout(AnonymousSignalBase):
     def test_log_sync_timeout(self):
         self.sync_logger = False
 
-        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
         result = self.sync_loggers()
         self.assertEqual(result['length'], Const.STATUS_ERROR_TIMEOUT)
         self.assertIsNone(result['signals'])
@@ -371,7 +360,7 @@ class TestTimeout(AnonymousSignalBase):
     def test_dataprocessor_sync_timeout(self):
         self.sync_dataproc = False
 
-        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, self.initialized_fn)
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
         result = self.sync_loggers()
         self.assertEqual(result['length'], Const.STATUS_ERROR_TIMEOUT)
         self.assertIsNone(result['signals'])

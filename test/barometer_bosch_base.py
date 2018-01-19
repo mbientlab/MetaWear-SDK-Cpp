@@ -96,14 +96,14 @@ class BarometerBoschBase:
             response= create_string_buffer(b'\x12\x01\xd3\x35\x8b\x01', 6)
             expected= 101173.828125
 
-            self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, self.sensor_data_handler)
+            self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, None, self.sensor_data_handler)
             self.notify_mw_char(response)
             self.assertAlmostEqual(self.data_float.value, expected)
 
         def test_pressure_subscribe(self):
             expected= [0x12, 0x1, 0x1]
 
-            self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, self.sensor_data_handler);
+            self.libmetawear.mbl_mw_datasignal_subscribe(self.pa_data_signal, None, self.sensor_data_handler)
             self.assertListEqual(self.command, expected)
 
         def test_pressure_unsubscribe(self):
@@ -122,18 +122,18 @@ class BarometerBoschBase:
             response= create_string_buffer(b'\x12\x02\x1e\x1f\xfe\xff', 6)
             expected= -480.8828125
 
-            self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, self.sensor_data_handler)
+            self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, None, self.sensor_data_handler)
             self.notify_mw_char(response)
             self.assertAlmostEqual(self.data_float.value, expected)
 
         def test_altitude_subscribe(self):
             expected= [0x12, 0x2, 0x1]
 
-            self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, self.sensor_data_handler);
+            self.libmetawear.mbl_mw_datasignal_subscribe(self.m_data_signal, None, self.sensor_data_handler);
             self.assertListEqual(self.command, expected)
 
         def test_altitude_unsubscribe(self):
             expected= [0x12, 0x2, 0x0]
 
-            self.libmetawear.mbl_mw_datasignal_unsubscribe(self.m_data_signal);
+            self.libmetawear.mbl_mw_datasignal_unsubscribe(self.m_data_signal)
             self.assertListEqual(self.command, expected)

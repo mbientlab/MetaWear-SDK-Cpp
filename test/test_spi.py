@@ -23,7 +23,7 @@ class TestSpiRPro(TestMetaWearBase):
         expected= [0x07, 0x30, 0x81, 0x0b, 0xc0]
 
         signal= self.libmetawear.mbl_mw_spi_get_data_signal(self.board, 5, 0xc)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x0d\x82\x0c\x07\x30\x81\x0b\xc0', 8))
 
         self.assertEqual(self.data_byte_array, expected)

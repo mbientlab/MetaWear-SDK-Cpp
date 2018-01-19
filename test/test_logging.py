@@ -44,17 +44,17 @@ class TestLogDownload(TestMetaWearBase):
 
         super().setUp()
 
-        self.progress_update= FnVoid_UInt_UInt(self.progress_update_handler)
-        self.unknown_entry= FnVoid_UByte_Long_UByteP_UByte(self.unknown_entry_handler)
+        self.progress_update= FnVoid_VoidP_UInt_UInt(self.progress_update_handler)
+        self.unknown_entry= FnVoid_VoidP_UByte_Long_UByteP_UByte(self.unknown_entry_handler)
         self.download_handler= LogDownloadHandler(received_progress_update = self.progress_update, received_unknown_entry = self.unknown_entry)
         self.updates= []
 
-    def progress_update_handler(self, entries_left, total_entries):
+    def progress_update_handler(self, context, entries_left, total_entries):
         self.updates.append(entries_left)
         if (entries_left == 0):
             self.assertEqual(self.updates, self.expected_updates)
 
-    def unknown_entry_handler(self, id, epoch, data, length):
+    def unknown_entry_handler(self, context, id, epoch, data, length):
 #        now= datetime.datetime.now()
 #        now_ms= (mktime(now.timetuple()) + now.microsecond/1000000.0) * 1000
         data_ptr= cast(data, POINTER(c_uint))
@@ -127,8 +127,8 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
         self.data_time_offsets= []
         self.prev_time= -1
 
-        self.download_handler= LogDownloadHandler(received_progress_update = cast(None, FnVoid_UInt_UInt), \
-                received_unknown_entry = cast(None, FnVoid_UByte_Long_UByteP_UByte), received_unhandled_entry = cast(None, FnVoid_DataP))
+        self.download_handler= LogDownloadHandler(context = None, received_progress_update = cast(None, FnVoid_VoidP_UInt_UInt), \
+                received_unknown_entry = cast(None, FnVoid_VoidP_UByte_Long_UByteP_UByte), received_unhandled_entry = cast(None, FnVoid_VoidP_DataP))
         self.responses = Bmi160Accelerometer.log_responses
 
     def setUp(self):
@@ -136,7 +136,7 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
 
         super().setUp()
 
-    def cartesian_float_data_handler(self, data):
+    def cartesian_float_data_handler(self, context, data):
         if (self.prev_time == -1):
             self.prev_time= data.contents.epoch
         else:
@@ -146,9 +146,9 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
         contents= copy.deepcopy(cast(data.contents.value, POINTER(CartesianFloat)).contents)
         self.logged_data.append(contents)
 
-    def logger_ready(self, logger):
-        cartesian_float_data= FnVoid_DataP(self.cartesian_float_data_handler)
-        self.libmetawear.mbl_mw_logger_subscribe(logger, cartesian_float_data)
+    def logger_ready(self, context, logger):
+        cartesian_float_data= FnVoid_VoidP_DataP(self.cartesian_float_data_handler)
+        self.libmetawear.mbl_mw_logger_subscribe(logger, None, cartesian_float_data)
         self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
         for buffer in self.responses:
             self.notify_mw_char(buffer)
@@ -159,7 +159,7 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
     def test_acc_data(self):
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
         self.assertEqual(self.logged_data, Bmi160Accelerometer.expected_values)
@@ -167,7 +167,7 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
     def test_epoch_calc(self):
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
         self.assertEqual(self.data_time_offsets, Bmi160Accelerometer.expected_offsets)
@@ -185,7 +185,7 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
             self.responses.append(to_string_buffer(buffer))
 
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
         self.assertEqual(self.data_time_offsets, [21])
@@ -195,20 +195,20 @@ class TestGyroYAxisLoggingBase(TestMetaWearBase):
         super().__init__(*args, **kwargs)
 
         self.logged_data= []
-        self.download_handler= LogDownloadHandler(received_progress_update = cast(None, FnVoid_UInt_UInt), \
-                received_unknown_entry = cast(None, FnVoid_UByte_Long_UByteP_UByte), received_unhandled_entry = cast(None, FnVoid_DataP))
+        self.download_handler= LogDownloadHandler(context = None, received_progress_update = cast(None, FnVoid_VoidP_UInt_UInt), \
+                received_unknown_entry = cast(None, FnVoid_VoidP_UByte_Long_UByteP_UByte), received_unhandled_entry = cast(None, FnVoid_VoidP_DataP))
 
     def setUp(self):        
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
 
         super().setUp()
 
-    def float_data_handler(self, data):
+    def float_data_handler(self, context, data):
         self.logged_data.append(cast(data.contents.value, POINTER(c_float)).contents.value)
 
-    def logger_ready(self, logger):
-        cartesian_float_data= FnVoid_DataP(self.float_data_handler)
-        self.libmetawear.mbl_mw_logger_subscribe(logger, cartesian_float_data)
+    def logger_ready(self, context, logger):
+        cartesian_float_data= FnVoid_VoidP_DataP(self.float_data_handler)
+        self.libmetawear.mbl_mw_logger_subscribe(logger, None, cartesian_float_data)
         self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
 
         for line in Bmi160GyroYAxis.log_responses:
@@ -222,7 +222,7 @@ class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
         roy_y_signal = self.libmetawear.mbl_mw_datasignal_get_component(rot_signal, Const.GYRO_ROTATION_Y_AXIS_INDEX)
         self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160Range._250dps)
 
-        self.libmetawear.mbl_mw_datasignal_log(roy_y_signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(roy_y_signal, None, self.logger_created)
         self.events["log"].wait()
 
         # why doesn't unittest come with an assertAlmostEqual for list of floats?
@@ -240,14 +240,11 @@ class TestLogIdentifiers(TestMetaWearBase):
         rot_signal= self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
         roy_y_signal = self.libmetawear.mbl_mw_datasignal_get_component(rot_signal, Const.GYRO_ROTATION_Z_AXIS_INDEX)
 
-        self.libmetawear.mbl_mw_datasignal_log(roy_y_signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(roy_y_signal, None, self.logger_created)
         self.events["log"].wait()
 
-        raw = self.libmetawear.mbl_mw_logger_generate_identifier(self.loggers[0])
-        actual = cast(raw, c_char_p).value.decode("ascii")
-        self.libmetawear.mbl_mw_memory_free(raw)
-
-        self.assertEqual(actual, "angular-velocity[2]")
+        actual = self.libmetawear.mbl_mw_logger_generate_identifier(self.loggers[0])
+        self.assertEqual(actual.decode('ascii'), "angular-velocity[2]")
 
 class TestSensorFusionLogging(TestMetaWearBase):
     def setUp(self):
@@ -264,7 +261,7 @@ class TestSensorFusionLogging(TestMetaWearBase):
         ]
 
         signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusionData.QUATERION)
-        self.libmetawear.mbl_mw_datasignal_log(signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(signal, None, self.logger_created)
         self.events["log"].wait()
 
         self.assertEqual(self.command_history, expected_cmds)
@@ -278,7 +275,7 @@ class TestSensorFusionLogging(TestMetaWearBase):
         ]
 
         signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusionData.CORRECTED_MAG)
-        self.libmetawear.mbl_mw_datasignal_log(signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(signal, None, self.logger_created)
         self.events["log"].wait()
 
         self.assertEqual(self.command_history, expected_cmds)
@@ -293,7 +290,7 @@ class TestLoggerSetup(TestMetaWearBase):
         ]
 
         self.test_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, self.logger_created)
         self.events["log"].wait()
 
         self.libmetawear.mbl_mw_logger_remove(self.loggers[0])
@@ -301,53 +298,53 @@ class TestLoggerSetup(TestMetaWearBase):
         self.assertEqual(self.command_history, self.expected_cmds)
 
 class TestLoggerTimeout(TestMetaWearBase):
-    def logger_ready(self, logger):
+    def logger_ready(self, context, logger):
         self.created_logger= logger
 
-    def logger_ready_snd(self, logger):
+    def logger_ready_snd(self, context, logger):
         self.e.set()
 
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         if (command[0] == 0xb and command[1] == 0x2):
             self.notify_mw_char(create_string_buffer(b'\x0b\x00', 2))
         else:
-            super().commandLogger(board, writeType, characteristic, command, length)
+            super().commandLogger(context, board, writeType, characteristic, command, length)
 
     def test_timeout(self):
         self.e= threading.Event()
 
-        logger_ready_fn= FnVoid_VoidP(self.logger_ready)
-        logger_ready_snd_fn= FnVoid_VoidP(self.logger_ready_snd)
+        logger_ready_fn= FnVoid_VoidP_VoidP(self.logger_ready)
+        logger_ready_snd_fn= FnVoid_VoidP_VoidP(self.logger_ready_snd)
         self.test_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, logger_ready_fn)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, logger_ready_fn)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, logger_ready_snd_fn)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, logger_ready_fn)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, logger_ready_fn)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, logger_ready_snd_fn)
 
         self.e.wait()
         self.assertIsNone(self.created_logger)
 
 class TestLogTimestamp(TestMetaWearBase):
-    def initialized(self, board, status):
-        super().initialized(board, status)
+    def initialized(self, context, board, status):
+        super().initialized(context, board, status)
         self.now = int(time.time() * 1000)
 
-    def commandLogger(self, board, writeType, characteristic, command, length):
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
         if (command[0] == 0xb and command[1] == 0x84):
             self.schedule_response(to_string_buffer([0x0b, 0x84, 0xa9, 0x72, 0x04, 0x00, 0x01]))
         else:
-            super().commandLogger(board, writeType, characteristic, command, length)
+            super().commandLogger(context, board, writeType, characteristic, command, length)
 
     def test_past(self):
         epoch = []
-        def handler(data):
+        def handler(context, data):
             epoch.append(data.contents.epoch)
 
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_log(acc_signal, self.logger_created)
+        self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
-        handler_ptr = FnVoid_DataP(handler)
-        self.libmetawear.mbl_mw_logger_subscribe(self.loggers[0], handler_ptr)
+        handler_ptr = FnVoid_VoidP_DataP(handler)
+        self.libmetawear.mbl_mw_logger_subscribe(self.loggers[0], None, handler_ptr)
 
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x20, 0x75, 0x1b, 0x04, 0x00, 0x3e, 0x01, 0xcd, 0x01, 0x21, 0x76, 0x1b, 0x04, 0x00, 0xc0, 0x07, 0x00, 0x00]))
 

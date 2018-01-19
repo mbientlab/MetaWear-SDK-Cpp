@@ -26,10 +26,11 @@ typedef enum {
  * @param source                Data signal providing the input for the processor
  * @param mode                  Processor's operation mode
  * @param count                 Internal count to initial the processor with
+ * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_passthrough_create(MblMwDataSignal *source, MblMwPassthroughMode mode, uint16_t count,
-        MblMwFnDataProcessor processor_created);
+        void *context, MblMwFnDataProcessor processor_created);
 /**
  * Modify the internal count of the passthrough processor
  * @param passthrough           Passthrough processor to modify

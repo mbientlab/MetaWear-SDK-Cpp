@@ -23,6 +23,7 @@ const uint16_t REPEAT_INDEFINITELY= 0xffff;
 
 struct TimerState : public AsyncCreator {
     MblMwFnTimerPtr timer_callback;
+    void *timer_context;
 };
 
 static int32_t timer_created(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
@@ -33,7 +34,7 @@ static int32_t timer_created(MblMwMetaWearBoard *board, const uint8_t *response,
     MblMwTimer *new_timer = new MblMwTimer(ResponseHeader(MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::NOTIFY), response[2]), board);
     board->module_events.emplace(new_timer->header, new_timer);
 
-    state->timer_callback(new_timer);
+    state->timer_callback(state->timer_context, new_timer);
     state->create_next(true);
 
     return MBL_MW_STATUS_OK;
@@ -70,7 +71,7 @@ void free_timer_module(void *state) {
     delete (TimerState*) state;
 }
 
-void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, MblMwFnTimerPtr received_timer) {
+void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, void *context, MblMwFnTimerPtr received_timer) {
     auto state = GET_TIMER_STATE(board);
 
     state->pending_fns.push([=](void) -> void {
@@ -80,8 +81,9 @@ void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t re
         command[8]= (delay != 0) ? 0 : 1;    
 
         state->timer_callback= received_timer;
-        state->timeout= ThreadPool::schedule([state, received_timer](void) -> void {
-            received_timer(nullptr);
+        state->timer_context= context;
+        state->timeout= ThreadPool::schedule([context, state, received_timer](void) -> void {
+            received_timer(context, nullptr);
             state->create_next(true);
         }, board->time_per_response);
 
@@ -90,8 +92,8 @@ void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t re
     state->create_next(false);
 }
 
-void mbl_mw_timer_create_indefinite(MblMwMetaWearBoard *board, uint32_t period, uint8_t delay, MblMwFnTimerPtr received_timer) {
-    return mbl_mw_timer_create(board, period, REPEAT_INDEFINITELY, delay, received_timer);
+void mbl_mw_timer_create_indefinite(MblMwMetaWearBoard *board, uint32_t period, uint8_t delay, void *context, MblMwFnTimerPtr received_timer) {
+    return mbl_mw_timer_create(board, period, REPEAT_INDEFINITELY, delay, context, received_timer);
 }
 
 

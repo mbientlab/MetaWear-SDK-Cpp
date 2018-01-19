@@ -59,7 +59,7 @@ class AccelerometerBoschBase:
             for test in tests:
                 with self.subTest(odr= test['name']):
                     orientation = self.libmetawear.mbl_mw_acc_bosch_get_orientation_detection_data_signal(self.board)
-                    self.libmetawear.mbl_mw_datasignal_subscribe(orientation, self.sensor_data_handler)
+                    self.libmetawear.mbl_mw_datasignal_subscribe(orientation, None, self.sensor_data_handler)
                     
                     self.notify_mw_char(to_string_buffer(test['response']))
                     self.assertEqual(self.data_int32.value, test['expected'])

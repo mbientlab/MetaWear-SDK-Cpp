@@ -22,7 +22,8 @@ typedef enum {
     MBL_MW_DT_ID_QUATERNION,
     MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT,
     MBL_MW_DT_ID_OVERFLOW_STATE,
-    MBL_MW_DT_ID_SENSOR_ORIENTATION
+    MBL_MW_DT_ID_SENSOR_ORIENTATION,
+    MBL_MW_DT_ID_STRING
 } MblMwDataTypeId;
 
 /**
@@ -30,6 +31,7 @@ typedef enum {
  */
 typedef struct {
     int64_t epoch;                  ///< Number of milliseconds since epoch
+    void* extra;                    ///< Extra information attached to this data sample
     void* value;                    ///< Pointer to the data value 
     MblMwDataTypeId type_id;        ///< ID represnting the data type the value pointer points to
     uint8_t length;                 ///< Size of the value
@@ -37,6 +39,7 @@ typedef struct {
 
 /**
  * Definition for callback functions that handle data from an MblMwDataSignal
+ * @param context       Pointer to the context the enclosing function was called with
  * @param data          Data returned from the signal
  */
-typedef void (*MblMwFnData)(const MblMwData* data);
+typedef void (*MblMwFnData)(void *context, const MblMwData* data);

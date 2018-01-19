@@ -22,8 +22,10 @@ using std::vector;
 const float AD_INTERVAL_STEP= 0.625f, CONN_INTERVAL_STEP= 1.25f, TIMEOUT_STEP= 10;
 const uint8_t CONN_PARAMS_REVISION= 1, DISCONNECTED_EVENT_REVISION= 2, BATTERY_REVISION= 3, WHITELIST_REVISION = 6;
 
-const ResponseHeader SETTINGS_BATTERY_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::BATTERY_STATE))),
-        SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::DISCONNECT_EVENT));
+const ResponseHeader 
+    SETTINGS_BATTERY_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::BATTERY_STATE))),
+    SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::DISCONNECT_EVENT)),
+    SETTINGS_MAC_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::MAC)));
 
 void init_settings_module(MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= BATTERY_REVISION) {
@@ -46,6 +48,11 @@ void init_settings_module(MblMwMetaWearBoard *board) {
         if (!board->module_events.count(SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER)) {
             board->module_events[SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER] = new MblMwEvent(SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER, board);
         }
+        if (!board->module_events.count(SETTINGS_MAC_RESPONSE_HEADER)) {
+            board->module_events[SETTINGS_MAC_RESPONSE_HEADER] = new MblMwDataSignal(SETTINGS_MAC_RESPONSE_HEADER, board, 
+                DataInterpreter::MAC_ADDRESS, FirmwareConverter::DEFAULT, 1, 6, 0, 0);
+        }
+        board->responses[SETTINGS_MAC_RESPONSE_HEADER]= response_handler_data_no_id;   
     }
 }
 
@@ -55,6 +62,10 @@ MblMwEvent* mbl_mw_settings_get_disconnect_event(const MblMwMetaWearBoard *board
 
 MblMwDataSignal* mbl_mw_settings_get_battery_state_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(SETTINGS_BATTERY_STATE_RESPONSE_HEADER);
+}
+
+METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_mac_data_signal(const MblMwMetaWearBoard *board) {
+    GET_DATA_SIGNAL(SETTINGS_MAC_RESPONSE_HEADER);
 }
 
 void mbl_mw_settings_set_device_name(const MblMwMetaWearBoard *board, const uint8_t *device_name, uint8_t len) {

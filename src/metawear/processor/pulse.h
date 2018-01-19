@@ -28,10 +28,11 @@ typedef enum {
  * @param output                Output type of the processor
  * @param threshold             Value the data must exceed for a valid pulse
  * @param width                 Number of samples that must exceed the threshold for a valid pulse
+ * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_pulse_create(MblMwDataSignal *source, MblMwPulseOutput output,
-            float threshold, uint16_t width, MblMwFnDataProcessor processor_created);
+            float threshold, uint16_t width, void *context, MblMwFnDataProcessor processor_created);
 /**
  * Modify the configuration of a pulse detector
  * @param pulse             Pulse detector to modify

@@ -119,7 +119,7 @@ class TestAccBma255Data(TestMetaWearBase):
     def test_subscribe_data(self):
         expected= [0x03, 0x04, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe_data(self):
@@ -132,7 +132,7 @@ class TestAccBma255Data(TestMetaWearBase):
         response= create_string_buffer(b'\x03\x04\xe1\xb3\xa1\x24\xb1\x2e', 8)
         expected= CartesianFloat(x= -4.7576, y= 2.2893, z= 2.9182)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
         self.notify_mw_char(response)
         self.assertEqual(self.data_cartesian_float, expected)
@@ -160,7 +160,7 @@ class TestAccBma255Data(TestMetaWearBase):
         for test in tests:
             with self.subTest(odr= test['name']):
                 acc_component = self.libmetawear.mbl_mw_datasignal_get_component(self.signal, test['index'])
-                self.libmetawear.mbl_mw_datasignal_subscribe(acc_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(acc_component, None, self.sensor_data_handler)
                 self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
                 self.notify_mw_char(response)
 
@@ -174,8 +174,8 @@ class TestBma255HighFreqAccdata(TestMetaWearBase):
 
         self.accel_data_signal= self.libmetawear.mbl_mw_acc_bosch_get_packed_acceleration_data_signal(self.board)
         
-    def sensorDataHandler(self, data):
-        super().sensorDataHandler(data)
+    def sensorDataHandler(self, context, data):
+        super().sensorDataHandler(context, data)
 
         self.cartesian_float_values.append(self.data_cartesian_float)
 
@@ -184,7 +184,7 @@ class TestBma255HighFreqAccdata(TestMetaWearBase):
         expected_values = [CartesianFloat(x = 1.1935, y = -0.2084, z = 3.7311), CartesianFloat(x = 1.2882, y = -1.1395, z = 3.9996), CartesianFloat(x = 1.9244, y = -1.9569, z = 3.9982)]
 
         self.cartesian_float_values= []
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
         self.notify_mw_char(response)
         self.assertEqual(self.cartesian_float_values, expected_values)
@@ -192,7 +192,7 @@ class TestBma255HighFreqAccdata(TestMetaWearBase):
     def test_subscribe(self):
         expected= [0x03, 0x1c, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe(self):

@@ -55,6 +55,7 @@ unordered_map<DataProcessorType, uint8_t> type_to_id= {
 };
 
 struct DataProcessorState : public AsyncCreator {
+    void *processor_context;
     MblMwFnDataProcessor processor_callback;
     MblMwDataProcessor* next_processor;
     ProcessorEntriesHandler sync_handler;
@@ -467,7 +468,7 @@ static int32_t dataprocessor_created(MblMwMetaWearBoard *board, const uint8_t *r
     }
 
     state->next_processor->owner->module_events.emplace(state->next_processor->header, state->next_processor);
-    state->processor_callback(state->next_processor);
+    state->processor_callback(state->processor_context, state->next_processor);
     state->create_next(true);
 
     return MBL_MW_STATUS_OK;
@@ -491,7 +492,7 @@ static int32_t dataprocessor_config_received(MblMwMetaWearBoard *board, const ui
         state->entry_id = response[4];
         state->pending_fns.push([=](void) -> void {
             state->timeout= ThreadPool::schedule([state, board](void) -> void {
-                board->anon_signals_created(board, nullptr, MBL_MW_STATUS_ERROR_TIMEOUT);
+                board->anon_signals_created(board->anon_signals_context, board, nullptr, MBL_MW_STATUS_ERROR_TIMEOUT);
                 state->create_next(true);
             }, board->time_per_response);
     
@@ -565,10 +566,11 @@ MblMwDataProcessor* mbl_mw_dataprocessor_lookup_id(const MblMwMetaWearBoard* boa
     return board->module_events.count(map_key) ? dynamic_cast<MblMwDataProcessor*>(board->module_events.at(map_key)) : nullptr;
 }
 
-void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, MblMwFnDataProcessor processor_created) {
+void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, void *context, MblMwFnDataProcessor processor_created) {
     auto state = GET_DATAPROCESSOR_STATE(processor->owner);
-    state->pending_fns.push([state, processor, processor_created, source](void) -> void {
+    state->pending_fns.push([state, processor, context, processor_created, source](void) -> void {
         state->next_processor= processor;
+        state->processor_context= context;
         state->processor_callback= processor_created;
 
         vector<uint8_t> command = { MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::ADD), source->header.module_id, 
@@ -581,7 +583,7 @@ void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, Mb
             }
             state->next_processor->remove = false;
             delete state->next_processor;
-            state->processor_callback(nullptr);
+            state->processor_callback(state->processor_context, nullptr);
 
             state->create_next(true);
         }, source->owner->time_per_response);
@@ -616,7 +618,7 @@ void sync_processor_chain(MblMwMetaWearBoard* board, uint8_t id, ProcessorEntrie
 
     state->pending_fns.push([=](void) -> void {
         state->timeout= ThreadPool::schedule([state, board](void) -> void {
-            board->anon_signals_created(board, nullptr, MBL_MW_STATUS_ERROR_TIMEOUT);
+            board->anon_signals_created(board->anon_signals_context, board, nullptr, MBL_MW_STATUS_ERROR_TIMEOUT);
             state->create_next(true);
         }, board->time_per_response);
 

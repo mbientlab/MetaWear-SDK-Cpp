@@ -52,7 +52,7 @@ class TestHumidityBme280Data(TestMetaWearBase):
         expected= 63.1943359375
 
         signal= self.libmetawear.mbl_mw_humidity_bme280_get_percentage_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x16\x81\xc7\xfc\x00\x00'))
 
         self.assertAlmostEqual(self.data_float.value, expected)

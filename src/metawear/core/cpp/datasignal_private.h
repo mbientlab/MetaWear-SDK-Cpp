@@ -34,6 +34,7 @@ struct MblMwDataSignal : public MblMwEvent {
     void make_signed();
     void make_unsigned();
 
+    void *context;
     MblMwFnData handler;
     std::vector<MblMwDataSignal*> components;
 

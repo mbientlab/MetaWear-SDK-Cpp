@@ -43,6 +43,7 @@ struct GyroBmi160Config {
 
 struct GyroBmi160State {
     MblMwFnBoardPtrInt read_config_completed;
+    void *read_config_context;
 };
 
 static unordered_map<const MblMwMetaWearBoard*, GyroBmi160State> states;
@@ -51,8 +52,10 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
     memcpy(board->module_config.at(MBL_MW_MODULE_GYRO), response + 2, sizeof(GyroBmi160Config));
 
     auto callback = states[board].read_config_completed;
+    auto context = states[board].read_config_context;
     states[board].read_config_completed = nullptr;
-    callback(board, MBL_MW_STATUS_OK);
+    states[board].read_config_context = nullptr;
+    callback(context, board, MBL_MW_STATUS_OK);
 
     return MBL_MW_STATUS_OK;
 }
@@ -104,6 +107,10 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
     }
 }
 
+void free_gyro_module(MblMwMetaWearBoard *board) {
+    states.erase(board);
+}
+
 MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(GYRO_ROT_RESPONSE_HEADER);
 }
@@ -138,7 +145,8 @@ void mbl_mw_gyro_bmi160_write_config(const MblMwMetaWearBoard *board) {
     SEND_COMMAND;
 }
 
-void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, MblMwFnBoardPtrInt completed) {
+void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
+    states[board].read_config_context = context;
     states[board].read_config_completed = completed;
 
     uint8_t command[2]= {MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi160Register::CONFIG))};

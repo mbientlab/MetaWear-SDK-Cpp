@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+const uint8_t ACCOUNTER_COUNT = 0, ACCOUNTER_TIME = 1;
+
 struct AccounterConfig {
     uint8_t mode:4;
     uint8_t length:2;
@@ -14,6 +16,7 @@ struct AccounterConfig {
     uint8_t :4;
 };
 
+uint8_t get_accounter_type(const MblMwDataProcessor* source);
 uint8_t get_accounter_length(const MblMwDataProcessor* source);
 uint8_t get_accounter_prescale(const MblMwDataProcessor* source);
 

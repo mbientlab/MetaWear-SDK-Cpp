@@ -83,7 +83,7 @@ class TestColorDetectorTcs34725Data(TestMetaWearBase):
     def test_read_adc(self):
         expected= [0x17, 0x81]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.adc_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.adc_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_read(self.adc_signal)
         self.assertEqual(self.command, expected)
 
@@ -97,7 +97,7 @@ class TestColorDetectorTcs34725Data(TestMetaWearBase):
         expected= Tcs34725ColorAdc(clear= 418, red= 123, green= 154, blue= 124)
         response= create_string_buffer(b'\x17\x81\xa2\x01\x7b\x00\x9a\x00\x7c\x00', 10)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.adc_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.adc_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
 
         self.assertEqual(self.data_tcs34725_adc, expected)
@@ -131,7 +131,7 @@ class TestColorDetectorTcs34725Data(TestMetaWearBase):
             with self.subTest(odr= test['name']):
                 signal_component = self.libmetawear.mbl_mw_datasignal_get_component(self.adc_signal, test['index'])
 
-                self.libmetawear.mbl_mw_datasignal_subscribe(signal_component, self.sensor_data_handler)
+                self.libmetawear.mbl_mw_datasignal_subscribe(signal_component, None, self.sensor_data_handler)
                 self.notify_mw_char(response) 
 
                 self.assertEqual(self.data_uint32.value, test['expected'])

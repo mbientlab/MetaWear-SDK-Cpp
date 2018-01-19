@@ -14,17 +14,18 @@ extern "C" {
 
 /**
  * Begin macro recording.  Every MetaWear command issued will be recorded to the flash memory.
- * @param board         Calling object
- * @param execOnBoot    True if the commands should be executed when the board powers on
+ * @param board             Calling object
+ * @param exec_on_boot      True if the commands should be executed when the board powers on
  */
 METAWEAR_API void mbl_mw_macro_record(MblMwMetaWearBoard *board, uint8_t exec_on_boot);
 /**
  * Ends macro recording.  An numerical id representing the macro will be passed to the callback function when 
  * the operation is complete.
  * @param board                 Calling object
+ * @param context               Pointer to additional data for the callback function
  * @param commands_recorded     Callback function to be executed when the commands are recorded
  */
-METAWEAR_API void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, MblMwFnBoardPtrInt commands_recorded);
+METAWEAR_API void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, void *context, MblMwFnBoardPtrInt commands_recorded);
 /**
  * Execute the commands corresponding to the macro ID
  * @param board     Calling object

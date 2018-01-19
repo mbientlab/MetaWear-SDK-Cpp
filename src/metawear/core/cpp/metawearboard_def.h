@@ -35,11 +35,13 @@ struct MblMwMetaWearBoard {
 
     std::shared_ptr<void> logger_state, timer_state, event_state, dp_state, macro_state, debug_state;
     MblMwFnBoardPtrInt initialized;
+    void *initialized_context;
     MblMwFnAnonSignalArray anon_signals_created;
+    void *anon_signals_context;
     std::shared_ptr<Task> initialized_timeout;
     MblMwBtleConnection btle_conn;
     Version firmware_revision;
-    std::string module_number;
+    std::string module_number, hardware_revision, serial_number, manufacturer;
     std::unique_ptr<DfuOperations> operations;
     const char* filename;
 
@@ -47,7 +49,7 @@ struct MblMwMetaWearBoard {
     int8_t module_discovery_index, dev_info_index;
 
     inline void write_gatt_char(const MblMwGattChar* gatt_char, MblMwGattCharWriteType type, const uint8_t* value, uint8_t len) const {
-        btle_conn.write_gatt_char(this, type, gatt_char, value, len);
+        btle_conn.write_gatt_char(btle_conn.context, this, type, gatt_char, value, len);
     }
 };
 

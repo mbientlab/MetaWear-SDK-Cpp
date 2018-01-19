@@ -16,6 +16,7 @@ struct Version {
     void assign(const std::string& new_version);
     Version& operator =(const Version& original);
 
+    std::string sem_ver;
     uint8_t major, minor, step;
 };
 

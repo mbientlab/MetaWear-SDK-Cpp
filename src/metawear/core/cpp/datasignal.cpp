@@ -229,12 +229,14 @@ MblMwDataSignal* mbl_mw_datasignal_get_component(const MblMwDataSignal* signal, 
     }
 }
 
-void mbl_mw_datasignal_subscribe(MblMwDataSignal *signal, MblMwFnData received_data) {
+void mbl_mw_datasignal_subscribe(MblMwDataSignal *signal, void *context, MblMwFnData received_data) {
+    signal->context= context;
     signal->handler= received_data;
     signal->subscribe();
 }
 
 void mbl_mw_datasignal_unsubscribe(MblMwDataSignal *signal) {
+    signal->context= nullptr;
     signal->handler= nullptr;
     signal->unsubscribe();
 }

@@ -117,7 +117,7 @@ class TestBmi160AccelerationData(TestMetaWearBase):
         response= create_string_buffer(b'\x03\x04\x16\xc4\x94\xa2\x2a\xd0')
         expected= CartesianFloat(x= -1.872, y= -2.919, z= -1.495)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
         self.notify_mw_char(response)
         self.assertEqual(self.data_cartesian_float, expected)
@@ -125,7 +125,7 @@ class TestBmi160AccelerationData(TestMetaWearBase):
     def test_subscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe_acceleration_data(self):
@@ -142,8 +142,8 @@ class TestBmi160HighFreqAccData(TestMetaWearBase):
 
         self.accel_data_signal= self.libmetawear.mbl_mw_acc_bosch_get_packed_acceleration_data_signal(self.board)
 
-    def sensorDataHandler(self, data):
-        super().sensorDataHandler(data)
+    def sensorDataHandler(self, context, data):
+        super().sensorDataHandler(context, data)
 
         self.cartesian_float_values.append(self.data_cartesian_float)
 
@@ -152,7 +152,7 @@ class TestBmi160HighFreqAccData(TestMetaWearBase):
         expected_values= [CartesianFloat(x= -4.539, y= 0.833, z= -0.131), CartesianFloat(x= -2.995, y= 0.894, z= 0.146), CartesianFloat(x= -0.029, y= 0.352, z= 0.065)]
 
         self.cartesian_float_values= []
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
         self.notify_mw_char(response)
         self.assertEqual(self.cartesian_float_values, expected_values)
@@ -160,7 +160,7 @@ class TestBmi160HighFreqAccData(TestMetaWearBase):
     def test_subscribe(self):
         expected= [0x03, 0x1c, 0x01]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe(self):
@@ -213,14 +213,14 @@ class TestBmi160StepCounterData(TestMetaWearBase):
         response= create_string_buffer(b'\x03\x9a\x2b\x00', 4)
         expected= 43
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_counter_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_counter_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_read_step_counter(self):
         expected= [0x03, 0x9a]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_counter_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_counter_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_read(self.step_counter_signal)
         self.assertListEqual(self.command, expected)
 
@@ -241,7 +241,7 @@ class TestBmi160StepDetectorData(TestMetaWearBase):
     def test_subscribe_detector(self):
         expected= [0x3, 0x19, 0x1]
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_detector_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_detector_signal, None, self.sensor_data_handler)
         self.assertEqual(self.command, expected)
 
     def test_unsubscribe_detector(self):
@@ -266,6 +266,6 @@ class TestBmi160StepDetectorData(TestMetaWearBase):
         response= create_string_buffer(b'\x03\x19\x01')
         expected= 1
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_detector_signal, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.step_detector_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
         self.assertEqual(self.data_uint32.value, expected)
