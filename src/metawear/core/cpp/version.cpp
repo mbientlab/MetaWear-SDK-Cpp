@@ -23,13 +23,8 @@ Version::Version(const string& version) {
 }
 
 Version::Version(uint8_t major, uint8_t minor, uint8_t step) {
-    this->major= major;
-    this->minor= minor;
-    this->step= step;
-
-    stringstream buffer;
-    buffer << major << SEPARATOR << minor << SEPARATOR << step;
-    sem_ver = buffer.str();
+    uint8_t state[3] = { step, minor, major }, *ptr = state;
+    deserialize(&ptr);
 }
 
 void Version::deserialize(uint8_t** state_stream) {
@@ -39,7 +34,7 @@ void Version::deserialize(uint8_t** state_stream) {
     ++(*state_stream);
 
     stringstream buffer;
-    buffer << major << SEPARATOR << minor << SEPARATOR << step;
+    buffer << (int) major << SEPARATOR << (int) minor << SEPARATOR << (int) step;
     sem_ver = buffer.str();
 }
 

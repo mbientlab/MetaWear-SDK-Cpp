@@ -51,12 +51,6 @@ class TestMetaWearBoard(TestMetaWearBase):
     def test_service_discovery(self):
         self.assertEqual(self.init_status, Const.STATUS_OK)
 
-    def test_device_information(self):
-        expected = DeviceInformation(manufacturer = b"deadbeef", model_number = b"0", serial_number = b"cafebabe", firmware_revision = b"1.1.3", hardware_revision = b"0.1")
-        actual = self.libmetawear.mbl_mw_metawearboard_get_device_information(self.board)
-
-        self.assertEqual(actual.contents, expected)
-
     def test_module_info(self):
         expected = [
             ModuleInfo(name = b"Switch", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
@@ -93,6 +87,29 @@ class TestMetaWearBoard(TestMetaWearBase):
         self.maxDiff = None
         self.assertEqual(actual, expected)
 
+class TestDeviceInfo(TestMetaWearBase):
+    def setUp(self):
+        self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
+
+    def test_read(self):
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
+        expected = DeviceInformation(manufacturer = b"deadbeef", model_number = b"0", serial_number = b"cafebabe", firmware_revision = b"1.1.3", hardware_revision = b"0.1")
+        actual = self.libmetawear.mbl_mw_metawearboard_get_device_information(self.board)
+
+        self.assertEqual(actual.contents, expected)
+
+    def test_read_after_deserialize(self):
+        state_buffer= to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
+        self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
+
+        self.firmware_revision= create_string_buffer(b'1.3.1', 5)
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
+
+        expected = DeviceInformation(manufacturer = b"deadbeef", model_number = b"5", serial_number = b"cafebabe", firmware_revision = b"1.3.1", hardware_revision = b"0.1")
+        actual = self.libmetawear.mbl_mw_metawearboard_get_device_information(self.board)
+
+        self.assertEqual(actual.contents, expected)
+
 class TestMetaWearBoardInitialize(TestMetaWearBase):
     def test_reinitialize(self):
         expected_cmds= [
@@ -102,7 +119,8 @@ class TestMetaWearBoardInitialize(TestMetaWearBase):
             [0x0d, 0x80], [0x0f, 0x80], [0x10, 0x80], [0x11, 0x80],
             [0x12, 0x80], [0x13, 0x80], [0x14, 0x80], [0x15, 0x80],
             [0x16, 0x80], [0x17, 0x80], [0x18, 0x80], [0x19, 0x80],
-            [0xfe, 0x80], [0x0b, 0x84]
+            [0xfe, 0x80], 
+            [0x0b, 0x84], [0x0b, 0x84]
         ]
 
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
@@ -115,14 +133,14 @@ class TestMetaWearBoardInitialize(TestMetaWearBase):
             [0x09, 0x80], [0x0a, 0x80], [0x0b, 0x80], [0x0c, 0x80],
             [0x0d, 0x80], [0x0f, 0x80], [0x10, 0x80], [0x11, 0x80],
             [0x12, 0x80], [0x13, 0x80], [0x14, 0x80], [0x15, 0x80], 
-            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80],
+            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80], [0x19, 0x80],
             [0xfe, 0x80], [0x0b, 0x84],
             [0x01, 0x80], [0x02, 0x80], [0x03, 0x80], [0x04, 0x80],
             [0x05, 0x80], [0x06, 0x80], [0x07, 0x80], [0x08, 0x80],
             [0x09, 0x80], [0x0a, 0x80], [0x0b, 0x80], [0x0c, 0x80],
             [0x0d, 0x80], [0x0f, 0x80], [0x10, 0x80], [0x11, 0x80],
             [0x12, 0x80], [0x13, 0x80], [0x14, 0x80], [0x15, 0x80], 
-            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80],
+            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80], [0x19, 0x80],
             [0xfe, 0x80], [0x0b, 0x84]
         ]
 
@@ -130,7 +148,7 @@ class TestMetaWearBoardInitialize(TestMetaWearBase):
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
         self.assertEqual(self.full_history, expected_cmds)
 
-class TestMetaWearBoardInitialize(TestMetaWearBase):
+class TestMetaWearBoardInitTimeout(TestMetaWearBase):
     def setUp(self):
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 

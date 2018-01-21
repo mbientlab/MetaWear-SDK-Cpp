@@ -45,24 +45,6 @@ typedef struct {
 } MblMwModuleInfo;
 
 /**
- * @deprecated As of v0.5.0 and will be removed in v1.0.0.  Use mbl_mw_metawearboard_notify_char_changed instead.
- */
-METAWEAR_API int32_t mbl_mw_connection_notify_char_changed(MblMwMetaWearBoard *board, const uint8_t *value, uint8_t len);
-/**
- * @deprecated As of v0.9.0.  Handling characeristic changes now setup through the MblMwBtleConnection struct
- */
-METAWEAR_API int32_t mbl_mw_metawearboard_notify_char_changed(MblMwMetaWearBoard *board, const uint8_t *value, uint8_t len);
-
-/**
- * @deprecated As of v0.5.0 and will be removed in v1.0.0.  Use mbl_mw_metawearboard_char_read instead.
- */
-METAWEAR_API void mbl_mw_connection_char_read(MblMwMetaWearBoard *board, const MblMwGattChar *characteristic, const uint8_t *value, uint8_t length);
-/**
- * @deprecated As of v0.9.0.  Handling gatt characteristic reads now setup through the MblMwBtleConnection struct
- */
-METAWEAR_API void mbl_mw_metawearboard_char_read(MblMwMetaWearBoard *board, const MblMwGattChar *characteristic, const uint8_t *value, uint8_t length);
-
-/**
  * Creates an instance of the MblMwMetaWearBoard struct
  * @param connection    Connection struct the new MblMwMetaWearBoard variable will use for btle communication
  * @return Pointer to the newly created struct
