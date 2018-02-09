@@ -16,7 +16,7 @@
 #include "metawear/platform/dllmarker.h"
 
 /** Constant signifying a module is not available */
-const int32_t MBL_MW_MODULE_TYPE_NA = -1;
+extern const int32_t MBL_MW_MODULE_TYPE_NA;
 
 #ifdef __cplusplus
 extern "C" {
