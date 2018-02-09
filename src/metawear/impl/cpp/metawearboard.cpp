@@ -58,6 +58,7 @@
 using namespace std;
 using namespace std::chrono;
 
+const int32_t MBL_MW_MODULE_TYPE_NA = -1;
 const uint8_t CARTESIAN_FLOAT_SIZE= 6;
 const uint16_t MAX_TIME_PER_RESPONSE= 4000;
 
