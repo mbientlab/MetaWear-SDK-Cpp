@@ -31,7 +31,7 @@ uint8_t closest_index(const vector<float>& values, float key) {
     return closest_index(values.data(), values.size(), key);
 }
 
-uint8_t closest_index(const float* values, size_t len, float key) {
+uint8_t closest_index(const float* values, std::size_t len, float key) {
     vector<float> differences;
     differences.resize(len);
 
