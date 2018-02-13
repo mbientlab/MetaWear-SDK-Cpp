@@ -257,11 +257,7 @@ const vector<tuple<MblMwGattChar, void(*)(MblMwMetaWearBoard*, const uint8_t*, u
     make_tuple(DEV_INFO_FIRMWARE_CHAR, [](MblMwMetaWearBoard* board, const uint8_t* value, uint8_t length) {
         Version current(string(value, value + length));
 
-        if (board->firmware_revision == current) {
-            if (!mbl_mw_metawearboard_is_initialized(board)) {
-                board->module_discovery_index = MODULE_DISCOVERY_CMDS.size();
-            }
-        } else {
+        if (!(board->firmware_revision == current)) {
             board->firmware_revision = current;
 
             board->logger_state.reset();
@@ -286,7 +282,6 @@ const vector<tuple<MblMwGattChar, void(*)(MblMwMetaWearBoard*, const uint8_t*, u
             board->module_config.clear();
 
             board->module_info.clear();
-            board->module_discovery_index = -1;
         }
     }, [](MblMwMetaWearBoard* board) { return false; }),
     make_tuple(DEV_INFO_MODEL_CHAR, [](MblMwMetaWearBoard* board, const uint8_t* value, uint8_t length) { board->module_number.assign(value, value + length); }, 
@@ -462,6 +457,7 @@ void mbl_mw_metawearboard_initialize(MblMwMetaWearBoard *board, void *context, M
     board->initialized_context = context;
     board->initialized = initialized;
     board->dev_info_index = -1;
+    board->module_discovery_index = -1;
 
     board->btle_conn.on_disconnect(board->btle_conn.context, board, disconnect_handler);
     board->btle_conn.enable_notifications(board->btle_conn.context, board, &METAWEAR_SERVICE_NOTIFY_CHAR, char_changed_handler, enable_notify_ready);

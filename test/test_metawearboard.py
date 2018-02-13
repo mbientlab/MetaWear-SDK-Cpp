@@ -148,8 +148,9 @@ class TestMetaWearBoardInitialize(TestMetaWearBase):
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
         self.assertEqual(self.full_history, expected_cmds)
 
-class TestMetaWearBoardInitTimeout(TestMetaWearBase):
+class TestMetaWearBoardInitError(TestMetaWearBase):
     def setUp(self):
+        self.module_limit = 0x3
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
     def initialized(self, context, board, status):
@@ -157,13 +158,9 @@ class TestMetaWearBoardInitTimeout(TestMetaWearBase):
 
         self.e.set()
 
-    def commandLogger(self, context ,board, writeType, characteristic, command, length):
-        if (command[1] == 0x80):
-            response= create_string_buffer(b'\x00\x00', 2)
-            response[0]= command[0]
-            self.notify_mw_char(response)
-        else:
-            super().commandLogger(context, board, writeType, characteristic, command, length)
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
+        if (command[1] != 0x80 or command[1] == 0x80 and command[0] <= self.module_limit):
+            TestMetaWearBase.commandLogger(self, context, board, writeType, characteristic, command, length)
 
     def test_timeout(self):
         self.e= threading.Event()
@@ -171,6 +168,32 @@ class TestMetaWearBoardInitTimeout(TestMetaWearBase):
         self.e.wait()
 
         self.assertEqual(self.init_status, Const.STATUS_ERROR_TIMEOUT)
+    
+    def test_resume(self):
+        expected_cmds= [
+            [0x01, 0x80], [0x02, 0x80], [0x03, 0x80], [0x04, 0x80],
+            [0x05, 0x80], [0x06, 0x80], [0x07, 0x80], [0x08, 0x80],
+            [0x09, 0x80], [0x0a, 0x80], [0x0b, 0x80], [0x0c, 0x80],
+            [0x0d, 0x80], [0x0f, 0x80], [0x10, 0x80], [0x11, 0x80],
+            [0x12, 0x80], [0x13, 0x80], [0x14, 0x80], [0x15, 0x80],
+            [0x16, 0x80], [0x17, 0x80], [0x18, 0x80], [0x19, 0x80],
+            [0xfe, 0x80], 
+            [0x0b, 0x84]
+        ]
+
+        self.e= threading.Event()
+        # this attempt will fail
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
+        self.e.wait()
+        self.assertEqual(self.init_status, Const.STATUS_ERROR_TIMEOUT)
+
+        self.e.clear()
+        self.module_limit = 0xff
+        # this attempt resumes where previous init failed
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
+        self.e.wait()
+
+        self.assertEqual(self.full_history, expected_cmds)
 
 class TestTearDown(TestGpioFeedbackSetup):
     def test_dataproc_event(self):
@@ -453,7 +476,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
             0x01, 
             0x03, 0x01, 0x01, 
             0x01, 0x31, 
-            0x18, 
+            0x19, 
             0x01, 0xff, 0xff,
             0x02, 0xff, 0xff,
             0x03, 0x01, 0x00, 0x00, 
@@ -477,6 +500,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
             0x16, 0xff, 0xff,
             0x17, 0xff, 0xff,
             0x18, 0xff, 0xff,
+            0x19, 0xff, 0xff,
             0xfe, 0xff, 0xff,
             0x0c, 
             0x03, 0x04, 0xff, 0x00, 0x07, 0x02, 0x03, 0x02, 0x01, 0x00,
@@ -522,7 +546,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
         self.maxDiff= None
-        self.assertEqual(python_array[0:198], self.expected_state[0:198])
+        self.assertEqual(python_array[0:201], self.expected_state[0:201])
 
 class TestMetaWearBoardDeserialize(TestMetaWearBase):
     def setUp(self):
@@ -793,7 +817,7 @@ class TestIndefiniteTimeout(TestMetaWearBase):
         self.init_event = threading.Event()
 
     def initialized(self, board, status):
-        self.init_status= status;
+        self.init_status= status
         self.init_event.set()
 
     def commandLogger(self, board, writeType, characteristic, command, length):

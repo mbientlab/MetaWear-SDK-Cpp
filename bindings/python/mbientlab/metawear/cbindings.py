@@ -450,8 +450,6 @@ class GpioAnalogReadMode:
 
 FnVoid_VoidP_VoidP = CFUNCTYPE(None, c_void_p, c_void_p)
 FnVoid_VoidP_VoidP_Int = CFUNCTYPE(None, c_void_p, c_void_p, c_int)
-FnInt_VoidP_UByteP_UByte = CFUNCTYPE(c_int, c_void_p, POINTER(c_ubyte), c_ubyte)
-FnVoid_VoidP_Int = CFUNCTYPE(None, c_void_p, c_int)
 class Data(Structure):
     _fields_ = [
         ("epoch" , c_longlong),
@@ -475,6 +473,8 @@ class Data(Structure):
 
 FnVoid_VoidP_DataP = CFUNCTYPE(None, c_void_p, POINTER(Data))
 FnVoid_VoidP_VoidP_VoidP_UInt = CFUNCTYPE(None, c_void_p, c_void_p, c_void_p, c_uint)
+FnVoid_VoidP_Int = CFUNCTYPE(None, c_void_p, c_int)
+FnInt_VoidP_UByteP_UByte = CFUNCTYPE(c_int, c_void_p, POINTER(c_ubyte), c_ubyte)
 class SpiParameters(Structure):
     _fields_ = [
         ("mode" , c_int),

@@ -256,7 +256,11 @@ class TestMetaWearBase(unittest.TestCase):
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
 
     def tearDown(self):
-        self.libmetawear.mbl_mw_metawearboard_free(self.board)
+        #Need to separate the btle code so we can cleanly free the memory.
+        #Will look into it later
+        #self.libmetawear.mbl_mw_metawearboard_free(self.board)
+        #self.board = None
+        pass
 
     def commandsRecorded(self, context, event, status):
         self.event_status.append(status)
@@ -276,14 +280,14 @@ class TestMetaWearBase(unittest.TestCase):
         self.events["timer"].set()
 
     def initialized(self, context, board, status):
-        self.init_status= status;
+        self.init_status= status
 
     def on_disconnect(self, context, board, handler):
-        self.dc_handler = handler;
+        self.dc_handler = handler
 
     def enable_gatt_notify(self, context, board, characteristic, handler, ready):
-        self.notify_handler = handler;
-        ready(self.board, 0)
+        self.notify_handler = handler
+        ready(board, 0)
 
     def read_gatt_char(self, context, board, characteristic, handler):
         if (characteristic.contents.uuid_high == 0x00002a2400001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
@@ -299,22 +303,22 @@ class TestMetaWearBase(unittest.TestCase):
                 model_number= create_string_buffer(b'5', 1)
 
             bytes = cast(model_number.raw, POINTER(c_ubyte))
-            handler(self.board, bytes, len(model_number.raw))
+            handler(board, bytes, len(model_number.raw))
         elif (characteristic.contents.uuid_high == 0x00002a2600001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             bytes = cast(self.firmware_revision.raw, POINTER(c_ubyte))
-            handler(self.board, bytes, len(self.firmware_revision.raw))
+            handler(board, bytes, len(self.firmware_revision.raw))
         elif (characteristic.contents.uuid_high == 0x00002a2700001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             hw = create_string_buffer(b'0.1', 3)
             bytes = cast(hw.raw, POINTER(c_ubyte))
-            handler(self.board, bytes, len(hw.raw))
+            handler(board, bytes, len(hw.raw))
         elif (characteristic.contents.uuid_high == 0x00002a2900001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             mft = create_string_buffer(b'deadbeef', 8)
             bytes = cast(mft.raw, POINTER(c_ubyte))
-            handler(self.board, bytes, len(mft.raw))
+            handler(board, bytes, len(mft.raw))
         elif (characteristic.contents.uuid_high == 0x00002a2500001000 and characteristic.contents.uuid_low == 0x800000805f9b34fb):
             serial = create_string_buffer(b'cafebabe', 8)
             bytes = cast(serial.raw, POINTER(c_ubyte))
-            handler(self.board, bytes, len(serial.raw))
+            handler(board, bytes, len(serial.raw))
 
     def commandLogger(self, context, board, writeType, characteristic, command, length):
         self.command= []
@@ -430,11 +434,15 @@ class TestMetaWearBase(unittest.TestCase):
 
     def notify_mw_char(self, buffer):
         bytes = cast(buffer, POINTER(c_ubyte))
-        return self.notify_handler(self.board, bytes, len(buffer.raw))
+        if (self.board != None):
+            return self.notify_handler(self.board, bytes, len(buffer.raw))
+        else:
+            return 0
 
     def schedule_response(self, response):
         def send_response():
-            self.notify_mw_char(self.pending_responses.get())
+            if (not self.pending_responses.empty()):
+                self.notify_mw_char(self.pending_responses.get())
 
         self.pending_responses.put(response)
         Timer(0.020, send_response).start()

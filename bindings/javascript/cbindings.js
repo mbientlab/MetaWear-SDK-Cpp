@@ -531,10 +531,6 @@ var DataProcessor = ref.types.void;
 var FnVoid_VoidP_DataProcessorP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(DataProcessor)]);
 var Event = ref.types.void;
 var FnVoid_VoidP_EventP_Int = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(Event), ref.types.int32]);
-var FnInt_VoidP_UByteP_UByte = ffi.Function(ref.types.int32, [ref.refType(ref.types.void), ref.refType(ref.types.uint8), ref.types.uint8]);
-var FnVoid_VoidP_Int = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.types.int32]);
-var DataLogger = ref.types.void;
-var FnVoid_VoidP_DataLoggerP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(DataLogger)]);
 var Timer = ref.types.void;
 var FnVoid_VoidP_TimerP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(Timer)]);
 var Data = Struct({
@@ -546,10 +542,14 @@ var Data = Struct({
 });
 
 var FnVoid_VoidP_DataP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(Data)]);
+var DataLogger = ref.types.void;
+var FnVoid_VoidP_DataLoggerP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(DataLogger)]);
 var MetaWearBoard = ref.types.void;
 var AnonymousDataSignal = ref.types.void;
 var FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ref.refType(AnonymousDataSignal), ref.types.uint32]);
 var FnVoid_VoidP_MetaWearBoardP_Int = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ref.types.int32]);
+var FnVoid_VoidP_Int = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.types.int32]);
+var FnInt_VoidP_UByteP_UByte = ffi.Function(ref.types.int32, [ref.refType(ref.types.void), ref.refType(ref.types.uint8), ref.types.uint8]);
 var SpiParameters = Struct({
   'mode': SpiMode,
   'frequency': SpiFrequency,
@@ -2925,13 +2925,11 @@ module.exports = {
   DfuDelegate: DfuDelegate,
   SpiParameters: SpiParameters,
   AccBma255Odr: AccBma255Odr,
-  MetaWearRChannel: MetaWearRChannel,
-  FnInt_VoidP_UByteP_UByte: FnInt_VoidP_UByteP_UByte,
-  ArrayAnonymousDataSignalP: ArrayAnonymousDataSignalP,
-  FnVoid_VoidP_DataLoggerP: FnVoid_VoidP_DataLoggerP,
   Timer: Timer,
   LogDownloadHandler: LogDownloadHandler,
   Data: Data,
+  ArrayAnonymousDataSignalP: ArrayAnonymousDataSignalP,
+  FnVoid_VoidP_DataLoggerP: FnVoid_VoidP_DataLoggerP,
   AccBoschRange: AccBoschRange,
   MetaWearBoard: MetaWearBoard,
   GpioAnalogReadParameters: GpioAnalogReadParameters,
@@ -2943,6 +2941,8 @@ module.exports = {
   HumidityBme280Oversampling: HumidityBme280Oversampling,
   MagBmm150Odr: MagBmm150Odr,
   FnVoid_VoidP_MetaWearBoardP_Int: FnVoid_VoidP_MetaWearBoardP_Int,
+  MetaWearRChannel: MetaWearRChannel,
+  FnInt_VoidP_UByteP_UByte: FnInt_VoidP_UByteP_UByte,
   BaroBoschIirFilter: BaroBoschIirFilter,
   I2cReadParameters: I2cReadParameters,
   FnVoid_VoidP_UInt_UInt: FnVoid_VoidP_UInt_UInt,
