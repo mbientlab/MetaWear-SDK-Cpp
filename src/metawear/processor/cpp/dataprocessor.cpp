@@ -526,6 +526,11 @@ void free_dataprocessor_module(void* state) {
     delete (DataProcessorState*) state;
 }
 
+void disconnect_dataprocessor(MblMwMetaWearBoard* board) {
+    auto state = GET_DATAPROCESSOR_STATE(board);
+    state->pending_fns.clear();
+}
+
 MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(const MblMwDataProcessor* processor) {
     ResponseHeader state_header(MBL_MW_MODULE_DATA_PROCESSOR, READ_REGISTER(ORDINAL(DataProcessorRegister::STATE)), processor->header.data_id);
     GET_DATA_SIGNAL_BOARD(processor->owner, state_header);

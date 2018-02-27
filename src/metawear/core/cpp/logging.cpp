@@ -608,7 +608,9 @@ void tear_down_logging(void *state, bool preserve_memory) {
 
 void disconnect_logging(MblMwMetaWearBoard* board) {
     auto state = GET_LOGGER_STATE(board);
+
     if (state != nullptr) {
+        state->pending_fns.clear();
         for(auto it: state->latest_tick) {
             state->rollback_timestamps[it.first] = it.second;
         }
@@ -801,6 +803,7 @@ int64_t calculate_epoch(const MblMwMetaWearBoard* board, uint32_t tick) {
 
 void query_active_loggers(MblMwMetaWearBoard* board) {
     auto state= GET_LOGGER_STATE(board);
+    state->clear_data_loggers();
     state->anonymous_signals.clear();
     state->queryLogId = 0;
 

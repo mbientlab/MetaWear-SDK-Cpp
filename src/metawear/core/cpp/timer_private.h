@@ -13,3 +13,4 @@ struct MblMwTimer : public MblMwEvent {
 
 void init_timer_module(MblMwMetaWearBoard *board);
 void free_timer_module(void *state);
+void disconnect_timer(MblMwMetaWearBoard* board);

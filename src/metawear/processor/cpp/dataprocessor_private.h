@@ -70,6 +70,7 @@ void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, vo
 void set_processor_state(MblMwDataProcessor *processor, void* new_state, uint8_t size);
 void modify_processor_configuration(MblMwDataProcessor *processor, uint8_t size);
 void sync_processor_chain(MblMwMetaWearBoard* board, uint8_t id, ProcessorEntriesHandler handler);
+void disconnect_dataprocessor(MblMwMetaWearBoard* board);
 
 namespace std {
 

@@ -442,7 +442,9 @@ static void enable_notify_ready(const void* caller, int32_t value) {
 }
 
 const unordered_set<void(*)(MblMwMetaWearBoard*)> MODULE_DISCONNECT_HANDLERS = {
-    disconnect_logging
+    disconnect_logging,
+    disconnect_timer,
+    disconnect_dataprocessor
 };
 
 static void disconnect_handler(const void* caller, int32_t value) {
