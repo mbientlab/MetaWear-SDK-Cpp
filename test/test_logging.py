@@ -170,6 +170,7 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
         self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
+        self.maxDiff = None
         self.assertEqual(self.data_time_offsets, Bmi160Accelerometer.expected_offsets)
 
     def test_rollover(self):
@@ -188,7 +189,7 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
         self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
-        self.assertEqual(self.data_time_offsets, [21])
+        self.assertEqual(self.data_time_offsets, [19])
 
 class TestGyroYAxisLoggingBase(TestMetaWearBase):
     def __init__(self, *args, **kwargs):

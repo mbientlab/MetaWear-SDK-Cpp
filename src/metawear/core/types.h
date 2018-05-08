@@ -86,3 +86,11 @@ typedef enum {
     MBL_MW_SENSOR_ORIENTATION_FACE_DOWN_LANDSCAPE_LEFT,
     MBL_MW_SENSOR_ORIENTATION_FACE_DOWN_LANDSCAPE_RIGHT
 } MblMwSensorOrientation;
+
+/**
+ * Internal clock for logger timestamps
+ */
+typedef struct {
+    int64_t epoch;
+    uint8_t reset_uid;
+} MblMwLoggingTime;

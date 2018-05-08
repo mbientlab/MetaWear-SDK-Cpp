@@ -528,7 +528,9 @@ void free_dataprocessor_module(void* state) {
 
 void disconnect_dataprocessor(MblMwMetaWearBoard* board) {
     auto state = GET_DATAPROCESSOR_STATE(board);
-    state->pending_fns.clear();
+    if (state != nullptr) {
+        state->pending_fns.clear();
+    }
 }
 
 MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(const MblMwDataProcessor* processor) {

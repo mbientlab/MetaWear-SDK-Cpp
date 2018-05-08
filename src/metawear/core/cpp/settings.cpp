@@ -18,6 +18,8 @@
 using std::memcpy;
 using std::stringstream;
 using std::vector;
+using std::forward_as_tuple;
+using std::piecewise_construct;
 
 const float AD_INTERVAL_STEP= 0.625f, CONN_INTERVAL_STEP= 1.25f, TIMEOUT_STEP= 10;
 const uint8_t CONN_PARAMS_REVISION= 1, DISCONNECTED_EVENT_REVISION= 2, BATTERY_REVISION= 3, WHITELIST_REVISION = 6;
@@ -54,6 +56,8 @@ void init_settings_module(MblMwMetaWearBoard *board) {
         }
         board->responses[SETTINGS_MAC_RESPONSE_HEADER]= response_handler_data_no_id;   
     }
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::WHITELIST_ADDRESSES))),
+        forward_as_tuple(response_handler_data_with_id));
 }
 
 MblMwEvent* mbl_mw_settings_get_disconnect_event(const MblMwMetaWearBoard *board) {
@@ -132,6 +136,14 @@ void mbl_mw_settings_add_whitelist_address(const MblMwMetaWearBoard *board, uint
         memcpy(command + 3, address, sizeof(MblMwBtleAddress));
         SEND_COMMAND;
     }
+}
+
+MblMwDataSignal* mbl_mw_settings_get_whitelist_data_signal(MblMwMetaWearBoard* board, uint8_t index) {
+    ResponseHeader header(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::WHITELIST_ADDRESSES)), index);
+    if (!board->module_events.count(header)) {
+        board->module_events[header]= new MblMwDataSignal(header, board, DataInterpreter::BTLE_ADDRESS, 1, 7, 0, 0);
+    }
+    return dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
 }
 
 void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, MblMwWhitelistFilter mode) {

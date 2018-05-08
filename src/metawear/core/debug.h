@@ -9,6 +9,7 @@
 
 #include "data.h"
 #include "metawearboard_fwd.h"
+#include "datasignal_fwd.h"
 #include "metawear/platform/dllmarker.h"
 
 #ifdef	__cplusplus
@@ -64,6 +65,34 @@ METAWEAR_API void mbl_mw_debug_read_stack_overflow_state(const MblMwMetaWearBoar
  * @param handler   Callback function for handling the received data
  */
 METAWEAR_API void mbl_mw_debug_read_schedule_queue_usage(const MblMwMetaWearBoard *board, void *context, MblMwFnData handler);
+
+/**
+ * Creates a synthetic notification internally to the MetaWear system.  Useful for testing.
+ * @param board     Calling object
+ * @param value     Value to spoof: [Module ID, Register ID, Notifcation En, Optional Index, Data...]
+ * @param lenght    Size of the value array
+ */
+METAWEAR_API void mbl_mw_debug_spoof_notification(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length);
+
+/**
+ * Sends a raw command directly to the MetaWear.  Useful for testing.
+ * @param board     Calling object
+ * @param value     Value to send: [Module ID, Register ID, Optional Index, Data...]
+ * @param lenght    Size of the value array
+ */
+METAWEAR_API void mbl_mw_debug_send_command(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length);
+
+/**
+ * Retrieves a data signal representing the key register value.  This is a simple
+ * 4 byte scratch register.
+ * @param board     Board to receive data from
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_debug_get_key_register_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Sets the key register value.  This is a simple 4 byte scratch register.
+ * @param board     Board to receive data from
+ */
+METAWEAR_API void mbl_mw_debug_set_key_register(const MblMwMetaWearBoard *board, uint32_t value);
 
 #ifdef	__cplusplus
 }

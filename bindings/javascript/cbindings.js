@@ -205,51 +205,6 @@ var AlsLtr329Gain = new Enum({
 }, ref.types.int);
 AlsLtr329Gain.alignment = 4;
 
-var GyroBmi160Range = new Enum({
-  '_2000dps': 0,
-  '_1000dps': 1,
-  '_500dps': 2,
-  '_250dps': 3,
-  '_125dps': 4
-}, ref.types.int);
-GyroBmi160Range.alignment = 4;
-
-var AccMma8452qRange = new Enum({
-  '_2G': 0,
-  '_4G': 1,
-  '_8G': 2
-}, ref.types.int);
-AccMma8452qRange.alignment = 4;
-
-var Module = new Enum({
-  'SWITCH': 1,
-  'LED': 2,
-  'ACCELEROMETER': 3,
-  'TEMPERATURE': 4,
-  'GPIO': 5,
-  'NEO_PIXEL': 6,
-  'IBEACON': 7,
-  'HAPTIC': 8,
-  'DATA_PROCESSOR': 9,
-  'EVENT': 10,
-  'LOGGING': 11,
-  'TIMER': 12,
-  'I2C': 13,
-  'MACRO': 15,
-  'CONDUCTANCE': 16,
-  'SETTINGS': 17,
-  'BAROMETER': 18,
-  'GYRO': 19,
-  'AMBIENT_LIGHT': 20,
-  'MAGNETOMETER': 21,
-  'HUMIDITY': 22,
-  'COLOR_DETECTOR': 23,
-  'PROXIMITY': 24,
-  'SENSOR_FUSION': 25,
-  'DEBUG': 254
-}, ref.types.int);
-Module.alignment = 4;
-
 var AccMma8452qCutoffFreq = new Enum({
   'HIGHEST': 0,
   'HIGH': 1,
@@ -303,24 +258,57 @@ var GattCharWriteType = new Enum({
 }, ref.types.int);
 GattCharWriteType.alignment = 4;
 
+var GyroBmi160Range = new Enum({
+  '_2000dps': 0,
+  '_1000dps': 1,
+  '_500dps': 2,
+  '_250dps': 3,
+  '_125dps': 4
+}, ref.types.int);
+GyroBmi160Range.alignment = 4;
+
+var AccMma8452qRange = new Enum({
+  '_2G': 0,
+  '_4G': 1,
+  '_8G': 2
+}, ref.types.int);
+AccMma8452qRange.alignment = 4;
+
+var Module = new Enum({
+  'SWITCH': 1,
+  'LED': 2,
+  'ACCELEROMETER': 3,
+  'TEMPERATURE': 4,
+  'GPIO': 5,
+  'NEO_PIXEL': 6,
+  'IBEACON': 7,
+  'HAPTIC': 8,
+  'DATA_PROCESSOR': 9,
+  'EVENT': 10,
+  'LOGGING': 11,
+  'TIMER': 12,
+  'I2C': 13,
+  'MACRO': 15,
+  'CONDUCTANCE': 16,
+  'SETTINGS': 17,
+  'BAROMETER': 18,
+  'GYRO': 19,
+  'AMBIENT_LIGHT': 20,
+  'MAGNETOMETER': 21,
+  'HUMIDITY': 22,
+  'COLOR_DETECTOR': 23,
+  'PROXIMITY': 24,
+  'SENSOR_FUSION': 25,
+  'DEBUG': 254
+}, ref.types.int);
+Module.alignment = 4;
+
 var GpioPinChangeType = new Enum({
   'RISING': 1,
   'FALLING': 2,
   'ANY': 3
 }, ref.types.int);
 GpioPinChangeType.alignment = 4;
-
-var SensorOrientation = new Enum({
-  'FACE_UP_PORTRAIT_UPRIGHT': 0,
-  'FACE_UP_PORTRAIT_UPSIDE_DOWN': 1,
-  'FACE_UP_LANDSCAPE_LEFT': 2,
-  'FACE_UP_LANDSCAPE_RIGHT': 3,
-  'FACE_DOWN_PORTRAIT_UPRIGHT': 4,
-  'FACE_DOWN_PORTRAIT_UPSIDE_DOWN': 5,
-  'FACE_DOWN_LANDSCAPE_LEFT': 6,
-  'FACE_DOWN_LANDSCAPE_RIGHT': 7
-}, ref.types.int);
-SensorOrientation.alignment = 4;
 
 var NeoPixelRotDirection = new Enum({
   'TOWARDS': 0,
@@ -350,9 +338,23 @@ var DataTypeId = new Enum({
   'CORRECTED_CARTESIAN_FLOAT': 9,
   'OVERFLOW_STATE': 10,
   'SENSOR_ORIENTATION': 11,
-  'STRING': 12
+  'STRING': 12,
+  'LOGGING_TIME': 13,
+  'BTLE_ADDRESS': 14
 }, ref.types.int);
 DataTypeId.alignment = 4;
+
+var SensorOrientation = new Enum({
+  'FACE_UP_PORTRAIT_UPRIGHT': 0,
+  'FACE_UP_PORTRAIT_UPSIDE_DOWN': 1,
+  'FACE_UP_LANDSCAPE_LEFT': 2,
+  'FACE_UP_LANDSCAPE_RIGHT': 3,
+  'FACE_DOWN_PORTRAIT_UPRIGHT': 4,
+  'FACE_DOWN_PORTRAIT_UPSIDE_DOWN': 5,
+  'FACE_DOWN_LANDSCAPE_LEFT': 6,
+  'FACE_DOWN_LANDSCAPE_RIGHT': 7
+}, ref.types.int);
+SensorOrientation.alignment = 4;
 
 var AccBoschRange = new Enum({
   '_2G': 0,
@@ -575,6 +577,11 @@ var GpioAnalogReadParameters = Struct({
   'delay_us': ref.types.uint16
 });
 
+var BtleAddress = Struct({
+  'address_type': ref.types.uint8,
+  'address': ArrayUByte_6
+});
+
 var ModuleInfo = Struct({
   'name': ref.types.CString,
   'extra': ref.refType(ref.types.uint8),
@@ -592,27 +599,9 @@ var DeviceInformation = Struct({
   'hardware_revision': ref.types.CString
 });
 
-var BtleAddress = Struct({
-  'address_type': ref.types.uint8,
-  'address': ArrayUByte_6
-});
-
-var Tcs34725ColorAdc = Struct({
-  'clear': ref.types.uint16,
-  'red': ref.types.uint16,
-  'green': ref.types.uint16,
-  'blue': ref.types.uint16
-});
-
-var BatteryState = Struct({
-  'voltage': ref.types.uint16,
-  'charge': ref.types.uint8
-});
-
-var CartesianFloat = Struct({
-  'x': ref.types.float,
-  'y': ref.types.float,
-  'z': ref.types.float
+var OverflowState = Struct({
+  'length': ref.types.uint16,
+  'assert_en': ref.types.uint8
 });
 
 var FnVoid_VoidP_UInt_UInt = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.types.uint32, ref.types.uint32]);
@@ -622,6 +611,12 @@ var LogDownloadHandler = Struct({
   'received_progress_update': FnVoid_VoidP_UInt_UInt,
   'received_unknown_entry': FnVoid_VoidP_UByte_Long_UByteP_UByte,
   'received_unhandled_entry': FnVoid_VoidP_DataP
+});
+
+var CartesianFloat = Struct({
+  'x': ref.types.float,
+  'y': ref.types.float,
+  'z': ref.types.float
 });
 
 var FnVoid_VoidP = ffi.Function(ref.types.void, [ref.refType(ref.types.void)]);
@@ -640,6 +635,41 @@ var GattChar = Struct({
   'service_uuid_low': ref.types.uint64,
   'uuid_high': ref.types.uint64,
   'uuid_low': ref.types.uint64
+});
+
+var LedPattern = Struct({
+  'high_intensity': ref.types.uint8,
+  'low_intensity': ref.types.uint8,
+  'rise_time_ms': ref.types.uint16,
+  'high_time_ms': ref.types.uint16,
+  'fall_time_ms': ref.types.uint16,
+  'pulse_duration_ms': ref.types.uint16,
+  'delay_time_ms': ref.types.uint16,
+  'repeat_count': ref.types.uint8
+});
+
+var LoggingTime = Struct({
+  'epoch': ref.types.int64,
+  'reset_uid': ref.types.uint8
+});
+
+var CorrectedCartesianFloat = Struct({
+  'x': ref.types.float,
+  'y': ref.types.float,
+  'z': ref.types.float,
+  'accuracy': ref.types.uint8
+});
+
+var BatteryState = Struct({
+  'voltage': ref.types.uint16,
+  'charge': ref.types.uint8
+});
+
+var Tcs34725ColorAdc = Struct({
+  'clear': ref.types.uint16,
+  'red': ref.types.uint16,
+  'green': ref.types.uint16,
+  'blue': ref.types.uint16
 });
 
 var DataSignal = ref.types.void;
@@ -669,37 +699,14 @@ var Quaternion = Struct({
   'z': ref.types.float
 });
 
-var LedPattern = Struct({
-  'high_intensity': ref.types.uint8,
-  'low_intensity': ref.types.uint8,
-  'rise_time_ms': ref.types.uint16,
-  'high_time_ms': ref.types.uint16,
-  'fall_time_ms': ref.types.uint16,
-  'pulse_duration_ms': ref.types.uint16,
-  'delay_time_ms': ref.types.uint16,
-  'repeat_count': ref.types.uint8
-});
-
-var CorrectedCartesianFloat = Struct({
-  'x': ref.types.float,
-  'y': ref.types.float,
-  'z': ref.types.float,
-  'accuracy': ref.types.uint8
-});
-
-var OverflowState = Struct({
-  'length': ref.types.uint16,
-  'assert_en': ref.types.uint8
-});
-
 function Const() {
 }
 Const.SENSOR_FUSION_CALIBRATION_ACCURACY_LOW = 1;
-Const.LED_REPEAT_INDEFINITELY = 255;
-Const.ACC_ACCEL_X_AXIS_INDEX = 0;
 Const.ADDRESS_TYPE_PRIVATE_NON_RESOLVABLE = 3;
 Const.STATUS_ERROR_ENABLE_NOTIFY = 64;
 Const.SETTINGS_BATTERY_CHARGE_INDEX = 1;
+Const.LED_REPEAT_INDEFINITELY = 255;
+Const.ACC_ACCEL_X_AXIS_INDEX = 0;
 Const.ADDRESS_TYPE_PRIVATE_RESOLVABLE = 2;
 Const.MODULE_BARO_TYPE_BMP280 = 0;
 Const.SENSOR_FUSION_CALIBRATION_ACCURACY_MEDIUM = 2;
@@ -856,13 +863,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param board     Board the accelerometer is on
  */
   'mbl_mw_acc_stop': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Writes data via the spi bus
- * @param board             Board to communicate with
- * @param parameters        Parameters configuring the read
- */
-  'mbl_mw_spi_write': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(SpiParameters)]],
 
 /**
  * Writes the configuration to the sensor
@@ -1264,189 +1264,10 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_bosch_enable_orientation_detection': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Disables acceleration sampling
- * @param board     Board to disable acceleration sampling on
- */
-  'mbl_mw_acc_disable_acceleration_sampling': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Sets the iBeacon advertising receiving power
- * @param board         Pointer to the board to send the command to
- * @param rx_power      New advertising receiving power
- */
-  'mbl_mw_ibeacon_set_rx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
-
-/**
- * Sets the iBeacon advertising transmitting power
- * @param board         Pointer to the board to send the command to
- * @param tx_power      New advertising transmitting power
- */
-  'mbl_mw_ibeacon_set_tx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
-
-/**
  * Writes the orientation detection settings to the board
  * @param board     Calling object
  */
   'mbl_mw_acc_bosch_write_orientation_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Sets the sensor integration time
- * @param board     Pointer to the board to modify
- * @param integration_time      Integration time value to set
- */
-  'mbl_mw_als_ltr329_set_integration_time': [ref.types.void, [ref.refType(MetaWearBoard), AlsLtr329IntegrationTime]],
-
-/**
- * Drives a buzzer
- * @param board             Pointer to the board to send the command to
- * @param pulse_width_ms    How long to run the buzzer, in milliseconds
- */
-  'mbl_mw_haptic_start_buzzer': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
-
-/**
- * Retrieves the data signal representing i2c data.  The data signal is identified by the id value and if the id is not present, 
- * a new data signal will be created using the length parameter. 
- * @param board         Board the i2c bus resides on
- * @param length        Number of bytes to read
- * @param id            Numerical value identifying the data
- * @return Pointer to the i2c data signal
- */
-  'mbl_mw_i2c_get_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8]],
-
-/**
- * Modifies the magnitude that allows data through
- * @param delta             Delta processor to modify
- * @param magnitude         Min distance from the reference value to allow the input to pass
- * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
- * a non-delta processor was passed in
- */
-  'mbl_mw_dataprocessor_delta_modify_magnitude': [ref.types.int32, [ref.refType(DataProcessor), ref.types.float]],
-
-/**
- * Stops playing LED patterns and clears all pattern configurations
- * @param board             Pointer to the board to send the command to
- */
-  'mbl_mw_led_stop_and_clear': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Deserializes API state.  This function must be executed before calling mbl_mw_metawearboard_initialize.
- * @param board         Board to deserialize
- * @param state         Byte array holding the the information state
- * @param size          Byte array size
- * @return MBL_MW_STATUS_OK if successful, MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT if failed
- */
-  'mbl_mw_metawearboard_deserialize': [ref.types.int32, [ref.refType(MetaWearBoard), ref.refType(ref.types.uint8), ref.types.uint32]],
-
-/**
- * Clears pixel states on a strand
- * @param board     Pointer to the board to send the command to
- * @param strand    Strand number to clear
- * @param start     Pixel index to start clearing from
- * @param end       Pixel index to clear to, inclusive
- */
-  'mbl_mw_neopixel_clear': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8]],
-
-/**
- * Pulls the current accelerometer output data rate and data range from the sensor
- * @param board         Calling object
- * @param context       Pointer to additional data for the callback function
- * @param completed     Callback function that is executed when the task is finished
- */
-  'mbl_mw_acc_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
-
-/**
- * Returns information about the onboard modules
- * @param board             Calling object
- * @param size              Pointer to where the size of the returned array will be written to
- * @return Array of info objects
- */
-  'mbl_mw_metawearboard_get_module_info': [ref.refType(ModuleInfo), [ref.refType(MetaWearBoard), ref.refType(ref.types.uint32)]],
-
-/**
- * Create a multi-value comparator for signed comparisons.  This feature is only available on firmware v1.2.3 and later.  A pointer representing the 
- * processor will be passed back to the user via a callback function.
- * @param source                Data signal providing the input
- * @param op                    Comparison operation to execute
- * @param mode                  Processor output mode
- * @param references            Array of reference values to compare against
- * @param references_length     Number of elements in the references array
- * @param context               Pointer to additional data for the callback function
- * @param processor_created     Callback function to be executed when the processor is created
- */
-  'mbl_mw_dataprocessor_multi_comparator_create_signed': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ComparatorMode, ArrayFloat, ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
-
-/**
- * Retrieves supported characteristics from the Device Information service.  
- * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
- * @return Struct holding the characteristics
- */
-  'mbl_mw_metawearboard_get_device_information': [ref.refType(DeviceInformation), [ref.refType(MetaWearBoard)]],
-
-/**
- * Writes data via the i2c bus
- * @param board             Board the i2c bus resides on
- * @param device_addr       Device to write to
- * @param register_addr     Address of the register to write
- * @param value             Payload, as a byte array
- * @param length            Number of bytes
- */
-  'mbl_mw_i2c_write': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.refType(ref.types.uint8), ref.types.uint8]],
-
-/**
- * Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
- * @param board         Board to serialize
- * @param size          Pointer to where the size of the returned byte array will be written to
- * @return Byte array of the serialized state
- */
-  'mbl_mw_metawearboard_serialize': [ref.refType(ref.types.uint8), [ref.refType(MetaWearBoard), ref.refType(ref.types.uint32)]],
-
-/**
- * Set the orientation calculation mode
- * @param board         Calling object
- * @param delay         Time, in milliseconds, for which the sensor's orientation must remain in the new position 
- *                      before a position change is triggered
- */
-  'mbl_mw_acc_mma8452q_set_orientation_delay': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
-
-/**
- * Checks module type i.e. what kind of accelerometer is being used  
- * @param board         Board to check
- * @param module        Module to lookup
- * @return Module type used by the board, MBL_MW_MODULE_TYPE_NA if module is not available
- * @see MBL_MW_MODULE_ACC_TYPE_MMA8452Q
- * @see MBL_MW_MODULE_ACC_TYPE_BMI160
- */
-  'mbl_mw_metawearboard_lookup_module': [ref.types.int32, [ref.refType(MetaWearBoard), Module]],
-
-/**
- * Retrieves a data signal representing digital data
- * @param board     Board to receive data from
- * @param pin       GPIO pin to read
- */
-  'mbl_mw_gpio_get_digital_input_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard), ref.types.uint8]],
-
-/**
- * Sets the iBeacon advertising UUID
- * @param board         Pointer to the board to send the command to
- * @param ad_uuid       Byte representation of the UUID in little endian ordering
- */
-  'mbl_mw_ibeacon_set_uuid': [ref.types.void, [ref.refType(MetaWearBoard), ArrayUByte_16]],
-
-/**
- * Manually configure the sensor, only for advanced users.  It is recommended that users use one of the preset configurations.
- * @param board         Calling object
- * @param xy_reps       Repetitions on the x/y-axis
- * @param z_reps        Repetitions on the z-axis
- * @param odr           Sensor data rate
- */
-  'mbl_mw_mag_bmm150_configure': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16, ref.types.uint16, MagBmm150Odr]],
-
-/**
- * Retrieves the data signal representing data from the BMI160 step detector
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to the board's BMI160 step detector data signal
- */
-  'mbl_mw_acc_bmi160_get_step_detector_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
  * Set the hysteresis offset for portrait/landscape detection
@@ -1456,26 +1277,23 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_bosch_set_orientation_hysteresis': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.float]],
 
 /**
- * Writes the led pattern to the board
+ * Disables the BMI160 step detector
  * @param board     Pointer to the board to send the command to
- * @param pattern   Pointer to the pattern attributes to write to the board
- * @param color     Color the pattern is configuring
  */
-  'mbl_mw_led_write_pattern': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(LedPattern), LedColor]],
+  'mbl_mw_acc_bmi160_disable_step_detector': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Resets the running average
- * @param average       Average processor to reset
- * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
- * a non-average processor was passed in
+ * Enables the BMI160 step counter
+ * @param board     Board to modify
  */
-  'mbl_mw_dataprocessor_average_reset': [ref.types.int32, [ref.refType(DataProcessor)]],
+  'mbl_mw_acc_bmi160_enable_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Starts advertising
- * @param board         Board to start btle advertisement
+ * Sets the operational mode of the step counter
+ * @param board     Board to modify
+ * @param mode      New operation mode
  */
-  'mbl_mw_settings_start_advertising': [ref.types.void, [ref.refType(MetaWearBoard)]],
+  'mbl_mw_acc_bmi160_set_step_counter_mode': [ref.types.void, [ref.refType(MetaWearBoard), AccBmi160StepCounterMode]],
 
 /**
  * Sets the advertisement name
@@ -1519,364 +1337,10 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_event_get_owner': [ref.refType(MetaWearBoard), [ref.refType(Event)]],
 
 /**
- * Subscribe to the data produced by the signal
- * @param signal                Calling object
- * @param context               Pointer to additional data for the callback function
- * @param data_handler          Callback function to handle data received from the signal
+ * Starts advertising
+ * @param board         Board to start btle advertisement
  */
-  'mbl_mw_anonymous_datasignal_subscribe': [ref.types.void, [ref.refType(AnonymousDataSignal), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
-
-/**
- * Sets advertising transmitting power.  If a non valid value is set, the nearest valid value will be used instead
- * @param board         Board to set the TX power
- * @param tx_power      Valid values are: 4, 0, -4, -8, -12, -16, -20, -30
- */
-  'mbl_mw_settings_set_tx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
-
-/**
- * Retrieves the data signal representing BMI160 rotation data
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to the board's BMI160 rotation data signal
- */
-  'mbl_mw_gyro_bmi160_get_rotation_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
-
-/**
- * Create a sample delay processor.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
- * @param source                Data signal providing the input for the processor
- * @param bin_size              Number of samples to hold before letting data through
- * @param context               Pointer to additional data for the callback function
- * @param processor_created     Callback function to be executed when the processor is created
- */
-  'mbl_mw_dataprocessor_sample_create': [ref.types.int32, [ref.refType(DataSignal), ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
-
-/**
- * Retrieves the data signal representing a single read from a Bosch barometer
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to the board's pressure data signal
- */
-  'mbl_mw_baro_bosch_get_pressure_read_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
-
-/**
- * Modify the bin size of a sample delay processor
- * @param sample_delay          Sample processor to modify
- * @param bin_size              Number of samples to hold before letting data through
- * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
- * a non sample delay processor was passed in
- */
-  'mbl_mw_dataprocessor_sample_modify_bin_size': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint8]],
-
-/**
- * Sets the iBeacon advertising major number
- * @param board     Pointer to the board to send the command to
- * @param major     DataSignal output to use as the new major number
- */
-  'mbl_mw_ibeacon_set_major_signal': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(DataSignal)]],
-
-/**
- * Creates a time delay processor.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
- * @param source                Data signal providing the input for the processor
- * @param mode                  Operation mode of the processor
- * @param period                How often to allow data through, in milliseconds
- * @param context               Pointer to additional data for the callback function
- * @param processor_created     Callback function to be executed when the processor is created
- */
-  'mbl_mw_dataprocessor_time_create': [ref.types.int32, [ref.refType(DataSignal), TimeMode, ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
-
-/**
- * Removes the timer from the board
- * @param timer     Timer to remove
- */
-  'mbl_mw_timer_remove': [ref.types.void, [ref.refType(Timer)]],
-
-/**
- * Initializes memory on the MetaWear board for a NeoPixel strand with a fast operating speed (800 KHz)
- * @param board     Pointer to the board to send the command to
- * @param strand    Strand number (id) to initialize, can be in the range [0, 2]
- * @param ordering  Color ordering format
- * @param gpio_pin  GPIO pin the strand's data pin is connected to
- * @param n_pixels  Number of pixels to allocate memory for
- */
-  'mbl_mw_neopixel_init_fast_strand': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8, NeoPixelColorOrdering]],
-
-/**
- * Sets the full scale range.  IF an invalid range is used, the closet valid value will be used.
- * @param board     Board to configure
- * @param range     Sampling range, in g's
- */
-  'mbl_mw_acc_set_range': [ref.types.float, [ref.refType(MetaWearBoard), ref.types.float]],
-
-/**
- * Ends command recording.  This function is non-blocking and will asynchronously alert the caller 
- * when the operation is completed.
- * @param event                 Event to end recording for
- * @param context               Pointer to additional data for the callback function
- * @param commands_recorded     Callback function to be executed when commands have been recorded
- */
-  'mbl_mw_event_end_record': [ref.types.void, [ref.refType(Event), ref.refType(ref.types.void), FnVoid_VoidP_EventP_Int]],
-
-/**
- * Reads the internal queues' current usage statistics; data is returned as a byte array.  
- * If feature is unspported, nullptr will be passed to the `handler` parameter
- * @param board     Calling object
- * @param context   Pointer to additional data for the callback function
- * @param handler   Callback function for handling the received data
- */
-  'mbl_mw_debug_read_schedule_queue_usage': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
-
-/**
- * Sets the photodiode that responds to light
- * @param board         Board to modify
- * @param channel       New receiver channel to use
- */
-  'mbl_mw_proximity_tsl2671_set_receiver_channel': [ref.types.void, [ref.refType(MetaWearBoard), ProximityTsl2671Channel]],
-
-/**
- * Starts the DFU process and updloads the given file to the device
- * @param board         Calling object
- * @param delegate      Struct the function will forward DFU progress updates to
- * @param filename      Path to firmware bin file
- */
-  'mbl_mw_metawearboard_perform_dfu': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(DfuDelegate), ref.types.CString]],
-
-/**
- * Enables/disables stack overflow assertion.  Function will do nothing if feature is unsupported.
- * @param board     Calling object
- * @param enable    0 to disable, non-zero value to enable
- */
-  'mbl_mw_debug_set_stack_overflow_assertion': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
-
-/**
- * Sets the rotation range
- * @param board     Pointer to the board to modify
- * @param range     New rotation range
- */
-  'mbl_mw_gyro_bmi160_set_range': [ref.types.void, [ref.refType(MetaWearBoard), GyroBmi160Range]],
-
-/**
- * Generates a string identifying the data chain the logger is receiving data from.  This string is matched with the 
- * output of mbl_mw_anonymous_datasignal_get_identifier.
- * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
- * @param logger                Calling object
- */
-  'mbl_mw_logger_generate_identifier': [ref.types.CString, [ref.refType(DataLogger)]],
-
-/**
- * Create a comparator processor where signed/unsigned is inferred.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
- * @param source                Data signal providing the input for the processor
- * @param op                    Comparison operation to execute
- * @param reference             Reference value to compare the input to
- * @param context               Pointer to additional data for the callback function
- * @param processor_created     Callback function to be executed when the processor is created
- */
-  'mbl_mw_dataprocessor_comparator_create': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
-
-/**
- * Sets the advertising interval
- * @param board         Board to set the ad interval
- * @param interval      Advertisement interval, between [0, 65535] milliseconds
- * @param timeout       Advertisement timeout, between [0, 180] seconds where 0 indicates no timeout
- */
-  'mbl_mw_settings_set_ad_interval': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16, ref.types.uint8]],
-
-/**
- * Enables iBeacon mode.  You will need to disconnect from the board to 
- * advertise as an iBeacon
- * @param board     Pointer to the board to send the command to
- */
-  'mbl_mw_ibeacon_enable': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Sets the reference value of the processor.
- * @param delta                 Delta processor to modify
- * @param previous_value        Min distance from the reference value to allow the input to pass
- * @return MBL_MW_STATUS_OK if processor state was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
- * a non-delta processor was passed in
- */
-  'mbl_mw_dataprocessor_delta_set_reference': [ref.types.int32, [ref.refType(DataProcessor), ref.types.float]],
-
-/**
- * Modifies the multi-value comparator, changing the operation and reference values.  This feature is only available on firmware v1.2.3 and later.
- * @param comparator            Comparator processor to modify
- * @param op                    New comparison operation
- * @param references            Array of new reference values
- * @param references_length     Number of elements in the references array
- * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
- * a non-comparator processor was passed in
- */
-  'mbl_mw_dataprocessor_multi_comparator_modify': [ref.types.int32, [ref.refType(DataProcessor), ComparatorOperation, ArrayFloat, ref.types.uint8]],
-
-/**
- * Places the board in a powered down state after the next reset.  When in power save mode, press the switch 
- * or plug in the USB charger to wake the board up.
- * @param board     Calling object
- */
-  'mbl_mw_debug_enable_power_save': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Creates an instance of the MblMwMetaWearBoard struct
- * @param connection    Connection struct the new MblMwMetaWearBoard variable will use for btle communication
- * @return Pointer to the newly created struct
- */
-  'mbl_mw_metawearboard_create': [ref.refType(MetaWearBoard), [ref.refType(BtleConnection)]],
-
-/**
- * Reads data from sensor represented by the data signal.  Data is forwarded to the callback function 
- * assigned by the mbl_mw_datasignal_subscribe function.  This variant is for reads that require additional parameters.  
- * @param signal        Data signal to read from
- * @param parameters    Additional parameters required for the read operation
- */
-  'mbl_mw_datasignal_read_with_parameters': [ref.types.void, [ref.refType(DataSignal), ref.refType(ref.types.void)]],
-
-/**
- * Sets the iBeacon advertising minor number
- * @param board     Pointer to the board to send the command to
- * @param minor     New advertising minor number
- */
-  'mbl_mw_ibeacon_set_minor': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
-
-/**
- * Restarts the board in bootloader mode
- * @param board     Calling object
- */
-  'mbl_mw_debug_jump_to_bootloader': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Instructs the board to terminate the connection
- * @param board     Calling object
- */
-  'mbl_mw_debug_disconnect': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Stops a timer
- * @param timer     Timer to stop
- */
-  'mbl_mw_timer_stop': [ref.types.void, [ref.refType(Timer)]],
-
-/**
- * Enables strand holding which will not refresh with any LED changes until the hold is disabled.  
- * This let you to form complex LED patterns without having the strand refresh with partial changes.
- * @param board     Pointer to the board to send the command to
- * @param strand    Strand number (id) to hold
- */
-  'mbl_mw_neopixel_enable_hold': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
-
-/**
- * Frees allocated memory
- * @param ptr   Pointer to the memory to free
- */
-  'mbl_mw_memory_free': [ref.types.void, [ref.refType(ref.types.void)]],
-
-/**
- * Create a passthrough processor.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
- * @param source                Data signal providing the input for the processor
- * @param mode                  Processor's operation mode
- * @param count                 Internal count to initial the processor with
- * @param context               Pointer to additional data for the callback function
- * @param processor_created     Callback function to be executed when the processor is created
- */
-  'mbl_mw_dataprocessor_passthrough_create': [ref.types.int32, [ref.refType(DataSignal), PassthroughMode, ref.types.uint16, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
-
-/**
- * Pauses the patterns
- * @param board     Pointer to the board to send the command to
- */
-  'mbl_mw_led_pause': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Sets pixel color
- * @param board     Pointer to the board to send the command to
- * @param strand    Strand number the pixel is on
- * @param pixel     Index of the pixel
- * @param red       Red value, between [0, 255]
- * @param green     Green value, between [0, 255]
- * @param blue      Blue value, between [0, 255]
- */
-  'mbl_mw_neopixel_set_color': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8, ref.types.uint8, ref.types.uint8]],
-
-/**
- * Sets the iBeacon advertising major number
- * @param board     Pointer to the board to send the command to
- * @param major     New advertising major number
- */
-  'mbl_mw_ibeacon_set_major': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
-
-/**
- * Unsubscribes from a data stream
- * @param signal    Data signal to unsubscribe from
- */
-  'mbl_mw_datasignal_unsubscribe': [ref.types.void, [ref.refType(DataSignal)]],
-
-/**
- * Overwrites the current count with a new value
- * @param counter           Counter processor to modify
- * @param new_count         New count value
- * @return  MBL_MW_STATUS_OK if processor state was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if a non-counter 
- *          was passed in
- */
-  'mbl_mw_dataprocessor_counter_set_state': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint32]],
-
-/**
- * Retrieves an individual value from a multi-valued datasignal i.e. MblMwCartesianFloat datasignal is 3 float values.  
- * These individual signals can use the full suite of 
- * @param signal                Data signal to lookup
- * @param index                 Index of the component to return
- * @return Signal component, null if signal is signle valued
- */
-  'mbl_mw_datasignal_get_component': [ref.refType(DataSignal), [ref.refType(DataSignal), ref.types.uint8]],
-
-/**
- * Remove all macros on the flash memory.  The erase operation will not be performed until
- * you disconnect from the board.  If you wish to reset the board after the erase operation,
- * use the mbl_mw_debug_reset_after_gc method.
- * @param board     Calling object
- */
-  'mbl_mw_macro_erase_all': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Sets the conductance measurment mode
- * @param board     Pointer to the board to modify
- * @param range     Range of the conductance values
- */
-  'mbl_mw_conductance_set_range': [ref.types.void, [ref.refType(MetaWearBoard), ConductanceRange]],
-
-/**
- * Removes a data processor and its consumers from the board
- * @param processor         Processor to remove
- */
-  'mbl_mw_dataprocessor_remove': [ref.types.void, [ref.refType(DataProcessor)]],
-
-/**
- * Sets scan response
- * @param board         Board to modify
- * @param response      Scan response as a byte array
- * @param len           Length of the array
- */
-  'mbl_mw_settings_set_scan_response': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.uint8), ref.types.uint8]],
-
-/**
- * Variant of acceleration data that packs multiple data samples into 1 BLE packet to increase the
- * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
- * @return Pointer to the data singal
- */
-  'mbl_mw_acc_get_packed_acceleration_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
-
-/**
- * Reads data from sensor represented by the data signal.  Data is forwarded to the callback function 
- * assigned by the mbl_mw_datasignal_subscribe function
- * @param signal    Data signal to read from
- */
-  'mbl_mw_datasignal_read': [ref.types.void, [ref.refType(DataSignal)]],
-
-/**
- * Begin macro recording.  Every MetaWear command issued will be recorded to the flash memory.
- * @param board             Calling object
- * @param exec_on_boot      True if the commands should be executed when the board powers on
- */
-  'mbl_mw_macro_record': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+  'mbl_mw_settings_start_advertising': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
  * Reads the current state of the board and creates anonymous data signals based on what data is being logged,  If this task failed, a 
@@ -1925,47 +1389,506 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_logger_get_id': [ref.types.uint8, [ref.refType(DataLogger)]],
 
 /**
- * Execute the commands corresponding to the macro ID
- * @param board     Calling object
- * @param id        Numerical ID of the macro to execute
+ * Sets the rotation range
+ * @param board     Pointer to the board to modify
+ * @param range     New rotation range
  */
-  'mbl_mw_macro_execute': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+  'mbl_mw_gyro_bmi160_set_range': [ref.types.void, [ref.refType(MetaWearBoard), GyroBmi160Range]],
+
+/**
+ * Generates a string identifying the data chain the logger is receiving data from.  This string is matched with the 
+ * output of mbl_mw_anonymous_datasignal_get_identifier.
+ * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
+ * @param logger                Calling object
+ */
+  'mbl_mw_logger_generate_identifier': [ref.types.CString, [ref.refType(DataLogger)]],
+
+/**
+ * Create a comparator processor where signed/unsigned is inferred.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param op                    Comparison operation to execute
+ * @param reference             Reference value to compare the input to
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_comparator_create': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+
+/**
+ * Sets the advertising interval
+ * @param board         Board to set the ad interval
+ * @param interval      Advertisement interval, between [0, 65535] milliseconds
+ * @param timeout       Advertisement timeout, between [0, 180] seconds where 0 indicates no timeout
+ */
+  'mbl_mw_settings_set_ad_interval': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16, ref.types.uint8]],
+
+/**
+ * Sets the key register value.  This is a simple 4 byte scratch register.
+ * @param board     Board to receive data from
+ */
+  'mbl_mw_debug_set_key_register': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint32]],
+
+/**
+ * Enables iBeacon mode.  You will need to disconnect from the board to 
+ * advertise as an iBeacon
+ * @param board     Pointer to the board to send the command to
+ */
+  'mbl_mw_ibeacon_enable': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Sets the reference value of the processor.
+ * @param delta                 Delta processor to modify
+ * @param previous_value        Min distance from the reference value to allow the input to pass
+ * @return MBL_MW_STATUS_OK if processor state was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
+ * a non-delta processor was passed in
+ */
+  'mbl_mw_dataprocessor_delta_set_reference': [ref.types.int32, [ref.refType(DataProcessor), ref.types.float]],
+
+/**
+ * Instructs the board to terminate the connection
+ * @param board     Calling object
+ */
+  'mbl_mw_debug_disconnect': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Stops a timer
+ * @param timer     Timer to stop
+ */
+  'mbl_mw_timer_stop': [ref.types.void, [ref.refType(Timer)]],
+
+/**
+ * Remove all macros on the flash memory.  The erase operation will not be performed until
+ * you disconnect from the board.  If you wish to reset the board after the erase operation,
+ * use the mbl_mw_debug_reset_after_gc method.
+ * @param board     Calling object
+ */
+  'mbl_mw_macro_erase_all': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Sets the conductance measurment mode
+ * @param board     Pointer to the board to modify
+ * @param range     Range of the conductance values
+ */
+  'mbl_mw_conductance_set_range': [ref.types.void, [ref.refType(MetaWearBoard), ConductanceRange]],
+
+/**
+ * Removes a data processor and its consumers from the board
+ * @param processor         Processor to remove
+ */
+  'mbl_mw_dataprocessor_remove': [ref.types.void, [ref.refType(DataProcessor)]],
+
+/**
+ * Sets the photodiode that responds to light
+ * @param board         Board to modify
+ * @param channel       New receiver channel to use
+ */
+  'mbl_mw_proximity_tsl2671_set_receiver_channel': [ref.types.void, [ref.refType(MetaWearBoard), ProximityTsl2671Channel]],
+
+/**
+ * Enables/disables stack overflow assertion.  Function will do nothing if feature is unsupported.
+ * @param board     Calling object
+ * @param enable    0 to disable, non-zero value to enable
+ */
+  'mbl_mw_debug_set_stack_overflow_assertion': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Starts the DFU process and updloads the given file to the device
+ * @param board         Calling object
+ * @param delegate      Struct the function will forward DFU progress updates to
+ * @param filename      Path to firmware bin file
+ */
+  'mbl_mw_metawearboard_perform_dfu': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(DfuDelegate), ref.types.CString]],
+
+/**
+ * Stops playing LED patterns and clears all pattern configurations
+ * @param board             Pointer to the board to send the command to
+ */
+  'mbl_mw_led_stop_and_clear': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Deserializes API state.  This function must be executed before calling mbl_mw_metawearboard_initialize.
+ * @param board         Board to deserialize
+ * @param state         Byte array holding the the information state
+ * @param size          Byte array size
+ * @return MBL_MW_STATUS_OK if successful, MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT if failed
+ */
+  'mbl_mw_metawearboard_deserialize': [ref.types.int32, [ref.refType(MetaWearBoard), ref.refType(ref.types.uint8), ref.types.uint32]],
+
+/**
+ * Clears pixel states on a strand
+ * @param board     Pointer to the board to send the command to
+ * @param strand    Strand number to clear
+ * @param start     Pixel index to start clearing from
+ * @param end       Pixel index to clear to, inclusive
+ */
+  'mbl_mw_neopixel_clear': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8]],
+
+/**
+ * Pulls the current accelerometer output data rate and data range from the sensor
+ * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
+ * @param completed     Callback function that is executed when the task is finished
+ */
+  'mbl_mw_acc_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
+
+/**
+ * Returns information about the onboard modules
+ * @param board             Calling object
+ * @param size              Pointer to where the size of the returned array will be written to
+ * @return Array of info objects
+ */
+  'mbl_mw_metawearboard_get_module_info': [ref.refType(ModuleInfo), [ref.refType(MetaWearBoard), ref.refType(ref.types.uint32)]],
+
+/**
+ * Get the device boot time for a given reset_uid.  This reference time
+ * is automatically calulated at connection time.
+ * @param board                 Board to use
+ * @param reset_uid             Reset id
+ * @return Number of milliseconds since epoch that the given reset_uid occured
+ */
+  'mbl_mw_logging_get_reference_time': [ref.types.int64, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Set the orientation calculation mode
+ * @param board         Calling object
+ * @param mode          New calculation mode
+ */
+  'mbl_mw_acc_bosch_set_orientation_mode': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschOrientationMode]],
+
+/**
+ * Determines the board model of the currently connected device.  Only call this function after the board has been initialized.
+ * @return Friendly name representing the board model 
+ */
+  'mbl_mw_metawearboard_get_model_name': [ref.types.CString, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Set the device boot time for a given reset_uid.  This reference time
+ * is used to calcuated real timestamps from logged data.
+ * @param board                 Board to use
+ * @param reset_uid             Reset id
+ * @param reference_epoch       New reference epoch (in milliseconds) to use
+ */
+  'mbl_mw_logging_set_reference_time': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.int64]],
+
+/**
+ * Create a multi-value comparator for signed comparisons.  This feature is only available on firmware v1.2.3 and later.  A pointer representing the 
+ * processor will be passed back to the user via a callback function.
+ * @param source                Data signal providing the input
+ * @param op                    Comparison operation to execute
+ * @param mode                  Processor output mode
+ * @param references            Array of reference values to compare against
+ * @param references_length     Number of elements in the references array
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_multi_comparator_create_signed': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ComparatorMode, ArrayFloat, ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+
+/**
+ * Sends a raw command directly to the MetaWear.  Useful for testing.
+ * @param board     Calling object
+ * @param value     Value to send: [Module ID, Register ID, Optional Index, Data...]
+ * @param lenght    Size of the value array
+ */
+  'mbl_mw_debug_send_command': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.uint8), ref.types.uint8]],
+
+/**
+ * Set the accelerometer data range
+ * @param board         Calling object
+ * @param range         New data range of the accelerometer
+ */
+  'mbl_mw_sensor_fusion_set_acc_range': [ref.types.void, [ref.refType(MetaWearBoard), SensorFusionAccRange]],
+
+/**
+ * Variant of rotation data that packs multiple data samples into 1 BLE packet to increase the
+ * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
+ * @return Pointer to the data singal
+ */
+  'mbl_mw_gyro_bmi160_get_packed_rotation_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Subscribes to responses from the data logger
+ * @param logger                Logger to subscribe to
+ * @param context               Pointer to additional data for the callback function
+ * @param received_data         Callback function to handle data received from the logger
+ */
+  'mbl_mw_logger_subscribe': [ref.types.void, [ref.refType(DataLogger), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
+
+/**
+ * Retrieves supported characteristics from the Device Information service.  
+ * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
+ * @return Struct holding the characteristics
+ */
+  'mbl_mw_metawearboard_get_device_information': [ref.refType(DeviceInformation), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Places the board in a powered down state after the next reset.  When in power save mode, press the switch 
+ * or plug in the USB charger to wake the board up.
+ * @param board     Calling object
+ */
+  'mbl_mw_debug_enable_power_save': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Modifies the multi-value comparator, changing the operation and reference values.  This feature is only available on firmware v1.2.3 and later.
+ * @param comparator            Comparator processor to modify
+ * @param op                    New comparison operation
+ * @param references            Array of new reference values
+ * @param references_length     Number of elements in the references array
+ * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
+ * a non-comparator processor was passed in
+ */
+  'mbl_mw_dataprocessor_multi_comparator_modify': [ref.types.int32, [ref.refType(DataProcessor), ComparatorOperation, ArrayFloat, ref.types.uint8]],
+
+/**
+ * Writes data via the i2c bus
+ * @param board             Board the i2c bus resides on
+ * @param device_addr       Device to write to
+ * @param register_addr     Address of the register to write
+ * @param value             Payload, as a byte array
+ * @param length            Number of bytes
+ */
+  'mbl_mw_i2c_write': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.refType(ref.types.uint8), ref.types.uint8]],
+
+/**
+ * Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
+ * @param board         Board to serialize
+ * @param size          Pointer to where the size of the returned byte array will be written to
+ * @return Byte array of the serialized state
+ */
+  'mbl_mw_metawearboard_serialize': [ref.refType(ref.types.uint8), [ref.refType(MetaWearBoard), ref.refType(ref.types.uint32)]],
+
+/**
+ * Set the orientation calculation mode
+ * @param board         Calling object
+ * @param delay         Time, in milliseconds, for which the sensor's orientation must remain in the new position 
+ *                      before a position change is triggered
+ */
+  'mbl_mw_acc_mma8452q_set_orientation_delay': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
+
+/**
+ * Checks module type i.e. what kind of accelerometer is being used  
+ * @param board         Board to check
+ * @param module        Module to lookup
+ * @return Module type used by the board, MBL_MW_MODULE_TYPE_NA if module is not available
+ * @see MBL_MW_MODULE_ACC_TYPE_MMA8452Q
+ * @see MBL_MW_MODULE_ACC_TYPE_BMI160
+ */
+  'mbl_mw_metawearboard_lookup_module': [ref.types.int32, [ref.refType(MetaWearBoard), Module]],
+
+/**
+ * Starts a timer
+ * @param timer     Timer to start
+ */
+  'mbl_mw_timer_start': [ref.types.void, [ref.refType(Timer)]],
+
+/**
+ * Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
+ * @param board         Board to initialize
+ * @param context       Pointer to additional data for the callback function
+ * @param initialized   Callback function to be executed when the board is initialized
+ */
+  'mbl_mw_metawearboard_initialize': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
+
+/**
+ * Writes the led pattern to the board
+ * @param board     Pointer to the board to send the command to
+ * @param pattern   Pointer to the pattern attributes to write to the board
+ * @param color     Color the pattern is configuring
+ */
+  'mbl_mw_led_write_pattern': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(LedPattern), LedColor]],
+
+/**
+ * Restarts the board in bootloader mode
+ * @param board     Calling object
+ */
+  'mbl_mw_debug_jump_to_bootloader': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Pulls the current gyro output data rate and data range from the sensor
+ * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
+ * @param completed     Callback function that is executed when the task is finished
+ */
+  'mbl_mw_gyro_bmi160_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
+
+/**
+ * Sets the output data rate.  If an invalid odr is used, the closest valid value will be used.
+ * @param board     Board to configure
+ * @param odr       Output data rate, in Hz
+ */
+  'mbl_mw_acc_set_odr': [ref.types.float, [ref.refType(MetaWearBoard), ref.types.float]],
+
+/**
+ * Disables the BMI160 step counter
+ * @param board     Board to modify
+ */
+  'mbl_mw_acc_bmi160_disable_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Starts data logging
+ * @param board                 Board to log data on
+ * @param overwrite             Non-zero if older entries will be overwritten
+ */
+  'mbl_mw_logging_start': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Writes the step counter configuration to the sensor
+ * @param board     Board to write to
+ */
+  'mbl_mw_acc_bmi160_write_step_counter_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Sets the output data rate for the BMI160 accelerometer
+ * @param board     Pointer to the board to modify
+ * @param odr       Output data rate value to assign
+ */
+  'mbl_mw_acc_bmi160_set_odr': [ref.types.void, [ref.refType(MetaWearBoard), AccBmi160Odr]],
+
+/**
+ * Creates an instance of the MblMwMetaWearBoard struct
+ * @param connection    Connection struct the new MblMwMetaWearBoard variable will use for btle communication
+ * @return Pointer to the newly created struct
+ */
+  'mbl_mw_metawearboard_create': [ref.refType(MetaWearBoard), [ref.refType(BtleConnection)]],
+
+/**
+ * Reads data from sensor represented by the data signal.  Data is forwarded to the callback function 
+ * assigned by the mbl_mw_datasignal_subscribe function.  This variant is for reads that require additional parameters.  
+ * @param signal        Data signal to read from
+ * @param parameters    Additional parameters required for the read operation
+ */
+  'mbl_mw_datasignal_read_with_parameters': [ref.types.void, [ref.refType(DataSignal), ref.refType(ref.types.void)]],
 
 /**
  * Sets the iBeacon advertising minor number
  * @param board     Pointer to the board to send the command to
- * @param minor     DataSignal output to use as the new minor number
+ * @param minor     New advertising minor number
  */
-  'mbl_mw_ibeacon_set_minor_signal': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(DataSignal)]],
+  'mbl_mw_ibeacon_set_minor': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
 
 /**
- * Retrieves the data signal representing acceleration data for the MMA8452Q accelerometer
+ * Sets the full scale range.  IF an invalid range is used, the closet valid value will be used.
+ * @param board     Board to configure
+ * @param range     Sampling range, in g's
+ */
+  'mbl_mw_acc_set_range': [ref.types.float, [ref.refType(MetaWearBoard), ref.types.float]],
+
+/**
+ * Reads the internal queues' current usage statistics; data is returned as a byte array.  
+ * If feature is unspported, nullptr will be passed to the `handler` parameter
+ * @param board     Calling object
+ * @param context   Pointer to additional data for the callback function
+ * @param handler   Callback function for handling the received data
+ */
+  'mbl_mw_debug_read_schedule_queue_usage': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
+
+/**
+ * Ends command recording.  This function is non-blocking and will asynchronously alert the caller 
+ * when the operation is completed.
+ * @param event                 Event to end recording for
+ * @param context               Pointer to additional data for the callback function
+ * @param commands_recorded     Callback function to be executed when commands have been recorded
+ */
+  'mbl_mw_event_end_record': [ref.types.void, [ref.refType(Event), ref.refType(ref.types.void), FnVoid_VoidP_EventP_Int]],
+
+/**
+ * Sets scan response
+ * @param board         Board to modify
+ * @param response      Scan response as a byte array
+ * @param len           Length of the array
+ */
+  'mbl_mw_settings_set_scan_response': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.uint8), ref.types.uint8]],
+
+/**
+ * Variant of acceleration data that packs multiple data samples into 1 BLE packet to increase the
+ * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
+ * @return Pointer to the data singal
+ */
+  'mbl_mw_acc_get_packed_acceleration_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Reads data from sensor represented by the data signal.  Data is forwarded to the callback function 
+ * assigned by the mbl_mw_datasignal_subscribe function
+ * @param signal    Data signal to read from
+ */
+  'mbl_mw_datasignal_read': [ref.types.void, [ref.refType(DataSignal)]],
+
+/**
+ * Begin macro recording.  Every MetaWear command issued will be recorded to the flash memory.
+ * @param board             Calling object
+ * @param exec_on_boot      True if the commands should be executed when the board powers on
+ */
+  'mbl_mw_macro_record': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Sets advertising transmitting power.  If a non valid value is set, the nearest valid value will be used instead
+ * @param board         Board to set the TX power
+ * @param tx_power      Valid values are: 4, 0, -4, -8, -12, -16, -20, -30
+ */
+  'mbl_mw_settings_set_tx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
+
+/**
+ * Retrieves the data signal representing BMI160 rotation data
  * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to the board's MMA8452Q acceleration data signal
+ * @return Pointer to the board's BMI160 rotation data signal
  */
-  'mbl_mw_acc_mma8452q_get_acceleration_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+  'mbl_mw_gyro_bmi160_get_rotation_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
- * Modify the configuration of a math processor, changing the right side value of the operation
- * @param math                  Math processor to modify
- * @param rhs                   New right hand side of the operation
+ * Create a sample delay processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param bin_size              Number of samples to hold before letting data through
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_sample_create': [ref.types.int32, [ref.refType(DataSignal), ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+
+/**
+ * Retrieves the data signal representing a single read from a Bosch barometer
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's pressure data signal
+ */
+  'mbl_mw_baro_bosch_get_pressure_read_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Modify the bin size of a sample delay processor
+ * @param sample_delay          Sample processor to modify
+ * @param bin_size              Number of samples to hold before letting data through
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
- * a non-math processor was passed in
+ * a non sample delay processor was passed in
  */
-  'mbl_mw_dataprocessor_math_modify_rhs': [ref.types.int32, [ref.refType(DataProcessor), ref.types.float]],
+  'mbl_mw_dataprocessor_sample_modify_bin_size': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint8]],
 
 /**
- * Check if the data signal can be explicitly read
- * @param signal    Data signal to check
- * @return Zero if not readable, non-zero if it is
+ * Removes the timer from the board
+ * @param timer     Timer to remove
  */
-  'mbl_mw_datasignal_is_readable': [ref.types.int32, [ref.refType(DataSignal)]],
+  'mbl_mw_timer_remove': [ref.types.void, [ref.refType(Timer)]],
 
 /**
- * Stops data logging
- * @param board                 Board to stop logging
+ * Initializes memory on the MetaWear board for a NeoPixel strand with a fast operating speed (800 KHz)
+ * @param board     Pointer to the board to send the command to
+ * @param strand    Strand number (id) to initialize, can be in the range [0, 2]
+ * @param ordering  Color ordering format
+ * @param gpio_pin  GPIO pin the strand's data pin is connected to
+ * @param n_pixels  Number of pixels to allocate memory for
  */
-  'mbl_mw_logging_stop': [ref.types.void, [ref.refType(MetaWearBoard)]],
+  'mbl_mw_neopixel_init_fast_strand': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8, NeoPixelColorOrdering]],
+
+/**
+ * Resets the running average
+ * @param average       Average processor to reset
+ * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
+ * a non-average processor was passed in
+ */
+  'mbl_mw_dataprocessor_average_reset': [ref.types.int32, [ref.refType(DataProcessor)]],
+
+/**
+ * Retrieves a data signal representing the key register value.  This is a simple
+ * 4 byte scratch register.
+ * @param board     Board to receive data from
+ */
+  'mbl_mw_debug_get_key_register_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
  * Enables command recording.  All MetaWear commands called after this point will be executed 
@@ -1995,6 +1918,200 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_logger_remove': [ref.types.void, [ref.refType(DataLogger)]],
 
 /**
+ * Stops data logging
+ * @param board                 Board to stop logging
+ */
+  'mbl_mw_logging_stop': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Ends macro recording.  An numerical id representing the macro will be passed to the callback function when 
+ * the operation is complete.
+ * @param board                 Calling object
+ * @param context               Pointer to additional data for the callback function
+ * @param commands_recorded     Callback function to be executed when the commands are recorded
+ */
+  'mbl_mw_macro_end_record': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
+
+/**
+ * Writes data via the spi bus
+ * @param board             Board to communicate with
+ * @param parameters        Parameters configuring the read
+ */
+  'mbl_mw_spi_write': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(SpiParameters)]],
+
+/**
+ * Retrieves a data signal representing the current logger time state.  This includes the
+ * reset_uid and time of boot.
+ * @param board                 Board to get time from
+ */
+  'mbl_mw_logging_get_time_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Issues a soft reset
+ * @param board     Calling object
+ */
+  'mbl_mw_debug_reset': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Downloads the log data
+ * @param board                     Board to download the log data from
+ * @param n_notifies                How many progress updates to send
+ * @param handler                   Handler for processing logger responses
+ */
+  'mbl_mw_logging_download': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.refType(LogDownloadHandler)]],
+
+/**
+ * Enables strand holding which will not refresh with any LED changes until the hold is disabled.  
+ * This let you to form complex LED patterns without having the strand refresh with partial changes.
+ * @param board     Pointer to the board to send the command to
+ * @param strand    Strand number (id) to hold
+ */
+  'mbl_mw_neopixel_enable_hold': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Frees allocated memory
+ * @param ptr   Pointer to the memory to free
+ */
+  'mbl_mw_memory_free': [ref.types.void, [ref.refType(ref.types.void)]],
+
+/**
+ * Sets pixel color
+ * @param board     Pointer to the board to send the command to
+ * @param strand    Strand number the pixel is on
+ * @param pixel     Index of the pixel
+ * @param red       Red value, between [0, 255]
+ * @param green     Green value, between [0, 255]
+ * @param blue      Blue value, between [0, 255]
+ */
+  'mbl_mw_neopixel_set_color': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8, ref.types.uint8, ref.types.uint8]],
+
+/**
+ * Unsubscribes from a data stream
+ * @param signal    Data signal to unsubscribe from
+ */
+  'mbl_mw_datasignal_unsubscribe': [ref.types.void, [ref.refType(DataSignal)]],
+
+/**
+ * Overwrites the current count with a new value
+ * @param counter           Counter processor to modify
+ * @param new_count         New count value
+ * @return  MBL_MW_STATUS_OK if processor state was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if a non-counter 
+ *          was passed in
+ */
+  'mbl_mw_dataprocessor_counter_set_state': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint32]],
+
+/**
+ * Retrieves an individual value from a multi-valued datasignal i.e. MblMwCartesianFloat datasignal is 3 float values.  
+ * These individual signals can use the full suite of 
+ * @param signal                Data signal to lookup
+ * @param index                 Index of the component to return
+ * @return Signal component, null if signal is signle valued
+ */
+  'mbl_mw_datasignal_get_component': [ref.refType(DataSignal), [ref.refType(DataSignal), ref.types.uint8]],
+
+/**
+ * Subscribe to the data produced by the signal
+ * @param signal                Calling object
+ * @param context               Pointer to additional data for the callback function
+ * @param data_handler          Callback function to handle data received from the signal
+ */
+  'mbl_mw_anonymous_datasignal_subscribe': [ref.types.void, [ref.refType(AnonymousDataSignal), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
+
+/**
+ * Execute the commands corresponding to the macro ID
+ * @param board     Calling object
+ * @param id        Numerical ID of the macro to execute
+ */
+  'mbl_mw_macro_execute': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Set the standby time for the BME280 barometer
+ * @param board     Pointer to the board to modify
+ * @param standby_time      Standby time value to set
+ */
+  'mbl_mw_baro_bme280_set_standby_time': [ref.types.void, [ref.refType(MetaWearBoard), BaroBme280StandbyTime]],
+
+/**
+ * Subscribes to a data stream, processing messages with the given handler
+ * @param signal                Data signal to subscribe to
+ * @param context               Pointer to additional data for the callback function
+ * @param received_data         Callback function to handle data received from the signal
+ */
+  'mbl_mw_datasignal_subscribe': [ref.types.void, [ref.refType(DataSignal), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
+
+/**
+ * Resets the BMI160 step counter
+ * @param board     Board to reset
+ */
+  'mbl_mw_acc_bmi160_reset_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Create a threshold processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param mode                  Processor output mode
+ * @param boundary              Limit that triggers an event when data crosses it
+ * @param hysteresis            Min distance between the limit and value to signal a successful crossing
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_threshold_create': [ref.types.int32, [ref.refType(DataSignal), ThresholdMode, ref.types.float, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+
+/**
+ * Creates a timer that will run indefinitely.  A pointer representing the timer will be passed to the user 
+ * through a callback function
+ * @param board             Board the timer belongs to
+ * @param period            How often to 
+ * @param delay             Zero if the tiemr should immediately fire, non-zero to delay the first event
+ * @param context           Pointer to additional data for the callback function
+ * @param received_timer    Callback function to be executed when the timer is created
+ */
+  'mbl_mw_timer_create_indefinite': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint32, ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_TimerP]],
+
+/**
+ * Generates a string identifying the data chain the anonymous data signal is receiving data from.
+ * @return String identifying the data chain
+ */
+  'mbl_mw_anonymous_datasignal_get_identifier': [ref.types.CString, [ref.refType(AnonymousDataSignal)]],
+
+/**
+ * Create a comparator processor specifically for a signed comparison.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param op                    Comparison operation to execute
+ * @param reference             Reference value to compare the input to
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_comparator_create_signed': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+
+/**
+ * Sets the digital output state
+ * @param board     Board the pin is on
+ * @param pin       GPIO pin to set
+ */
+  'mbl_mw_gpio_set_digital_output': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Enables the BMI160 step detector 
+ * @param board     Pointer to the board to send the command to
+ */
+  'mbl_mw_acc_bmi160_enable_step_detector': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Removes all data processors and timers from the MetaWear board
+ * @param board         Board to tear down
+ */
+  'mbl_mw_metawearboard_tear_down': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Checks if the board is initialized
+ * @param board     Board to check
+ * @return Zero if not initialized, non-zero if it is
+ */
+  'mbl_mw_metawearboard_is_initialized': [ref.types.int32, [ref.refType(MetaWearBoard)]],
+
+/**
  * Looks up the MblMwTimer object corresponding to the id
  * @param board             Board to search on
  * @param id                Numerical id to lookup
@@ -2021,35 +2138,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_logging_clear_entries': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Issues a soft reset
- * @param board     Calling object
- */
-  'mbl_mw_debug_reset': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Downloads the log data
- * @param board                     Board to download the log data from
- * @param n_notifies                How many progress updates to send
- * @param handler                   Handler for processing logger responses
- */
-  'mbl_mw_logging_download': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.refType(LogDownloadHandler)]],
-
-/**
- * Set the standby time for the BME280 barometer
- * @param board     Pointer to the board to modify
- * @param standby_time      Standby time value to set
- */
-  'mbl_mw_baro_bme280_set_standby_time': [ref.types.void, [ref.refType(MetaWearBoard), BaroBme280StandbyTime]],
-
-/**
- * Subscribes to a data stream, processing messages with the given handler
- * @param signal                Data signal to subscribe to
- * @param context               Pointer to additional data for the callback function
- * @param received_data         Callback function to handle data received from the signal
- */
-  'mbl_mw_datasignal_subscribe': [ref.types.void, [ref.refType(DataSignal), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
-
-/**
  * Writes the configuration to the LTR329 sensor
  * @param board     Pointer to the board to send the command to
  */
@@ -2063,15 +2151,12 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_logger_get_signal': [ref.refType(DataSignal), [ref.refType(DataLogger)]],
 
 /**
- * Create a math processor using signed operations.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
- * @param source                Data signal providing the input for the processor
- * @param op                    Math operation to compute
- * @param rhs                   Right hand side of the operation that requires 2 inputs
- * @param context               Pointer to additional data for the callback function
- * @param processor_created     Callback function to be executed when the processor is created
+ * Adds MAC Addresses for Whitelist filtering
+ * @param board         Board to modify
+ * @param index         Whitelist MAC address in range [1, 8], must start at 1 and go in increasing order
+ * @param address       Address to add
  */
-  'mbl_mw_dataprocessor_math_create_signed': [ref.types.int32, [ref.refType(DataSignal), MathOperation, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+  'mbl_mw_settings_get_whitelist_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard), ref.types.uint8]],
 
 /**
  * Looks up the MblMwDataLogger object corresponding to the id
@@ -2089,84 +2174,184 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_settings_get_battery_state_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
- * Set the accelerometer data range
- * @param board         Calling object
- * @param range         New data range of the accelerometer
+ * Creates a synthetic notification internally to the MetaWear system.  Useful for testing.
+ * @param board     Calling object
+ * @param value     Value to spoof: [Module ID, Register ID, Notifcation En, Optional Index, Data...]
+ * @param lenght    Size of the value array
  */
-  'mbl_mw_sensor_fusion_set_acc_range': [ref.types.void, [ref.refType(MetaWearBoard), SensorFusionAccRange]],
+  'mbl_mw_debug_spoof_notification': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.uint8), ref.types.uint8]],
 
 /**
- * Variant of rotation data that packs multiple data samples into 1 BLE packet to increase the
- * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
- * @return Pointer to the data singal
- */
-  'mbl_mw_gyro_bmi160_get_packed_rotation_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
-
-/**
- * Subscribes to responses from the data logger
- * @param logger                Logger to subscribe to
- * @param context               Pointer to additional data for the callback function
- * @param received_data         Callback function to handle data received from the logger
- */
-  'mbl_mw_logger_subscribe': [ref.types.void, [ref.refType(DataLogger), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
-
-/**
- * Sets the operational mode of the step counter
- * @param board     Board to modify
- * @param mode      New operation mode
- */
-  'mbl_mw_acc_bmi160_set_step_counter_mode': [ref.types.void, [ref.refType(MetaWearBoard), AccBmi160StepCounterMode]],
-
-/**
- * Ends macro recording.  An numerical id representing the macro will be passed to the callback function when 
- * the operation is complete.
- * @param board                 Calling object
- * @param context               Pointer to additional data for the callback function
- * @param commands_recorded     Callback function to be executed when the commands are recorded
- */
-  'mbl_mw_macro_end_record': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
-
-/**
- * Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
- * @param board         Board to initialize
- * @param context       Pointer to additional data for the callback function
- * @param initialized   Callback function to be executed when the board is initialized
- */
-  'mbl_mw_metawearboard_initialize': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
-
-/**
- * Starts a timer
- * @param timer     Timer to start
- */
-  'mbl_mw_timer_start': [ref.types.void, [ref.refType(Timer)]],
-
-/**
- * Generates a string identifying the data chain the anonymous data signal is receiving data from.
- * @return String identifying the data chain
- */
-  'mbl_mw_anonymous_datasignal_get_identifier': [ref.types.CString, [ref.refType(AnonymousDataSignal)]],
-
-/**
- * Create a comparator processor specifically for a signed comparison.  A pointer representing the processor will be passed back 
+ * Create a math processor using signed operations.  A pointer representing the processor will be passed back 
  * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
- * @param op                    Comparison operation to execute
- * @param reference             Reference value to compare the input to
+ * @param op                    Math operation to compute
+ * @param rhs                   Right hand side of the operation that requires 2 inputs
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */
-  'mbl_mw_dataprocessor_comparator_create_signed': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+  'mbl_mw_dataprocessor_math_create_signed': [ref.types.int32, [ref.refType(DataSignal), MathOperation, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
- * Creates a timer that will run indefinitely.  A pointer representing the timer will be passed to the user 
- * through a callback function
- * @param board             Board the timer belongs to
- * @param period            How often to 
- * @param delay             Zero if the tiemr should immediately fire, non-zero to delay the first event
- * @param context           Pointer to additional data for the callback function
- * @param received_timer    Callback function to be executed when the timer is created
+ * Retrieves a data signal representing the length of the log, including timestamps
+ * @param board                 Board to get reset_uid from
  */
-  'mbl_mw_timer_create_indefinite': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint32, ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_TimerP]],
+  'mbl_mw_logging_get_length_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Sets the sensor integration time
+ * @param board     Pointer to the board to modify
+ * @param integration_time      Integration time value to set
+ */
+  'mbl_mw_als_ltr329_set_integration_time': [ref.types.void, [ref.refType(MetaWearBoard), AlsLtr329IntegrationTime]],
+
+/**
+ * Drives a buzzer
+ * @param board             Pointer to the board to send the command to
+ * @param pulse_width_ms    How long to run the buzzer, in milliseconds
+ */
+  'mbl_mw_haptic_start_buzzer': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
+
+/**
+ * Retrieves the data signal representing i2c data.  The data signal is identified by the id value and if the id is not present, 
+ * a new data signal will be created using the length parameter. 
+ * @param board         Board the i2c bus resides on
+ * @param length        Number of bytes to read
+ * @param id            Numerical value identifying the data
+ * @return Pointer to the i2c data signal
+ */
+  'mbl_mw_i2c_get_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8]],
+
+/**
+ * Modifies the magnitude that allows data through
+ * @param delta             Delta processor to modify
+ * @param magnitude         Min distance from the reference value to allow the input to pass
+ * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
+ * a non-delta processor was passed in
+ */
+  'mbl_mw_dataprocessor_delta_modify_magnitude': [ref.types.int32, [ref.refType(DataProcessor), ref.types.float]],
+
+/**
+ * Sets the iBeacon advertising major number
+ * @param board     Pointer to the board to send the command to
+ * @param major     New advertising major number
+ */
+  'mbl_mw_ibeacon_set_major': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
+
+/**
+ * Creates a time delay processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param mode                  Operation mode of the processor
+ * @param period                How often to allow data through, in milliseconds
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_time_create': [ref.types.int32, [ref.refType(DataSignal), TimeMode, ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+
+/**
+ * Sets the iBeacon advertising major number
+ * @param board     Pointer to the board to send the command to
+ * @param major     DataSignal output to use as the new major number
+ */
+  'mbl_mw_ibeacon_set_major_signal': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(DataSignal)]],
+
+/**
+ * Sets the iBeacon advertising minor number
+ * @param board     Pointer to the board to send the command to
+ * @param minor     DataSignal output to use as the new minor number
+ */
+  'mbl_mw_ibeacon_set_minor_signal': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(DataSignal)]],
+
+/**
+ * Sets the iBeacon advertising transmitting power
+ * @param board         Pointer to the board to send the command to
+ * @param tx_power      New advertising transmitting power
+ */
+  'mbl_mw_ibeacon_set_tx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
+
+/**
+ * Disables acceleration sampling
+ * @param board     Board to disable acceleration sampling on
+ */
+  'mbl_mw_acc_disable_acceleration_sampling': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Sets the iBeacon advertising receiving power
+ * @param board         Pointer to the board to send the command to
+ * @param rx_power      New advertising receiving power
+ */
+  'mbl_mw_ibeacon_set_rx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
+
+/**
+ * Retrieves a data signal representing digital data
+ * @param board     Board to receive data from
+ * @param pin       GPIO pin to read
+ */
+  'mbl_mw_gpio_get_digital_input_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Sets the iBeacon advertising UUID
+ * @param board         Pointer to the board to send the command to
+ * @param ad_uuid       Byte representation of the UUID in little endian ordering
+ */
+  'mbl_mw_ibeacon_set_uuid': [ref.types.void, [ref.refType(MetaWearBoard), ArrayUByte_16]],
+
+/**
+ * Retrieves the data signal representing acceleration data for the MMA8452Q accelerometer
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's MMA8452Q acceleration data signal
+ */
+  'mbl_mw_acc_mma8452q_get_acceleration_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Check if the data signal can be explicitly read
+ * @param signal    Data signal to check
+ * @return Zero if not readable, non-zero if it is
+ */
+  'mbl_mw_datasignal_is_readable': [ref.types.int32, [ref.refType(DataSignal)]],
+
+/**
+ * Modify the configuration of a math processor, changing the right side value of the operation
+ * @param math                  Math processor to modify
+ * @param rhs                   New right hand side of the operation
+ * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
+ * a non-math processor was passed in
+ */
+  'mbl_mw_dataprocessor_math_modify_rhs': [ref.types.int32, [ref.refType(DataProcessor), ref.types.float]],
+
+/**
+ * Pauses the patterns
+ * @param board     Pointer to the board to send the command to
+ */
+  'mbl_mw_led_pause': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Create a passthrough processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param mode                  Processor's operation mode
+ * @param count                 Internal count to initial the processor with
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_passthrough_create': [ref.types.int32, [ref.refType(DataSignal), PassthroughMode, ref.types.uint16, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+
+/**
+ * Manually configure the sensor, only for advanced users.  It is recommended that users use one of the preset configurations.
+ * @param board         Calling object
+ * @param xy_reps       Repetitions on the x/y-axis
+ * @param z_reps        Repetitions on the z-axis
+ * @param odr           Sensor data rate
+ */
+  'mbl_mw_mag_bmm150_configure': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16, ref.types.uint16, MagBmm150Odr]],
+
+/**
+ * Retrieves the data signal representing data from the BMI160 step detector
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's BMI160 step detector data signal
+ */
+  'mbl_mw_acc_bmi160_get_step_detector_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
  * Retrieve the number of available channels
@@ -2194,57 +2379,11 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_counter_create': [ref.types.int32, [ref.refType(Event), ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
- * Pulls the current gyro output data rate and data range from the sensor
- * @param board         Calling object
- * @param context       Pointer to additional data for the callback function
- * @param completed     Callback function that is executed when the task is finished
- */
-  'mbl_mw_gyro_bmi160_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
-
-/**
- * Sets the output data rate.  If an invalid odr is used, the closest valid value will be used.
- * @param board     Board to configure
- * @param odr       Output data rate, in Hz
- */
-  'mbl_mw_acc_set_odr': [ref.types.float, [ref.refType(MetaWearBoard), ref.types.float]],
-
-/**
- * Starts data logging
- * @param board                 Board to log data on
- * @param overwrite             Non-zero if older entries will be overwritten
- */
-  'mbl_mw_logging_start': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
-
-/**
- * Disables the BMI160 step counter
- * @param board     Board to modify
- */
-  'mbl_mw_acc_bmi160_disable_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
  * Loads the struct with a preset configuration
  * @param pattern       Pointer to the pattern to write the configuration to
  * @param preset        Preset pattern to load 
  */
   'mbl_mw_led_load_preset_pattern': [ref.types.void, [ref.refType(LedPattern), LedPreset]],
-
-/**
- * Create a threshold processor.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
- * @param source                Data signal providing the input for the processor
- * @param mode                  Processor output mode
- * @param boundary              Limit that triggers an event when data crosses it
- * @param hysteresis            Min distance between the limit and value to signal a successful crossing
- * @param context               Pointer to additional data for the callback function
- * @param processor_created     Callback function to be executed when the processor is created
- */
-  'mbl_mw_dataprocessor_threshold_create': [ref.types.int32, [ref.refType(DataSignal), ThresholdMode, ref.types.float, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
-
-/**
- * Resets the BMI160 step counter
- * @param board     Board to reset
- */
-  'mbl_mw_acc_bmi160_reset_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
  * Disables orientation detection
@@ -2308,6 +2447,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * a non-passthrough processor was passed in
  */
   'mbl_mw_dataprocessor_passthrough_modify': [ref.types.int32, [ref.refType(DataProcessor), PassthroughMode, ref.types.uint16]],
+
+/**
+ * Get the latest reset_uid read duing connection
+ * @param board                 Board to get reset_uid from
+ * @return value of reset_uid
+ */
+  'mbl_mw_logging_get_latest_reset_uid': [ref.types.uint8, [ref.refType(MetaWearBoard)]],
 
 /**
  * Frees NeoPixel resources on the MetaWeard board for a specific strand
@@ -2723,19 +2869,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_multi_comparator_create': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ComparatorMode, ArrayFloat, ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
- * Sets the output data rate for the BMI160 accelerometer
- * @param board     Pointer to the board to modify
- * @param odr       Output data rate value to assign
- */
-  'mbl_mw_acc_bmi160_set_odr': [ref.types.void, [ref.refType(MetaWearBoard), AccBmi160Odr]],
-
-/**
- * Writes the step counter configuration to the sensor
- * @param board     Board to write to
- */
-  'mbl_mw_acc_bmi160_write_step_counter_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
  * Sets connection parameters
  * @param board                 Board to modify
  * @param min_conn_interval     Connection interval lower bound, min 7.5ms
@@ -2798,65 +2931,14 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param board     Pointer to the board to modify
  * @param range     Acceleration range to assign
  */
-  'mbl_mw_acc_bosch_set_range': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschRange]],
-
-/**
- * Enables the BMI160 step counter
- * @param board     Board to modify
- */
-  'mbl_mw_acc_bmi160_enable_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Sets the digital output state
- * @param board     Board the pin is on
- * @param pin       GPIO pin to set
- */
-  'mbl_mw_gpio_set_digital_output': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
-
-/**
- * Checks if the board is initialized
- * @param board     Board to check
- * @return Zero if not initialized, non-zero if it is
- */
-  'mbl_mw_metawearboard_is_initialized': [ref.types.int32, [ref.refType(MetaWearBoard)]],
-
-/**
- * Removes all data processors and timers from the MetaWear board
- * @param board         Board to tear down
- */
-  'mbl_mw_metawearboard_tear_down': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Enables the BMI160 step detector 
- * @param board     Pointer to the board to send the command to
- */
-  'mbl_mw_acc_bmi160_enable_step_detector': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Disables the BMI160 step detector
- * @param board     Pointer to the board to send the command to
- */
-  'mbl_mw_acc_bmi160_disable_step_detector': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Determines the board model of the currently connected device.  Only call this function after the board has been initialized.
- * @return Friendly name representing the board model 
- */
-  'mbl_mw_metawearboard_get_model_name': [ref.types.CString, [ref.refType(MetaWearBoard)]],
-
-/**
- * Set the orientation calculation mode
- * @param board         Calling object
- * @param mode          New calculation mode
- */
-  'mbl_mw_acc_bosch_set_orientation_mode': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschOrientationMode]]
+  'mbl_mw_acc_bosch_set_range': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschRange]]
 });
 
 module.exports = {
-  OverflowState: OverflowState,
-  CorrectedCartesianFloat: CorrectedCartesianFloat,
-  LedPattern: LedPattern,
   Quaternion: Quaternion,
+  FnVoid_VoidP_VoidP_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_FnVoidVoidPtrInt,
+  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt,
+  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray,
   AccBoschOrientationMode: AccBoschOrientationMode,
   ArrayUByte_6: ArrayUByte_6,
   FnVoid_VoidP: FnVoid_VoidP,
@@ -2867,13 +2949,13 @@ module.exports = {
   ComparatorOperation: ComparatorOperation,
   GpioPinChangeType: GpioPinChangeType,
   FnVoid_VoidP_DataP: FnVoid_VoidP_DataP,
-  FnVoid_VoidP_VoidP_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_FnVoidVoidPtrInt,
+  Module: Module,
+  LedPattern: LedPattern,
   GattCharWriteType: GattCharWriteType,
   ProximityTsl2671Current: ProximityTsl2671Current,
   MetaWearRProChannel: MetaWearRProChannel,
   AccMma8452qOdr: AccMma8452qOdr,
   AccMma8452qCutoffFreq: AccMma8452qCutoffFreq,
-  Module: Module,
   SpiFrequency: SpiFrequency,
   BaroBmp280StandbyTime: BaroBmp280StandbyTime,
   SensorFusionAccRange: SensorFusionAccRange,
@@ -2896,20 +2978,19 @@ module.exports = {
   FnVoid_VoidP_Int: FnVoid_VoidP_Int,
   DataSignal: DataSignal,
   ComparatorMode: ComparatorMode,
-  AlsLtr329IntegrationTime: AlsLtr329IntegrationTime,
   GyroBmi160Range: GyroBmi160Range,
+  AlsLtr329IntegrationTime: AlsLtr329IntegrationTime,
   GyroBmi160Odr: GyroBmi160Odr,
   ArrayUByte_16: ArrayUByte_16,
   TemperatureSource: TemperatureSource,
-  SensorOrientation: SensorOrientation,
   FnVoid_VoidP_VoidP_GattCharWriteType_GattCharP_UByteP_UByte: FnVoid_VoidP_VoidP_GattCharWriteType_GattCharP_UByteP_UByte,
+  SensorOrientation: SensorOrientation,
   AccMma8452qRange: AccMma8452qRange,
   PassthroughMode: PassthroughMode,
   BaroBoschOversampling: BaroBoschOversampling,
   DeltaMode: DeltaMode,
   Event: Event,
   FnVoid_VoidP_TimerP: FnVoid_VoidP_TimerP,
-  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt,
   DataTypeId: DataTypeId,
   NeoPixelColorOrdering: NeoPixelColorOrdering,
   AlsLtr329MeasurementRate: AlsLtr329MeasurementRate,
@@ -2923,6 +3004,7 @@ module.exports = {
   MathOperation: MathOperation,
   DeviceInformation: DeviceInformation,
   DfuDelegate: DfuDelegate,
+  LoggingTime: LoggingTime,
   SpiParameters: SpiParameters,
   AccBma255Odr: AccBma255Odr,
   Timer: Timer,
@@ -2946,14 +3028,15 @@ module.exports = {
   BaroBoschIirFilter: BaroBoschIirFilter,
   I2cReadParameters: I2cReadParameters,
   FnVoid_VoidP_UInt_UInt: FnVoid_VoidP_UInt_UInt,
+  FnVoid_VoidP_EventP_Int: FnVoid_VoidP_EventP_Int,
+  BtleAddress: BtleAddress,
   ConductanceRange: ConductanceRange,
   ModuleInfo: ModuleInfo,
   BatteryState: BatteryState,
-  FnVoid_VoidP_EventP_Int: FnVoid_VoidP_EventP_Int,
-  BtleAddress: BtleAddress,
+  OverflowState: OverflowState,
   AccBmi160StepCounterMode: AccBmi160StepCounterMode,
   FnVoid_VoidP_charP: FnVoid_VoidP_charP,
   GattChar: GattChar,
-  EulerAngles: EulerAngles,
-  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray
+  CorrectedCartesianFloat: CorrectedCartesianFloat,
+  EulerAngles: EulerAngles
 };

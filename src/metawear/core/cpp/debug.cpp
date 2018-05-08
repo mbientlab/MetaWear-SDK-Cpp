@@ -2,26 +2,26 @@
 #include "datainterpreter.h"
 #include "debug_private.h"
 #include "register.h"
+#include "datasignal_private.h"
 
 #include "metawear/core/debug.h"
 #include "metawear/core/module.h"
 #include "metawear/core/status.h"
+#include "metawear/core/cpp/metawearboard_macro.h"
 
 #include <chrono>
+#include <cstring>
 #include <memory>
 
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::system_clock;
-using std::forward_as_tuple;
-using std::make_shared;
-using std::piecewise_construct;
-using std::static_pointer_cast;
+using namespace std;
+using namespace std::chrono;
 
 enum class DebugRegister : uint8_t {
     RESET = 0x1,
     BOOTLOADER,
-    RESET_GC = 0x5,
+    NOTIFICATION_SPOOF,
+    KEY_REGISTER,
+    RESET_GC,
     DISCONNECT,
     POWER_SAVE,
     STACK_OVERFLOW = 0x9,
@@ -35,6 +35,9 @@ struct DebugState {
 };
 
 const uint8_t RES_MONITOR_REVISION= 2;
+
+const ResponseHeader 
+    DEBUG_KEY_REGISTER_RESPONSE_HEADER(MBL_MW_MODULE_DEBUG, READ_REGISTER(ORDINAL(DebugRegister::KEY_REGISTER)));
 
 #define GET_DEBUG_STATE(board) static_pointer_cast<DebugState>(board->debug_state)
 #define CAST_RESPONSE(type, context, handler) auto data = data_response_converters.at(type)(false, nullptr, response + 2, len - 2);\
@@ -59,6 +62,12 @@ void init_debug_module(MblMwMetaWearBoard *board) {
         forward_as_tuple(schedule_queue_status_received));
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_DEBUG, READ_REGISTER(ORDINAL(DebugRegister::STACK_OVERFLOW))),
         forward_as_tuple(overflow_status_received));
+
+    if (!board->module_events.count(DEBUG_KEY_REGISTER_RESPONSE_HEADER)) {
+        board->module_events[DEBUG_KEY_REGISTER_RESPONSE_HEADER] = new MblMwDataSignal(DEBUG_KEY_REGISTER_RESPONSE_HEADER, board, 
+            DataInterpreter::UINT32, 1, 4, 0, 0);
+    }
+    board->responses[DEBUG_KEY_REGISTER_RESPONSE_HEADER] = response_handler_data_no_id;
 
     if (!board->debug_state) {
         board->debug_state = make_shared<DebugState>();
@@ -123,4 +132,25 @@ void mbl_mw_debug_read_stack_overflow_state(const MblMwMetaWearBoard *board, voi
     } else {
         handler(context, nullptr);
     }
+}
+
+void mbl_mw_debug_spoof_notification(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length) {
+    vector<uint8_t> command(value, value + length);
+    command.insert(command.begin(), {MBL_MW_MODULE_DEBUG, ORDINAL(DebugRegister::NOTIFICATION_SPOOF)});
+
+    send_command(board, command.data(), (uint8_t) command.size());
+}
+
+void mbl_mw_debug_send_command(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length) {
+    send_command(board, value, length);
+}
+
+MblMwDataSignal* mbl_mw_debug_get_key_register_data_signal(const MblMwMetaWearBoard *board) {
+    GET_DATA_SIGNAL(DEBUG_KEY_REGISTER_RESPONSE_HEADER);
+}
+
+void mbl_mw_debug_set_key_register(const MblMwMetaWearBoard *board, uint32_t value) {
+    uint8_t command[6]= {MBL_MW_MODULE_DEBUG, ORDINAL(DebugRegister::KEY_REGISTER)};
+    memcpy(command + 2, &value, sizeof(uint32_t));
+    SEND_COMMAND;
 }

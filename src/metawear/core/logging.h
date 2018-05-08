@@ -110,6 +110,39 @@ METAWEAR_API void mbl_mw_logger_subscribe(MblMwDataLogger* logger, void *context
  * @param logger                Calling object
  */
 METAWEAR_API const char* mbl_mw_logger_generate_identifier(const MblMwDataLogger* logger);
+/**
+ * Retrieves a data signal representing the length of the log, including timestamps
+ * @param board                 Board to get reset_uid from
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_logging_get_length_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Retrieves a data signal representing the current logger time state.  This includes the
+ * reset_uid and time of boot.
+ * @param board                 Board to get time from
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_logging_get_time_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Get the latest reset_uid read duing connection
+ * @param board                 Board to get reset_uid from
+ * @return value of reset_uid
+ */
+METAWEAR_API uint8_t mbl_mw_logging_get_latest_reset_uid(const MblMwMetaWearBoard* board);
+/**
+ * Get the device boot time for a given reset_uid.  This reference time
+ * is automatically calulated at connection time.
+ * @param board                 Board to use
+ * @param reset_uid             Reset id
+ * @return Number of milliseconds since epoch that the given reset_uid occured
+ */
+METAWEAR_API int64_t mbl_mw_logging_get_reference_time(const MblMwMetaWearBoard *board, uint8_t reset_uid);
+/**
+ * Set the device boot time for a given reset_uid.  This reference time
+ * is used to calcuated real timestamps from logged data.
+ * @param board                 Board to use
+ * @param reset_uid             Reset id
+ * @param reference_epoch       New reference epoch (in milliseconds) to use
+ */
+METAWEAR_API void mbl_mw_logging_set_reference_time(const MblMwMetaWearBoard *board, uint8_t reset_uid, int64_t reference_epoch);
 
 #ifdef	__cplusplus
 }

@@ -1,19 +1,19 @@
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <chrono>
 
 #include "metawear/core/types.h"
+#include "metawear/core/settings.h"
 #include "metawear/core/cpp/datainterpreter.h"
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/sensor/cpp/accelerometer_bosch_private.h"
 #include "metawear/sensor/cpp/gyro_bmi160_private.h"
+#include "metawear/core/cpp/logging_private.h"
 
-using std::calloc;
-using std::malloc;
-using std::memcpy;
-using std::memset;
-using std::min;
-using std::unordered_map;
+using namespace std;
+using namespace std::chrono;
 
 struct CartesianShort {
     int16_t x, y, z;
@@ -265,6 +265,30 @@ static MblMwData* convert_to_sensor_orientation_mma8452q(bool log_data, const Mb
     CREATE_MESSAGE(MBL_MW_DT_ID_SENSOR_ORIENTATION);
 }
 
+static MblMwData* convert_to_logging_time(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwLoggingTime *value = (MblMwLoggingTime*)malloc(sizeof(MblMwLoggingTime));
+
+    // We need to convert the local MetaWear time in 'real' Earth time
+    value->epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    // Get the current reading of the MetaWear clock
+    uint32_t tick;
+    memcpy(&tick, response, 4);
+    // By going backwards the number of miliseconds the current MetaWear time 
+    // represents, we find the real world time the MetaWear booted
+    value->epoch -= static_cast<int64_t>(round((double)tick * TICK_TIME_STEP));
+    // Each MetaWear reset event has a corresponding reset_uid
+    value->reset_uid = response[4];
+    
+    CREATE_MESSAGE(MBL_MW_DT_ID_LOGGING_TIME);
+}
+
+static MblMwData* convert_to_btle_address(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwBtleAddress *value = (MblMwBtleAddress*)malloc(sizeof(MblMwBtleAddress));
+    memcpy(value, response, sizeof(MblMwBtleAddress));
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_BTLE_ADDRESS);
+}
+
 unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters = {
     { DataInterpreter::INT32 , convert_to_int32 },
     { DataInterpreter::UINT32 , convert_to_uint32 },
@@ -296,7 +320,9 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::DEBUG_OVERFLOW_STATE , convert_to_overflow_state },
     { DataInterpreter::SENSOR_ORIENTATION, convert_to_sensor_orientation },
     { DataInterpreter::MAC_ADDRESS, convert_to_mac_address },
-    { DataInterpreter::SENSOR_ORIENTATION_MMA8452Q, convert_to_sensor_orientation_mma8452q }
+    { DataInterpreter::SENSOR_ORIENTATION_MMA8452Q, convert_to_sensor_orientation_mma8452q },
+    { DataInterpreter::LOGGING_TIME, convert_to_logging_time },
+    { DataInterpreter::BTLE_ADDRESS, convert_to_btle_address }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {

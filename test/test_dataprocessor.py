@@ -894,7 +894,7 @@ class TestAccounter(TestMetaWearBase):
         self.assertEqual(self.data, expected)
 
     def test_time_offset(self):
-        expected = [10, 10, 9, 10, 11]
+        expected = [10, 11, 8, 11, 10]
 
         offsets = []
         prev_time = []
@@ -1016,7 +1016,7 @@ class TestAccounterPackerChain(TestMetaWearBase):
         self.assertEqual(values, expected)
 
     def test_time_offset(self):
-        expected = [33, 33, 33]
+        expected = [34, 32, 34]
 
         offsets = []
         prev_time = []

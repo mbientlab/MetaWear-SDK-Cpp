@@ -73,7 +73,9 @@ void free_timer_module(void *state) {
 
 void disconnect_timer(MblMwMetaWearBoard* board) {
     auto state = GET_TIMER_STATE(board);
-    state->pending_fns.clear();
+    if (state != nullptr) {
+        state->pending_fns.clear();
+    }
 }
 
 void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, void *context, MblMwFnTimerPtr received_timer) {

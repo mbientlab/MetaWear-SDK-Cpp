@@ -14,6 +14,9 @@
 
 #include "metawear/core/metawearboard.h"
 #include "metawear/core/status.h"
+#include "metawear/core/logging.h"
+#include "metawear/core/datasignal.h"
+#include "metawear/core/types.h"
 
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/core/cpp/debug_private.h"
@@ -298,8 +301,6 @@ const vector<tuple<MblMwGattChar, void(*)(MblMwMetaWearBoard*, const uint8_t*, u
     )
 };
 
-const uint8_t INIT_SERIALIZATION_FORMAT = 0, SIGNAL_COMPONENT_SERIALIZATION_FORMAT = 1;
-
 MblMwMetaWearBoard::MblMwMetaWearBoard() : logger_state(nullptr, [](void *ptr) -> void { tear_down_logging(ptr, false); }), 
         timer_state(nullptr, [](void *ptr) -> void { free_timer_module(ptr); }),
         event_state(nullptr, [](void *ptr) -> void { free_event_module(ptr); }), 
@@ -372,8 +373,20 @@ static inline void service_discovery_completed(MblMwMetaWearBoard* board) {
         it(board);
     }
 
-    uint8_t command[2] = { MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TIME)) };
-    SEND_COMMAND;
+    MblMwDataSignal *signal = mbl_mw_logging_get_time_data_signal(board);
+    mbl_mw_datasignal_subscribe(signal, board, [](void *context, const MblMwData* data) {
+        MblMwMetaWearBoard* board = static_cast<MblMwMetaWearBoard*>(context);
+        mbl_mw_datasignal_unsubscribe(mbl_mw_logging_get_time_data_signal(board));
+        if (board->initialized_timeout != nullptr) {
+            board->initialized_timeout->cancel();
+        }
+        MblMwLoggingTime *time = static_cast<MblMwLoggingTime*>(data->value);
+        mbl_mw_logging_set_reference_time(board, time->reset_uid, time->epoch);
+        mbl_mw_logging_set_latest_reset_uid(board, time->reset_uid);
+
+        board->initialized(board->initialized_context, board, MBL_MW_STATUS_OK);
+    });
+    mbl_mw_datasignal_read(signal);
 }
 
 static inline void queue_next_query(MblMwMetaWearBoard *board) {
@@ -656,7 +669,7 @@ MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMetaWearBoard* 
 uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_t* size) {
     vector<uint8_t> serialized_state;
 
-    serialized_state.push_back(SIGNAL_COMPONENT_SERIALIZATION_FORMAT);
+    serialized_state.push_back(ORDINAL(SerializationFormat::TIME_REFERENCE));
     
     board->firmware_revision.serialize(serialized_state);
 
@@ -730,7 +743,7 @@ uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_
 int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size) {
     uint8_t *current_addr = state, format = *current_addr;
 
-    if (format != INIT_SERIALIZATION_FORMAT && format != SIGNAL_COMPONENT_SERIALIZATION_FORMAT) {
+    if (format > ORDINAL(SerializationFormat::TIME_REFERENCE)) {
         return MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT;
     }
 
@@ -825,7 +838,7 @@ int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* sta
         }
     }
 
-    deserialize_logging(board, (format == SIGNAL_COMPONENT_SERIALIZATION_FORMAT), &current_addr);
+    deserialize_logging(board, format, &current_addr);
 
     return MBL_MW_STATUS_OK;
 }

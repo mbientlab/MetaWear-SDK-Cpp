@@ -118,6 +118,13 @@ METAWEAR_API void mbl_mw_settings_set_connection_parameters(const MblMwMetaWearB
  */
 METAWEAR_API void mbl_mw_settings_add_whitelist_address(const MblMwMetaWearBoard *board, uint8_t index, const MblMwBtleAddress *address);
 /**
+ * Adds MAC Addresses for Whitelist filtering
+ * @param board         Board to modify
+ * @param index         Whitelist MAC address in range [1, 8], must start at 1 and go in increasing order
+ * @param address       Address to add
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_whitelist_data_signal(MblMwMetaWearBoard* board, uint8_t index);
+/**
  * Sets connection parameters
  * @param board          Board to modify
  * @param mode           Whitelist filter mode

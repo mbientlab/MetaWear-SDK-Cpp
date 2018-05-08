@@ -19,6 +19,12 @@
 #define SEND_COMMAND send_command(board, command, sizeof(command))
 #define SEND_COMMAND_BOARD(board) send_command(board, command, sizeof(command))
 
+enum class SerializationFormat : uint8_t {
+    INIT = 0,
+    SIGNAL_COMPONENT,
+    TIME_REFERENCE
+};
+
 typedef int32_t (*ResponseHandler)(MblMwMetaWearBoard *board, const uint8_t*, uint8_t);
 /** UUIDs for the MetaWear DFU characteristic */
 const MblMwGattChar DFU_PACKET_CHAR = { 0x000015301212EFDE, 0x1523785FEABCD123, 0x000015321212EFDE, 0x1523785FEABCD123 };
