@@ -312,7 +312,7 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::TCS34725_COLOR_ADC , convert_to_tcs34725_adc },
     { DataInterpreter::BME280_HUMIDITY , convert_to_bme280_humidity },
     { DataInterpreter::Q16_16_FIXED_POINT , convert_to_q16_16_fixed_point },
-    { DataInterpreter::SENSOR_FUSION_QUATERION , convert_to_quaternion },
+    { DataInterpreter::SENSOR_FUSION_QUATERNION , convert_to_quaternion },
     { DataInterpreter::SENSOR_FUSION_EULER_ANGLE , convert_to_euler_angles },
     { DataInterpreter::SENSOR_FUSION_CORRECTED_FLOAT_VECTOR3 , convert_to_corrected_vector3 },
     { DataInterpreter::SENSOR_FUSION_FLOAT_VECTOR3 , convert_to_vector3 },

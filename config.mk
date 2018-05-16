@@ -25,3 +25,4 @@ BUILD_DIR?=build
 DIST_DIR?=dist
 CONFIGURATION?=release
 CXXFLAGS?=-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -I$(SOURCE_DIR) -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS $(OPT_FLAGS)
+DBG?=gdb

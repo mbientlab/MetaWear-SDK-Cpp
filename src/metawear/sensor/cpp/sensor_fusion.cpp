@@ -29,7 +29,7 @@ using std::unordered_map;
 #define CORRECTED_ACC_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_CORRECTED_ACC]
 #define CORRECTED_GYRO_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_CORRECTED_GYRO]
 #define CORRECTED_MAG_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_CORRECTED_MAG]
-#define QUATERNION_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_QUATERION]
+#define QUATERNION_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_QUATERNION]
 #define EULER_ANGLES_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_EULER_ANGLE]
 #define GRAVITY_VECTOR_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_GRAVITY_VECTOR]
 #define LINEAR_ACC_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_LINEAR_ACC]
@@ -81,7 +81,10 @@ void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
             SensorFusionState* new_state = (SensorFusionState*) malloc(sizeof(SensorFusionState));
             new_state->config.mode = MBL_MW_SENSOR_FUSION_MODE_SLEEP;
             new_state->config.acc_range = MBL_MW_SENSOR_FUSION_ACC_RANGE_16G;
-            new_state->config.gyro_range = MBL_MW_SENSOR_FUSION_GYRO_RANGE_2000DPS;
+            // The +1 here is because the sensor fusion library defines a 2048 at 
+            // location zero which our hardware doesn't acutally support, so we
+            // essentially shift the MBL_MW_SENSOR_FUSION_GYRO_RANGE enum by 1
+            new_state->config.gyro_range = MBL_MW_SENSOR_FUSION_GYRO_RANGE_2000DPS + 1;
             new_state->enable_mask = 0;
             board->module_config.emplace(MBL_MW_MODULE_SENSOR_FUSION, new_state);
         }
@@ -107,7 +110,7 @@ void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
 
         if (!board->module_events.count(QUATERNION_RESPONSE_HEADER)) {
             board->module_events[QUATERNION_RESPONSE_HEADER] = new MblMwDataSignal(QUATERNION_RESPONSE_HEADER, board, 
-                    DataInterpreter::SENSOR_FUSION_QUATERION, FirmwareConverter::DEFAULT, 4, 4, 1, 0);
+                    DataInterpreter::SENSOR_FUSION_QUATERNION, FirmwareConverter::DEFAULT, 4, 4, 1, 0);
         }
 
         if (!board->module_events.count(EULER_ANGLES_RESPONSE_HEADER)) {

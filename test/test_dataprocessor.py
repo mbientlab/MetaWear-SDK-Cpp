@@ -859,7 +859,7 @@ class TestSensorFusionLimiter(TestMetaWearBase):
             [0x0b, 0x02, 0x09, 0x03, 0x00, 0x6c]
         ]
 
-        signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusionData.QUATERION)
+        signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusionData.QUATERNION)
         self.libmetawear.mbl_mw_dataprocessor_time_create(signal, TimeMode.ABSOLUTE, 20, None, self.processor_handler)
         self.events["processor"].wait()
 

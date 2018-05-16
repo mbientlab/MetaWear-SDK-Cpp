@@ -619,7 +619,8 @@ int32_t mbl_mw_dataprocessor_pulse_modify(MblMwDataProcessor *pulse, float thres
 }
 
 int32_t mbl_mw_dataprocessor_sample_create(MblMwDataSignal *source, uint8_t bin_size, void *context, MblMwFnDataProcessor processor_created) {
-    if (source->length() > PROCESSOR_MAX_LENGTH) {
+    uint8_t maxLength = source->owner->module_info.at(MBL_MW_MODULE_DATA_PROCESSOR).revision < 2 ? 4 : 16;
+    if (source->length() > maxLength) {
         return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
     }
 

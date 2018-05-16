@@ -80,13 +80,13 @@ Gravity         g      MblMwCartesianFloat
 
     void stream_quaternion(MblMwMetaWearBoard* board) {
     	auto quaternion = mbl_mw_sensor_fusion_get_data_signal(board, 
-                MBL_MW_SENSOR_FUSION_DATA_QUATERION);
+                MBL_MW_SENSOR_FUSION_DATA_QUATERNION);
     	mbl_mw_datasignal_subscribe(quaternion, [](const MblMwData* data) -> void {
     		MblMwQuaternion* quaternion = (MblMwQuaternion*) data->value;
     		std::printf("{w: %.3f, x: %.3f, y: %.3f, z: %.3f}\n", 
     			quaternion->w, quaternion->x, quaternion->y, quaternion->z);
     	});
 
-    	mbl_mw_sensor_fusion_enable_data(board, MBL_MW_SENSOR_FUSION_DATA_QUATERION);
+    	mbl_mw_sensor_fusion_enable_data(board, MBL_MW_SENSOR_FUSION_DATA_QUATERNION);
     	mbl_mw_sensor_fusion_start(board);
     }

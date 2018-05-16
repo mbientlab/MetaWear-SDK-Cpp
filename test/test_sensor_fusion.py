@@ -32,7 +32,7 @@ class TestSensorFusion(TestMetaWearBase):
             {
                 'expected' : Quaternion(w = 0.940, x = -0.050, y = -0.154, z = -0.301),
                 'response' : create_string_buffer(b'\x19\x07\x1b\x9b\x70\x3f\x8c\x5e\x4d\xbd\x07\x7f\x1d\xbe\x78\x02\x9a\xbe', 18),
-                'data' : SensorFusionData.QUATERION,
+                'data' : SensorFusionData.QUATERNION,
                 'name': 'quaternion'
             },
             {
@@ -68,7 +68,7 @@ class TestSensorFusion(TestMetaWearBase):
     def test_sensor_control(self):
         data_sources = [
             SensorFusionData.CORRECTED_ACC, SensorFusionData.CORRECTED_GYRO, SensorFusionData.CORRECTED_MAG,
-            SensorFusionData.QUATERION, SensorFusionData.EULER_ANGLE,
+            SensorFusionData.QUATERNION, SensorFusionData.EULER_ANGLE,
             SensorFusionData.GRAVITY_VECTOR, SensorFusionData.LINEAR_ACC
         ]
         test_bases = [

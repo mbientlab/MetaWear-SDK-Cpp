@@ -261,7 +261,7 @@ class TestSensorFusionLogging(TestMetaWearBase):
             [0x0b, 0x02, 0x19, 0x07, 0xff, 0x6c]
         ]
 
-        signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusionData.QUATERION)
+        signal = self.libmetawear.mbl_mw_sensor_fusion_get_data_signal(self.board, SensorFusionData.QUATERNION)
         self.libmetawear.mbl_mw_datasignal_log(signal, None, self.logger_created)
         self.events["log"].wait()
 
