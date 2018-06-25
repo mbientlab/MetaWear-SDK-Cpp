@@ -224,7 +224,7 @@ void MblMwDataSignal::make_unsigned() {
 MblMwDataSignal* mbl_mw_datasignal_get_component(const MblMwDataSignal* signal, uint8_t index) {
     try {
         return signal->components.at(index);
-    } catch (out_of_range) {
+    } catch (out_of_range&) {
         return nullptr;
     }
 }

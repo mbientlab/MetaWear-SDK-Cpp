@@ -155,7 +155,7 @@ static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard
         }
 
         return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
-    } catch (exception) {
+    } catch (exception&) {
         return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     }
 }
@@ -190,7 +190,7 @@ int32_t response_handler_packed_data(MblMwMetaWearBoard *board, const uint8_t *r
         }
 
         return MBL_MW_STATUS_OK;
-    } catch (exception) {
+    } catch (exception&) {
         return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     }
 }
@@ -538,7 +538,7 @@ int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblM
             return board->module_info.at(module).implementation;
         }
         return MBL_MW_MODULE_TYPE_NA;
-    } catch (exception) {
+    } catch (exception&) {
         return MBL_MW_MODULE_TYPE_NA;
     }
 }
