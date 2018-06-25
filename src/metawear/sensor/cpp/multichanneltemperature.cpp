@@ -43,7 +43,7 @@ void mbl_mw_multi_chnl_temp_configure_ext_thermistor(const MblMwMetaWearBoard *b
 MblMwTemperatureSource mbl_mw_multi_chnl_temp_get_source(const MblMwMetaWearBoard *board, uint8_t channel) {
     try {
         return (MblMwTemperatureSource) board->module_info.at(MBL_MW_MODULE_TEMPERATURE).extra.at(channel);
-    } catch (out_of_range) {
+    } catch (out_of_range&) {
         return MBL_MW_TEMPERATURE_SOURCE_INVALID;
     }
 }
