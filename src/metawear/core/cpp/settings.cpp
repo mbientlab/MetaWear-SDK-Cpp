@@ -79,6 +79,10 @@ void mbl_mw_settings_set_device_name(const MblMwMetaWearBoard *board, const uint
 }
 
 void mbl_mw_settings_set_ad_interval(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout) {
+    mbl_mw_settings_set_ad_parameters(board, interval, timeout, MBL_MW_BLE_AD_TYPE_CONNECTED_UNDIRECTED);
+}
+
+void mbl_mw_settings_set_ad_parameters(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout, MblMwBleAdType type) {
     vector<uint8_t> command = {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::AD_INTERVAL), 0, 0, timeout};
 
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= CONN_PARAMS_REVISION) {
@@ -87,7 +91,7 @@ void mbl_mw_settings_set_ad_interval(const MblMwMetaWearBoard *board, uint16_t i
     memcpy(command.data() + 2, &interval, sizeof(interval));
 
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= WHITELIST_REVISION) {
-        command.push_back(0);
+        command.push_back(static_cast<uint8_t>(type));
     }
 
     send_command(board, command.data(), (uint8_t) command.size());

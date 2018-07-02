@@ -59,7 +59,7 @@ DEPS:=$(OBJS:%.o=%.d)
 
 APP_OUTPUT:=$(REAL_DIST_DIR)/$(LIB_NAME)
 
-build: $(MODULES_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT) $(LIBMETAWEAR_JAVASCRIPT_PATH)
+build: $(APP_OUTPUT) $(LIBMETAWEAR_JAVASCRIPT_PATH)
 
 $(REAL_BUILD_DIR)/%.o: %.cpp
 	$(CXX) -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
@@ -72,7 +72,8 @@ $(MODULES_BUILD_DIR):
 $(REAL_DIST_DIR):
 	mkdir -p $@
 
-$(APP_OUTPUT): $(OBJS)
+$(OBJS): | $(MODULES_BUILD_DIR)
+$(APP_OUTPUT): $(OBJS) | $(REAL_DIST_DIR)
 	$(CXX) -o $@ $(LD_FLAGS) $^
 	ln -sf $(LIB_NAME) $(REAL_DIST_DIR)/$(LIB_SHORT_NAME)
 	ln -sf $(LIB_SHORT_NAME) $(REAL_DIST_DIR)/$(LIB_SO_NAME)
@@ -106,6 +107,9 @@ export METAWEAR_LIB_SO_NAME=$(APP_OUTPUT)
 
 test: build
 	python3 -m unittest discover -s test
+
+test-debug: build
+	$(DBG) python3
 
 $(LIBMETAWEAR_JAVASCRIPT_PATH):
 	@echo "module.exports = '$(abspath $(METAWEAR_LIB_SO_NAME))';" > $@

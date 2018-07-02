@@ -41,6 +41,11 @@ typedef enum {
     MBL_MW_WHITELIST_FILTER_SCAN_AND_CONNECTION_REQUESTS = 3
 } MblMwWhitelistFilter;
 
+typedef enum {
+    MBL_MW_BLE_AD_TYPE_CONNECTED_UNDIRECTED = 0,
+    MBL_MW_BLE_AD_TYPE_CONNECTED_DIRECTED = 1
+} MblMwBleAdType;
+
 /**
  * BLE MAC Address
  */
@@ -76,12 +81,17 @@ METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_mac_data_signal(const MblMwMet
  */
 METAWEAR_API void mbl_mw_settings_set_device_name(const MblMwMetaWearBoard *board, const uint8_t *device_name, uint8_t len);
 /**
- * Sets the advertising interval
- * @param board         Board to set the ad interval
- * @param interval      Advertisement interval, between [0, 65535] milliseconds
- * @param timeout       Advertisement timeout, between [0, 180] seconds where 0 indicates no timeout
+ * @deprecated In v0.14.0, use <code>mbl_mw_settings_set_ad_parameters</code> instead
  */
 METAWEAR_API void mbl_mw_settings_set_ad_interval(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout);
+/**
+ * Configures Bluetooth LE ad parameters
+ * @param board         Calling object
+ * @param interval      Advertisement interval, between [0, 65535] milliseconds
+ * @param timeout       Advertisement timeout, between [0, 180] seconds where 0 indicates no timeout
+ * @param type          Advertisement type, ignored if unsupported on current firmware
+ */
+METAWEAR_API void mbl_mw_settings_set_ad_parameters(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout, MblMwBleAdType type);
 /**
  * Sets advertising transmitting power.  If a non valid value is set, the nearest valid value will be used instead
  * @param board         Board to set the TX power

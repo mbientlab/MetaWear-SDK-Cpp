@@ -2,7 +2,6 @@
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
 #include <functional>
 #include <string>
 #include <tuple>
@@ -105,59 +104,60 @@ static bool invoke_signal_handler(MblMwDataSignal* signal, int64_t epoch, const 
 }
 
 static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    try {
-        auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
-        bool handled= false;
-        int64_t epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        
-        MblMwDataProcessor* processor = dynamic_cast<MblMwDataProcessor*>(signal);
-        const uint8_t* start = response;
-        uint32_t extra;
-        if (processor != nullptr) {
-            switch(processor->type) {
-                case DataProcessorType::ACCOUNTER: {
-                    epoch = extract_accounter_epoch(processor, &start, len, &extra);
-                    auto parent = find_processor(processor, DataProcessorType::PACKER);
+    auto it = board->module_events.find(header);
+    if (it == board->module_events.end()) {
+        return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
+    }
 
-                    if (parent != nullptr) {
-                        uint8_t i = 0, count = get_packer_count(parent), pack_size = get_packer_length(parent);
-                        do {
-                            handled|= invoke_signal_handler(signal, epoch, start, pack_size, &extra);
-                            i++;
-                            start+= pack_size;
-                        } while(i < count);
-                        return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
-                    }
-                    break;
-                }
-                case DataProcessorType::PACKER: {                    
-                    auto parent = find_processor(processor, DataProcessorType::ACCOUNTER);
-                    uint8_t i = 0, count = get_packer_count(processor), 
-                            pack_size = get_packer_length(processor) - (parent == nullptr ? 0 : get_accounter_length(parent));
-                    
+    auto signal = dynamic_cast<MblMwDataSignal*>(it->second);
+    bool handled= false;
+    int64_t epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    
+    MblMwDataProcessor* processor = dynamic_cast<MblMwDataProcessor*>(signal);
+    const uint8_t* start = response;
+    uint32_t extra;
+    if (processor != nullptr) {
+        switch(processor->type) {
+            case DataProcessorType::ACCOUNTER: {
+                epoch = extract_accounter_epoch(processor, &start, len, &extra);
+                auto parent = find_processor(processor, DataProcessorType::PACKER);
+
+                if (parent != nullptr) {
+                    uint8_t i = 0, count = get_packer_count(parent), pack_size = get_packer_length(parent);
                     do {
-                        int64_t real_epoch = parent == nullptr ? epoch : extract_accounter_epoch(parent, &start, len, &extra);
-                        handled|= invoke_signal_handler(signal, real_epoch, start, pack_size, &extra);
+                        handled|= invoke_signal_handler(signal, epoch, start, pack_size, &extra);
                         i++;
-                        len-= pack_size;
                         start+= pack_size;
                     } while(i < count);
                     return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
                 }
-                default:
-                    break;
+                break;
             }
+            case DataProcessorType::PACKER: {                    
+                auto parent = find_processor(processor, DataProcessorType::ACCOUNTER);
+                uint8_t i = 0, count = get_packer_count(processor), 
+                        pack_size = get_packer_length(processor) - (parent == nullptr ? 0 : get_accounter_length(parent));
+                
+                do {
+                    int64_t real_epoch = parent == nullptr ? epoch : extract_accounter_epoch(parent, &start, len, &extra);
+                    handled|= invoke_signal_handler(signal, real_epoch, start, pack_size, &extra);
+                    i++;
+                    len-= pack_size;
+                    start+= pack_size;
+                } while(i < count);
+                return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
+            }
+            default:
+                break;
         }
-
-        handled|= invoke_signal_handler(signal, epoch, start, len, &extra);
-        for(auto it: signal->components) {
-            handled|= invoke_signal_handler(it, epoch, start, len, &extra);
-        }
-
-        return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
-    } catch (exception) {
-        return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     }
+
+    handled|= invoke_signal_handler(signal, epoch, start, len, &extra);
+    for(auto it: signal->components) {
+        handled|= invoke_signal_handler(it, epoch, start, len, &extra);
+    }
+
+    return handled ? MBL_MW_STATUS_OK : MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
 }
 
 int32_t response_handler_data_no_id(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
@@ -169,30 +169,28 @@ int32_t response_handler_data_with_id(MblMwMetaWearBoard *board, const uint8_t *
 }
 
 int32_t response_handler_packed_data(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    try {
-        ResponseHeader header(response[0], response[1]);
-        auto signal = dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
-        if (signal->handler == nullptr) {
-            return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
-        }
+    ResponseHeader header(response[0], response[1]);
+    MblMwDataSignal* signal;
+    auto it = board->module_events.find(header);
 
-        int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        for(uint8_t i= 2; i < len; i+= CARTESIAN_FLOAT_SIZE) {
-            MblMwData* data = data_response_converters.at(signal->interpreter)(false, signal, response + i, len - i);
-            data->epoch= now;
-
-            if (signal->handler != nullptr) {
-                signal->handler(signal->context, data);
-            }
-
-            free(data->value);
-            free(data);
-        }
-
-        return MBL_MW_STATUS_OK;
-    } catch (exception) {
+    if (it == board->module_events.end() || (signal = dynamic_cast<MblMwDataSignal*>(it->second))->handler == nullptr) {
         return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     }
+
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    for(uint8_t i= 2; i < len; i+= CARTESIAN_FLOAT_SIZE) {
+        MblMwData* data = data_response_converters.at(signal->interpreter)(false, signal, response + i, len - i);
+        data->epoch= now;
+
+        if (signal->handler != nullptr) {
+            signal->handler(signal->context, data);
+        }
+
+        free(data->value);
+        free(data);
+    }
+
+    return MBL_MW_STATUS_OK;
 }
 
 const uint8_t READ_INFO_REGISTER= READ_REGISTER(0x0);
@@ -533,14 +531,8 @@ int32_t mbl_mw_metawearboard_is_initialized(const MblMwMetaWearBoard *board) {
 }
 
 int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblMwModule module) {
-    try {
-        if (board->module_info.at(module).present) {
-            return board->module_info.at(module).implementation;
-        }
-        return MBL_MW_MODULE_TYPE_NA;
-    } catch (exception) {
-        return MBL_MW_MODULE_TYPE_NA;
-    }
+    auto it = board->module_info.find(module);
+    return it == board->module_info.end() || !it->second.present ? MBL_MW_MODULE_TYPE_NA : it->second.implementation;
 }
 
 MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board) {
