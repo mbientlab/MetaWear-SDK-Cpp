@@ -239,6 +239,7 @@ class DataTypeId:
     STRING = 12
     LOGGING_TIME = 13
     BTLE_ADDRESS = 14
+    BOSCH_ANY_MOTION = 15
 
 class Model:
     NA = -1
@@ -562,6 +563,26 @@ class BtleAddress(Structure):
 
     def __deepcopy__(self, memo):
         return BtleAddress(address_type = self.address_type, address = copy.deepcopy(self.address))
+
+class BoschAnyMotion(Structure):
+    _fields_ = [
+        ("sign" , c_ubyte),
+        ("x_axis_active" , c_ubyte),
+        ("y_axis_active" , c_ubyte),
+        ("z_axis_active" , c_ubyte)
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (self.sign == other.sign and self.x_axis_active == other.x_axis_active and self.y_axis_active == other.y_axis_active and self.z_axis_active == other.z_axis_active)
+
+    def __repr__(self):
+        return "{sign : %d, x_axis_active : %d, y_axis_active : %d, z_axis_active : %d}" % (self.sign, self.x_axis_active, self.y_axis_active, self.z_axis_active)
+
+    def __deepcopy__(self, memo):
+        return BoschAnyMotion(sign = self.sign, x_axis_active = self.x_axis_active, y_axis_active = self.y_axis_active, z_axis_active = self.z_axis_active)
 
 class OverflowState(Structure):
     _fields_ = [
@@ -925,6 +946,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_acc_bosch_start.restype = None
     libmetawear.mbl_mw_acc_bosch_start.argtypes = [c_void_p]
 
+    libmetawear.mbl_mw_acc_bosch_write_motion_config.restype = None
+    libmetawear.mbl_mw_acc_bosch_write_motion_config.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_acc_bosch_disable_orientation_detection.restype = None
     libmetawear.mbl_mw_acc_bosch_disable_orientation_detection.argtypes = [c_void_p]
 
@@ -951,6 +975,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_acc_bmi160_set_odr.restype = None
     libmetawear.mbl_mw_acc_bmi160_set_odr.argtypes = [c_void_p, c_int]
+
+    libmetawear.mbl_mw_acc_bosch_get_motion_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_acc_bosch_get_motion_data_signal.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_acc_bosch_get_orientation_detection_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_bosch_get_orientation_detection_data_signal.argtypes = [c_void_p]
@@ -1063,6 +1090,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_cd_tcs34725_disable_illuminator_led.restype = None
     libmetawear.mbl_mw_cd_tcs34725_disable_illuminator_led.argtypes = [c_void_p]
 
+    libmetawear.mbl_mw_acc_bosch_set_any_motion_count.restype = None
+    libmetawear.mbl_mw_acc_bosch_set_any_motion_count.argtypes = [c_void_p, c_ubyte]
+
     libmetawear.mbl_mw_switch_get_state_data_signal.restype = c_void_p
     libmetawear.mbl_mw_switch_get_state_data_signal.argtypes = [c_void_p]
 
@@ -1141,6 +1171,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_acc_mma8452q_set_range.restype = None
     libmetawear.mbl_mw_acc_mma8452q_set_range.argtypes = [c_void_p, c_int]
 
+    libmetawear.mbl_mw_acc_bosch_enable_motion_detection.restype = None
+    libmetawear.mbl_mw_acc_bosch_enable_motion_detection.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_acc_mma8452q_get_packed_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_mma8452q_get_packed_acceleration_data_signal.argtypes = [c_void_p]
 
@@ -1182,6 +1215,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_sample_modify_bin_size.restype = c_int
     libmetawear.mbl_mw_dataprocessor_sample_modify_bin_size.argtypes = [c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_acc_bosch_set_any_motion_threshold.restype = None
+    libmetawear.mbl_mw_acc_bosch_set_any_motion_threshold.argtypes = [c_void_p, c_float]
 
     libmetawear.mbl_mw_timer_remove.restype = None
     libmetawear.mbl_mw_timer_remove.argtypes = [c_void_p]
@@ -1710,6 +1746,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_delta_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_delta_create.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]
+
+    libmetawear.mbl_mw_acc_bosch_disable_motion_detection.restype = None
+    libmetawear.mbl_mw_acc_bosch_disable_motion_detection.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_dataprocessor_math_create_unsigned.restype = c_int
     libmetawear.mbl_mw_dataprocessor_math_create_unsigned.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]

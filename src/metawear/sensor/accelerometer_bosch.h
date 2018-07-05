@@ -83,6 +83,16 @@ typedef enum {
 } MblMwAccBoschOrientationMode;
 
 /**
+ * Wrapper class encapsulating responses from any motion detection
+ */
+typedef struct {
+    uint8_t sign;                   ///< Slope sign of the triggering motion, 0 if negative, non-zero if positive
+    uint8_t x_axis_active;          ///< Non-zero if x-axis triggered the motion interrupt
+    uint8_t y_axis_active;          ///< Non-zero if y-axis triggered the motion interrupt
+    uint8_t z_axis_active;          ///< Non-zero if z-axis triggered the motion interrupt
+} MblMwBoschAnyMotion;
+
+/**
  * Retrieves the data signal representing acceleration data from a Bosch accelerometer
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI160 acceleration data signal
@@ -116,6 +126,12 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_detector_data_signal(co
  * @return Pointer to Bosch's orientation detection data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_orientation_detection_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves the data signal representing data from the motion detection algorithm
+ * @param board     Calling object
+ * @return Pointer to Bosch's motion detection data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_motion_data_signal(const MblMwMetaWearBoard* board);
 
 /**
  * Sets the output data rate for the BMI160 accelerometer
@@ -207,6 +223,33 @@ METAWEAR_API void mbl_mw_acc_bosch_enable_orientation_detection(const MblMwMetaW
  */
 METAWEAR_API void mbl_mw_acc_bosch_disable_orientation_detection(const MblMwMetaWearBoard *board);
 
+/**
+ * Sets the any motion detector's count parameter
+ * @param board     Calling object
+ * @param count     Number of consecutive slope data points that must be above the threshold
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_any_motion_count(MblMwMetaWearBoard *board, uint8_t count);
+/**
+ * Sets the any motion detector's threshold parameter
+ * @param board     Calling object
+ * @param count     Value that the slope data points must be above
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_any_motion_threshold(MblMwMetaWearBoard *board, float threshold);
+/**
+ * Writes the motion configuration to the remote device
+ * @param board     Calling object
+ */
+METAWEAR_API void mbl_mw_acc_bosch_write_motion_config(const MblMwMetaWearBoard *board);
+/**
+ * Enables motion detection
+ * @param board     Calling object
+ */
+METAWEAR_API void mbl_mw_acc_bosch_enable_motion_detection(const MblMwMetaWearBoard *board);
+/**
+ * Disables motion detection
+ * @param board     Calling object
+ */
+METAWEAR_API void mbl_mw_acc_bosch_disable_motion_detection(const MblMwMetaWearBoard *board);
 /**
  * Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured
  * @param board     Pointer to the board to send the command to

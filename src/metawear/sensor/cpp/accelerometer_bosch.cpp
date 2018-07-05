@@ -51,8 +51,10 @@ const uint8_t BMA255_DEFAULT_CONFIG[]= {
 
 const float ORIENT_HYS_G_PER_STEP = 0.0625f;
 const uint8_t FSR_BITMASKS[4]= {0x3, 0x5, 0x8, 0xc}, PACKED_ACC_REVISION= 1;
-const unordered_map<uint8_t, float> FSR_SCALE= {{0x3, 16384.f}, {0x5, 8192.f}, {0x8, 4096.f}, {0xc, 2048.f}};
+const unordered_map<uint8_t, float> FSR_SCALE= {{0x3, 16384.f}, {0x5, 8192.f}, {0x8, 4096.f}, {0xc, 2048.f}}, 
+    BOSCH_MOTION_THS_STEPS = {{0x3, 0.00391f}, {0x5, 0.00781f}, {0x8, 0.01563f}, {0xc, 0.03125f}};
 const ResponseHeader BOSCH_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT)),
+    BOSCH_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT)),
     BOSCH_ORIENTATION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT)),
     BMI160_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_INTERRUPT)),
     BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_DATA))),
@@ -188,6 +190,7 @@ struct AccBma255Config {
 struct AccBoschState {
     MblMwFnBoardPtrInt read_config_completed;
     void *read_config_context;
+    uint8_t motion_mask;
 };
 
 static unordered_map<const MblMwMetaWearBoard*, AccBoschState> states;
@@ -239,6 +242,10 @@ static void init_accelerometer_bosch(MblMwMetaWearBoard *board, void *config) {
 
     board->responses[BOSCH_ACCEL_RESPONSE_HEADER]= response_handler_data_no_id;
 
+    if (!board->module_events.count(BOSCH_MOTION_DETECTOR)) {
+        board->module_events[BOSCH_MOTION_DETECTOR]= new MblMwDataSignal(BOSCH_MOTION_DETECTOR, board, 
+                DataInterpreter::BOSCH_ANY_MOTION, FirmwareConverter::DEFAULT, 1, 1, 0, 0);
+    }
     if (!board->module_events.count(BOSCH_ORIENTATION_DETECTOR)) {
         board->module_events[BOSCH_ORIENTATION_DETECTOR]= new MblMwDataSignal(BOSCH_ORIENTATION_DETECTOR, board, 
                 DataInterpreter::SENSOR_ORIENTATION, FirmwareConverter::DEFAULT, 1, 1, 0, 0);
@@ -253,9 +260,10 @@ static void init_accelerometer_bosch(MblMwMetaWearBoard *board, void *config) {
 
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))),
         forward_as_tuple(received_config_response));
+    board->responses.emplace(BOSCH_MOTION_DETECTOR, response_handler_data_no_id);
     board->responses.emplace(BOSCH_ORIENTATION_DETECTOR, response_handler_data_no_id);
 
-    AccBoschState newState = {nullptr};
+    AccBoschState newState = {nullptr, nullptr, 0x0};
     states.insert({board, newState});
 }
 
@@ -354,6 +362,10 @@ MblMwDataSignal* mbl_mw_acc_bmi160_get_step_detector_data_signal(const MblMwMeta
 
 MblMwDataSignal* mbl_mw_acc_bosch_get_orientation_detection_data_signal(const MblMwMetaWearBoard* board) {
     GET_DATA_SIGNAL(BOSCH_ORIENTATION_DETECTOR);
+}
+
+MblMwDataSignal* mbl_mw_acc_bosch_get_motion_data_signal(const MblMwMetaWearBoard* board) {
+    GET_DATA_SIGNAL(BOSCH_MOTION_DETECTOR);
 }
 
 void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi160Odr odr) {
@@ -493,6 +505,70 @@ void mbl_mw_acc_bosch_write_orientation_config(const MblMwMetaWearBoard *board) 
     default:
         return;
     }
+}
+
+void mbl_mw_acc_bosch_set_any_motion_count(MblMwMetaWearBoard *board, uint8_t count) {
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        ((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->motion.anym_dur = (count - 1);
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        ((AccBma255Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->motion.slope_dur = (count - 1);
+        break;
+    }
+    default:
+        return;
+    }
+}
+
+void mbl_mw_acc_bosch_set_any_motion_threshold(MblMwMetaWearBoard *board, float threshold) {
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        auto config = (AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER);
+        config->motion.anym_th = threshold / BOSCH_MOTION_THS_STEPS.at(config->acc.range);
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        auto config = (AccBma255Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER);
+        config->motion.slope_th = threshold / BOSCH_MOTION_THS_STEPS.at(config->acc.range);
+        break;
+    }
+    default:
+        return;
+    }
+}
+
+void mbl_mw_acc_bosch_write_motion_config(const MblMwMetaWearBoard *board) {
+    vector<uint8_t> command = {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_CONFIG)};
+    
+    states.at(board).motion_mask = 0x7;
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        auto config= ((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->motion;
+        command.insert(command.end(), (uint8_t*) &config, (uint8_t*) (&config + 1));
+        send_command(board, command.data(), (uint8_t) command.size());
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        auto config= ((AccBma255Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->motion;
+        command.insert(command.end(), (uint8_t*) &config, (uint8_t*) (&config + 1));
+        send_command(board, command.data(), (uint8_t) command.size());
+        break;
+    }
+    default:
+        return;
+    }
+}
+
+void mbl_mw_acc_bosch_enable_motion_detection(const MblMwMetaWearBoard *board) {
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT_ENABLE), states.at(board).motion_mask, 0};
+    SEND_COMMAND;
+}
+
+void mbl_mw_acc_bosch_disable_motion_detection(const MblMwMetaWearBoard *board) {
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT_ENABLE), 0, 0x7f};
+    SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_enable_orientation_detection(const MblMwMetaWearBoard *board) {

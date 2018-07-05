@@ -7,6 +7,10 @@ enum class AccelerometerBoschRegister : uint8_t {
     DATA_INTERRUPT,
     DATA_INTERRUPT_CONFIG,
     
+    MOTION_INTERRUPT_ENABLE = 0x9,
+    MOTION_CONFIG,
+    MOTION_INTERRUPT,
+
     ORIENT_INTERRUPT_ENABLE = 0xf,
     ORIENT_CONFIG,
     ORIENT_INTERRUPT,

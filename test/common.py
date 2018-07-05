@@ -429,6 +429,9 @@ class TestMetaWearBase(unittest.TestCase):
         elif (data.contents.type_id == DataTypeId.STRING):
             data_ptr= cast(data.contents.value, c_char_p)
             self.data = data_ptr.value.decode("ascii")
+        elif (data.contents.type_id == DataTypeId.BOSCH_ANY_MOTION):
+            data_ptr = cast(data.contents.value, POINTER(BoschAnyMotion))
+            self.data = copy.deepcopy(data_ptr.contents)
         else:
             raise RuntimeError('Unrecognized data type id: ' + str(data.contents.type_id))
 

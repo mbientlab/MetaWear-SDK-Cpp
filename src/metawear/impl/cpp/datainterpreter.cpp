@@ -8,6 +8,7 @@
 #include "metawear/core/settings.h"
 #include "metawear/core/cpp/datainterpreter.h"
 #include "metawear/core/cpp/datasignal_private.h"
+#include "metawear/sensor/accelerometer_bosch.h"
 #include "metawear/sensor/cpp/accelerometer_bosch_private.h"
 #include "metawear/sensor/cpp/gyro_bmi160_private.h"
 #include "metawear/core/cpp/logging_private.h"
@@ -184,6 +185,21 @@ static MblMwData* convert_to_battery_state(bool log_data, const MblMwDataSignal*
     CREATE_MESSAGE(MBL_MW_DT_ID_BATTERY_STATE);
 }
 
+static MblMwData* convert_to_bosch_any_motion(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwBoschAnyMotion *value= (MblMwBoschAnyMotion*) malloc(sizeof(MblMwBoschAnyMotion));
+    auto detected = [response](uint8_t& field, uint8_t axis) {
+        auto mask = 0x1 << (axis + 3);
+        field = (mask & response[0]) == mask;
+    };
+
+    value->sign = (response[0] & 0x40) != 0x40;
+    detected(value->x_axis_active, 0);
+    detected(value->y_axis_active, 1);
+    detected(value->z_axis_active, 2);
+    
+    CREATE_MESSAGE(MBL_MW_DT_ID_BOSCH_ANY_MOTION);
+}
+
 CONVERT_TO_FLOAT(convert_to_temperature, int32_t, TEMPERATURE_SCALE)
 
 CONVERT_TO_FLOAT(convert_to_mma8452q_acceleration_single_axis, int32_t, MMA8452Q_ACC_SCALE)
@@ -322,7 +338,8 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::MAC_ADDRESS, convert_to_mac_address },
     { DataInterpreter::SENSOR_ORIENTATION_MMA8452Q, convert_to_sensor_orientation_mma8452q },
     { DataInterpreter::LOGGING_TIME, convert_to_logging_time },
-    { DataInterpreter::BTLE_ADDRESS, convert_to_btle_address }
+    { DataInterpreter::BTLE_ADDRESS, convert_to_btle_address },
+    { DataInterpreter::BOSCH_ANY_MOTION, convert_to_bosch_any_motion }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {

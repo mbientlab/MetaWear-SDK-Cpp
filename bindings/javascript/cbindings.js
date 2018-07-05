@@ -267,7 +267,8 @@ var DataTypeId = new Enum({
   'SENSOR_ORIENTATION': 11,
   'STRING': 12,
   'LOGGING_TIME': 13,
-  'BTLE_ADDRESS': 14
+  'BTLE_ADDRESS': 14,
+  'BOSCH_ANY_MOTION': 15
 }, ref.types.int);
 DataTypeId.alignment = 4;
 
@@ -588,6 +589,13 @@ var BtleAddress = Struct({
   'address': ArrayUByte_6
 });
 
+var BoschAnyMotion = Struct({
+  'sign': ref.types.uint8,
+  'x_axis_active': ref.types.uint8,
+  'y_axis_active': ref.types.uint8,
+  'z_axis_active': ref.types.uint8
+});
+
 var OverflowState = Struct({
   'length': ref.types.uint16,
   'assert_en': ref.types.uint8
@@ -770,6 +778,12 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_bosch_start': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
+ * Writes the motion configuration to the remote device
+ * @param board     Calling object
+ */
+  'mbl_mw_acc_bosch_write_motion_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
  * Disables orientation detection
  * @param board     Calling object
  */
@@ -825,6 +839,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param odr       Output data rate value to assign
  */
   'mbl_mw_acc_bmi160_set_odr': [ref.types.void, [ref.refType(MetaWearBoard), AccBmi160Odr]],
+
+/**
+ * Retrieves the data signal representing data from the motion detection algorithm
+ * @param board     Calling object
+ * @return Pointer to Bosch's motion detection data signal
+ */
+  'mbl_mw_acc_bosch_get_motion_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
  * Retrieves the data signal representing data from the orientation detection algorithm
@@ -1080,6 +1101,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_cd_tcs34725_disable_illuminator_led': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
+ * Sets the any motion detector's count parameter
+ * @param board     Calling object
+ * @param count     Number of consecutive slope data points that must be above the threshold
+ */
+  'mbl_mw_acc_bosch_set_any_motion_count': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
  * Retrieves the data signal representing switch state data
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the switch data signal
@@ -1256,6 +1284,12 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_mma8452q_set_range': [ref.types.void, [ref.refType(MetaWearBoard), AccMma8452qRange]],
 
 /**
+ * Enables motion detection
+ * @param board     Calling object
+ */
+  'mbl_mw_acc_bosch_enable_motion_detection': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
  * Variant of acceleration data that packs multiple data samples into 1 BLE packet to increase the
  * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
  * @return Pointer to the data singal
@@ -1353,6 +1387,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * a non sample delay processor was passed in
  */
   'mbl_mw_dataprocessor_sample_modify_bin_size': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint8]],
+
+/**
+ * Sets the any motion detector's threshold parameter
+ * @param board     Calling object
+ * @param count     Value that the slope data points must be above
+ */
+  'mbl_mw_acc_bosch_set_any_motion_threshold': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.float]],
 
 /**
  * Removes the timer from the board
@@ -2725,6 +2766,12 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_delta_create': [ref.types.int32, [ref.refType(DataSignal), DeltaMode, ref.types.float, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
+ * Disables motion detection
+ * @param board     Calling object
+ */
+  'mbl_mw_acc_bosch_disable_motion_detection': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
  * Create a math processor using unsigned operations.  A pointer representing the processor will be passed back 
  * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
@@ -2953,6 +3000,7 @@ module.exports = {
   LoggingTime: LoggingTime,
   LedPattern: LedPattern,
   DfuDelegate: DfuDelegate,
+  FnVoid_VoidP: FnVoid_VoidP,
   AccMma8452qOdr: AccMma8452qOdr,
   AccMma8452qCutoffFreq: AccMma8452qCutoffFreq,
   MetaWearRProChannel: MetaWearRProChannel,
@@ -2964,7 +3012,6 @@ module.exports = {
   FnVoid_VoidP_DataP: FnVoid_VoidP_DataP,
   FnVoid_VoidP_VoidP_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_FnVoidVoidPtrInt,
   ArrayUByte_6: ArrayUByte_6,
-  FnVoid_VoidP: FnVoid_VoidP,
   GattCharWriteType: GattCharWriteType,
   ProximityTsl2671Current: ProximityTsl2671Current,
   NeoPixelRotDirection: NeoPixelRotDirection,
@@ -3044,8 +3091,9 @@ module.exports = {
   FnVoid_VoidP_UInt_UInt: FnVoid_VoidP_UInt_UInt,
   FnVoid_VoidP_EventP_Int: FnVoid_VoidP_EventP_Int,
   BtleAddress: BtleAddress,
-  OverflowState: OverflowState,
+  BoschAnyMotion: BoschAnyMotion,
   EulerAngles: EulerAngles,
+  OverflowState: OverflowState,
   GattChar: GattChar,
   FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray,
   ComparatorOperation: ComparatorOperation,
