@@ -1,4 +1,4 @@
-from common import TestMetaWearBase
+from common import TestMetaWearBase, to_string_buffer
 from ctypes import create_string_buffer
 from mbientlab.metawear.cbindings import *
 import copy
@@ -173,3 +173,19 @@ class TestSensorFusion(TestMetaWearBase):
                 self.libmetawear.mbl_mw_sensor_fusion_stop(self.board)
 
                 self.assertEqual(test['expected'], self.command_history)
+
+    def test_read_calibration(self):
+        signal = self.libmetawear.mbl_mw_sensor_fusion_calibration_state_data_signal(self.board)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
+        self.libmetawear.mbl_mw_datasignal_read(signal)
+        self.assertEqual([0x19, 0x8b], self.command)
+
+
+        expected_state = CalibrationState(
+                accelerometer = Const.SENSOR_FUSION_CALIBRATION_ACCURACY_UNRELIABLE, 
+                gyroscope = Const.SENSOR_FUSION_CALIBRATION_ACCURACY_LOW, 
+                magnetometer = Const.SENSOR_FUSION_CALIBRATION_ACCURACY_MEDIUM
+        )
+        self.notify_mw_char(to_string_buffer([0x19, 0x8b, 0x00, 0x01, 0x02]))
+        self.assertEqual(expected_state, self.data)

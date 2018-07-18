@@ -221,24 +221,24 @@ RAW_CONVERT(convert_to_euler_angles, MblMwEulerAngles, MBL_MW_DT_ID_EULER_ANGLE)
 RAW_CONVERT(convert_to_corrected_vector3, MblMwCorrectedCartesianFloat, MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT)
 
 static MblMwData* convert_to_vector3(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    MblMwCartesianFloat *unscaled = (MblMwCartesianFloat*) response,
-            *value = (MblMwCartesianFloat*) malloc(sizeof(MblMwCartesianFloat));
+    MblMwCartesianFloat unscaled, *value = (MblMwCartesianFloat*) malloc(sizeof(MblMwCartesianFloat));
+    memcpy(&unscaled, response, sizeof(MblMwCartesianFloat));
 
-    value->x = unscaled->x / MSS_TO_G_SCALE;
-    value->y = unscaled->y / MSS_TO_G_SCALE;
-    value->z = unscaled->z / MSS_TO_G_SCALE;
+    value->x = unscaled.x / MSS_TO_G_SCALE;
+    value->y = unscaled.y / MSS_TO_G_SCALE;
+    value->z = unscaled.z / MSS_TO_G_SCALE;
 
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
 static MblMwData* convert_to_corrected_acc(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    MblMwCorrectedCartesianFloat *unscaled = (MblMwCorrectedCartesianFloat*) response,
-            *value = (MblMwCorrectedCartesianFloat*) malloc(sizeof(MblMwCorrectedCartesianFloat));
+    MblMwCorrectedCartesianFloat unscaled, *value = (MblMwCorrectedCartesianFloat*) malloc(sizeof(MblMwCorrectedCartesianFloat));
+    memcpy(&unscaled, response, sizeof(float) * 3);
 
-    value->x = unscaled->x / SENSOR_FUSION_ACC_SCALE;
-    value->y = unscaled->y / SENSOR_FUSION_ACC_SCALE;
-    value->z = unscaled->z / SENSOR_FUSION_ACC_SCALE;
-    value->accuracy = unscaled->accuracy;
+    value->x = unscaled.x / SENSOR_FUSION_ACC_SCALE;
+    value->y = unscaled.y / SENSOR_FUSION_ACC_SCALE;
+    value->z = unscaled.z / SENSOR_FUSION_ACC_SCALE;
+    value->accuracy = response[12];
 
     CREATE_MESSAGE(MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT);
 }
@@ -305,6 +305,13 @@ static MblMwData* convert_to_btle_address(bool log_data, const MblMwDataSignal* 
     CREATE_MESSAGE(MBL_MW_DT_ID_BTLE_ADDRESS);
 }
 
+static MblMwData* convert_to_calibration_state(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwCalibrationState *value = (MblMwCalibrationState*)malloc(sizeof(MblMwCalibrationState));
+    memcpy(value, response, sizeof(MblMwCalibrationState));
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_CALIBRATION_STATE);
+}
+
 unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters = {
     { DataInterpreter::INT32 , convert_to_int32 },
     { DataInterpreter::UINT32 , convert_to_uint32 },
@@ -339,7 +346,8 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::SENSOR_ORIENTATION_MMA8452Q, convert_to_sensor_orientation_mma8452q },
     { DataInterpreter::LOGGING_TIME, convert_to_logging_time },
     { DataInterpreter::BTLE_ADDRESS, convert_to_btle_address },
-    { DataInterpreter::BOSCH_ANY_MOTION, convert_to_bosch_any_motion }
+    { DataInterpreter::BOSCH_ANY_MOTION, convert_to_bosch_any_motion },
+    { DataInterpreter::SENSOR_FUSION_CALIB_STATE, convert_to_calibration_state }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {

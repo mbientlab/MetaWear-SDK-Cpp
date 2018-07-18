@@ -268,7 +268,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         24, 255, 255, 
         25, 0, 0, 8, 3, 0, 6, 0, 2, 0, 1, 0, 
         254, 0, 2, 0, 
-        43, 
+        44, 
         1, 1, 255, 0, 1, 0, 1, 1, 0, 0, 
         3, 4, 255, 0, 7, 2, 3, 2, 1, 0, 
         3, 4, 255, 0, 8, 2, 1, 2, 1, 0, 
@@ -310,6 +310,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         25, 8, 255, 0, 23, 0, 4, 4, 1, 0, 
         25, 9, 255, 0, 25, 0, 3, 4, 1, 0, 
         25, 10, 255, 0, 25, 0, 3, 4, 1, 0, 
+        25, 203, 255, 0, 34, 0, 3, 1, 0, 0, 
         254, 196, 255, 0, 1, 0, 1, 4, 0, 0, 
         5, 
         3, 40, 3, 7, 48, 129, 11, 192, 0, 20, 20, 20, 64, 10, 24, 72, 8, 17, 0, 0, 
@@ -339,7 +340,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
         self.maxDiff= None
-        self.assertEqual(self.python_array[0:548], TestMetaWearBoardSerialize.motion_r_state[0:548])
+        self.assertEqual(self.python_array[0:558], TestMetaWearBoardSerialize.motion_r_state[0:558])
 
     def test_deserialize_motion_r(self):
         # just test that deserialization is successful

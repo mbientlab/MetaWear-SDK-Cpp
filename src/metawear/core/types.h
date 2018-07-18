@@ -94,3 +94,12 @@ typedef struct {
     int64_t epoch;
     uint8_t reset_uid;
 } MblMwLoggingTime;
+
+/**
+ * Sensor fusion calibration state
+ */
+typedef struct {
+    uint8_t accelrometer;
+    uint8_t gyroscope;
+    uint8_t magnetometer;
+} MblMwCalibrationState;

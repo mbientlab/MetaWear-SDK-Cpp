@@ -46,6 +46,8 @@ const ResponseHeader RESPONSE_HEADERS[] {
     ResponseHeader(MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::LINEAR_ACC))
 };
 
+const ResponseHeader CALIB_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::CALIBRATION_STATE)));
+
 struct SensorFusionState {
     struct {
         uint8_t mode;
@@ -128,8 +130,15 @@ void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
                     DataInterpreter::SENSOR_FUSION_FLOAT_VECTOR3, FirmwareConverter::DEFAULT, 3, 4, 1, 0);
         }
 
+        if (!board->module_events.count(CALIB_STATE_RESPONSE_HEADER)) {
+            board->module_events[CALIB_STATE_RESPONSE_HEADER] = new MblMwDataSignal(CALIB_STATE_RESPONSE_HEADER, board, 
+                    DataInterpreter::SENSOR_FUSION_CALIB_STATE, FirmwareConverter::DEFAULT, 3, 1, 0, 0);
+        }
+
         board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::MODE))),
                 forward_as_tuple(received_config_response));
+        board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::CALIBRATION_STATE))),
+                forward_as_tuple(response_handler_data_no_id));
 
         SensorFusionTransientState newState = {nullptr};
         transient_states.insert({board, newState});
@@ -150,6 +159,10 @@ void deserialize_sensor_fusion_config(MblMwMetaWearBoard *board, uint8_t** state
 
 MblMwDataSignal* mbl_mw_sensor_fusion_get_data_signal(const MblMwMetaWearBoard* board, MblMwSensorFusionData data) {
     GET_DATA_SIGNAL(RESPONSE_HEADERS[data]);
+}
+
+MblMwDataSignal* mbl_mw_sensor_fusion_calibration_state_data_signal(const MblMwMetaWearBoard* board) {
+    GET_DATA_SIGNAL(CALIB_STATE_RESPONSE_HEADER);
 }
 
 void mbl_mw_sensor_fusion_set_mode(MblMwMetaWearBoard* board, MblMwSensorFusionMode mode) {

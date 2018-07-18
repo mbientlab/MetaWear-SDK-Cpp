@@ -10,5 +10,6 @@ enum class SensorFusionRegister : uint8_t {
     QUATERNION,
     EULER_ANGLES,
     GRAVITY_VECTOR,
-    LINEAR_ACC
+    LINEAR_ACC,
+    CALIBRATION_STATE
 };

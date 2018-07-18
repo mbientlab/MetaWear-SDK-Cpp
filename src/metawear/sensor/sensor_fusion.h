@@ -69,6 +69,12 @@ typedef enum {
  * @return Data signal object  
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_sensor_fusion_get_data_signal(const MblMwMetaWearBoard* board, MblMwSensorFusionData data);
+/**
+ * Get the data signal object representing thecalibration state.  This signal can only be used while the sensor fusion algorithm is running
+ * @param board         Calling object
+ * @return Data signal object  
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_sensor_fusion_calibration_state_data_signal(const MblMwMetaWearBoard* board);
 
 /**
  * Set the operation mode

@@ -39,7 +39,8 @@ enum class DataInterpreter : uint8_t {
     SENSOR_ORIENTATION_MMA8452Q,
     LOGGING_TIME,
     BTLE_ADDRESS,
-    BOSCH_ANY_MOTION
+    BOSCH_ANY_MOTION,
+    SENSOR_FUSION_CALIB_STATE
 };
 
 enum class FirmwareConverter : uint8_t {
