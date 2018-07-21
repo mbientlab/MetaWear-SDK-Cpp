@@ -47,6 +47,7 @@ const ResponseHeader RESPONSE_HEADERS[] {
 };
 
 const ResponseHeader CALIB_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::CALIBRATION_STATE)));
+const uint8_t CALIBRATION_REVISION = 1;
 
 struct SensorFusionState {
     struct {
@@ -162,6 +163,9 @@ MblMwDataSignal* mbl_mw_sensor_fusion_get_data_signal(const MblMwMetaWearBoard* 
 }
 
 MblMwDataSignal* mbl_mw_sensor_fusion_calibration_state_data_signal(const MblMwMetaWearBoard* board) {
+    if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision < CALIBRATION_REVISION) {
+        return nullptr;
+    }
     GET_DATA_SIGNAL(CALIB_STATE_RESPONSE_HEADER);
 }
 

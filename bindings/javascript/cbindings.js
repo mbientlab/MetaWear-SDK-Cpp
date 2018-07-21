@@ -764,7 +764,7 @@ Const.MODULE_ACC_TYPE_BMA255 = 3;
 
 // TODO: This line exisits because the generator doesn't understand array of pointers
 var ArrayAnonymousDataSignalP = ArrayType(ref.refType(AnonymousDataSignal));
-FnVoid_MetaWearBoardP_AnonymousDataSignalP_UInt = ffi.Function(ref.types.void, [ref.refType(MetaWearBoard), ArrayAnonymousDataSignalP, ref.types.uint32]);
+FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ArrayAnonymousDataSignalP, ref.types.uint32]);
 var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 /**
  * Stop sensor fusion

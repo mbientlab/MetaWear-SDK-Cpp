@@ -177,6 +177,18 @@ class TestSensorFusion(TestMetaWearBase):
     def test_read_calibration(self):
         signal = self.libmetawear.mbl_mw_sensor_fusion_calibration_state_data_signal(self.board)
 
+        self.assertIsNone(signal)
+
+class TestSensorFusionRev1(TestMetaWearBase):
+    def setUp(self):
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
+        self.metawear_motion_r_services[0x19]= create_string_buffer(b'\x19\x80\x00\x01\x03\x00\x06\x00\x02\x00\x01\x00', 12)
+
+        super().setUp()
+
+    def test_read_calibration(self):
+        signal = self.libmetawear.mbl_mw_sensor_fusion_calibration_state_data_signal(self.board)
+
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_read(signal)
         self.assertEqual([0x19, 0x8b], self.command)
@@ -189,3 +201,5 @@ class TestSensorFusion(TestMetaWearBase):
         )
         self.notify_mw_char(to_string_buffer([0x19, 0x8b, 0x00, 0x01, 0x02]))
         self.assertEqual(expected_state, self.data)
+
+
