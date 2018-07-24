@@ -24,3 +24,9 @@ typedef struct MblMwMetaWearBoard MblMwMetaWearBoard;
  * @param value         Additional value passed to the function for context specific callbacks
  */
 typedef void(*MblMwFnBoardPtrInt)(void *context, MblMwMetaWearBoard* board, int32_t value);
+
+/**
+ * Definition for callback functions that accept an MblMwMetaWearBoard pointer
+ * @param board         Board pointer to be used with the function
+ */
+typedef void(*MblMwFnBoardPtr)(const MblMwMetaWearBoard* board);

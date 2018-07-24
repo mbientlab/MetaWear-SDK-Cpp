@@ -35,6 +35,11 @@ METAWEAR_API void mbl_mw_event_record_commands(MblMwEvent *event);
  * @param commands_recorded     Callback function to be executed when commands have been recorded
  */
 METAWEAR_API void mbl_mw_event_end_record(MblMwEvent *event, void *context, MblMwFnEventPtrInt commands_recorded);
+/**
+ * Remove all recorded events from the board.
+ * @param board                 Calling object
+ */
+METAWEAR_API void mbl_mw_event_remove_all(MblMwMetaWearBoard* board);
 
 #ifdef	__cplusplus
 }

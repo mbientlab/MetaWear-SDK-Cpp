@@ -39,7 +39,9 @@ const double TICK_TIME_STEP= (48.0 / 32768.0) * 1000.0;         ///< millisecond
 
 const ResponseHeader 
     LOGGING_TIME_RESPONSE_HEADER(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TIME))),
-    LOGGING_LENGTH_RESPONSE_HEADER(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::LENGTH)));
+    LOGGING_LENGTH_RESPONSE_HEADER(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::LENGTH))),
+    LOGGING_READOUT_NOTIFY_HEADER(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_NOTIFY)),
+    LOGGING_READOUT_PAGE_COMPLETED_HEADER(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PAGE_COMPLETED));
 
 static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len);
 
@@ -63,6 +65,7 @@ struct LoggerState : public AsyncCreator {
     vector<MblMwAnonymousDataSignal*> anonymous_signals;
     MblMwDataLogger* next_logger;
     MblMwLogDownloadHandler log_download_handler;
+    MblMwRawLogDownloadHandler raw_log_download_handler;
     float log_download_notify_progress;
     uint32_t n_log_entries;
     uint8_t latest_reset_uid, queryLogId;
@@ -380,6 +383,28 @@ static int32_t logging_response_readout_notify(MblMwMetaWearBoard *board, const 
     return 0;
 }
 
+static int32_t raw_logging_response_readout_notify(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    auto parse_response= [&board, &response](uint8_t offset) -> void {
+        auto state= GET_LOGGER_STATE(board);
+        uint8_t entry_id = response[offset] & ENTRY_ID_MASK;
+        uint8_t reset_uid = (response[offset] & ~ENTRY_ID_MASK) >> 5;
+        uint32_t entry_tick;
+        memcpy(&entry_tick, (response + offset + 1), 4);
+        uint32_t data;
+        memcpy(&data, (response + offset + 5), 4);
+        if (state->raw_log_download_handler.received_entry != nullptr) {
+            state->raw_log_download_handler.received_entry(state->raw_log_download_handler.context, entry_id, reset_uid, entry_tick, data);
+        }
+    };
+    
+    parse_response(2);
+    if (len == 20) {
+        parse_response(11);
+    }
+    
+    return 0;
+}
+
 static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state= GET_LOGGER_STATE(board);
     uint32_t entries_left;
@@ -391,12 +416,26 @@ static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, cons
     if (state->log_download_handler.received_progress_update != nullptr) {
         state->log_download_handler.received_progress_update(state->log_download_handler.context, entries_left, state->n_log_entries);
     }
+    if (state->raw_log_download_handler.received_progress_update != nullptr) {
+        state->raw_log_download_handler.received_progress_update(state->raw_log_download_handler.context, entries_left, state->n_log_entries);
+    }
     return 0;
 }
 
 static int32_t logging_response_page_completed(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     uint8_t command[2]= { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PAGE_CONFIRM) };
     SEND_COMMAND;
+    return 0;
+}
+
+static int32_t raw_logging_response_page_completed(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    auto state= GET_LOGGER_STATE(board);
+    if (state->raw_log_download_handler.logging_page_completed != nullptr) {
+        state->raw_log_download_handler.logging_page_completed(state->raw_log_download_handler.context, board, [](const MblMwMetaWearBoard* board) {
+            uint8_t command[2]= { MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PAGE_CONFIRM) };
+            SEND_COMMAND;
+        });
+    }
     return 0;
 }
 
@@ -559,8 +598,6 @@ void LoggerState::clear_data_loggers() {
 }
 
 void init_logging(MblMwMetaWearBoard *board) {
-    //MblMwDataSignal::MblMwDataSignal(const ResponseHeader& header, MblMwMetaWearBoard *owner, DataInterpreter interpreter, 
-    //    uint8_t n_channels, uint8_t channel_size, uint8_t is_signed, uint8_t offset)
     if (!board->module_events.count(LOGGING_TIME_RESPONSE_HEADER)) {
         board->module_events[LOGGING_TIME_RESPONSE_HEADER] = new MblMwDataSignal(LOGGING_TIME_RESPONSE_HEADER, board, 
             DataInterpreter::LOGGING_TIME, 1, 5, 0, 0);
@@ -573,20 +610,12 @@ void init_logging(MblMwMetaWearBoard *board) {
     }
     board->responses[LOGGING_LENGTH_RESPONSE_HEADER] = response_handler_data_no_id;  
 
-    // board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TIME))),
-    //     forward_as_tuple(logging_response_time_received));
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::TRIGGER)),
         forward_as_tuple(logging_response_entry_id_received));
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::TRIGGER))),
         forward_as_tuple(logging_response_read_entry_id));
-    // board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, READ_REGISTER(ORDINAL(LoggingRegister::LENGTH))),
-    //     forward_as_tuple(logging_response_length_received));
-    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_NOTIFY)),
-        forward_as_tuple(logging_response_readout_notify));
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PROGRESS)),
         forward_as_tuple(logging_response_readout_progress));
-    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PAGE_COMPLETED)),
-        forward_as_tuple(logging_response_page_completed));
 
     if (!board->logger_state) {
         board->logger_state = make_shared<LoggerState>();
@@ -639,10 +668,11 @@ void mbl_mw_logging_clear_entries(const MblMwMetaWearBoard* board) {
     SEND_COMMAND;
 }
 
-void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwLogDownloadHandler* handler) {
+
+void mbl_mw_logging_download_common(MblMwMetaWearBoard* board, uint8_t n_notifies) {
     auto state= GET_LOGGER_STATE(board);
     state->log_download_notify_progress= n_notifies ? 1.0 / n_notifies : 0;
-
+    
     uint8_t command[3]= {MBL_MW_MODULE_LOGGING};
     if (board->module_info.at(MBL_MW_MODULE_LOGGING).revision == REVISION_EXTENDED_LOGGING) {
         command[1]= ORDINAL(LoggingRegister::READOUT_PAGE_COMPLETED);
@@ -653,20 +683,7 @@ void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, cons
     command[1]= ORDINAL(LoggingRegister::READOUT_NOTIFY);
     command[2]= 0x1;
     SEND_COMMAND;
-
-    if (handler != nullptr) {
-        memcpy(&state->log_download_handler, handler, sizeof(MblMwLogDownloadHandler));
-
-        command[1]= ORDINAL(LoggingRegister::READOUT_PROGRESS);
-        command[2]= 0x1;
-        SEND_COMMAND;
-    } else {
-        state->log_download_handler.context= nullptr;
-        state->log_download_handler.received_progress_update= nullptr;
-        state->log_download_handler.received_unknown_entry= nullptr;
-        state->log_download_handler.received_unhandled_entry = nullptr;
-    }
-
+    
     MblMwDataSignal *signal = mbl_mw_logging_get_length_data_signal(board);
     mbl_mw_datasignal_subscribe(signal, board, [](void *context, const MblMwData* data) {
         MblMwMetaWearBoard* board = static_cast<MblMwMetaWearBoard*>(context);
@@ -674,6 +691,49 @@ void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, cons
         logging_response_length_received(board, *static_cast<uint32_t*>(data->value));
     });
     mbl_mw_datasignal_read(signal);
+}
+
+void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwLogDownloadHandler* handler) {
+    board->responses[LOGGING_READOUT_NOTIFY_HEADER] = logging_response_readout_notify;
+    board->responses[LOGGING_READOUT_PAGE_COMPLETED_HEADER] = logging_response_page_completed;
+    
+    auto state= GET_LOGGER_STATE(board);
+    uint8_t command[3]= {MBL_MW_MODULE_LOGGING};
+    
+    if (handler != nullptr) {
+        state->log_download_handler = *handler;
+
+        command[1]= ORDINAL(LoggingRegister::READOUT_PROGRESS);
+        command[2]= 0x1;
+        SEND_COMMAND;
+    } else {
+        memset(&state->log_download_handler, 0, sizeof(MblMwLogDownloadHandler));
+    }
+    memset(&state->raw_log_download_handler, 0, sizeof(MblMwRawLogDownloadHandler));
+    
+    mbl_mw_logging_download_common(board, n_notifies);
+}
+
+
+void mbl_mw_logging_raw_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwRawLogDownloadHandler* handler) {
+    board->responses[LOGGING_READOUT_NOTIFY_HEADER] = raw_logging_response_readout_notify;
+    board->responses[LOGGING_READOUT_PAGE_COMPLETED_HEADER] = raw_logging_response_page_completed;
+    
+    auto state= GET_LOGGER_STATE(board);
+    uint8_t command[3]= {MBL_MW_MODULE_LOGGING};
+    
+    if (handler != nullptr) {
+        state->raw_log_download_handler = *handler;
+        
+        command[1]= ORDINAL(LoggingRegister::READOUT_PROGRESS);
+        command[2]= 0x1;
+        SEND_COMMAND;
+    } else {
+        memset(&state->raw_log_download_handler, 0, sizeof(MblMwRawLogDownloadHandler));
+    }
+    memset(&state->log_download_handler, 0, sizeof(MblMwLogDownloadHandler));
+
+    mbl_mw_logging_download_common(board, n_notifies);
 }
 
 uint8_t mbl_mw_logger_get_id(const MblMwDataLogger* logger) {

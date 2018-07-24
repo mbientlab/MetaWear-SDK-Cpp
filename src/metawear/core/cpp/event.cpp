@@ -66,17 +66,17 @@ void MblMwEvent::serialize(vector<uint8_t>& state) const {
 
 static int32_t event_command_recorded(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = GET_EVENT_STATE(board);
+    if (state->event_owner != nullptr) {
+        state->event_owner->event_command_ids.push_back(response[2]);
 
-    state->event_owner->event_command_ids.push_back(response[2]);
+        if ((uint8_t)state->event_owner->event_command_ids.size() == state->event_owner->num_expected_cmds) {
+            state->record_cmd_task->cancel();
 
-    if ((uint8_t)state->event_owner->event_command_ids.size() == state->event_owner->num_expected_cmds) {
-        state->record_cmd_task->cancel();
-
-        auto caller = state->event_owner;
-        state->event_owner = nullptr;
-        state->event_recorded_callback(state->event_recorded_context, caller, MBL_MW_STATUS_OK);
+            auto caller = state->event_owner;
+            state->event_owner = nullptr;
+            state->event_recorded_callback(state->event_recorded_context, caller, MBL_MW_STATUS_OK);
+        }
     }
-
     return MBL_MW_STATUS_OK;
 }
 
@@ -155,4 +155,12 @@ void set_data_token(MblMwMetaWearBoard* board, const EventDataParameter* token) 
 }
 void clear_data_token(MblMwMetaWearBoard* board) {
     GET_EVENT_STATE(board)->data_token = nullptr;;
+}
+
+void mbl_mw_event_remove_all(MblMwMetaWearBoard* board) {
+    for (auto it: board->module_events) {
+        it.second->event_command_ids.clear();
+    }
+    uint8_t command[2]= {MBL_MW_MODULE_EVENT, ORDINAL(EventRegister::REMOVE_ALL)};
+    SEND_COMMAND;
 }

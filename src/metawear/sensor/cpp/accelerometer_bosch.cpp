@@ -622,5 +622,8 @@ void create_acc_bosch_uri(const MblMwDataSignal* signal, stringstream& uri) {
     case ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT):
         uri << "orientation";
         break;
+    case ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT):
+        uri << "bosch-motion";
+        break;
     }
 }

@@ -467,6 +467,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         logger = self.libmetawear.mbl_mw_logger_lookup_id(self.board, 0)
         self.libmetawear.mbl_mw_logger_subscribe(logger, None, self.sensor_data_handler)
 
+        self.libmetawear.mbl_mw_logging_download(self.board, 0, cast(None, POINTER(LogDownloadHandler)))
         self.notify_mw_char(create_string_buffer(b'\x0b\x07\xa0\x37\x43\x00\x00\xc8\x00\x00\x00', 11))
 
         self.assertAlmostEqual(self.data_float.value, 25.0)

@@ -9,6 +9,7 @@ class AnonymousSignalBase(TestMetaWearBase):
         super().setUp()
 
         self.result = self.sync_loggers()
+        self.libmetawear.mbl_mw_logging_download(self.board, 0, cast(None, POINTER(LogDownloadHandler)))
 
     def commandLogger(self, context, board, writeType, characteristic, command, length):
         prev = len(self.full_history)
@@ -306,7 +307,7 @@ class TestTemperature(AnonymousSignalBase):
         for x in range(0, 4):
             with self.subTest(source=str(x)):
                 actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[x])
-                self.assertEqual("temperature[" + str(x) + "]", actual.decode('ascii'))
+                self.assertEqual("temperature[%d]" % (x), actual.decode('ascii'))
 
 class TestTimeout(AnonymousSignalBase):
     def setUp(self):

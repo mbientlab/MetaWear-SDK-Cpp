@@ -144,6 +144,50 @@ METAWEAR_API int64_t mbl_mw_logging_get_reference_time(const MblMwMetaWearBoard 
  */
 METAWEAR_API void mbl_mw_logging_set_reference_time(const MblMwMetaWearBoard *board, uint8_t reset_uid, int64_t reference_epoch);
 
+
+/**
+ * Callback functions for handling notifications from the logger
+ */
+typedef struct {
+    /**
+     * Pointer to additional data for the callback functions
+     */
+    void *context;
+    /**
+     * Called when a log entry is received
+     * @param context               Pointer to the <code>context</code> field
+     * @param entry_id              Logger id of the entry
+     * @param reset_uid             Reset id when this entry was logged
+     * @param entry_tick            Raw time when this entry was logged
+     * @param data                  Raw data
+     */
+    void (*received_entry)(void *context, uint8_t entry_id, uint8_t reset_uid, uint32_t entry_tick, uint32_t data);
+    /**
+     * Called when a progress update is received
+     * @param context               Pointer to the <code>context</code> field
+     * @param entries_left          Number of entries left to download
+     * @param total_entries         Total number of entries
+     */
+    void (*received_progress_update)(void *context, uint32_t entries_left, uint32_t total_entries);
+    /**
+     * Called when a log page is complete, use the ready function to indicate when data has been saved
+     * and you're ready to receive the next page
+     * @param context               Pointer to the <code>context</code> field
+     * @param caller                Object using this function pointer
+     * @param ready                 Callback function to handle when ready for the next page
+     */
+    void (*logging_page_completed)(void *context, const MblMwMetaWearBoard* caller, MblMwFnBoardPtr ready);
+} MblMwRawLogDownloadHandler;
+
+/**
+ * Downloads the raw log data
+ * @param board                     Board to download the log data from
+ * @param n_notifies                How many progress updates to send
+ * @param handler                   Handler for processing logger responses
+ */
+METAWEAR_API void mbl_mw_logging_raw_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwRawLogDownloadHandler* handler);
+
+    
 #ifdef	__cplusplus
 }
 #endif

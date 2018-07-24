@@ -60,11 +60,6 @@ class TestLogDownload(TestMetaWearBase):
         data_ptr= cast(data, POINTER(c_uint))
         self.assertTrue(id == self.expected_entry[0] and data_ptr.contents.value == self.expected_entry[1])
 
-    def test_readout_page_confirm(self):
-        expected= [0x0b, 0x0e]
-        self.notify_mw_char(create_string_buffer(b'\x0b\x0d', 2))
-        self.assertEqual(self.command, expected)
-
     def test_readout_progress(self):
         self.expected_updates= [
             0x0271, 0x0251, 0x0231, 0x0211, 0x01f1, 
@@ -103,14 +98,17 @@ class TestLogDownload(TestMetaWearBase):
 
     def test_download(self):
         expected_cmds= [
+            [0x0b, 0x08, 0x01],
             [0x0b, 0x0d, 0x01],
             [0x0b, 0x07, 0x01],
-            [0x0b, 0x08, 0x01],
             [0x0b, 0x85],
-            [0x0b, 0x06, 0x9e, 0x01, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00]
+            [0x0b, 0x06, 0x9e, 0x01, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00],
+            [0x0b, 0x0e]
         ]
 
         self.libmetawear.mbl_mw_logging_download(self.board, 20, self.download_handler)
+        self.notify_mw_char(create_string_buffer(b'\x0b\x0d', 2))
+
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_unknown_entry(self):
@@ -336,17 +334,15 @@ class TestLogTimestamp(TestMetaWearBase):
             super().commandLogger(context, board, writeType, characteristic, command, length)
 
     def test_past(self):
-        epoch = []
-        def handler(context, data):
-            epoch.append(data.contents.epoch)
-
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
-        handler_ptr = FnVoid_VoidP_DataP(handler)
+        epoch = []
+        handler_ptr = FnVoid_VoidP_DataP(lambda ctx, data: epoch.append(data.contents.epoch))
         self.libmetawear.mbl_mw_logger_subscribe(self.loggers[0], None, handler_ptr)
 
+        self.libmetawear.mbl_mw_logging_download(self.board, 0, cast(None, POINTER(LogDownloadHandler)))
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x20, 0x75, 0x1b, 0x04, 0x00, 0x3e, 0x01, 0xcd, 0x01, 0x21, 0x76, 0x1b, 0x04, 0x00, 0xc0, 0x07, 0x00, 0x00]))
 
         # epoch should be within 32701ms
