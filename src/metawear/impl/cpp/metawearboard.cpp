@@ -343,48 +343,64 @@ void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard* board, uint1
     board->time_per_response= response_time_ms > MAX_TIME_PER_RESPONSE ? MAX_TIME_PER_RESPONSE : response_time_ms;
 }
 
-static void(*INITIALIZE_FNS[])(MblMwMetaWearBoard*) = {
-    init_accelerometer_module,
-    init_barometer_module,
-    init_gyro_module,
-    init_ambient_light_module,
-    init_multichannel_temp_module,
-    init_logging,
-    init_magnetometer_module,
-    init_settings_module,
-    init_colordetector_module,
-    init_proximity_module,
-    init_humidity_module,
-    init_event_module,
-    init_timer_module,
-    init_dataprocessor_module,
-    init_gpio_module,
-    init_serialpassthrough_module,
-    init_switch_module,
-    init_sensor_fusion_module,
-    init_macro_module,
-    init_debug_module,
-    init_conductance_module
+const unordered_map<uint8_t, tuple<const char*, void(*)(MblMwMetaWearBoard*)>> MODULE_ATTRS = {
+    { MBL_MW_MODULE_SWITCH, {"Switch", init_switch_module} },
+    { MBL_MW_MODULE_LED, {"Led", nullptr} },
+    { MBL_MW_MODULE_ACCELEROMETER, {"Accelerometer", init_accelerometer_module} },
+    { MBL_MW_MODULE_TEMPERATURE, {"Temperature", init_multichannel_temp_module} },
+    { MBL_MW_MODULE_GPIO, {"Gpio", init_gpio_module} },
+    { MBL_MW_MODULE_NEO_PIXEL, {"NeoPixel", nullptr} },
+    { MBL_MW_MODULE_IBEACON, {"IBeacon", nullptr} },
+    { MBL_MW_MODULE_HAPTIC, {"Haptic", nullptr} },
+    { MBL_MW_MODULE_DATA_PROCESSOR, {"DataProcessor", init_dataprocessor_module} },
+    { MBL_MW_MODULE_EVENT, {"Event", init_event_module} },
+    { MBL_MW_MODULE_LOGGING, {"Logging", init_logging} },
+    { MBL_MW_MODULE_TIMER, {"Timer", init_timer_module} },
+    { MBL_MW_MODULE_I2C, {"SerialPassthrough", init_serialpassthrough_module} },
+    { MBL_MW_MODULE_MACRO, {"Macro", init_macro_module} },
+    { MBL_MW_MODULE_CONDUCTANCE, {"Conductance", init_conductance_module} },
+    { MBL_MW_MODULE_SETTINGS, {"Settings", init_settings_module} },
+    { MBL_MW_MODULE_BAROMETER, {"Barometer", init_barometer_module} },
+    { MBL_MW_MODULE_GYRO, {"Gyro", init_gyro_module} },
+    { MBL_MW_MODULE_AMBIENT_LIGHT, {"AmbientLight", init_ambient_light_module} },
+    { MBL_MW_MODULE_MAGNETOMETER, {"Magnetometer", init_magnetometer_module} },
+    { MBL_MW_MODULE_HUMIDITY, {"Humidity", init_humidity_module} },
+    { MBL_MW_MODULE_COLOR_DETECTOR, {"Color", init_colordetector_module} },
+    { MBL_MW_MODULE_PROXIMITY, {"Proximity", init_proximity_module} },
+    { MBL_MW_MODULE_SENSOR_FUSION, {"SensorFusion", init_sensor_fusion_module} },
+    { MBL_MW_MODULE_DEBUG, {"Debug", init_debug_module} }
 };
+
 static inline void service_discovery_completed(MblMwMetaWearBoard* board) {
-    for (auto it : INITIALIZE_FNS) {
-        it(board);
+    for (auto it : MODULE_ATTRS) {
+        if (board->module_info.count(it.first) && board->module_info.at(it.first).present && get<1>(it.second) != nullptr) {
+            get<1>(it.second)(board);
+        }
     }
 
     MblMwDataSignal *signal = mbl_mw_logging_get_time_data_signal(board);
-    mbl_mw_datasignal_subscribe(signal, board, [](void *context, const MblMwData* data) {
-        MblMwMetaWearBoard* board = static_cast<MblMwMetaWearBoard*>(context);
-        mbl_mw_datasignal_unsubscribe(mbl_mw_logging_get_time_data_signal(board));
+    if (signal != nullptr) {
+        mbl_mw_datasignal_subscribe(signal, board, [](void *context, const MblMwData* data) {
+            MblMwMetaWearBoard* board = static_cast<MblMwMetaWearBoard*>(context);
+            if (board->initialized_timeout != nullptr) {
+                board->initialized_timeout->cancel();
+            }
+
+            mbl_mw_datasignal_unsubscribe(mbl_mw_logging_get_time_data_signal(board));
+            
+            MblMwLoggingTime *time = static_cast<MblMwLoggingTime*>(data->value);
+            mbl_mw_logging_set_reference_time(board, time->reset_uid, time->epoch);
+            mbl_mw_logging_set_latest_reset_uid(board, time->reset_uid);
+
+            board->initialized(board->initialized_context, board, MBL_MW_STATUS_OK);
+        });
+        mbl_mw_datasignal_read(signal);
+    } else {
         if (board->initialized_timeout != nullptr) {
             board->initialized_timeout->cancel();
         }
-        MblMwLoggingTime *time = static_cast<MblMwLoggingTime*>(data->value);
-        mbl_mw_logging_set_reference_time(board, time->reset_uid, time->epoch);
-        mbl_mw_logging_set_latest_reset_uid(board, time->reset_uid);
-
         board->initialized(board->initialized_context, board, MBL_MW_STATUS_OK);
-    });
-    mbl_mw_datasignal_read(signal);
+    }
 }
 
 static inline void queue_next_query(MblMwMetaWearBoard *board) {
@@ -606,33 +622,6 @@ const MblMwDeviceInformation* mbl_mw_metawearboard_get_device_information(const 
     return dev_info;
 }
 
-const unordered_map<uint8_t, const char*> FRIENDLY_NAMES = {
-    { MBL_MW_MODULE_SWITCH, "Switch" },
-    { MBL_MW_MODULE_LED, "Led" },
-    { MBL_MW_MODULE_ACCELEROMETER, "Accelerometer" },
-    { MBL_MW_MODULE_TEMPERATURE, "Temperature" },
-    { MBL_MW_MODULE_GPIO, "Gpio" },
-    { MBL_MW_MODULE_NEO_PIXEL, "NeoPixel" },
-    { MBL_MW_MODULE_IBEACON, "IBeacon" },
-    { MBL_MW_MODULE_HAPTIC, "Haptic" },
-    { MBL_MW_MODULE_DATA_PROCESSOR, "DataProcessor" },
-    { MBL_MW_MODULE_EVENT, "Event" },
-    { MBL_MW_MODULE_LOGGING, "Logging" },
-    { MBL_MW_MODULE_TIMER, "Timer" },
-    { MBL_MW_MODULE_I2C, "SerialPassthrough" },
-    { MBL_MW_MODULE_MACRO, "Macro" },
-    { MBL_MW_MODULE_CONDUCTANCE, "Conductance" },
-    { MBL_MW_MODULE_SETTINGS, "Settings" },
-    { MBL_MW_MODULE_BAROMETER, "Barometer" },
-    { MBL_MW_MODULE_GYRO, "Gyro" },
-    { MBL_MW_MODULE_AMBIENT_LIGHT, "AmbientLight" },
-    { MBL_MW_MODULE_MAGNETOMETER, "Magnetometer" },
-    { MBL_MW_MODULE_HUMIDITY, "Humidity" },
-    { MBL_MW_MODULE_COLOR_DETECTOR, "Color" },
-    { MBL_MW_MODULE_PROXIMITY, "Proximity" },
-    { MBL_MW_MODULE_SENSOR_FUSION, "SensorFusion" },
-    { MBL_MW_MODULE_DEBUG, "Debug" }
-};
 MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMetaWearBoard* board, uint32_t* size) {
     *size = static_cast<uint32_t>(board->module_info.size());
     MblMwModuleInfo* info = (MblMwModuleInfo*) malloc(sizeof(MblMwModuleInfo) * (*size));
@@ -646,7 +635,7 @@ MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMetaWearBoard* 
     auto temp = info;
     for(auto it: sorted_keys) {
         auto value = &board->module_info.at(it);
-        temp->name = FRIENDLY_NAMES.at(it);
+        temp->name = get<0>(MODULE_ATTRS.at(it));
         temp->extra = value->extra.data();
         temp->extra_len = value->extra.size();
         temp->present = value->present ? 1 : 0;

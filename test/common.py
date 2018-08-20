@@ -7,6 +7,7 @@ import queue
 import unittest
 
 class TestMetaWearBase(unittest.TestCase):
+    CUSTOM_BOARD= -1
     METAWEAR_R_BOARD= 0
     METAWEAR_RG_BOARD= 1
     METAWEAR_RPRO_BOARD= 2
@@ -301,6 +302,8 @@ class TestMetaWearBase(unittest.TestCase):
                 model_number= create_string_buffer(b'2', 1)
             elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD):
                 model_number= create_string_buffer(b'5', 1)
+            elif (self.boardType == TestMetaWearBase.CUSTOM_BOARD):
+                model_number= create_string_buffer(self.custom_module_number, 1)
 
             bytes = cast(model_number.raw, POINTER(c_ubyte))
             handler(board, bytes, len(model_number.raw))
@@ -341,6 +344,8 @@ class TestMetaWearBase(unittest.TestCase):
                 service_response= self.metawear_environment_services[command[0]]
             elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD and command[0] in self.metawear_motion_r_services):
                 service_response= self.metawear_motion_r_services[command[0]]
+            elif (self.boardType == TestMetaWearBase.CUSTOM_BOARD):
+                service_response= self.lookup_module_response(command[0])
             else:
                 raise RuntimeError('Unrecognized module or board: ' + command[0])
 

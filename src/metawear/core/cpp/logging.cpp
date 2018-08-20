@@ -347,14 +347,6 @@ static TimeReference& mbl_mw_logger_lookup_reset_uid(const MblMwMetaWearBoard* b
 }
 
 static int64_t calculate_epoch_inner(shared_ptr<LoggerState> state, uint32_t tick, TimeReference& reference) {
-    // Check for rollover of the internal MetaWear time
-    if (state->latest_tick.count(reference.reset_uid) && state->latest_tick.at(reference.reset_uid) > tick) {
-        // Bump the reference epoc by the real world time of a rollover
-        reference.epoch += static_cast<int64_t>(round((double)UINT32_MAX * TICK_TIME_STEP));
-        if (state->rollback_timestamps.count(reference.reset_uid)) {
-            state->rollback_timestamps[reference.reset_uid] = tick;
-        }
-    }
     state->latest_tick[reference.reset_uid]= tick;
     return reference.epoch + static_cast<int64_t>(round((double)tick * TICK_TIME_STEP));
 }

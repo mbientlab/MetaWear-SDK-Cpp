@@ -515,7 +515,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
             0x03, 0x11, 0xff, 0x00, 0x1c, 0x00, 0x01, 0x01, 0x00, 0x00,
             0x03, 0x19, 0xff, 0x00, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00,
             0x03, 0x9a, 0xff, 0x00, 0x01, 0x00, 0x01, 0x02, 0x00, 0x00,
-            0x0b, 0xc4, 0xff, 0x00, 0x1f, 0x00, 0x01, 0x05, 0x00, 0x00, 
+            0x0b, 0x84, 0xff, 0x00, 0x1f, 0x00, 0x01, 0x05, 0x00, 0x00, 
             0x0b, 0x85, 0xff, 0x00, 0x01, 0x00, 0x01, 0x04, 0x00, 0x00, 
             0x11, 0x0a, 0xff, 0x00, 
             0x11, 0xcb, 0xff, 0x00, 0x1d, 0x00, 0x01, 0x06, 0x00, 0x00, 
@@ -826,7 +826,7 @@ class TestIndefiniteTimeout(TestMetaWearBase):
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
         self.init_event = threading.Event()
 
-    def initialized(self, board, status):
+    def initialized(self, ctx, board, status):
         self.init_status= status
         self.init_event.set()
 
@@ -840,3 +840,24 @@ class TestIndefiniteTimeout(TestMetaWearBase):
         self.init_event.wait()
 
         self.assertEqual(self.init_status, Const.STATUS_ERROR_TIMEOUT)
+
+class TestMissingModule(TestMetaWearBase):
+    def setUp(self):
+        self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
+        self.init_event = threading.Event()
+
+    def initialized(self, ctx, board, status):
+        self.init_status= status
+        self.init_event.set()
+
+    def test_no_modules(self):
+        self.boardType = TestMetaWearBase.CUSTOM_BOARD
+        self.custom_module_number = b'5'
+
+        self.lookup_module_response = lambda x: to_string_buffer([x, 0x80])
+        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
+        self.init_event.wait()
+
+        self.assertEqual(Const.STATUS_OK, self.init_status)
+        # should not issue command to read current time
+        self.assertNotEqual([0x0b, 0x84], self.command)
