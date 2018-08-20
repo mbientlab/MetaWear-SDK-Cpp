@@ -8,7 +8,6 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
-#include <tuple>
 #include <vector>
 
 #include "metawear/core/metawearboard.h"
@@ -344,31 +343,31 @@ void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard* board, uint1
 }
 
 const unordered_map<uint8_t, tuple<const char*, void(*)(MblMwMetaWearBoard*)>> MODULE_ATTRS = {
-    { MBL_MW_MODULE_SWITCH, {"Switch", init_switch_module} },
-    { MBL_MW_MODULE_LED, {"Led", nullptr} },
-    { MBL_MW_MODULE_ACCELEROMETER, {"Accelerometer", init_accelerometer_module} },
-    { MBL_MW_MODULE_TEMPERATURE, {"Temperature", init_multichannel_temp_module} },
-    { MBL_MW_MODULE_GPIO, {"Gpio", init_gpio_module} },
-    { MBL_MW_MODULE_NEO_PIXEL, {"NeoPixel", nullptr} },
-    { MBL_MW_MODULE_IBEACON, {"IBeacon", nullptr} },
-    { MBL_MW_MODULE_HAPTIC, {"Haptic", nullptr} },
-    { MBL_MW_MODULE_DATA_PROCESSOR, {"DataProcessor", init_dataprocessor_module} },
-    { MBL_MW_MODULE_EVENT, {"Event", init_event_module} },
-    { MBL_MW_MODULE_LOGGING, {"Logging", init_logging} },
-    { MBL_MW_MODULE_TIMER, {"Timer", init_timer_module} },
-    { MBL_MW_MODULE_I2C, {"SerialPassthrough", init_serialpassthrough_module} },
-    { MBL_MW_MODULE_MACRO, {"Macro", init_macro_module} },
-    { MBL_MW_MODULE_CONDUCTANCE, {"Conductance", init_conductance_module} },
-    { MBL_MW_MODULE_SETTINGS, {"Settings", init_settings_module} },
-    { MBL_MW_MODULE_BAROMETER, {"Barometer", init_barometer_module} },
-    { MBL_MW_MODULE_GYRO, {"Gyro", init_gyro_module} },
-    { MBL_MW_MODULE_AMBIENT_LIGHT, {"AmbientLight", init_ambient_light_module} },
-    { MBL_MW_MODULE_MAGNETOMETER, {"Magnetometer", init_magnetometer_module} },
-    { MBL_MW_MODULE_HUMIDITY, {"Humidity", init_humidity_module} },
-    { MBL_MW_MODULE_COLOR_DETECTOR, {"Color", init_colordetector_module} },
-    { MBL_MW_MODULE_PROXIMITY, {"Proximity", init_proximity_module} },
-    { MBL_MW_MODULE_SENSOR_FUSION, {"SensorFusion", init_sensor_fusion_module} },
-    { MBL_MW_MODULE_DEBUG, {"Debug", init_debug_module} }
+    { MBL_MW_MODULE_SWITCH, make_tuple("Switch", init_switch_module) },
+    { MBL_MW_MODULE_LED, make_tuple("Led", nullptr) },
+    { MBL_MW_MODULE_ACCELEROMETER, make_tuple("Accelerometer", init_accelerometer_module) },
+    { MBL_MW_MODULE_TEMPERATURE, make_tuple("Temperature", init_multichannel_temp_module) },
+    { MBL_MW_MODULE_GPIO, make_tuple("Gpio", init_gpio_module) },
+    { MBL_MW_MODULE_NEO_PIXEL, make_tuple("NeoPixel", nullptr) },
+    { MBL_MW_MODULE_IBEACON, make_tuple("IBeacon", nullptr) },
+    { MBL_MW_MODULE_HAPTIC, make_tuple("Haptic", nullptr) },
+    { MBL_MW_MODULE_DATA_PROCESSOR, make_tuple("DataProcessor", init_dataprocessor_module) },
+    { MBL_MW_MODULE_EVENT, make_tuple("Event", init_event_module) },
+    { MBL_MW_MODULE_LOGGING, make_tuple("Logging", init_logging) },
+    { MBL_MW_MODULE_TIMER, make_tuple("Timer", init_timer_module) },
+    { MBL_MW_MODULE_I2C, make_tuple("SerialPassthrough", init_serialpassthrough_module) },
+    { MBL_MW_MODULE_MACRO, make_tuple("Macro", init_macro_module) },
+    { MBL_MW_MODULE_CONDUCTANCE, make_tuple("Conductance", init_conductance_module) },
+    { MBL_MW_MODULE_SETTINGS, make_tuple("Settings", init_settings_module) },
+    { MBL_MW_MODULE_BAROMETER, make_tuple("Barometer", init_barometer_module) },
+    { MBL_MW_MODULE_GYRO, make_tuple("Gyro", init_gyro_module) },
+    { MBL_MW_MODULE_AMBIENT_LIGHT, make_tuple("AmbientLight", init_ambient_light_module) },
+    { MBL_MW_MODULE_MAGNETOMETER, make_tuple("Magnetometer", init_magnetometer_module) },
+    { MBL_MW_MODULE_HUMIDITY, make_tuple("Humidity", init_humidity_module) },
+    { MBL_MW_MODULE_COLOR_DETECTOR, make_tuple("Color", init_colordetector_module) },
+    { MBL_MW_MODULE_PROXIMITY, make_tuple("Proximity", init_proximity_module) },
+    { MBL_MW_MODULE_SENSOR_FUSION, make_tuple("SensorFusion", init_sensor_fusion_module) },
+    { MBL_MW_MODULE_DEBUG, make_tuple("Debug", init_debug_module) }
 };
 
 static inline void service_discovery_completed(MblMwMetaWearBoard* board) {
