@@ -6,6 +6,7 @@
 #include "metawear/core/metawearboard_fwd.h"
 
 struct FileOperationsDelegate {
+    virtual ~FileOperationsDelegate() = 0;
     // define callback interface functions
     virtual void onTransferPercentage(int) = 0;
     virtual void onAllPacketsTranferred() = 0;

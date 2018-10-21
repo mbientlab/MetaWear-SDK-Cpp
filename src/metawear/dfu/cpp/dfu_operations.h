@@ -82,6 +82,7 @@ class DfuOperations : public FileOperationsDelegate {
     
 public:
     DfuOperations(const MblMwMetaWearBoard* board, const MblMwDfuDelegate *delegate);
+    virtual ~DfuOperations();
     
     //define public methods
     //void setCentralManager:(CBCentralManager *)manager;
