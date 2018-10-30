@@ -95,8 +95,8 @@ static bool invoke_signal_handler(MblMwDataSignal* signal, int64_t epoch, const 
         data->epoch = epoch;
         data->extra = extra;
         signal->handler(signal->context, data);
-        free(data->value);
-        free(data);
+
+        free_data(signal, data);
         return true;
     }
     return false;
@@ -185,8 +185,7 @@ int32_t response_handler_packed_data(MblMwMetaWearBoard *board, const uint8_t *r
             signal->handler(signal->context, data);
         }
 
-        free(data->value);
-        free(data);
+        free_data(signal, data);
     }
 
     return MBL_MW_STATUS_OK;

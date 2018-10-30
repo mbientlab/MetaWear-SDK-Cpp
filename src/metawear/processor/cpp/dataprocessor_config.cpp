@@ -21,15 +21,14 @@
 #include "metawear/processor/sample.h"
 #include "metawear/processor/threshold.h"
 #include "metawear/processor/time.h"
+#include "metawear/processor/fuser.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
 
-using std::malloc;
-using std::min;
-using std::memset;
+using namespace std;
 
 uint8_t get_accounter_type(const MblMwDataProcessor* source) {
     return ((AccounterConfig*)source->config)->mode;
@@ -711,4 +710,51 @@ int32_t mbl_mw_dataprocessor_time_modify_period(MblMwDataProcessor *time_delay, 
         return MBL_MW_STATUS_OK;
     }
     return MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE;
+}
+
+struct FuseCreeateState {
+    vector<MblMwDataProcessor*> inputs;
+    MblMwDataSignal *source;
+    void* context;
+    MblMwFnDataProcessor processor_created;
+    MblMwDataSignal** ops;
+    uint32_t n_ops, i;
+};
+
+static void buffer_crate_handler(void *context, MblMwDataProcessor* processor) {
+    auto casted = (FuseCreeateState*) context;
+    if (processor != nullptr) {
+        casted->i++;
+        casted->inputs.push_back(processor);
+
+        if (casted->i == casted->n_ops) {
+            FuseConfig config;
+            memset(&config, 0, sizeof(FuseConfig));
+            config.count = casted->n_ops;
+
+            for(size_t i = 0; i < casted->inputs.size(); i++) {
+                config.references[i] = casted->inputs[i]->header.data_id;
+            }
+
+            create_processor(casted->source, MblMwDataProcessor::transform(casted->source, type_to_id.at(DataProcessorType::FUSER), &config), casted->context, casted->processor_created);
+            delete casted;
+        } else {
+            mbl_mw_dataprocessor_buffer_create(casted->ops[casted->i], context, buffer_crate_handler);
+        }
+    } else {
+        casted->processor_created(casted->context, processor);
+        delete casted;
+    }
+}
+
+int32_t mbl_mw_dataprocessor_fuser_create(MblMwDataSignal *source, MblMwDataSignal** ops, uint32_t n_ops, void *context, MblMwFnDataProcessor processor_created) {
+    FuseCreeateState* fuse_context = new FuseCreeateState;
+    fuse_context->source = source;
+    fuse_context->context = context;
+    fuse_context->processor_created = processor_created;
+    fuse_context->ops = ops;
+    fuse_context->n_ops = n_ops;
+    fuse_context->i = 0;
+
+    return mbl_mw_dataprocessor_buffer_create(ops[0], fuse_context, buffer_crate_handler);
 }

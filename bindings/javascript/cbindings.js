@@ -269,7 +269,8 @@ var DataTypeId = new Enum({
   'LOGGING_TIME': 13,
   'BTLE_ADDRESS': 14,
   'BOSCH_ANY_MOTION': 15,
-  'CALIBRATION_STATE': 16
+  'CALIBRATION_STATE': 16,
+  'DATA_ARRAY': 17
 }, ref.types.int);
 DataTypeId.alignment = 4;
 
@@ -1555,6 +1556,22 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_neopixel_clear': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8]],
 
 /**
+ * Pulls the current accelerometer output data rate and data range from the sensor
+ * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
+ * @param completed     Callback function that is executed when the task is finished
+ */
+  'mbl_mw_acc_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
+
+/**
+ * Returns information about the onboard modules
+ * @param board             Calling object
+ * @param size              Pointer to where the size of the returned array will be written to
+ * @return Array of info objects
+ */
+  'mbl_mw_metawearboard_get_module_info': [ref.refType(ModuleInfo), [ref.refType(MetaWearBoard), ref.refType(ref.types.uint32)]],
+
+/**
  * Get the device boot time for a given reset_uid.  This reference time
  * is automatically calulated at connection time.
  * @param board                 Board to use
@@ -2790,22 +2807,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_lookup_id': [ref.refType(DataProcessor), [ref.refType(MetaWearBoard), ref.types.uint8]],
 
 /**
- * Returns information about the onboard modules
- * @param board             Calling object
- * @param size              Pointer to where the size of the returned array will be written to
- * @return Array of info objects
- */
-  'mbl_mw_metawearboard_get_module_info': [ref.refType(ModuleInfo), [ref.refType(MetaWearBoard), ref.refType(ref.types.uint32)]],
-
-/**
- * Pulls the current accelerometer output data rate and data range from the sensor
- * @param board         Calling object
- * @param context       Pointer to additional data for the callback function
- * @param completed     Callback function that is executed when the task is finished
- */
-  'mbl_mw_acc_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
-
-/**
  * Create a delta processor.  A pointer representing the processor will be passed back 
  * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
@@ -2971,6 +2972,16 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param period                How often to allow data through, in milliseconds
  */
   'mbl_mw_dataprocessor_time_modify_period': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint32]],
+
+/**
+ * Create a delta processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
+ * @param source                Data signal providing the input for the processor
+ * @param 
+ * @param context               Pointer to additional data for the callback function
+ * @param processor_created     Callback function to be executed when the processor is created
+ */
+  'mbl_mw_dataprocessor_fuser_create': [ref.types.int32, [ref.refType(DataSignal), ref.refType(DataSignal), ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
  * Sets the oversampling mode

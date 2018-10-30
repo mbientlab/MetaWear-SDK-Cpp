@@ -12,6 +12,8 @@
 #include "metawear/sensor/cpp/accelerometer_bosch_private.h"
 #include "metawear/sensor/cpp/gyro_bmi160_private.h"
 #include "metawear/core/cpp/logging_private.h"
+#include "metawear/processor/cpp/dataprocessor_config.h"
+#include "metawear/processor/cpp/dataprocessor_private.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -312,6 +314,26 @@ static MblMwData* convert_to_calibration_state(bool log_data, const MblMwDataSig
     CREATE_MESSAGE(MBL_MW_DT_ID_CALIBRATION_STATE);
 }
 
+static MblMwData* convert_to_fused(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    auto processor = dynamic_cast<const MblMwDataProcessor*>(signal);
+    auto fused_config = (FuseConfig*) processor->config;
+    MblMwData** value = (MblMwData**) calloc(fused_config->count + 1, sizeof(MblMwData*));
+    uint8_t offset = 0;
+    MblMwData* partialMsg;
+    
+    partialMsg = data_response_converters.at(processor->input->interpreter)(log_data, signal, response, len);
+    value[0] = partialMsg;
+    offset+= processor->input->length();
+
+    for(uint8_t i = 0; i < fused_config->count; i++, offset+= processor->length()) {
+        processor = lookup_processor(signal->owner, fused_config->references[1]);
+        partialMsg = data_response_converters.at(processor->interpreter)(log_data, processor, response + offset, len - offset);
+        value[i + 1] = partialMsg;
+    }
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_DATA_ARRAY);
+}
+
 unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters = {
     { DataInterpreter::INT32 , convert_to_int32 },
     { DataInterpreter::UINT32 , convert_to_uint32 },
@@ -347,7 +369,8 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::LOGGING_TIME, convert_to_logging_time },
     { DataInterpreter::BTLE_ADDRESS, convert_to_btle_address },
     { DataInterpreter::BOSCH_ANY_MOTION, convert_to_bosch_any_motion },
-    { DataInterpreter::SENSOR_FUSION_CALIB_STATE, convert_to_calibration_state }
+    { DataInterpreter::SENSOR_FUSION_CALIB_STATE, convert_to_calibration_state },
+    { DataInterpreter::FUSED_DATA, convert_to_fused }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {
@@ -408,4 +431,18 @@ size_t hash<FirmwareConverter>::operator()(const FirmwareConverter& key) const {
     return static_cast<uint8_t>(key);
 }
 
+}
+
+void free_data(const MblMwDataSignal* signal, MblMwData* data) {
+    if (data->type_id == MBL_MW_DT_ID_DATA_ARRAY) {
+        auto processor = dynamic_cast<const MblMwDataProcessor*>(signal);
+        auto fused_config = (FuseConfig*) processor->config;
+        auto casted = (MblMwData**) data->value;
+
+        for(uint8_t i = 0; i < fused_config->count; i++) {
+            free(casted[i]);
+        }
+    }
+    free(data->value);
+    free(data);
 }

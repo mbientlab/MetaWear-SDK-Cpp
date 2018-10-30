@@ -241,6 +241,7 @@ class DataTypeId:
     BTLE_ADDRESS = 14
     BOSCH_ANY_MOTION = 15
     CALIBRATION_STATE = 16
+    DATA_ARRAY = 17
 
 class SensorOrientation:
     FACE_UP_PORTRAIT_UPRIGHT = 0
@@ -1324,6 +1325,12 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_neopixel_clear.restype = None
     libmetawear.mbl_mw_neopixel_clear.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte]
 
+    libmetawear.mbl_mw_acc_read_config.restype = None
+    libmetawear.mbl_mw_acc_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
+
+    libmetawear.mbl_mw_metawearboard_get_module_info.restype = POINTER(ModuleInfo)
+    libmetawear.mbl_mw_metawearboard_get_module_info.argtypes = [c_void_p, POINTER(c_uint)]
+
     libmetawear.mbl_mw_logging_get_reference_time.restype = c_longlong
     libmetawear.mbl_mw_logging_get_reference_time.argtypes = [c_void_p, c_ubyte]
 
@@ -1795,12 +1802,6 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_lookup_id.restype = c_void_p
     libmetawear.mbl_mw_dataprocessor_lookup_id.argtypes = [c_void_p, c_ubyte]
 
-    libmetawear.mbl_mw_metawearboard_get_module_info.restype = POINTER(ModuleInfo)
-    libmetawear.mbl_mw_metawearboard_get_module_info.argtypes = [c_void_p, POINTER(c_uint)]
-
-    libmetawear.mbl_mw_acc_read_config.restype = None
-    libmetawear.mbl_mw_acc_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
-
     libmetawear.mbl_mw_dataprocessor_delta_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_delta_create.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]
 
@@ -1860,6 +1861,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_time_modify_period.restype = c_int
     libmetawear.mbl_mw_dataprocessor_time_modify_period.argtypes = [c_void_p, c_uint]
+
+    libmetawear.mbl_mw_dataprocessor_fuser_create.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_fuser_create.argtypes = [c_void_p, c_void_p, c_uint, c_void_p, FnVoid_VoidP_VoidP]
 
     libmetawear.mbl_mw_humidity_bme280_set_oversampling.restype = None
     libmetawear.mbl_mw_humidity_bme280_set_oversampling.argtypes = [c_void_p, c_int]

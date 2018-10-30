@@ -546,8 +546,7 @@ void MblMwDataLogger::process_log_data(uint8_t id, int64_t epoch, uint32_t data)
             unhandled_callback(GET_LOGGER_STATE(source->owner)->log_download_handler.context, data);
         }
 
-        free(data->value);
-        free(data);
+        free_data(source, data);
     }
 }
 

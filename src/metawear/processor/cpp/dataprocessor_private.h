@@ -27,7 +27,8 @@ enum class DataProcessorType : uint8_t {
     THRESHOLD,
     TIME,
     ACCOUNTER,
-    PACKER
+    PACKER,
+    FUSER
 };
 
 extern std::unordered_map<DataProcessorType, uint8_t> type_to_id;
@@ -71,6 +72,7 @@ void set_processor_state(MblMwDataProcessor *processor, void* new_state, uint8_t
 void modify_processor_configuration(MblMwDataProcessor *processor, uint8_t size);
 void sync_processor_chain(MblMwMetaWearBoard* board, uint8_t id, ProcessorEntriesHandler handler);
 void disconnect_dataprocessor(MblMwMetaWearBoard* board);
+MblMwDataProcessor* lookup_processor(const MblMwMetaWearBoard* board, uint8_t id);
 
 namespace std {
 
