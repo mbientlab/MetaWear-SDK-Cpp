@@ -30,12 +30,13 @@ using std::vector;
 #define CREATE_ACC_SIGNAL_SINGLE(offset) CREATE_ACC_SIGNAL(DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS, 1, offset)
 #define CREATE_ACC_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(BOSCH_ACCEL_RESPONSE_HEADER, board, interpreter, \
         FirmwareConverter::BOSCH_ACCELERATION, channels, 2, 1, offset)
+#define GET_CONFIG(x) ((x*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))
 
 const uint8_t BMI160_DEFAULT_CONFIG[]= {
     0x28, 0x03,
     0x07, 0x30, 0x81, 0x0b, 0xc0,
     0x00, 0x14, 0x14, 0x14, 
-    0x40, 0x0a, 
+    0x04, 0x0a, 
     0x18, 0x48, 
     0x08, 0x11, 
     0x00, 0x00
@@ -52,10 +53,12 @@ const uint8_t BMA255_DEFAULT_CONFIG[]= {
 const float ORIENT_HYS_G_PER_STEP = 0.0625f;
 const uint8_t FSR_BITMASKS[4]= {0x3, 0x5, 0x8, 0xc}, PACKED_ACC_REVISION= 1;
 const unordered_map<uint8_t, float> FSR_SCALE= {{0x3, 16384.f}, {0x5, 8192.f}, {0x8, 4096.f}, {0xc, 2048.f}}, 
-    BOSCH_MOTION_THS_STEPS = {{0x3, 0.00391f}, {0x5, 0.00781f}, {0x8, 0.01563f}, {0xc, 0.03125f}};
+    BOSCH_MOTION_THS_STEPS = {{0x3, 0.00391f}, {0x5, 0.00781f}, {0x8, 0.01563f}, {0xc, 0.03125f}},
+    BOSCH_TAP_THS_STEPS = {{0x3, 0.0625f}, {0x5, 0.125f}, {0x8, 0.250f}, {0xc, 0.5f}};
 const ResponseHeader BOSCH_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT)),
     BOSCH_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT)),
     BOSCH_ORIENTATION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT)),
+    BOSCH_TAP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT)),
     BMI160_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_INTERRUPT)),
     BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_DATA))),
     BOSCH_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::PACKED_ACC_DATA));
@@ -250,6 +253,11 @@ static void init_accelerometer_bosch(MblMwMetaWearBoard *board, void *config) {
         board->module_events[BOSCH_ORIENTATION_DETECTOR]= new MblMwDataSignal(BOSCH_ORIENTATION_DETECTOR, board, 
                 DataInterpreter::SENSOR_ORIENTATION, FirmwareConverter::DEFAULT, 1, 1, 0, 0);
     }
+    if (!board->module_events.count(BOSCH_TAP_DETECTOR)) {
+        board->module_events[BOSCH_TAP_DETECTOR]= new MblMwDataSignal(BOSCH_TAP_DETECTOR, board, 
+                DataInterpreter::BOSCH_TAP, FirmwareConverter::DEFAULT, 1, 1, 0, 0);
+    }
+
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).revision >= PACKED_ACC_REVISION) {
         if (!board->module_events.count(BOSCH_PACKED_ACCEL_RESPONSE_HEADER)) {
             board->module_events[BOSCH_PACKED_ACCEL_RESPONSE_HEADER]= new MblMwDataSignal(BOSCH_PACKED_ACCEL_RESPONSE_HEADER, board, 
@@ -261,6 +269,7 @@ static void init_accelerometer_bosch(MblMwMetaWearBoard *board, void *config) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))),
         forward_as_tuple(received_config_response));
     board->responses.emplace(BOSCH_MOTION_DETECTOR, response_handler_data_no_id);
+    board->responses.emplace(BOSCH_TAP_DETECTOR, response_handler_data_no_id);
     board->responses.emplace(BOSCH_ORIENTATION_DETECTOR, response_handler_data_no_id);
 
     AccBoschState newState = {nullptr, nullptr, 0x0};
@@ -366,6 +375,10 @@ MblMwDataSignal* mbl_mw_acc_bosch_get_orientation_detection_data_signal(const Mb
 
 MblMwDataSignal* mbl_mw_acc_bosch_get_motion_data_signal(const MblMwMetaWearBoard* board) {
     GET_DATA_SIGNAL(BOSCH_MOTION_DETECTOR);
+}
+
+MblMwDataSignal* mbl_mw_acc_bosch_get_tap_data_signal(const MblMwMetaWearBoard* board) {
+    GET_DATA_SIGNAL(BOSCH_TAP_DETECTOR);
 }
 
 void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi160Odr odr) {
@@ -505,6 +518,102 @@ void mbl_mw_acc_bosch_write_orientation_config(const MblMwMetaWearBoard *board) 
     default:
         return;
     }
+}
+
+void mbl_mw_acc_bosch_set_quiet_time(MblMwMetaWearBoard *board, MblMwAccBoschTapQuietTime time) {
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        GET_CONFIG(AccBmi160Config)->tap.quiet = time;
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        GET_CONFIG(AccBma255Config)->tap.quiet = time;
+        break;
+    }
+    default:
+        return;
+    }
+}
+
+void mbl_mw_acc_bosch_set_shock_time(MblMwMetaWearBoard *board, MblMwAccBoschTapShockTime time) {
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        GET_CONFIG(AccBmi160Config)->tap.shock = time;
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        GET_CONFIG(AccBma255Config)->tap.shock = time;
+        break;
+    }
+    default:
+        return;
+    }
+}
+void mbl_mw_acc_bosch_set_double_tap_window(MblMwMetaWearBoard *board, MblMwAccBoschDoubleTapWindow window) {
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        GET_CONFIG(AccBmi160Config)->tap.dur = window;
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        GET_CONFIG(AccBma255Config)->tap.dur = window;
+        break;
+    }
+    default:
+        return;
+    }
+}
+void mbl_mw_acc_bosch_set_threshold(MblMwMetaWearBoard *board, float threshold) {
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        auto config = GET_CONFIG(AccBmi160Config);
+        config->tap.th = threshold / BOSCH_TAP_THS_STEPS.at(config->acc.range);
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        auto config = GET_CONFIG(AccBma255Config);
+        config->tap.th = threshold / BOSCH_TAP_THS_STEPS.at(config->acc.range);
+        break;
+    }
+    default:
+        return;
+    }
+}
+void mbl_mw_acc_bosch_write_tap_config(const MblMwMetaWearBoard *board) {
+    vector<uint8_t> command = {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_CONFIG)};
+    
+    switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    case MBL_MW_MODULE_ACC_TYPE_BMI160: {
+        auto config= GET_CONFIG(AccBmi160Config)->tap;
+        command.insert(command.end(), (uint8_t*) &config, (uint8_t*) (&config + 1));
+        send_command(board, command.data(), (uint8_t) command.size());
+        break;
+    }
+    case MBL_MW_MODULE_ACC_TYPE_BMA255: {
+        auto config= GET_CONFIG(AccBma255Config)->tap;
+        command.insert(command.end(), (uint8_t*) &config, (uint8_t*) (&config + 1));
+        send_command(board, command.data(), (uint8_t) command.size());
+        break;
+    }
+    default:
+        return;
+    }
+}
+void mbl_mw_acc_bosch_enable_tap_detection(const MblMwMetaWearBoard *board, uint8_t enable_single, uint8_t enable_double) {
+    uint8_t mask = 0;
+    if (enable_single) {
+        mask|= 0x2;
+    }
+    if (enable_double) {
+        mask|= 0x1;
+    }
+
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT_ENABLE), mask, 0};
+    SEND_COMMAND;
+}
+void mbl_mw_acc_bosch_disable_tap_detection(const MblMwMetaWearBoard *board) {
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT_ENABLE), 0x00, 0x03};
+    SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_set_any_motion_count(MblMwMetaWearBoard *board, uint8_t count) {

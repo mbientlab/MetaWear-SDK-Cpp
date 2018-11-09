@@ -5,6 +5,7 @@
 #include "metawear/core/cpp/metawearboard_macro.h"
 #include "metawear/platform/cpp/async_creator.h"
 #include "metawear/platform/cpp/threadpool.h"
+#include "metawear/processor/cpp/dataprocessor_config.h"
 #include "metawear/processor/cpp/dataprocessor_private.h"
 #include "metawear/processor/cpp/dataprocessor_register.h"
 
@@ -61,8 +62,10 @@ struct LoggerState : public AsyncCreator {
     unordered_map<uint8_t, MblMwDataLogger*> data_loggers;
     unordered_map<const MblMwDataLogger*, string> identifiers;
     unordered_map<ResponseHeader, uint8_t> placeholder;
-    unordered_map<const MblMwDataSignal*, int8_t> nRemainingLoggers;
+    unordered_map<ResponseHeader, int8_t> nRemainingLoggers;
     vector<MblMwAnonymousDataSignal*> anonymous_signals;
+    stack<uint8_t> fuser_ids;
+    stack<tuple<MblMwDataSignal*, ProcessorEntry>> fuser_configs;
     MblMwDataLogger* next_logger;
     MblMwLogDownloadHandler log_download_handler;
     MblMwRawLogDownloadHandler raw_log_download_handler;
@@ -230,8 +233,17 @@ static void log_source_discovered(shared_ptr<LoggerState> state, MblMwDataSignal
         source = dynamic_cast<MblMwDataProcessor*>(source)->state;
     }
 
-    if (!state->nRemainingLoggers.count(source) && source->length() > LOG_ENTRY_SIZE) {
-        state->nRemainingLoggers[source] = (int8_t) ceil((float) (source->length() / LOG_ENTRY_SIZE));
+    MblMwDataProcessor const* processor = dynamic_cast<MblMwDataProcessor*>(source);
+    if (processor != nullptr) {
+        MblMwDataSignal const* last;
+        while(processor != nullptr) {
+            last = processor->input;
+            processor = dynamic_cast<const MblMwDataProcessor*>(last);
+        }
+    }
+
+    if (!state->nRemainingLoggers.count(source->header) && source->length() > LOG_ENTRY_SIZE) {
+        state->nRemainingLoggers[source->header] = (int8_t) ceil((float) (source->length() / LOG_ENTRY_SIZE));
     }
 
     MblMwDataLogger* logger = nullptr;
@@ -244,16 +256,16 @@ static void log_source_discovered(shared_ptr<LoggerState> state, MblMwDataSignal
         }
     }
 
-    if (logger == nullptr || (offset != 0 && !state->nRemainingLoggers.count(source))) {
+    if (logger == nullptr || (offset != 0 && !state->nRemainingLoggers.count(source->header))) {
         logger = new MblMwDataLogger(source, nullptr, nullptr);
     }
     logger->add_entry_id(state->queryLogId, true);
     state->data_loggers[state->queryLogId] = logger;
 
-    if (state->nRemainingLoggers.count(source)) {
-        state->nRemainingLoggers[source]--;
-        if (state->nRemainingLoggers[source] < 0) {
-            state->nRemainingLoggers.erase(source);
+    if (state->nRemainingLoggers.count(source->header)) {
+        state->nRemainingLoggers[source->header]--;
+        if (state->nRemainingLoggers[source->header] < 0) {
+            state->nRemainingLoggers.erase(source->header);
         }
     }
 
@@ -262,24 +274,60 @@ static void log_source_discovered(shared_ptr<LoggerState> state, MblMwDataSignal
 
 static void processor_synced(MblMwMetaWearBoard* board, stack<ProcessorEntry>& entries) {
     auto type = guessLogSource(board, entries.top().source, entries.top().offset, entries.top().length);
-    while(!entries.empty()) {
-        auto next = MblMwDataProcessor::transform(type, entries.top().config);
+    auto state = GET_LOGGER_STATE(board);
+    auto fill_processor = [board](MblMwDataSignal* parent, const ProcessorEntry& entry) {
+        auto next = MblMwDataProcessor::transform(parent, entry.config);
+        next->header.data_id = entry.id;
 
-        if (type->header.module_id == MBL_MW_MODULE_DATA_PROCESSOR && CLEAR_READ(type->header.register_id) == ORDINAL(DataProcessorRegister::NOTIFY)) {
-            next->parent_id = type->header.data_id;
+        if (board->module_events.count(next->header)) {
+            auto temp = board->module_events.at(next->header);
+            delete next;
+
+            next = dynamic_cast<MblMwDataProcessor*>(temp);
+        } else {
+            board->module_events.emplace(next->header, next);
         }
-        next->header.data_id = entries.top().id;
-        board->module_events.emplace(next->header, next);
+
+        if (parent->header.module_id == MBL_MW_MODULE_DATA_PROCESSOR && CLEAR_READ(parent->header.register_id) == ORDINAL(DataProcessorRegister::NOTIFY)) {
+            next->parent_id = parent->header.data_id;
+        }
         if (next->state != nullptr) {
-            next->state->header.data_id = entries.top().id;
+            next->state->header.data_id = entry.id;
             board->module_events.emplace(next->state->header, next->state);
         }
 
-        type = next;
+        return next;
+    };
+
+    while(!entries.empty()) {
+        auto config = entries.top().config;
+        if (config[0] == 0x1b) {
+            for(uint8_t i = 0; i < (config[1] & 0x1f); i++) {
+                state->fuser_ids.push(config[i + 2]);
+            }
+            state->fuser_configs.push(make_tuple(type, entries.top()));
+        } else {
+            type = fill_processor(type, entries.top());
+        }
         entries.pop();
     }
 
-    log_source_discovered(GET_LOGGER_STATE(board), type, 0);
+    if (state->fuser_ids.empty()) {
+        while(!state->fuser_configs.empty()) {
+            auto top = state->fuser_configs.top();
+            type = MblMwDataProcessor::transform(get<0>(top), get<1>(top).config);
+            type->header.data_id = get<1>(top).id;
+
+            fill_processor(type, get<1>(top));
+            state->fuser_configs.pop();
+        }
+        log_source_discovered(GET_LOGGER_STATE(board), type, 0);
+    } else {
+        auto id = state->fuser_ids.top();
+        state->fuser_ids.pop();
+
+        sync_processor_chain(board, id, processor_synced);
+    }
 }
 
 static int32_t logging_response_read_entry_id(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
@@ -290,8 +338,7 @@ static int32_t logging_response_read_entry_id(MblMwMetaWearBoard *board, const u
         ResponseHeader key(response[2], response[3], response[4]);
 
         state->state_signal = key.module_id == MBL_MW_MODULE_DATA_PROCESSOR && CLEAR_READ(key.register_id) == ORDINAL(DataProcessorRegister::STATE);
-        if (key.module_id == MBL_MW_MODULE_DATA_PROCESSOR && 
-                (key.register_id == ORDINAL(DataProcessorRegister::NOTIFY) || state->state_signal)) {
+        if (key.module_id == MBL_MW_MODULE_DATA_PROCESSOR && (key.register_id == ORDINAL(DataProcessorRegister::NOTIFY) || state->state_signal)) {
             sync_processor_chain(board, key.data_id, processor_synced);
         } else {
             log_source_discovered(state, guessLogSource(board, key, offset, length), offset);

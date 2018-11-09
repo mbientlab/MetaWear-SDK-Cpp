@@ -63,6 +63,22 @@ typedef enum {
 } MblMwSensorFusionData;
 
 /**
+ * Container class holding the IMU calibration data
+ */
+typedef struct {
+    uint8_t acc[10];
+    uint8_t gyro[10];
+    uint8_t mag[10];
+} MblMwCalibrationData;
+/**
+ * Definition for callback functions that accept an MblMwMetaWearBoard and MblMwCalibrationData pointer
+ * @param context       Additional parameters for the callback function
+ * @param board         Calling object
+ * @param data          Pointer to calibration data
+ */
+typedef void(*MblMwFnBoardPtrCalibDataPtr)(void *context, MblMwMetaWearBoard* board, const MblMwCalibrationData* data);
+
+/**
  * Get the data signal object representing data from the sensor fusion algorithm
  * @param board         Calling object
  * @param data          Desired sensor fusion data
@@ -106,6 +122,23 @@ METAWEAR_API void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board);
  * @param completed     Callback function that is executed when the task is finished
  */
 METAWEAR_API void mbl_mw_sensor_fusion_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed);
+
+/**
+ * Retrieve IMU calibration data; free the memory allocated for the MblMwCalibrationData pointer with mbl_mw_memory_free.
+ * Only call this function when the calibration state of the IMUs is at high accuracy.  
+ * This function can only be used with firmware v1.4.3+.  
+ * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
+ * @param completed     Callback function that is executed when the task is finished
+ */
+METAWEAR_API void mbl_mw_sensor_fusion_read_calibration_data(MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrCalibDataPtr completed);
+/**
+ * Write IMU calibration data.  The data will be reloaded everytime the mode changes.
+ * This function can only be used with firmware v1.4.3+  
+ * @param board         Calling object
+ * @param data          Calibration data to load
+ */
+METAWEAR_API void mbl_mw_sensor_fusion_write_calibration_data(const MblMwMetaWearBoard* board, const MblMwCalibrationData* data);
 
 /**
  * Set a data enable bit

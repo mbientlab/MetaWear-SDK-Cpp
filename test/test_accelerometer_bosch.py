@@ -126,6 +126,71 @@ class AccelerometerBoschBase:
                     self.notify_mw_char(to_string_buffer(test['response']))
                     self.assertEqual(self.data, test['expected'])
 
+    class TestTapDetector(TestMetaWearBase):
+        def test_configure_single(self):
+            expected = [0x03, 0x0d, 0x04, 0x04]
+
+            self.libmetawear.mbl_mw_acc_set_range(self.board, 16.0)
+            self.libmetawear.mbl_mw_acc_write_acceleration_config(self.board)
+
+            self.libmetawear.mbl_mw_acc_bosch_set_threshold(self.board, 2.0)
+            self.libmetawear.mbl_mw_acc_bosch_set_shock_time(self.board, AccBoschTapShockTime._50ms)
+            self.libmetawear.mbl_mw_acc_bosch_write_tap_config(self.board)
+
+            self.assertEqual(self.command, expected)
+
+        def test_start_single(self):
+            expected = [0x03, 0x0c, 0x02, 0x00]
+
+            self.libmetawear.mbl_mw_acc_bosch_enable_tap_detection(self.board, 1, 0)
+            self.assertEqual(self.command, expected)
+
+        def test_stop_tap(self):
+            expected = [0x03, 0x0c, 0x00, 0x03]
+
+            self.libmetawear.mbl_mw_acc_bosch_disable_tap_detection(self.board)
+            self.assertEqual(self.command, expected)
+
+        def test_single_response(self):
+            tap = self.libmetawear.mbl_mw_acc_bosch_get_tap_data_signal(self.board)
+            self.libmetawear.mbl_mw_datasignal_subscribe(tap, None, self.sensor_data_handler)
+
+            self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x12]))
+            self.assertEqual(self.data, BoschTap(type = 0x2, sign = 0x0))
+
+            self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x32]))
+            self.assertEqual(self.data, BoschTap(type = 0x2, sign = 0x1))
+
+        def test_configure_double(self):
+            expected = [0x03, 0x0d, 0xc0, 0x04]
+
+            self.libmetawear.mbl_mw_acc_set_range(self.board, 8.0)
+            self.libmetawear.mbl_mw_acc_write_acceleration_config(self.board)
+
+            self.libmetawear.mbl_mw_acc_bosch_set_threshold(self.board, 1.0)
+            self.libmetawear.mbl_mw_acc_bosch_set_double_tap_window(self.board, AccBoschDoubleTapWindow._50ms)
+            self.libmetawear.mbl_mw_acc_bosch_set_quiet_time(self.board, AccBoschTapQuietTime._20ms)
+            self.libmetawear.mbl_mw_acc_bosch_set_shock_time(self.board, AccBoschTapShockTime._75ms)
+            self.libmetawear.mbl_mw_acc_bosch_write_tap_config(self.board)
+
+            self.assertEqual(self.command, expected)
+
+        def test_start_double(self):
+            expected = [0x03, 0x0c, 0x01, 0x00]
+
+            self.libmetawear.mbl_mw_acc_bosch_enable_tap_detection(self.board, 0, 1)
+            self.assertEqual(self.command, expected)
+
+        def test_double_response(self):
+            tap = self.libmetawear.mbl_mw_acc_bosch_get_tap_data_signal(self.board)
+            self.libmetawear.mbl_mw_datasignal_subscribe(tap, None, self.sensor_data_handler)
+
+            self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x11]))
+            self.assertEqual(self.data, BoschTap(type = 0x1, sign = 0x0))
+
+            self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x31]))
+            self.assertEqual(self.data, BoschTap(type = 0x1, sign = 0x1))
+
 class TestAccelerometerBmi160Orientation(AccelerometerBoschBase.TestOrientation):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
@@ -138,6 +203,12 @@ class TestAccelerometerBmi160AnyMotion(AccelerometerBoschBase.TestAnyMotion):
 
         super().setUp()
 
+class TestAccelerometerBmi160AnyMotion(AccelerometerBoschBase.TestTapDetector):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+
+        super().setUp()
+
 class TestAccelerometerBma255Orientation(AccelerometerBoschBase.TestOrientation):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
@@ -145,6 +216,12 @@ class TestAccelerometerBma255Orientation(AccelerometerBoschBase.TestOrientation)
         super().setUp()
 
 class TestAccelerometerBma255AnyMotion(AccelerometerBoschBase.TestAnyMotion):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
+
+        super().setUp()
+
+class TestAccelerometerBma255Tap(AccelerometerBoschBase.TestTapDetector):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
 

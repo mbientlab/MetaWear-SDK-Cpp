@@ -11,12 +11,12 @@
 extern "C" {
 #endif
 
-
 /**
- * Create a delta processor.  A pointer representing the processor will be passed back 
+ * Create a fuser processor.  A pointer representing the processor will be passed back 
  * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
- * @param 
+ * @param ops                   Array of data signals to combine into 1 message
+ * @param n_ops                 Number of items in the array
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */

@@ -268,13 +268,14 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         24, 255, 255, 
         25, 0, 0, 8, 3, 0, 6, 0, 2, 0, 1, 0, 
         254, 0, 2, 0, 
-        44, 
+        45, 
         1, 1, 255, 0, 1, 0, 1, 1, 0, 0, 
         3, 4, 255, 0, 7, 2, 3, 2, 1, 0, 
         3, 4, 255, 0, 8, 2, 1, 2, 1, 0, 
         3, 4, 255, 0, 8, 2, 1, 2, 1, 2, 
         3, 4, 255, 0, 8, 2, 1, 2, 1, 4, 
         3, 11, 255, 0, 33, 0, 1, 1, 0, 0, 
+        3, 14, 255, 0, 36, 0, 1, 1, 0, 0, 
         3, 17, 255, 0, 28, 0, 1, 1, 0, 0, 
         3, 25, 255, 0, 1, 0, 1, 1, 0, 0, 
         3, 28, 255, 0, 7, 2, 3, 2, 1, 0, 
@@ -340,7 +341,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
         self.maxDiff= None
-        self.assertEqual(self.python_array[0:558], TestMetaWearBoardSerialize.motion_r_state[0:558])
+        self.assertEqual(self.python_array[0:568], TestMetaWearBoardSerialize.motion_r_state[0:568])
 
     def test_deserialize_motion_r(self):
         # just test that deserialization is successful
@@ -391,7 +392,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
             python_array.append(state_ptr.contents[i])
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
-        self.assertEqual(python_array[414:], logger_state)
+        self.assertEqual(python_array[424:], logger_state)
 
     def test_deserialize_readable_logger(self):
         state = [
@@ -506,12 +507,13 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
             0x18, 0xff, 0xff,
             0x19, 0xff, 0xff,
             0xfe, 0xff, 0xff,
-            0x10, 
+            0x11, 
             0x03, 0x04, 0xff, 0x00, 0x07, 0x02, 0x03, 0x02, 0x01, 0x00,
             0x03, 0x04, 0xff, 0x00, 0x08, 0x02, 0x01, 0x02, 0x01, 0x00, 
             0x03, 0x04, 0xff, 0x00, 0x08, 0x02, 0x01, 0x02, 0x01, 0x02, 
             0x03, 0x04, 0xff, 0x00, 0x08, 0x02, 0x01, 0x02, 0x01, 0x04,
             0x03, 0x0b, 0xff, 0x00, 0x21, 0x00, 0x01, 0x01, 0x00, 0x00,
+            0x03, 0x0e, 0xff, 0x00, 0x24, 0x00, 0x01, 0x01, 0x00, 0x00, 
             0x03, 0x11, 0xff, 0x00, 0x1c, 0x00, 0x01, 0x01, 0x00, 0x00,
             0x03, 0x19, 0xff, 0x00, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00,
             0x03, 0x9a, 0xff, 0x00, 0x01, 0x00, 0x01, 0x02, 0x00, 0x00,
@@ -554,7 +556,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
         self.maxDiff= None
-        self.assertEqual(python_array[0:251], self.expected_state[0:251])
+        self.assertEqual(python_array[0:271], self.expected_state[0:271])
 
 class TestMetaWearBoardDeserialize(TestMetaWearBase):
     def setUp(self):
@@ -759,7 +761,8 @@ class TestSerializeMultiComparator(TestMetaWearBase):
             self.python_array.append(state_ptr.contents[i])
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
-        self.assertEqual(self.python_array[0:438], serializedstate.multi_comparator_state[0:438])
+        self.maxDiff = None
+        self.assertEqual(self.python_array[0:448], serializedstate.multi_comparator_state[0:448])
 
 class TestDeserializeMultiComparator(TestMetaWearBase):
     def setUp(self):
@@ -785,7 +788,7 @@ class TestDeserializeMultiComparator(TestMetaWearBase):
             python_array.append(state_ptr.contents[i])
         self.libmetawear.mbl_mw_memory_free(state_ptr)
 
-        self.assertEqual(python_array[0:398], serializedstate.multi_comparator_modified_state[0:398])
+        self.assertEqual(python_array[0:408], serializedstate.multi_comparator_modified_state[0:408])
 
 class TestModel(TestMetaWearBase):
     def setUp(self):

@@ -11,6 +11,7 @@ var LIBMETAWEAR_PATH = require('./libmetawear-path');
 // TODO: These exist because arrays are not handled perfectly yet
 var ArrayUByte_6 = ArrayType(ref.types.uint8, 6);
 var ArrayFloat = ArrayType(ref.types.float);
+var ArrayUByte_10 = ArrayType(ref.types.uint8, 10);
 var ArrayUByte_16 = ArrayType(ref.types.uint8, 16);
 
 var SensorFusionData = new Enum({
@@ -31,6 +32,24 @@ var SensorFusionGyroRange = new Enum({
   '_250DPS': 3
 }, ref.types.int);
 SensorFusionGyroRange.alignment = 4;
+
+var AccBoschDoubleTapWindow = new Enum({
+  '_50ms': 0,
+  '_100ms': 1,
+  '_150ms': 2,
+  '_200ms': 3,
+  '_250ms': 4,
+  '_375ms': 5,
+  '_500ms': 6,
+  '_700ms': 7
+}, ref.types.int);
+AccBoschDoubleTapWindow.alignment = 4;
+
+var AccBoschTapShockTime = new Enum({
+  '_50ms': 0,
+  '_75ms': 1
+}, ref.types.int);
+AccBoschTapShockTime.alignment = 4;
 
 var AccBoschOrientationMode = new Enum({
   'SYMMETRICAL': 0,
@@ -103,6 +122,12 @@ var TemperatureSource = new Enum({
   'PRESET_THERM': 3
 }, ref.types.int);
 TemperatureSource.alignment = 4;
+
+var AccBoschTapQuietTime = new Enum({
+  '_30ms': 0,
+  '_20ms': 1
+}, ref.types.int);
+AccBoschTapQuietTime.alignment = 4;
 
 var MagBmm150Odr = new Enum({
   '_10Hz': 0,
@@ -270,7 +295,8 @@ var DataTypeId = new Enum({
   'BTLE_ADDRESS': 14,
   'BOSCH_ANY_MOTION': 15,
   'CALIBRATION_STATE': 16,
-  'DATA_ARRAY': 17
+  'DATA_ARRAY': 17,
+  'BOSCH_TAP': 18
 }, ref.types.int);
 DataTypeId.alignment = 4;
 
@@ -558,6 +584,13 @@ var FnVoid_VoidP_DataP = ffi.Function(ref.types.void, [ref.refType(ref.types.voi
 var DataLogger = ref.types.void;
 var FnVoid_VoidP_DataLoggerP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(DataLogger)]);
 var MetaWearBoard = ref.types.void;
+var CalibrationData = Struct({
+  'acc': ArrayUByte_10,
+  'gyro': ArrayUByte_10,
+  'mag': ArrayUByte_10
+});
+
+var FnVoid_VoidP_MetaWearBoardP_CalibrationDataP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ref.refType(CalibrationData)]);
 var AnonymousDataSignal = ref.types.void;
 var FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ref.refType(AnonymousDataSignal), ref.types.uint32]);
 var FnVoid_VoidP_MetaWearBoardP_Int = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ref.types.int32]);
@@ -724,6 +757,11 @@ var DfuDelegate = Struct({
   'on_error': FnVoid_VoidP_charP
 });
 
+var BoschTap = Struct({
+  'type': ref.types.uint8,
+  'sign': ref.types.uint8
+});
+
 var Tcs34725ColorAdc = Struct({
   'clear': ref.types.uint16,
   'red': ref.types.uint16,
@@ -790,6 +828,14 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_sensor_fusion_clear_enabled_mask': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
+ * Write IMU calibration data.  The data will be reloaded everytime the mode changes.
+ * This function can only be used with firmware v1.4.3+  
+ * @param board         Calling object
+ * @param data          Calibration data to load
+ */
+  'mbl_mw_sensor_fusion_write_calibration_data': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(CalibrationData)]],
+
+/**
  * Set the gyroscope data range
  * @param board         Calling object
  * @param range         New data range of the gyroscope
@@ -841,6 +887,20 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param board     Calling object
  */
   'mbl_mw_acc_bosch_write_motion_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Sets the tap detector's shock time parameter
+ * @param board     Calling object
+ * @param time      New shock time
+ */
+  'mbl_mw_acc_bosch_set_shock_time': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschTapShockTime]],
+
+/**
+ * Sets the tap detector's quiet time parameter
+ * @param board     Calling object
+ * @param time      New quiet time
+ */
+  'mbl_mw_acc_bosch_set_quiet_time': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschTapQuietTime]],
 
 /**
  * Disables orientation detection
@@ -978,6 +1038,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param channel   Channel ID of the temperature source
  */
   'mbl_mw_multi_chnl_temp_get_temperature_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Sets the tap detector's double tap window
+ * @param board     Calling object
+ * @param window    New double tap window time
+ */
+  'mbl_mw_acc_bosch_set_double_tap_window': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschDoubleTapWindow]],
 
 /**
  * Switches the magnetometer into sleep mode
@@ -1168,6 +1235,14 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_cd_tcs34725_set_integration_time': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.float]],
 
 /**
+ * Enables the tap detector
+ * @param board             Calling object
+ * @param enable_single     0 to ignore single tap detection, non-zero to detect
+ * @param enable_double     0 to ignore double tap detection, non-zero to detect
+ */
+  'mbl_mw_acc_bosch_enable_tap_detection': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8]],
+
+/**
  * Stop pressure and altitude sensing
  * @param board     Pointer to the board to send the command to
  */
@@ -1287,6 +1362,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param board     Calling object
  */
   'mbl_mw_acc_mma8452q_write_acceleration_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Sets the tap detector's double tap window
+ * @param board     Calling object
+ * @param window    New double tap window time
+ */
+  'mbl_mw_acc_bosch_write_tap_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
  * Sets the cutoff frequency for the high-pass filter
@@ -1926,6 +2008,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_timer_remove': [ref.types.void, [ref.refType(Timer)]],
 
 /**
+ * Sets the tap detector's threshold
+ * @param board     Calling object
+ * @param window    New threshold level
+ */
+  'mbl_mw_acc_bosch_set_threshold': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.float]],
+
+/**
  * Initializes memory on the MetaWear board for a NeoPixel strand with a fast operating speed (800 KHz)
  * @param board     Pointer to the board to send the command to
  * @param strand    Strand number (id) to initialize, can be in the range [0, 2]
@@ -2438,6 +2527,16 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_pulse_modify': [ref.types.int32, [ref.refType(DataProcessor), ref.types.float, ref.types.uint16]],
 
 /**
+ * Retrieve IMU calibration data; free the memory allocated for the MblMwCalibrationData pointer with mbl_mw_memory_free.
+ * Only call this function when the calibration state of the IMUs is at high accuracy.  
+ * This function can only be used with firmware v1.4.3+.  
+ * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
+ * @param completed     Callback function that is executed when the task is finished
+ */
+  'mbl_mw_sensor_fusion_read_calibration_data': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_CalibrationDataP]],
+
+/**
  * Loads the struct with a preset configuration
  * @param pattern       Pointer to the pattern to write the configuration to
  * @param preset        Preset pattern to load 
@@ -2471,6 +2570,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param board     Pointer to the board to send the command to
  */
   'mbl_mw_led_play': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Disable the tap detector
+ * @param board     Calling object
+ * @param window    New double tap window time
+ */
+  'mbl_mw_acc_bosch_disable_tap_detection': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
  * Disables iBeacon mode
@@ -2761,6 +2867,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_multi_comparator_create': [ref.types.int32, [ref.refType(DataSignal), ComparatorOperation, ComparatorMode, ArrayFloat, ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
+ * Retrieves the data signal representing data from the tap detection algorithm
+ * @param board     Calling object
+ * @return Pointer to Bosch's tap detection data signal
+ */
+  'mbl_mw_acc_bosch_get_tap_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
  * Set the iir filter coefficient
  * @param board     Pointer to the board to modify
  * @param iir_filter    IIR filter value to set
@@ -2974,10 +3087,11 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_time_modify_period': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint32]],
 
 /**
- * Create a delta processor.  A pointer representing the processor will be passed back 
+ * Create a fuser processor.  A pointer representing the processor will be passed back 
  * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
- * @param 
+ * @param ops                   Array of data signals to combine into 1 message
+ * @param n_ops                 Number of items in the array
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */
@@ -3043,115 +3157,122 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 });
 
 module.exports = {
-  Tcs34725ColorAdc: Tcs34725ColorAdc,
-  DfuDelegate: DfuDelegate,
-  FnVoid_VoidP: FnVoid_VoidP,
-  BatteryState: BatteryState,
-  CorrectedCartesianFloat: CorrectedCartesianFloat,
+  BoschTap: BoschTap,
+  Lib: Lib,
+  FnVoid_VoidP_charP: FnVoid_VoidP_charP,
   LoggingTime: LoggingTime,
-  LedPattern: LedPattern,
+  DeviceInformation: DeviceInformation,
+  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt,
+  GattChar: GattChar,
+  Quaternion: Quaternion,
+  CartesianFloat: CartesianFloat,
+  DataSignal: DataSignal,
+  OverflowState: OverflowState,
+  FnVoid_VoidP_MetaWearBoardP_FnBoardPtr: FnVoid_VoidP_MetaWearBoardP_FnBoardPtr,
+  CorrectedCartesianFloat: CorrectedCartesianFloat,
+  FnVoid_VoidP_UByte_UByte_UInt_UInt: FnVoid_VoidP_UByte_UByte_UInt_UInt,
   FnVoid_VoidP_VoidP_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_FnVoidVoidPtrInt,
-  AccMma8452qOdr: AccMma8452qOdr,
+  CalibrationState: CalibrationState,
+  LogDownloadHandler: LogDownloadHandler,
+  FnVoid_VoidP_UByte_Long_UByteP_UByte: FnVoid_VoidP_UByte_Long_UByteP_UByte,
+  GpioAnalogReadParameters: GpioAnalogReadParameters,
+  I2cReadParameters: I2cReadParameters,
+  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray,
+  FnVoid_VoidP_MetaWearBoardP_Int: FnVoid_VoidP_MetaWearBoardP_Int,
+  FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt: FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt,
   AccMma8452qCutoffFreq: AccMma8452qCutoffFreq,
   MetaWearRProChannel: MetaWearRProChannel,
-  Module: Module,
-  SensorFusionMode: SensorFusionMode,
-  SpiMode: SpiMode,
-  BleAdType: BleAdType,
-  GpioPinChangeType: GpioPinChangeType,
-  FnVoid_VoidP_DataP: FnVoid_VoidP_DataP,
-  ModuleInfo: ModuleInfo,
-  ConductanceRange: ConductanceRange,
-  ArrayUByte_6: ArrayUByte_6,
-  GattCharWriteType: GattCharWriteType,
-  ProximityTsl2671Current: ProximityTsl2671Current,
-  NeoPixelRotDirection: NeoPixelRotDirection,
-  BtleConnection: BtleConnection,
-  ComparatorOperation: ComparatorOperation,
-  Quaternion: Quaternion,
-  BaroBmp280StandbyTime: BaroBmp280StandbyTime,
-  Model: Model,
-  SensorFusionAccRange: SensorFusionAccRange,
-  DeviceInformation: DeviceInformation,
-  MathOperation: MathOperation,
-  GpioAnalogReadMode: GpioAnalogReadMode,
-  Const: Const,
-  AlsLtr329Gain: AlsLtr329Gain,
-  DataLogger: DataLogger,
-  Lib: Lib,
-  PulseOutput: PulseOutput,
-  LedPreset: LedPreset,
-  DataProcessor: DataProcessor,
-  SensorFusionGyroRange: SensorFusionGyroRange,
-  FnVoid_VoidP_DataProcessorP: FnVoid_VoidP_DataProcessorP,
-  FnVoid_VoidP_charP: FnVoid_VoidP_charP,
-  AccBmi160StepCounterMode: AccBmi160StepCounterMode,
-  DeltaMode: DeltaMode,
-  Event: Event,
-  FnVoid_VoidP_TimerP: FnVoid_VoidP_TimerP,
-  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray_FnVoidVoidPtrInt,
-  SensorFusionData: SensorFusionData,
-  FnVoid_VoidP_UByte_Long_UByteP_UByte: FnVoid_VoidP_UByte_Long_UByteP_UByte,
-  ProximityTsl2671Channel: ProximityTsl2671Channel,
-  AccBmi160Odr: AccBmi160Odr,
-  AccBoschOrientationMode: AccBoschOrientationMode,
-  ThresholdMode: ThresholdMode,
-  FnVoid_VoidP_Int: FnVoid_VoidP_Int,
-  DataSignal: DataSignal,
-  ArrayFloat: ArrayFloat,
-  PassthroughMode: PassthroughMode,
-  BaroBoschOversampling: BaroBoschOversampling,
-  FnVoid_VoidP_UByte_UByte_UInt_UInt: FnVoid_VoidP_UByte_UByte_UInt_UInt,
-  AlsLtr329IntegrationTime: AlsLtr329IntegrationTime,
-  GyroBmi160Range: GyroBmi160Range,
-  ComparatorMode: ComparatorMode,
-  SpiFrequency: SpiFrequency,
-  TemperatureSource: TemperatureSource,
-  FnVoid_VoidP_VoidP_GattCharWriteType_GattCharP_UByteP_UByte: FnVoid_VoidP_VoidP_GattCharWriteType_GattCharP_UByteP_UByte,
   AccMma8452qRange: AccMma8452qRange,
-  SensorOrientation: SensorOrientation,
-  DataTypeId: DataTypeId,
-  NeoPixelColorOrdering: NeoPixelColorOrdering,
-  AlsLtr329MeasurementRate: AlsLtr329MeasurementRate,
-  MagBmm150Preset: MagBmm150Preset,
-  BaroBme280StandbyTime: BaroBme280StandbyTime,
-  GpioPullMode: GpioPullMode,
-  LedColor: LedColor,
-  TimeMode: TimeMode,
-  WhitelistFilter: WhitelistFilter,
-  SpiParameters: SpiParameters,
-  AccBma255Odr: AccBma255Odr,
+  NeoPixelRotDirection: NeoPixelRotDirection,
+  ComparatorMode: ComparatorMode,
+  SensorFusionAccRange: SensorFusionAccRange,
+  DeltaMode: DeltaMode,
   ArrayUByte_16: ArrayUByte_16,
-  GyroBmi160Odr: GyroBmi160Odr,
-  BtleAddress: BtleAddress,
+  AccBmi160Odr: AccBmi160Odr,
+  ModuleInfo: ModuleInfo,
+  BleAdType: BleAdType,
+  BtleConnection: BtleConnection,
   FnVoid_VoidP_EventP_Int: FnVoid_VoidP_EventP_Int,
-  MetaWearRChannel: MetaWearRChannel,
-  FnInt_VoidP_UByteP_UByte: FnInt_VoidP_UByteP_UByte,
-  Timer: Timer,
-  LogDownloadHandler: LogDownloadHandler,
-  Data: Data,
-  ArrayAnonymousDataSignalP: ArrayAnonymousDataSignalP,
+  ThresholdMode: ThresholdMode,
+  LedPattern: LedPattern,
   FnVoid_VoidP_DataLoggerP: FnVoid_VoidP_DataLoggerP,
-  AccBoschRange: AccBoschRange,
-  MetaWearBoard: MetaWearBoard,
-  GpioAnalogReadParameters: GpioAnalogReadParameters,
-  AnonymousDataSignal: AnonymousDataSignal,
-  CartesianFloat: CartesianFloat,
-  FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt: FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt,
-  HumidityBme280Oversampling: HumidityBme280Oversampling,
-  MagBmm150Odr: MagBmm150Odr,
-  ColorDetectorTcs34725Gain: ColorDetectorTcs34725Gain,
-  FnVoid_VoidP_MetaWearBoardP_Int: FnVoid_VoidP_MetaWearBoardP_Int,
-  BaroBoschIirFilter: BaroBoschIirFilter,
-  I2cReadParameters: I2cReadParameters,
-  FnVoid_VoidP_UInt_UInt: FnVoid_VoidP_UInt_UInt,
-  FnVoid_MetaWearBoardP: FnVoid_MetaWearBoardP,
-  CalibrationState: CalibrationState,
-  GattChar: GattChar,
-  BoschAnyMotion: BoschAnyMotion,
+  MagBmm150Preset: MagBmm150Preset,
+  DataProcessor: DataProcessor,
+  DfuDelegate: DfuDelegate,
+  SpiMode: SpiMode,
+  TemperatureSource: TemperatureSource,
+  GpioAnalogReadMode: GpioAnalogReadMode,
+  BatteryState: BatteryState,
   EulerAngles: EulerAngles,
-  FnVoid_VoidP_MetaWearBoardP_FnBoardPtr: FnVoid_VoidP_MetaWearBoardP_FnBoardPtr,
-  OverflowState: OverflowState,
+  FnVoid_VoidP_UInt_UInt: FnVoid_VoidP_UInt_UInt,
+  FnVoid_VoidP_DataP: FnVoid_VoidP_DataP,
+  ArrayUByte_10: ArrayUByte_10,
+  BtleAddress: BtleAddress,
+  PassthroughMode: PassthroughMode,
+  ArrayAnonymousDataSignalP: ArrayAnonymousDataSignalP,
+  ConductanceRange: ConductanceRange,
+  TimeMode: TimeMode,
+  SensorFusionGyroRange: SensorFusionGyroRange,
+  MetaWearRChannel: MetaWearRChannel,
+  MathOperation: MathOperation,
+  MagBmm150Odr: MagBmm150Odr,
+  SensorFusionData: SensorFusionData,
+  AccBoschTapShockTime: AccBoschTapShockTime,
+  GyroBmi160Odr: GyroBmi160Odr,
+  LedPreset: LedPreset,
+  AccBoschTapQuietTime: AccBoschTapQuietTime,
+  HumidityBme280Oversampling: HumidityBme280Oversampling,
+  ComparatorOperation: ComparatorOperation,
+  AccBoschOrientationMode: AccBoschOrientationMode,
+  GattCharWriteType: GattCharWriteType,
+  NeoPixelColorOrdering: NeoPixelColorOrdering,
+  AccBmi160StepCounterMode: AccBmi160StepCounterMode,
+  AccBoschRange: AccBoschRange,
+  GpioPinChangeType: GpioPinChangeType,
+  ArrayUByte_6: ArrayUByte_6,
+  AccBoschDoubleTapWindow: AccBoschDoubleTapWindow,
+  AlsLtr329MeasurementRate: AlsLtr329MeasurementRate,
+  SensorOrientation: SensorOrientation,
+  BaroBme280StandbyTime: BaroBme280StandbyTime,
+  Model: Model,
+  SpiParameters: SpiParameters,
+  ProximityTsl2671Channel: ProximityTsl2671Channel,
+  AlsLtr329Gain: AlsLtr329Gain,
+  DataTypeId: DataTypeId,
+  ColorDetectorTcs34725Gain: ColorDetectorTcs34725Gain,
+  SensorFusionMode: SensorFusionMode,
+  ProximityTsl2671Current: ProximityTsl2671Current,
+  Module: Module,
+  Const: Const,
+  SpiFrequency: SpiFrequency,
+  GyroBmi160Range: GyroBmi160Range,
+  AccMma8452qOdr: AccMma8452qOdr,
+  GpioPullMode: GpioPullMode,
+  FnVoid_VoidP: FnVoid_VoidP,
+  FnVoid_VoidP_VoidP_GattCharWriteType_GattCharP_UByteP_UByte: FnVoid_VoidP_VoidP_GattCharWriteType_GattCharP_UByteP_UByte,
+  Event: Event,
+  PulseOutput: PulseOutput,
+  DataLogger: DataLogger,
+  BaroBoschOversampling: BaroBoschOversampling,
+  ArrayFloat: ArrayFloat,
+  AlsLtr329IntegrationTime: AlsLtr329IntegrationTime,
+  Data: Data,
+  LedColor: LedColor,
+  BaroBoschIirFilter: BaroBoschIirFilter,
+  Tcs34725ColorAdc: Tcs34725ColorAdc,
+  AccBma255Odr: AccBma255Odr,
+  BaroBmp280StandbyTime: BaroBmp280StandbyTime,
   RawLogDownloadHandler: RawLogDownloadHandler,
-  FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray
+  WhitelistFilter: WhitelistFilter,
+  FnInt_VoidP_UByteP_UByte: FnInt_VoidP_UByteP_UByte,
+  FnVoid_VoidP_Int: FnVoid_VoidP_Int,
+  AnonymousDataSignal: AnonymousDataSignal,
+  Timer: Timer,
+  FnVoid_VoidP_DataProcessorP: FnVoid_VoidP_DataProcessorP,
+  FnVoid_VoidP_TimerP: FnVoid_VoidP_TimerP,
+  MetaWearBoard: MetaWearBoard,
+  BoschAnyMotion: BoschAnyMotion,
+  CalibrationData: CalibrationData,
+  FnVoid_MetaWearBoardP: FnVoid_MetaWearBoardP,
+  FnVoid_VoidP_MetaWearBoardP_CalibrationDataP: FnVoid_VoidP_MetaWearBoardP_CalibrationDataP
 };

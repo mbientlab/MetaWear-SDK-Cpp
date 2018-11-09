@@ -440,6 +440,9 @@ class TestMetaWearBase(unittest.TestCase):
         elif (data.contents.type_id == DataTypeId.CALIBRATION_STATE):
             data_ptr = cast(data.contents.value, POINTER(CalibrationState))
             self.data = copy.deepcopy(data_ptr.contents)
+        elif(data.contents.type_id == DataTypeId.BOSCH_TAP):
+            data_ptr = cast(data.contents.value, POINTER(BoschTap))
+            self.data = copy.deepcopy(data_ptr.contents)
         else:
             raise RuntimeError('Unrecognized data type id: ' + str(data.contents.type_id))
 

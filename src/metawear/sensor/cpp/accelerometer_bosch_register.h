@@ -11,6 +11,10 @@ enum class AccelerometerBoschRegister : uint8_t {
     MOTION_CONFIG,
     MOTION_INTERRUPT,
 
+    TAP_INTERRUPT_ENABLE,
+    TAP_CONFIG,
+    TAP_INTERRUPT,
+
     ORIENT_INTERRUPT_ENABLE = 0xf,
     ORIENT_CONFIG,
     ORIENT_INTERRUPT,

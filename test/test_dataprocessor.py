@@ -1173,7 +1173,7 @@ class TestFuser(TestMetaWearBase):
         self.assertEqual(parsed_values['acc'], self.data)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
-        self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd0, 0x91, 0xd3, 0x67]))
+        self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
         self.assertEqual(parsed_values['gyro'], self.data)
 
     def test_commands(self):

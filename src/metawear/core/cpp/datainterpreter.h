@@ -41,7 +41,8 @@ enum class DataInterpreter : uint8_t {
     BTLE_ADDRESS,
     BOSCH_ANY_MOTION,
     SENSOR_FUSION_CALIB_STATE,
-    FUSED_DATA
+    FUSED_DATA,
+    BOSCH_TAP
 };
 
 enum class FirmwareConverter : uint8_t {

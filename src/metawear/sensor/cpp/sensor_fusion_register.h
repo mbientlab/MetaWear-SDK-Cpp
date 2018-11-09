@@ -11,5 +11,8 @@ enum class SensorFusionRegister : uint8_t {
     EULER_ANGLES,
     GRAVITY_VECTOR,
     LINEAR_ACC,
-    CALIBRATION_STATE
+    CALIBRATION_STATE,
+    ACC_CAL_DATA,
+    GYRO_CAL_DATA,
+    MAG_CAL_DATA
 };

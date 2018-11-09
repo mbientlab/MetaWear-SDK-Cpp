@@ -217,7 +217,6 @@ CONVERT_TO_FLOAT(convert_to_bme280_humidity, uint32_t, BME280_HUMIDITY_SCALE)
 CONVERT_TO_FLOAT(convert_to_q16_16_fixed_point, int32_t, Q16_16_SCALE)
 
 RAW_CONVERT(convert_to_tcs34725_adc, MblMwTcs34725ColorAdc, MBL_MW_DT_ID_TCS34725_ADC)
-
 RAW_CONVERT(convert_to_quaternion, MblMwQuaternion, MBL_MW_DT_ID_QUATERNION)
 RAW_CONVERT(convert_to_euler_angles, MblMwEulerAngles, MBL_MW_DT_ID_EULER_ANGLE)
 RAW_CONVERT(convert_to_corrected_vector3, MblMwCorrectedCartesianFloat, MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT)
@@ -326,12 +325,27 @@ static MblMwData* convert_to_fused(bool log_data, const MblMwDataSignal* signal,
     offset+= processor->input->length();
 
     for(uint8_t i = 0; i < fused_config->count; i++, offset+= processor->length()) {
-        processor = lookup_processor(signal->owner, fused_config->references[1]);
+        processor = lookup_processor(signal->owner, fused_config->references[i]);
         partialMsg = data_response_converters.at(processor->interpreter)(log_data, processor, response + offset, len - offset);
         value[i + 1] = partialMsg;
     }
 
     CREATE_MESSAGE(MBL_MW_DT_ID_DATA_ARRAY);
+}
+
+static MblMwData* convert_to_bosch_tap(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
+    MblMwBoschTap *value = (MblMwBoschTap*) malloc(sizeof(MblMwBoschTap));
+
+    if ((response[0] & 0x1) == 0x1) {
+        value->type = 0x1;
+    } else if ((response[0] & 0x2) == 0x2) {
+        value->type = 0x2;
+    } else {
+        value->type = 0;
+    }
+    value->sign = (response[0] & 0x20) == 0x20;
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_BOSCH_TAP);
 }
 
 unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converters = {
@@ -370,7 +384,8 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::BTLE_ADDRESS, convert_to_btle_address },
     { DataInterpreter::BOSCH_ANY_MOTION, convert_to_bosch_any_motion },
     { DataInterpreter::SENSOR_FUSION_CALIB_STATE, convert_to_calibration_state },
-    { DataInterpreter::FUSED_DATA, convert_to_fused }
+    { DataInterpreter::FUSED_DATA, convert_to_fused },
+    { DataInterpreter::BOSCH_TAP, convert_to_bosch_tap }
 };
 
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {

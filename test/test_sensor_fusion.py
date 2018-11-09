@@ -1,6 +1,7 @@
 from common import TestMetaWearBase, to_string_buffer
 from ctypes import create_string_buffer
 from mbientlab.metawear.cbindings import *
+from threading import Event
 import copy
 
 class TestSensorFusion(TestMetaWearBase):
@@ -202,4 +203,132 @@ class TestSensorFusionRev1(TestMetaWearBase):
         self.notify_mw_char(to_string_buffer([0x19, 0x8b, 0x00, 0x01, 0x02]))
         self.assertEqual(expected_state, self.data)
 
+    def test_read_calibration_data(self):
+        e = Event()
+        actual = []
+        def received(board, ctx, ptr):
+            actual.append(ptr)
+            e.set()
 
+        fn_wrapper = FnVoid_VoidP_VoidP_CalibrationDataP(received)
+        self.libmetawear.mbl_mw_sensor_fusion_read_calibration_data(self.board, None, fn_wrapper)
+        e.wait()
+
+        # unsupported for rev1
+        self.assertFalse(bool(actual[0]))
+
+    def test_write_calibration_data(self):
+        data = CalibrationData(
+            acc = (c_ubyte * 10)(),
+            gyro = (c_ubyte * 10)(),
+            mag = (c_ubyte * 10)()
+        )
+
+        self.libmetawear.mbl_mw_sensor_fusion_write_calibration_data(self.board, byref(data))
+
+        # unsupported in rev 1, no commands
+        self.assertEqual([], self.command_history)
+
+class TestSensorFusionRev2(TestMetaWearBase):
+    def setUp(self):
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
+        self.metawear_motion_r_services[0x19]= create_string_buffer(b'\x19\x80\x00\x02\x03\x00\x06\x00\x02\x00\x01\x00', 12)
+
+        super().setUp()
+
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
+        prev = len(self.full_history)
+        TestMetaWearBase.commandLogger(self, context, board, writeType, characteristic, command, length)
+        curr = len(self.full_history)
+
+        if (prev != curr):
+            response = None
+            if (command[0] == 0x19 and command[1] == 0x8c):
+                response = to_string_buffer([0x19, 0x8c, 0xf6, 0xff, 0x00, 0x00, 0x0a, 0x00, 0xe8, 0x03, 0x03, 0x00])
+            elif (command[0] == 0x19 and command[1] == 0x8d):
+                response = to_string_buffer([0x19, 0x8d, 0x04, 0x00, 0x08, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00])
+            elif(command[0] == 0x19 and command[1] == 0x8e):
+                response = to_string_buffer([0x19, 0x8e, 0x66, 0x00, 0x17, 0xfd, 0x8a, 0xfc, 0x7f, 0x03, 0x01, 0x00])
+
+            if (response != None):
+                self.schedule_response(response)
+
+    def test_read_calibration_data(self):
+        expected = [
+            [0xf6, 0xff, 0x00, 0x00, 0x0a, 0x00, 0xe8, 0x03, 0x03, 0x00],
+            [0x04, 0x00, 0x08, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00],
+            [0x66, 0x00, 0x17, 0xfd, 0x8a, 0xfc, 0x7f, 0x03, 0x01, 0x00]
+        ]
+
+        e = Event()
+        actual = []
+        def received(board, ctx, ptr):
+            value = cast(ptr, POINTER(CalibrationData)).contents
+            actual.append([value.acc[i] for i in range(0, 10)])
+            actual.append([value.gyro[i] for i in range(0, 10)])
+            actual.append([value.mag[i] for i in range(0, 10)])
+            
+            self.libmetawear.mbl_mw_memory_free(ptr)
+            e.set()
+
+        fn_wrapper = FnVoid_VoidP_VoidP_CalibrationDataP(received)
+        self.libmetawear.mbl_mw_sensor_fusion_read_calibration_data(self.board, None, fn_wrapper)
+        e.wait()
+
+        self.assertEqual(expected, actual)
+
+    def test_write_calibration_data(self):
+        data = CalibrationData(
+            acc = (c_ubyte * 10)(0xf6, 0xff, 0x00, 0x00, 0x0a, 0x00, 0xe8, 0x03, 0x03, 0x00),
+            gyro = (c_ubyte * 10)(0x04, 0x00, 0x08, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00),
+            mag = (c_ubyte * 10)(0x66, 0x00, 0x17, 0xfd, 0x8a, 0xfc, 0x7f, 0x03, 0x01, 0x00)
+        )
+        
+        acc_cmd = [0x19, 0x0c, 0xf6, 0xff, 0x00, 0x00, 0x0a, 0x00, 0xe8, 0x03, 0x03, 0x00]
+        gyro_cmd = [0x19, 0x0d, 0x04, 0x00, 0x08, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00]
+        mag_cmd = [0x19, 0x0e, 0x66, 0x00, 0x17, 0xfd, 0x8a, 0xfc, 0x7f, 0x03, 0x01, 0x00]
+        
+
+        tests = [
+            {
+                'mode': SensorFusionMode.NDOF,
+                'name': 'ndof',
+                'expected': [
+                    acc_cmd,
+                    gyro_cmd,
+                    mag_cmd
+                ]
+            },
+            {
+                'mode': SensorFusionMode.IMU_PLUS,
+                'name': 'imu_plus',
+                'expected': [
+                    acc_cmd,
+                    gyro_cmd
+                ]
+            },
+            {
+                'mode': SensorFusionMode.COMPASS,
+                'name': 'compass',
+                'expected': [
+                    acc_cmd,
+                    mag_cmd
+                ]
+            },
+            {
+                'mode': SensorFusionMode.M4G,
+                'name': 'm4g',
+                'expected': [
+                    acc_cmd,
+                    mag_cmd,
+                ]
+            }
+        ]
+        for test in tests:
+            with self.subTest(mode = test['name']):
+                self.command_history = []
+
+                self.libmetawear.mbl_mw_sensor_fusion_set_mode(self.board, test['mode'])
+                self.libmetawear.mbl_mw_sensor_fusion_write_calibration_data(self.board, byref(data))
+
+                self.assertEqual(test['expected'], self.command_history)
