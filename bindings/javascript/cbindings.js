@@ -814,6 +814,7 @@ Const.MODULE_ACC_TYPE_BMA255 = 3;
 // TODO: This line exisits because the generator doesn't understand array of pointers
 var ArrayAnonymousDataSignalP = ArrayType(ref.refType(AnonymousDataSignal));
 FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ArrayAnonymousDataSignalP, ref.types.uint32]);
+var ArrayDataSignalP = ArrayType(ref.refType(DataSignal));
 var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 /**
  * Stop sensor fusion
@@ -3095,7 +3096,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */
-  'mbl_mw_dataprocessor_fuser_create': [ref.types.int32, [ref.refType(DataSignal), ArrayType(ref.refType(DataSignal)), ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+  'mbl_mw_dataprocessor_fuser_create': [ref.types.int32, [ref.refType(DataSignal), ArrayDataSignalP, ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
  * Sets the oversampling mode
@@ -3180,11 +3181,11 @@ module.exports = {
   FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray: FnVoid_VoidP_VoidP_GattCharP_FnIntVoidPtrArray,
   FnVoid_VoidP_MetaWearBoardP_Int: FnVoid_VoidP_MetaWearBoardP_Int,
   FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt: FnVoid_VoidP_MetaWearBoardP_AnonymousDataSignalP_UInt,
+  FnVoid_MetaWearBoardP: FnVoid_MetaWearBoardP,
+  FnVoid_VoidP_MetaWearBoardP_CalibrationDataP: FnVoid_VoidP_MetaWearBoardP_CalibrationDataP,
   AccMma8452qCutoffFreq: AccMma8452qCutoffFreq,
   MetaWearRProChannel: MetaWearRProChannel,
   AccMma8452qRange: AccMma8452qRange,
-  NeoPixelRotDirection: NeoPixelRotDirection,
-  ComparatorMode: ComparatorMode,
   SensorFusionAccRange: SensorFusionAccRange,
   DeltaMode: DeltaMode,
   ArrayUByte_16: ArrayUByte_16,
@@ -3201,20 +3202,22 @@ module.exports = {
   DfuDelegate: DfuDelegate,
   SpiMode: SpiMode,
   TemperatureSource: TemperatureSource,
+  MetaWearRChannel: MetaWearRChannel,
+  MathOperation: MathOperation,
   GpioAnalogReadMode: GpioAnalogReadMode,
   BatteryState: BatteryState,
   EulerAngles: EulerAngles,
   FnVoid_VoidP_UInt_UInt: FnVoid_VoidP_UInt_UInt,
   FnVoid_VoidP_DataP: FnVoid_VoidP_DataP,
+  ArrayDataSignalP: ArrayDataSignalP,
   ArrayUByte_10: ArrayUByte_10,
   BtleAddress: BtleAddress,
   PassthroughMode: PassthroughMode,
   ArrayAnonymousDataSignalP: ArrayAnonymousDataSignalP,
   ConductanceRange: ConductanceRange,
   TimeMode: TimeMode,
+  ComparatorMode: ComparatorMode,
   SensorFusionGyroRange: SensorFusionGyroRange,
-  MetaWearRChannel: MetaWearRChannel,
-  MathOperation: MathOperation,
   MagBmm150Odr: MagBmm150Odr,
   SensorFusionData: SensorFusionData,
   AccBoschTapShockTime: AccBoschTapShockTime,
@@ -3232,6 +3235,7 @@ module.exports = {
   ArrayUByte_6: ArrayUByte_6,
   AccBoschDoubleTapWindow: AccBoschDoubleTapWindow,
   AlsLtr329MeasurementRate: AlsLtr329MeasurementRate,
+  NeoPixelRotDirection: NeoPixelRotDirection,
   SensorOrientation: SensorOrientation,
   BaroBme280StandbyTime: BaroBme280StandbyTime,
   Model: Model,
@@ -3272,7 +3276,5 @@ module.exports = {
   FnVoid_VoidP_TimerP: FnVoid_VoidP_TimerP,
   MetaWearBoard: MetaWearBoard,
   BoschAnyMotion: BoschAnyMotion,
-  CalibrationData: CalibrationData,
-  FnVoid_MetaWearBoardP: FnVoid_MetaWearBoardP,
-  FnVoid_VoidP_MetaWearBoardP_CalibrationDataP: FnVoid_VoidP_MetaWearBoardP_CalibrationDataP
+  CalibrationData: CalibrationData
 };
