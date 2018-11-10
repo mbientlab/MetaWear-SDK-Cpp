@@ -3095,7 +3095,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */
-  'mbl_mw_dataprocessor_fuser_create': [ref.types.int32, [ref.refType(DataSignal), ref.refType(DataSignal), ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
+  'mbl_mw_dataprocessor_fuser_create': [ref.types.int32, [ref.refType(DataSignal), ArrayType(ref.refType(DataSignal)), ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
  * Sets the oversampling mode

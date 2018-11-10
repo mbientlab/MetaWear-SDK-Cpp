@@ -330,7 +330,12 @@ static MblMwData* convert_to_fused(bool log_data, const MblMwDataSignal* signal,
         value[i + 1] = partialMsg;
     }
 
-    CREATE_MESSAGE(MBL_MW_DT_ID_DATA_ARRAY);
+    MblMwData *msg= (MblMwData*) malloc(sizeof(MblMwData));
+    msg->value= value;
+    msg->type_id= MBL_MW_DT_ID_DATA_ARRAY;
+    msg->length= sizeof(MblMwData*) * (fused_config->count + 1);
+
+    return msg;
 }
 
 static MblMwData* convert_to_bosch_tap(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
