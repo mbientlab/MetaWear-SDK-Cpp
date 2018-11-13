@@ -747,7 +747,13 @@ static void buffer_crate_handler(void *context, MblMwDataProcessor* processor) {
     }
 }
 
+const uint8_t FUSER_REVISION = 1;
+
 int32_t mbl_mw_dataprocessor_fuser_create(MblMwDataSignal *source, MblMwDataSignal** ops, uint32_t n_ops, void *context, MblMwFnDataProcessor processor_created) {
+    if (source->owner->module_info.at(MBL_MW_MODULE_DATA_PROCESSOR).revision < FUSER_REVISION) {
+        return MBL_MW_STATUS_ERROR_UNSUPPORTED_PROCESSOR;
+    }
+
     FuseCreeateState* fuse_context = new FuseCreeateState;
     fuse_context->source = source;
     fuse_context->context = context;

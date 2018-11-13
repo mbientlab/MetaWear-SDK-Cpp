@@ -1134,24 +1134,21 @@ class TestHpf(TestMetaWearBase):
 class TestFuser(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
 
         super().setUp()
 
-        self.processors = [None]
-        e = threading.Event()
-
-        def processor_created(context, pointer):
-            self.processors[0] = pointer
-            e.set()
-        fn_wrapper = FnVoid_VoidP_VoidP(processor_created)
-        
         self.acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.gyro = self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
 
         signals = (c_void_p * 1)()
         signals[0] = self.gyro
-        self.libmetawear.mbl_mw_dataprocessor_fuser_create(self.acc, signals, 1, None, fn_wrapper)
-        e.wait()
+        self.libmetawear.mbl_mw_dataprocessor_fuser_create(self.acc, signals, 1, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_time_create(self.processors[0], TimeMode.ABSOLUTE, 20, None, self.processor_handler)
+        self.events["processor"].wait()
 
     def test_data_handling(self):
         parsed_values = {}
@@ -1165,8 +1162,8 @@ class TestFuser(TestMetaWearBase):
             parsed_values['gyro'] = self.data
         fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
 
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], None, fn_wrapper)
-        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x01, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], None, fn_wrapper)
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
@@ -1179,7 +1176,8 @@ class TestFuser(TestMetaWearBase):
     def test_commands(self):
         expected= [
             [0x09, 0x02, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05],
-            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x14, 0x00, 0x00, 0x00]
         ]
 
         self.assertEqual(self.command_history, expected)

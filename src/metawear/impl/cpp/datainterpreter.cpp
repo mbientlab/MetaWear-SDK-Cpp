@@ -315,6 +315,10 @@ static MblMwData* convert_to_calibration_state(bool log_data, const MblMwDataSig
 
 static MblMwData* convert_to_fused(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     auto processor = dynamic_cast<const MblMwDataProcessor*>(signal);
+    if (processor->type != DataProcessorType::FUSER) {
+        return convert_to_fused(log_data, processor->input, response, len);
+    }
+    
     auto fused_config = (FuseConfig*) processor->config;
     MblMwData** value = (MblMwData**) calloc(fused_config->count + 1, sizeof(MblMwData*));
     uint8_t offset = 0;
