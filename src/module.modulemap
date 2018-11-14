@@ -39,6 +39,7 @@ module MetaWearCpp [extern_c] {
     header "metawear/processor/sample.h"
     header "metawear/processor/accounter.h"
     header "metawear/processor/rss.h"
+    header "metawear/processor/fuser.h"
     header "metawear/platform/btle_connection.h"
     header "metawear/platform/dllmarker.h"
     header "metawear/platform/memory.h"
