@@ -379,7 +379,10 @@ class TestMetaWearBase(unittest.TestCase):
             elif (command[0] == 0xb and command[1] == 0x85):
                 self.notify_mw_char(create_string_buffer(b'\x0b\x85\x9e\x01\x00\x00', 6))
                 response= None
-
+            elif (command[0] == 0x11 and command[1] == 0x91):
+                response = create_string_buffer(b'\x11\x91\x01', 3)
+            elif (command[0] == 0x11 and command[1] == 0x92):
+                response = create_string_buffer(b'\x11\x92\x00', 3)
             if (response != None):
                 self.schedule_response(response)
 

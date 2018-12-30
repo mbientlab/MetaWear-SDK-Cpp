@@ -268,6 +268,7 @@ const vector<tuple<MblMwGattChar, void(*)(MblMwMetaWearBoard*, const uint8_t*, u
             free_accelerometer_module(board);
             free_gyro_module(board);
             free_sensor_fusion_module(board);
+            free_settings_module(board);
 
             for (auto it : board->module_events) {
                 it.second->remove = false;
@@ -316,6 +317,7 @@ MblMwMetaWearBoard::~MblMwMetaWearBoard() {
     free_accelerometer_module(this);
     free_gyro_module(this);
     free_sensor_fusion_module(this);
+    free_settings_module(this);
 
     for (auto it: module_events) {
         it.second->remove= false;

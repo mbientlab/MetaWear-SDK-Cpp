@@ -34,20 +34,24 @@ endif
 LIB_SO_NAME:=lib$(APP_NAME).$(EXTENSION)
 LIB_SHORT_NAME:=$(LIB_SO_NAME).$(VERSION_MAJOR)
 LIB_NAME:=$(LIB_SO_NAME).$(VERSION)
-LD_FLAGS:=$(LD_FLAGS),$(LIB_SHORT_NAME)
 
 ifeq ($(MACHINE),x86)
-    CXXFLAGS+=-m32
-    LD_FLAGS+=-m32
+	ARCH=-m32
 else ifeq ($(MACHINE),x64)
-    CXXFLAGS+=-m64
-    LD_FLAGS+=-m64
+	ARCH=-m64
 else ifeq ($(MACHINE),arm)
-    CXXFLAGS+=-marm
-    LD_FLAGS+=-marm
+	ARCH=-marm
 else
     $(error Unrecognized "MACHINE" value, use 'x86', 'x64', or 'arm')
 endif
+
+ifndef NO_MULTILIB
+    CXXFLAGS+=$(ARCH)
+else
+    ARCH=
+endif
+
+LD_FLAGS:=$(LD_FLAGS),$(LIB_SHORT_NAME) $(ARCH)
 
 REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)
 REAL_BUILD_DIR:=$(BUILD_DIR)/$(MACHINE)/$(CONFIGURATION)

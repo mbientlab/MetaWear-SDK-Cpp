@@ -31,6 +31,12 @@ const uint8_t MBL_MW_ADDRESS_TYPE_PUBLIC = 0,
         MBL_MW_ADDRESS_TYPE_PRIVATE_RESOLVABLE = 2,
         MBL_MW_ADDRESS_TYPE_PRIVATE_NON_RESOLVABLE = 3;
 
+//@{
+///< Values returned if the power or charge statuses are not supported
+const int32_t MBL_MW_SETTINGS_POWER_STATUS_UNSUPPORTED = -1,
+        MBL_MW_SETTINGS_CHARGE_STATUS_UNSUPPORTED = -1;
+//@}
+
 /**
  * Whitelist filter modes
  */
@@ -72,6 +78,18 @@ METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_battery_state_data_signal(cons
  * @return Pointer to the mac signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_mac_data_signal(const MblMwMetaWearBoard *board);
+/**
+ * Retrieves the data signal representing the power status
+ * @param board         Calling object
+ * @return Pointer to the power status signal, nullptr if unsupported  
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_power_status_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves the data signal representing the charge status
+ * @param board         Calling object
+ * @return Pointer to the charge status signal, nullptr if unsupported
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_charge_status_data_signal(const MblMwMetaWearBoard* board);
 
 /**
  * Sets the advertisement name
@@ -140,6 +158,24 @@ METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_whitelist_data_signal(MblMwMet
  * @param mode           Whitelist filter mode
  */
 METAWEAR_API void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, MblMwWhitelistFilter mode);
+
+/**
+ * Reads the current power status if available.  The callback function will be called with:  
+ * 1    - power source is attached  
+ * 0    - no power source atached  
+ * -1   - feature not supported  
+ * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
+ * @param handler       Callback function that is executed when the task is finished
+ */
+METAWEAR_API void mbl_mw_settings_read_current_power_status(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler);
+/**
+ * Reads the current charge status.  The callback function will be called with:  
+ * 1    - battery is charging  
+ * 0    - battery is not charging  
+ * -1   - feature not supported
+ */
+METAWEAR_API void mbl_mw_settings_read_current_charge_status(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler);
 
 #ifdef	__cplusplus
 }

@@ -27,6 +27,14 @@ void ResponseHeader::enable_silent() {
     register_id |= SILENT_MASK;
 }
 
+void ResponseHeader::mark_readable() {
+    register_id |= READ_MASK;
+}
+
+void ResponseHeader::mark_unreadable(){
+    register_id &= ~READ_MASK;
+}
+
 bool ResponseHeader::is_readable() const {
     return (READ_MASK & register_id) == READ_MASK;
 }
