@@ -179,7 +179,7 @@ class TestSettingsRevision3(TestMetaWearBase):
 
 class TestSettingsRevision5(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x05', 4)
+        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x05\x03', 5)
         super().setUp()
 
     def test_power_status_signal(self):
@@ -230,6 +230,53 @@ class TestSettingsRevision5(TestMetaWearBase):
         e.wait()
 
         self.assertEqual(self.command, [0x11, 0x92])
+        self.assertEqual(actual, expected)
+
+class TestSettingsRevisionNoStatus(TestMetaWearBase):
+    def setUp(self):
+        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x05\x00', 5)
+        super().setUp()
+
+    def test_power_status_signal(self):
+        signal = self.libmetawear.mbl_mw_settings_get_power_status_data_signal(self.board)
+        self.assertIsNone(signal)
+                
+    def test_read_current_power(self):
+        expected= [Const.SETTINGS_POWER_STATUS_UNSUPPORTED]
+        actual = []
+        e = Event()
+
+        def handler(ctx, board, value):
+            actual.append(value)
+            e.set()
+
+        wrapper = FnVoid_VoidP_VoidP_Int(handler)
+        self.libmetawear.mbl_mw_settings_read_current_power_status(self.board, None, wrapper)
+        e.wait()
+
+        # should not issue the read command
+        self.assertNotEqual(self.command, [0x11, 0x91])
+        self.assertEqual(actual, expected)
+
+    def test_charge_status_signal(self):
+        signal = self.libmetawear.mbl_mw_settings_get_charge_status_data_signal(self.board)
+        self.assertIsNone(signal)
+
+    def test_read_current_charge(self):
+        expected= [Const.SETTINGS_CHARGE_STATUS_UNSUPPORTED]
+        actual = []
+        e = Event()
+
+        def handler(ctx, board, value):
+            actual.append(value)
+            e.set()
+
+        wrapper = FnVoid_VoidP_VoidP_Int(handler)
+        self.libmetawear.mbl_mw_settings_read_current_charge_status(self.board, None, wrapper)
+        e.wait()
+
+        # should not issue the read command
+        self.assertNotEqual(self.command, [0x11, 0x92])
         self.assertEqual(actual, expected)
 
 class TestSettingsRevision6(TestSettings):

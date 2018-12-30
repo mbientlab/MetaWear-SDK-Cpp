@@ -52,7 +52,9 @@ static int32_t current_charge_status_received(MblMwMetaWearBoard *board, const u
 }
 
 void init_settings_module(MblMwMetaWearBoard *board) {
-    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= BATTERY_REVISION) {
+    auto info = &board->module_info.at(MBL_MW_MODULE_SETTINGS);
+
+    if (info->revision >= BATTERY_REVISION) {
         MblMwDataSignal* battery;
         if (board->module_events.count(SETTINGS_BATTERY_STATE_RESPONSE_HEADER)) {
             battery = dynamic_cast<MblMwDataSignal*>(board->module_events[SETTINGS_BATTERY_STATE_RESPONSE_HEADER]);
@@ -68,7 +70,7 @@ void init_settings_module(MblMwMetaWearBoard *board) {
         }
         board->responses[SETTINGS_BATTERY_STATE_RESPONSE_HEADER] = response_handler_data_no_id;
     }
-    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= DISCONNECTED_EVENT_REVISION) {
+    if (info->revision >= DISCONNECTED_EVENT_REVISION) {
         if (!board->module_events.count(SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER)) {
             board->module_events[SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER] = new MblMwEvent(SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER, board);
         }
@@ -78,30 +80,35 @@ void init_settings_module(MblMwMetaWearBoard *board) {
         }
         board->responses[SETTINGS_MAC_RESPONSE_HEADER]= response_handler_data_no_id;   
     }
-    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= CHARGE_STATUS_REVISION) {
+    if (info->revision >= CHARGE_STATUS_REVISION && info->extra.size() > 0 && (info->extra[0] & 0x1) == 0x1) {
         if (!board->module_events.count(POWER_STATUS_RESPONSE_HEADER)) {
             board->module_events[POWER_STATUS_RESPONSE_HEADER] = new MblMwDataSignal(POWER_STATUS_RESPONSE_HEADER, board, 
                 DataInterpreter::UINT32, FirmwareConverter::DEFAULT, 1, 1, 0, 0);
         }
+
+        auto readable_power_status(POWER_STATUS_RESPONSE_HEADER);
+        readable_power_status.mark_readable();
+        board->responses[readable_power_status]= current_power_status_received;
+        board->responses[POWER_STATUS_RESPONSE_HEADER]= response_handler_data_no_id;
+    }
+
+    if (info->revision >= CHARGE_STATUS_REVISION && info->extra.size() > 0 && (info->extra[0] & 0x2) == 0x2) {
         if (!board->module_events.count(CHARGE_STATUS_RESPONSE_HEADER)) {
             board->module_events[CHARGE_STATUS_RESPONSE_HEADER] = new MblMwDataSignal(CHARGE_STATUS_RESPONSE_HEADER, board, 
                 DataInterpreter::UINT32, FirmwareConverter::DEFAULT, 1, 1, 0, 0);
         }
 
-        auto readable_power_status(POWER_STATUS_RESPONSE_HEADER), readable_charge_status(CHARGE_STATUS_RESPONSE_HEADER);
-        readable_power_status.mark_readable();
+        auto readable_charge_status(CHARGE_STATUS_RESPONSE_HEADER);
         readable_charge_status.mark_readable();
-
-        board->responses[readable_power_status]= current_power_status_received;
         board->responses[readable_charge_status]= current_charge_status_received;
         board->responses[CHARGE_STATUS_RESPONSE_HEADER]= response_handler_data_no_id;
-        board->responses[POWER_STATUS_RESPONSE_HEADER]= response_handler_data_no_id;
-
-        SettingsTransientState newState = {nullptr, nullptr, nullptr, nullptr};
-        transient_states.insert({board, newState});
     }
+        
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::WHITELIST_ADDRESSES))),
         forward_as_tuple(response_handler_data_with_id));
+
+    SettingsTransientState newState = {nullptr, nullptr, nullptr, nullptr};
+    transient_states.insert({board, newState});
 }
 
 void free_settings_module(MblMwMetaWearBoard* board) {
@@ -129,7 +136,7 @@ MblMwDataSignal* mbl_mw_settings_get_charge_status_data_signal(const MblMwMetaWe
 }
 
 void mbl_mw_settings_read_current_power_status(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler) {
-    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= CHARGE_STATUS_REVISION) {
+    if (board->module_events.count(POWER_STATUS_RESPONSE_HEADER)) {
         transient_states[board].read_power_status_handler = handler;
         transient_states[board].read_power_status_context = context;
 
@@ -141,7 +148,7 @@ void mbl_mw_settings_read_current_power_status(MblMwMetaWearBoard* board, void* 
 }
 
 void mbl_mw_settings_read_current_charge_status(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler) {
-    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= CHARGE_STATUS_REVISION) {
+    if (board->module_events.count(CHARGE_STATUS_RESPONSE_HEADER)) {
         transient_states[board].read_charge_status_handler = handler;
         transient_states[board].read_charge_status_context = context;
 
@@ -249,6 +256,12 @@ void create_settings_uri(const MblMwDataSignal* signal, stringstream& uri) {
             uri << "[1]";
             break;
         }
+        break;
+    case ORDINAL(SettingsRegister::POWER_STATUS):
+        uri << "power-status";
+        break;
+    case ORDINAL(SettingsRegister::CHARGE_STATUS):
+        uri << "charge-status";
         break;
     }
 }
