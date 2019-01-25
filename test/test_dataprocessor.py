@@ -921,6 +921,34 @@ class TestAccounter(TestMetaWearBase):
 
         self.assertEqual(offsets, expected)
 
+    def test_count_and_time(self):
+        epochs = []
+        fn_wrapper = FnVoid_VoidP_DataP(lambda ctx, p: epochs.append(p.contents.epoch))
+
+        self.events["processor"].clear()
+        acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_dataprocessor_packer_create(acc, 2, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create_count(self.processors[1], None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[2], None, self.sensor_data_handler)
+
+        self.events["processor"].clear()
+        barometer = self.libmetawear.mbl_mw_baro_bosch_get_pressure_data_signal(self.board)
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create(barometer, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[3], None, fn_wrapper)
+
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x03, 0x72, 0xA4, 0x03, 0x00, 0x77, 0x6C, 0x84, 0x01]))
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0x8D, 0x00, 0x00, 0x00, 0x4E, 0xFF, 0x35, 0xFD, 0x79, 0x07, 0x4D, 0xFF, 0x35, 0xFD, 0x7D, 0x07]))
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x03, 0xA4, 0xA4, 0x03, 0x00, 0x05, 0x65, 0x84, 0x01]))
+
+        self.assertEqual(epochs[1] - epochs[0], 73)
+
 class TestAccounterCount(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD

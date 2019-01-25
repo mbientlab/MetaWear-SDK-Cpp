@@ -76,17 +76,20 @@ static MblMwDataProcessor* find_processor(MblMwDataProcessor* processor, DataPro
     return nullptr;
 }
 
-static int64_t extract_accounter_epoch(MblMwDataProcessor* processor, const uint8_t** start, uint8_t& len, uint32_t* tick) {
+static int64_t extract_accounter_epoch(MblMwDataProcessor* processor, int64_t original_epoch, const uint8_t** start, uint8_t& len, uint32_t* tick) {
     uint8_t timestampLength = get_accounter_length(processor);
     // TODO: The logger uses a hardcoded prescaler of 3, upstream we force that value
     // and assume it to be so here, eventually we will have a prescale aware timestamp
     // API that works off of the base clock and call get_accounter_prescale(processor);
     memcpy(tick, *start, timestampLength);
 
-    (*start) += timestampLength;
-    len -= timestampLength;
+    if (get_accounter_type(processor) == ACCOUNTER_TIME) {
+        (*start) += timestampLength;
+        len -= timestampLength;
+        return calculate_epoch(processor->owner, *tick);
+    }
 
-    return calculate_epoch(processor->owner, *tick);
+    return original_epoch;
 }
 
 static bool invoke_signal_handler(MblMwDataSignal* signal, int64_t epoch, const uint8_t* response, uint8_t len, void* extra) {
@@ -118,7 +121,7 @@ static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard
     if (processor != nullptr) {
         switch(processor->type) {
             case DataProcessorType::ACCOUNTER: {
-                epoch = extract_accounter_epoch(processor, &start, len, &extra);
+                epoch = extract_accounter_epoch(processor, epoch, &start, len, &extra);
                 auto parent = find_processor(processor, DataProcessorType::PACKER);
 
                 if (parent != nullptr) {
@@ -138,7 +141,7 @@ static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard
                         pack_size = get_packer_length(processor) - (parent == nullptr ? 0 : get_accounter_length(parent));
                 
                 do {
-                    int64_t real_epoch = parent == nullptr ? epoch : extract_accounter_epoch(parent, &start, len, &extra);
+                    int64_t real_epoch = parent == nullptr ? epoch : extract_accounter_epoch(parent, epoch, &start, len, &extra);
                     handled|= invoke_signal_handler(signal, real_epoch, start, pack_size, &extra);
                     i++;
                     len-= pack_size;
