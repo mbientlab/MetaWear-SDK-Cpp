@@ -357,6 +357,7 @@ static int32_t logging_response_length_received(MblMwMetaWearBoard *board, uint3
     // If there are no entires we won't get any responses, so end the download now
     // by forcing a callback on the readout progress with 0 remaining entries
     if (state->n_log_entries == 0) {
+        state->latest_tick.clear();
         state->rollback_timestamps.clear();
         uint8_t readoutResponse[6] = {0};
         return logging_response_readout_progress(board, readoutResponse, sizeof(readoutResponse));
@@ -450,6 +451,7 @@ static int32_t logging_response_readout_progress(MblMwMetaWearBoard *board, cons
     memcpy(&entries_left, response + 2, min(len - 2, 4));
 
     if (entries_left == 0) {
+        state->latest_tick.clear();
         state->rollback_timestamps.clear();
     }
     if (state->log_download_handler.received_progress_update != nullptr) {
