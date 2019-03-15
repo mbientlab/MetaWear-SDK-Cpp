@@ -1490,6 +1490,12 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_settings_set_whitelist_filter_mode': [ref.types.void, [ref.refType(MetaWearBoard), WhitelistFilter]],
 
 /**
+ * Retrieves the firmware build id, used for identifying custom firmware build variants 
+ * @param board         Calling object
+ */
+  'mbl_mw_settings_get_firware_build_id': [ref.types.uint8, [ref.refType(MetaWearBoard)]],
+
+/**
  * Sets the advertisement name
  * @param board             Board to modify
  * @param device_name       Byte array containing the device name, max 8 ASCII characters
