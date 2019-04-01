@@ -83,9 +83,10 @@ static int64_t extract_accounter_epoch(MblMwDataProcessor* processor, int64_t or
     // API that works off of the base clock and call get_accounter_prescale(processor);
     memcpy(tick, *start, timestampLength);
 
+    (*start) += timestampLength;
+    len -= timestampLength;
+
     if (get_accounter_type(processor) == ACCOUNTER_TIME) {
-        (*start) += timestampLength;
-        len -= timestampLength;
         return calculate_epoch(processor->owner, *tick);
     }
 
