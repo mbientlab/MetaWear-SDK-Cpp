@@ -1233,6 +1233,10 @@ class TestFuserAccounter(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_accounter_create_count(self.processors[1], None, self.processor_handler)
         self.events["processor"].wait()
 
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create(self.processors[1], None, self.processor_handler)
+        self.events["processor"].wait()
+
     def test_data_handling(self):
         parsed_values = {}
         def fused_data_handler(context, data):
@@ -1248,6 +1252,29 @@ class TestFuserAccounter(TestMetaWearBase):
             parsed_values['gyro'] = self.data
 
         fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
+
+        parsed_values_no_counter = {}
+        def fused_data_handler_no_counter(context, data):
+            values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
+
+            self.sensorDataHandler(context, values.contents[0])
+            parsed_values_no_counter['acc'] = self.data
+
+            self.sensorDataHandler(context, values.contents[1])
+            parsed_values_no_counter['gyro'] = self.data
+
+        fn_wrapper_no_counter = FnVoid_VoidP_DataP(fused_data_handler_no_counter)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[3], None, fn_wrapper_no_counter)
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x04, 0x1e, 0x02, 0x00, 0x00, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
+        self.assertEqual(parsed_values_no_counter['acc'], self.data)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+        self.assertEqual(parsed_values_no_counter['gyro'], self.data)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[2], None, fn_wrapper)
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x03, 0x1e, 0x02, 0x00, 0x00, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
@@ -1265,7 +1292,8 @@ class TestFuserAccounter(TestMetaWearBase):
             [0x09, 0x02, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05],
             [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
             [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x14, 0x00, 0x00, 0x00],
-            [0x09, 0x02, 0x09, 0x03, 0x02, 0x60, 0x11, 0x30, 0x03]
+            [0x09, 0x02, 0x09, 0x03, 0x02, 0x60, 0x11, 0x30, 0x03],
+            [0x09, 0x02, 0x09, 0x03, 0x02, 0x60, 0x11, 0x31, 0x03]
         ]
 
         self.assertEqual(self.command_history, expected)
