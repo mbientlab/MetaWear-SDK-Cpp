@@ -2,13 +2,12 @@
 
 [![Platforms](https://img.shields.io/badge/platform-linux--64%20%7C%20win--32%20%7C%20osx--64%20%7C%20win--64-lightgrey?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
 [![License](https://img.shields.io/cocoapods/l/MetaWear.svg?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md)
-[![Version](https://img.shields.io/badge/node-%3D%208.0.0-brightgreen?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
 
 ![alt tag](https://raw.githubusercontent.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/master/Images/Metawear.png)
 
-This project is a C++ implementation of the MetaWear protocol.  If compiled as a shared library, it can be used with any language that supports calling 
-C functions from a shared library, such as Node and Python.  The library only constructs the bytes for communicating with the MetaWear platform, it 
-**does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target platform.
+This project is a C++ implementation of the MetaWear protocol.  If compiled as a shared library, it can be used with any language that supports calling C functions from a shared library, such as Node and Python.  
+
+The library only constructs the bytes for communicating with the MetaWear platform, it **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target platform.
 
 > ADDITIONAL NOTES  
 This library is platform agnostic and does not contain any Bluetooth code. You are responsible for adding in this functionality.
