@@ -1,10 +1,42 @@
-# MetaWear C++ API #
+# MetaWear  SDK for C++ by MBIENTLAB
+
+[![Platforms](https://img.shields.io/badge/platform-linux--64%20%7C%20win--32%20%7C%20osx--64%20%7C%20win--64-lightgrey?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
+[![License](https://img.shields.io/cocoapods/l/MetaWear.svg?style=flat)](https://mbientlab.com/license)
+[![Version](https://img.shields.io/badge/node-%3D%208.0.0-brightgreen?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
+
+![alt tag](https://raw.githubusercontent.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/master/Images/Metawear.png)
+
 This project is a C++ implementation of the MetaWear protocol.  If compiled as a shared library, it can be used with any language that supports calling 
 C functions from a shared library, such as Node and Python.  The library only constructs the bytes for communicating with the MetaWear platform, it 
 **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target platform.
 
-# Build #
+> ADDITIONAL NOTES  
+This library is platform agnostic and does not contain any Bluetooth code. You are responsible for adding in this functionality.
+
+### Overview
+
+[MetaWear](https://mbientlab.com) is a complete development and production platform for wearable and connected device applications.
+
+MetaWear features a number of sensors and peripherals all easily controllable over Bluetooth 4.0 Low Energy using this SDK, no firmware or hardware experience needed!
+
+The MetaWear hardware comes pre-loaded with a wirelessly upgradeable firmware, so it keeps getting more powerful over time.
+
+### Requirements
+- [MetaWear board](https://mbientlab.com/store/)
+- A linux/windows/mac machine with Bluetooth 4.0
+
+### License
+See the [License](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md).
+
+### Support
+Reach out to the [community](https://mbientlab.com/community/) if you encounter any problems, or just want to chat :)
+
+## Getting Started
+
+### Installation
 Building the project has been tested on \*nix systems with Clang 4, and on Windows with Visual Studio Community 2017.  
+
+### Usage
 
 ```sh
 > clang++ --version
@@ -19,7 +51,7 @@ Copyright (C) Microsoft Corporation.  All rights reserved.
 usage: cl [ option... ] filename... [ /link linkoption... ]
 ```
 
-## GCC and Clang ##
+### GCC and Clang
 Linux users can build the project by invoking GNU make; the default action is to build the shared library for your current platform.  You can also 
 change the C++ compiler by overriding the CXX make variable.
 
@@ -44,7 +76,7 @@ dist/
 
 ```
 
-## Visual Studio 2017 ##
+### Visual Studio 2017
 MSBuild files have been provided to build the project as both a Win32 and WinRT dll.  The Win32 dll is for classic Win32 applications whereas the 
 WinRT dll is for Universal Windows apps.  You will need to have [Visual Studio 2017](https://www.visualstudio.com/downloads/) installed in order to 
 run the build.
@@ -81,10 +113,10 @@ dist/
 
 ```
 
-# Testing #
+## Testing
 Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target (Test for MSBuild).
 
-## GNU Make ##
+### GNU Make
 ```sh
 > make test
 python3 -m unittest discover -s test
@@ -100,7 +132,7 @@ Ran 461 tests in 33.249s
 OK (skipped=1)
 ```
 
-## MSBuild ##
+### MSBuild
 When testing with MSBuild, it is important that the `Platform` property matches the installed Python's target platform as well.  For example, if 
 64-bit Python is installed, set the `Platform` property to x64 when running the `Test` target otherwise MSBuild will use the x86 dll which will cause 
 all of the tests to fail.
@@ -108,3 +140,7 @@ all of the tests to fail.
 ```bat
 metawear-cpp-api>msbuild MetaWear.Win32.vcxproj /p:Platform=x64 /t:Test
 ```
+
+### Tutorials
+
+Tutorials can be found [here](https://mbientlab.com/tutorials/).
