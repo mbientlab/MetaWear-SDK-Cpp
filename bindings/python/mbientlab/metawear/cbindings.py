@@ -1375,6 +1375,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_settings_set_whitelist_filter_mode.restype = None
     libmetawear.mbl_mw_settings_set_whitelist_filter_mode.argtypes = [c_void_p, c_int]
 
+    libmetawear.mbl_mw_settings_get_firmware_build_id.restype = c_ubyte
+    libmetawear.mbl_mw_settings_get_firmware_build_id.argtypes = [c_void_p]
+    
     libmetawear.mbl_mw_settings_set_device_name.restype = None
     libmetawear.mbl_mw_settings_set_device_name.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
 

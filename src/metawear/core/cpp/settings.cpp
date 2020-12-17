@@ -265,3 +265,11 @@ void create_settings_uri(const MblMwDataSignal* signal, stringstream& uri) {
         break;
     }
 }
+
+uint8_t mbl_mw_settings_get_firmware_build_id(const MblMwMetaWearBoard *board) {
+    auto info = &board->module_info.at(MBL_MW_MODULE_SETTINGS);
+    if (info->extra.size() > 1) {
+        return info->extra[1];
+    }
+    return 0;
+}
