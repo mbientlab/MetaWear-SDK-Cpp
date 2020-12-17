@@ -1876,6 +1876,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_average_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_average_create.argtypes = [c_void_p, c_ubyte, c_void_p, FnVoid_VoidP_VoidP]
 
+    libmetawear.mbl_mw_sensor_fusion_reset_orientation.restype = None
+    libmetawear.mbl_mw_sensor_fusion_reset_orientation.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_sensor_fusion_write_config.restype = None
     libmetawear.mbl_mw_sensor_fusion_write_config.argtypes = [c_void_p]
 

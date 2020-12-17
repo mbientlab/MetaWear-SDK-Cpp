@@ -14,5 +14,6 @@ enum class SensorFusionRegister : uint8_t {
     CALIBRATION_STATE,
     ACC_CAL_DATA,
     GYRO_CAL_DATA,
-    MAG_CAL_DATA
+    MAG_CAL_DATA,
+    RESET_ORIENTATION
 };

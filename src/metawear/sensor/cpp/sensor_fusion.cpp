@@ -47,7 +47,7 @@ const ResponseHeader RESPONSE_HEADERS[] {
 };
 
 const ResponseHeader CALIB_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::CALIBRATION_STATE)));
-const uint8_t CALIBRATION_REVISION = 1, CALIB_DATA_REVISION = 2;
+const uint8_t CALIBRATION_REVISION = 1, CALIB_DATA_REVISION = 2, RESET_ORIENTATION_REVISION = 3;
 
 struct SensorFusionState {
     struct {
@@ -208,12 +208,15 @@ MblMwDataSignal* mbl_mw_sensor_fusion_calibration_state_data_signal(const MblMwM
 void mbl_mw_sensor_fusion_set_mode(MblMwMetaWearBoard* board, MblMwSensorFusionMode mode) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode = mode;
 }
+
 void mbl_mw_sensor_fusion_set_acc_range(MblMwMetaWearBoard* board, MblMwSensorFusionAccRange range) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.acc_range = range;
 }
+
 void mbl_mw_sensor_fusion_set_gyro_range(MblMwMetaWearBoard* board, MblMwSensorFusionGyroRange range) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.gyro_range = (range + 1);
 }
+
 void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
     auto state = (SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION);
 
@@ -270,6 +273,7 @@ void mbl_mw_sensor_fusion_read_config(const MblMwMetaWearBoard* board, void *con
 void mbl_mw_sensor_fusion_enable_data(MblMwMetaWearBoard* board, MblMwSensorFusionData data) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->enable_mask |= (0x1 << (int) data);
 }
+
 void mbl_mw_sensor_fusion_clear_enabled_mask(MblMwMetaWearBoard* board) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->enable_mask = 0x0;
 }
@@ -358,6 +362,13 @@ void mbl_mw_sensor_fusion_read_calibration_data(MblMwMetaWearBoard* board, void 
 
         uint8_t command[2] = { MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::ACC_CAL_DATA)) };
         SEND_COMMAND;
+    }
+}
+
+void mbl_mw_sensor_fusion_reset_orientation(MblMwMetaWearBoard* board) {
+    if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision >= RESET_ORIENTATION_REVISION) {
+    	uint8_t reset_cmd[3] = {MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::RESET_ORIENTATION), 0x1};
+    	send_command(board, reset_cmd, sizeof(reset_cmd));
     }
 }
 

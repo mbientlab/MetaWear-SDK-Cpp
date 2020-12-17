@@ -332,3 +332,48 @@ class TestSensorFusionRev2(TestMetaWearBase):
                 self.libmetawear.mbl_mw_sensor_fusion_write_calibration_data(self.board, byref(data))
 
                 self.assertEqual(test['expected'], self.command_history)
+
+class TestSensorFusionRev3(TestMetaWearBase):
+    def setUp(self):
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
+        self.metawear_motion_r_services[0x19]= create_string_buffer(b'\x19\x80\x00\x03\x03\x00\x06\x00\x02\x00\x01\x00', 12)
+
+        super().setUp()
+
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
+        prev = len(self.full_history)
+        TestMetaWearBase.commandLogger(self, context, board, writeType, characteristic, command, length)
+        curr = len(self.full_history)
+
+        if (prev != curr):
+            response = None
+            if (command[0] == 0x19 and command[1] == 0x8c):
+                response = to_string_buffer([0x19, 0x8c, 0xf6, 0xff, 0x00, 0x00, 0x0a, 0x00, 0xe8, 0x03, 0x03, 0x00])
+            elif (command[0] == 0x19 and command[1] == 0x8d):
+                response = to_string_buffer([0x19, 0x8d, 0x04, 0x00, 0x08, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00])
+            elif(command[0] == 0x19 and command[1] == 0x8e):
+                response = to_string_buffer([0x19, 0x8e, 0x66, 0x00, 0x17, 0xfd, 0x8a, 0xfc, 0x7f, 0x03, 0x01, 0x00])
+
+            if (response != None):
+                self.schedule_response(response)
+
+    def test_orientation_reset(self):
+        reset_cmd = [0x19, 0x0f, 0x01]
+        
+        tests = [
+            {
+                'name': 'reset',
+                'expected': [
+                    reset_cmd,
+                ]
+            }
+        ]
+        
+        for test in tests:
+            with self.subTest(mode = test['name']):
+                self.command_history = []
+
+                self.libmetawear.mbl_mw_sensor_fusion_reset_orientation(self.board)
+
+                self.assertEqual(test['expected'], self.command_history)
+
