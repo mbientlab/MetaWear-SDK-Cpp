@@ -111,6 +111,12 @@ METAWEAR_API void mbl_mw_sensor_fusion_set_acc_range(MblMwMetaWearBoard* board, 
  */
 METAWEAR_API void mbl_mw_sensor_fusion_set_gyro_range(MblMwMetaWearBoard* board, MblMwSensorFusionGyroRange range);
 /**
+ * Reset the default orientation of the board. 
+ * Works while sensor fusion is running or off. Works for NDOF and IMUPLUS only. 
+ * @param board         Calling object
+ */
+METAWEAR_API void mbl_mw_sensor_fusion_reset_orientation(MblMwMetaWearBoard* board);
+/**
  * Write the module configuration to the board
  * @param board         Calling object
  */

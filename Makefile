@@ -35,15 +35,15 @@ LIB_SO_NAME:=lib$(APP_NAME).$(EXTENSION)
 LIB_SHORT_NAME:=$(LIB_SO_NAME).$(VERSION_MAJOR)
 LIB_NAME:=$(LIB_SO_NAME).$(VERSION)
 
-ifeq ($(MACHINE),x86)
-	ARCH=-m32
-else ifeq ($(MACHINE),x64)
-	ARCH=-m64
-else ifeq ($(MACHINE),arm)
-	ARCH=-marm
-else
-    $(error Unrecognized "MACHINE" value, use 'x86', 'x64', or 'arm')
-endif
+#ifeq ($(MACHINE),x86)
+#	ARCH=-m32
+#else ifeq ($(MACHINE),x64)
+#	ARCH=-m64
+#else ifeq ($(MACHINE),arm)
+#	ARCH=-marm
+#else
+#    $(error Unrecognized "MACHINE" value, use 'x86', 'x64', or 'arm')
+#endif
 
 ifndef NO_MULTILIB
     CXXFLAGS+=$(ARCH)

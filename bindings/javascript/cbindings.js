@@ -2862,6 +2862,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_sensor_fusion_write_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
+ * Reset the default orientation of the board. 
+ * Works while sensor fusion is running or off. Works for NDOF and IMUPLUS only. 
+ * @param board         Calling object
+ */
+  'mbl_mw_sensor_fusion_reset_orientation': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
  * Writes the acceleration settings to the sensor
  * @param board     Pointer to the board to send the command to
  */

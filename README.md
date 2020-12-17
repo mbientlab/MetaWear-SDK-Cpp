@@ -1,6 +1,6 @@
-# MetaWear  SDK for C++ by MBIENTLAB
+# MetaWear SDK for C++ by MBIENTLAB
 
-[![Platforms](https://img.shields.io/badge/platform-linux--64%20%7C%20win--32%20%7C%20osx--64%20%7C%20win--64-lightgrey?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
+[![Platforms](https://img.shields.io/badge/platform-linux%20%7C%20ios%20%7C%20osx-lightgrey)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
 [![License](https://img.shields.io/cocoapods/l/MetaWear.svg?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md)
 
 ![alt tag](https://raw.githubusercontent.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/master/Images/Metawear.png)
@@ -16,13 +16,14 @@ This library is platform agnostic and does not contain any Bluetooth code. You a
 
 [MetaWear](https://mbientlab.com) is a complete development and production platform for wearable and connected device applications.
 
-MetaWear features a number of sensors and peripherals all easily controllable over Bluetooth 4.0 Low Energy using this SDK, no firmware or hardware experience needed!
+MetaWear features a number of sensors and peripherals all easily controllable over Bluetooth 4.0/5.0 Low Energy using this SDK, no firmware or hardware experience needed!
 
 The MetaWear hardware comes pre-loaded with a wirelessly upgradeable firmware, so it keeps getting more powerful over time.
 
 ### Requirements
 - [MetaWear board](https://mbientlab.com/store/)
-- A linux/windows/mac machine with Bluetooth 4.0
+- A linux/mac machine with Bluetooth 4.0 or Bluetooth 5.0
+- We are no longer supporting Windows
 
 ### License
 See the [License](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md).
@@ -33,7 +34,7 @@ Reach out to the [community](https://mbientlab.com/community/) if you encounter 
 ## Getting Started
 
 ### Installation
-Building the project has been tested on \*nix systems with Clang 4, and on Windows with Visual Studio Community 2017.  
+Building the project has been tested on Unix systems with Clang 4.  
 
 ### Usage
 
@@ -70,50 +71,13 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.18.4
-            └── libmetawear.so.0.18.4
-
-```
-
-### Visual Studio 2017
-MSBuild files have been provided to build the project as both a Win32 and WinRT dll.  The Win32 dll is for classic Win32 applications whereas the 
-WinRT dll is for Universal Windows apps.  You will need to have [Visual Studio 2017](https://www.visualstudio.com/downloads/) installed in order to 
-run the build.
-
-When calling MSBuild, you can set the `Configuration` and `Platform` properties to control debug/release builds and x86/x64/ARM platforms 
-respectively.  If not specified on the command line, the default action is to build a debug dll targeting the x86 (Win32) platform.  Note that the ARM 
-platform is only available for the WinRT build.
-
-```bat
-# default properties are debug config with x86 (win32) platform
-msbuild MetaWear.Win32.vcxproj
-
-# release build for Win32 applications targeting the x64 architecture 
-msbuild MetaWear.Win32.vcxproj /p:Configuration=Release;Platform=x64
-
-# debug build for WinRT applications targeting the ARM architecture 
-msbuild MetaWear.WinRT.vcxproj /p:Configuration=Debug;Platform=ARM
-```
-
-As with the Makefile, the .dll, .lib, .pdb, and .exp files are placed in the `dist` directory.
-
-```sh
-> tree dist
-dist/
-└── release
-    └── lib
-        └── x64
-            ├── MetaWear.Win32.dll
-            ├── MetaWear.Win32.exp
-            ├── MetaWear.Win32.iobj
-            ├── MetaWear.Win32.ipdb
-            ├── MetaWear.Win32.lib
-            └── MetaWear.Win32.pdb
+            ├── libmetawear.so.0 -> libmetawear.so.0.19.0
+            └── libmetawear.so.0.19.0
 
 ```
 
 ## Testing
-Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target (Test for MSBuild).
+Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target.
 
 ### GNU Make
 ```sh
@@ -129,15 +93,6 @@ python3 -m unittest discover -s test
 Ran 461 tests in 33.249s
 
 OK (skipped=1)
-```
-
-### MSBuild
-When testing with MSBuild, it is important that the `Platform` property matches the installed Python's target platform as well.  For example, if 
-64-bit Python is installed, set the `Platform` property to x64 when running the `Test` target otherwise MSBuild will use the x86 dll which will cause 
-all of the tests to fail.
-
-```bat
-metawear-cpp-api>msbuild MetaWear.Win32.vcxproj /p:Platform=x64 /t:Test
 ```
 
 ### Tutorials
