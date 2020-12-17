@@ -1,6 +1,6 @@
 # MetaWear SDK for C++ by MBIENTLAB
 
-[![Platforms](https://img.shields.io/badge/platform-linux--64%20%7C%20osx--64%20%7C%20lightgrey?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
+[![Platforms](https://img.shields.io/badge/platform-linux%20%7C%20ios%20%7C%20osx-lightgrey)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
 [![License](https://img.shields.io/cocoapods/l/MetaWear.svg?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md)
 
 ![alt tag](https://raw.githubusercontent.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/master/Images/Metawear.png)
@@ -71,13 +71,13 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.18.4
-            └── libmetawear.so.0.18.4
+            ├── libmetawear.so.0 -> libmetawear.so.0.19.0
+            └── libmetawear.so.0.19.0
 
 ```
 
 ## Testing
-Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target (Test for MSBuild).
+Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target.
 
 ### GNU Make
 ```sh
