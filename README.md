@@ -34,7 +34,7 @@ Reach out to the [community](https://mbientlab.com/community/) if you encounter 
 ## Getting Started
 
 ### Installation
-Building the project has been tested on \*nix systems with Clang 4, and on Windows with Visual Studio Community 2017.  
+Building the project has been tested on Unix systems with Clang 4.  
 
 ### Usage
 
