@@ -6,6 +6,9 @@ DfuOperations::DfuOperations(const MblMwMetaWearBoard* board, const MblMwDfuDele
     memcpy(&this->dfuDelegate, delegate, sizeof(MblMwDfuDelegate));
 }
 
+DfuOperations::~DfuOperations() {
+
+}
 
 void DfuOperations::cancelDFU() {
     //NSLog(@"cancelDFU");

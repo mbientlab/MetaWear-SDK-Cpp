@@ -103,3 +103,11 @@ typedef struct {
     uint8_t gyroscope;
     uint8_t magnetometer;
 } MblMwCalibrationState;
+
+/**
+ * Wrapper class encapsulating responses from the Bosch tap detector
+ */
+typedef struct {
+    uint8_t type;   ///< 1 if double tap, 2 if single tap
+    uint8_t sign;   ///< 0 if positive, 1 if negative
+} MblMwBoschTap;

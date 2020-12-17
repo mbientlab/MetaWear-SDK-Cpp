@@ -51,7 +51,8 @@ unordered_map<DataProcessorType, uint8_t> type_to_id= {
     { DataProcessorType::THRESHOLD, 0xd },
     { DataProcessorType::TIME, 0x8 },
     { DataProcessorType::ACCOUNTER, 0x11 },
-    { DataProcessorType::PACKER, 0x10 }
+    { DataProcessorType::PACKER, 0x10 },
+    { DataProcessorType::FUSER, 0x1b}
 };
 
 struct DataProcessorState : public AsyncCreator {
@@ -315,6 +316,22 @@ MblMwDataProcessor* MblMwDataProcessor::transform(const MblMwDataSignal* input, 
             processor->type = DataProcessorType::ACCOUNTER;
             break;
         }
+        case 0x1b: {
+            auto fuse = (FuseConfig*) config;
+            processor->config_size = sizeof(FuseConfig);
+            processor->channel_size = input->length();
+            processor->n_channels = 1;
+            processor->type = DataProcessorType::FUSER;
+            processor->interpreter = DataInterpreter::FUSED_DATA;
+            processor->converter = FirmwareConverter::DEFAULT;
+
+            for(uint8_t i = 0; i < fuse->count; i++) {
+                auto value = lookup_processor(input->owner, fuse->references[i]);
+                processor->channel_size+= value->length();
+            }
+
+            break;
+        }
     }
 
     processor->config = malloc(processor->config_size);
@@ -434,6 +451,8 @@ static const char* type_to_uri(DataProcessorType type, void* config) {
         return "account";
     case DataProcessorType::PACKER:
         return "packer";
+    case DataProcessorType::FUSER:
+        return "fuser";
     default:
         return nullptr;
     }
@@ -570,7 +589,7 @@ uint8_t mbl_mw_dataprocessor_get_id(const MblMwDataProcessor* processor) {
 
 MblMwDataProcessor* mbl_mw_dataprocessor_lookup_id(const MblMwMetaWearBoard* board, uint8_t id) {
     ResponseHeader map_key(MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY), id);
-    return board->module_events.count(map_key) ? dynamic_cast<MblMwDataProcessor*>(board->module_events.at(map_key)) : nullptr;
+    return dynamic_cast<MblMwDataProcessor*>(board->module_events.at(map_key));
 }
 
 void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, void *context, MblMwFnDataProcessor processor_created) {
@@ -633,6 +652,11 @@ void sync_processor_chain(MblMwMetaWearBoard* board, uint8_t id, ProcessorEntrie
         SEND_COMMAND;
     });
     state->create_next(false);
+}
+
+MblMwDataProcessor* lookup_processor(const MblMwMetaWearBoard* board, uint8_t id) {
+    ResponseHeader key = {MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY), id};
+    return dynamic_cast<MblMwDataProcessor*>(board->module_events.at(key));
 }
 
 namespace std {

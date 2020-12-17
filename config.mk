@@ -11,6 +11,8 @@ ifndef MACHINE
         MACHINE:=x64
     else ifneq (,$(findstring arm, $(MACHINE_RAW)))
         MACHINE:=arm
+    else ifeq ($(MACHINE_RAW),aarch64)
+        MACHINE:=arm
     else
         MACHINE:=x86
     endif

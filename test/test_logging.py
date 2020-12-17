@@ -279,30 +279,20 @@ class TestLoggerSetup(TestMetaWearBase):
         self.assertEqual(self.command_history, self.expected_cmds)
 
 class TestLoggerTimeout(TestMetaWearBase):
-    def logger_ready(self, context, logger):
-        self.created_logger= logger
-
-    def logger_ready_snd(self, context, logger):
-        self.e.set()
-
     def commandLogger(self, context, board, writeType, characteristic, command, length):
         if (command[0] == 0xb and command[1] == 0x2):
-            self.notify_mw_char(create_string_buffer(b'\x0b\x00', 2))
+            self.dc_handler(self.board, 0)
         else:
             super().commandLogger(context, board, writeType, characteristic, command, length)
 
     def test_timeout(self):
-        self.e= threading.Event()
+        self.libmetawear.mbl_mw_metawearboard_set_time_for_response(self.board, 2000)
 
-        logger_ready_fn= FnVoid_VoidP_VoidP(self.logger_ready)
-        logger_ready_snd_fn= FnVoid_VoidP_VoidP(self.logger_ready_snd)
         self.test_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, logger_ready_fn)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, logger_ready_fn)
-        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, logger_ready_snd_fn)
+        self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, self.logger_created)
 
-        self.e.wait()
-        self.assertIsNone(self.created_logger)
+        self.events["log"].wait()
+        self.assertIsNone(self.loggers[0])
 
 class TestLogTimestamp(TestMetaWearBase):
     def initialized(self, context, board, status):

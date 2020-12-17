@@ -40,7 +40,9 @@ enum class DataInterpreter : uint8_t {
     LOGGING_TIME,
     BTLE_ADDRESS,
     BOSCH_ANY_MOTION,
-    SENSOR_FUSION_CALIB_STATE
+    SENSOR_FUSION_CALIB_STATE,
+    FUSED_DATA,
+    BOSCH_TAP
 };
 
 enum class FirmwareConverter : uint8_t {
@@ -72,3 +74,5 @@ extern std::unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_respo
 
 typedef float (*FnDataSignalFloat)(const MblMwDataSignal*, float);
 extern std::unordered_map<FirmwareConverter, FnDataSignalFloat> number_to_firmware_converters;
+
+void free_data(const MblMwDataSignal* signal, MblMwData* data);

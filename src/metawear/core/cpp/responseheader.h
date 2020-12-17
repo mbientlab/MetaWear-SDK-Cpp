@@ -14,6 +14,8 @@ struct ResponseHeader {
 
     void disable_silent();
     void enable_silent();
+    void mark_readable();
+    void mark_unreadable();
 
     bool is_readable() const;
     bool has_data_id() const;

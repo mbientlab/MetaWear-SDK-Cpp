@@ -132,3 +132,9 @@ struct TimeDelayConfig {
     uint8_t :2;
     uint8_t period[4];
 };
+
+struct FuseConfig {
+    uint8_t count:4;
+    uint8_t:4;
+    uint8_t references[12];
+};

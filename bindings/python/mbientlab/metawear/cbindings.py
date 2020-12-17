@@ -57,6 +57,20 @@ class SensorFusionGyroRange:
     _500DPS = 2
     _250DPS = 3
 
+class AccBoschDoubleTapWindow:
+    _50ms = 0
+    _100ms = 1
+    _150ms = 2
+    _200ms = 3
+    _250ms = 4
+    _375ms = 5
+    _500ms = 6
+    _700ms = 7
+
+class AccBoschTapShockTime:
+    _50ms = 0
+    _75ms = 1
+
 class AccBoschOrientationMode:
     SYMMETRICAL = 0
     HIGH_ASYMMETRICAL = 1
@@ -112,6 +126,10 @@ class TemperatureSource:
     EXT_THERM = 1
     BMP280 = 2
     PRESET_THERM = 3
+
+class AccBoschTapQuietTime:
+    _30ms = 0
+    _20ms = 1
 
 class MagBmm150Odr:
     _10Hz = 0
@@ -241,16 +259,8 @@ class DataTypeId:
     BTLE_ADDRESS = 14
     BOSCH_ANY_MOTION = 15
     CALIBRATION_STATE = 16
-
-class SensorOrientation:
-    FACE_UP_PORTRAIT_UPRIGHT = 0
-    FACE_UP_PORTRAIT_UPSIDE_DOWN = 1
-    FACE_UP_LANDSCAPE_LEFT = 2
-    FACE_UP_LANDSCAPE_RIGHT = 3
-    FACE_DOWN_PORTRAIT_UPRIGHT = 4
-    FACE_DOWN_PORTRAIT_UPSIDE_DOWN = 5
-    FACE_DOWN_LANDSCAPE_LEFT = 6
-    FACE_DOWN_LANDSCAPE_RIGHT = 7
+    DATA_ARRAY = 17
+    BOSCH_TAP = 18
 
 class Model:
     NA = -1
@@ -265,6 +275,16 @@ class Model:
     METATRACKER = 8
     METAMOTION_R = 9
     METAMOTION_C = 10
+
+class SensorOrientation:
+    FACE_UP_PORTRAIT_UPRIGHT = 0
+    FACE_UP_PORTRAIT_UPSIDE_DOWN = 1
+    FACE_UP_LANDSCAPE_LEFT = 2
+    FACE_UP_LANDSCAPE_RIGHT = 3
+    FACE_DOWN_PORTRAIT_UPRIGHT = 4
+    FACE_DOWN_PORTRAIT_UPSIDE_DOWN = 5
+    FACE_DOWN_LANDSCAPE_LEFT = 6
+    FACE_DOWN_LANDSCAPE_RIGHT = 7
 
 class PulseOutput:
     WIDTH = 0
@@ -482,6 +502,26 @@ class Data(Structure):
         return Data(epoch = self.epoch, extra = self.extra, value = self.value, type_id = self.type_id, length = self.length)
 
 FnVoid_VoidP_DataP = CFUNCTYPE(None, c_void_p, POINTER(Data))
+class CalibrationData(Structure):
+    _fields_ = [
+        ("acc" , (c_ubyte * 10)),
+        ("gyro" , (c_ubyte * 10)),
+        ("mag" , (c_ubyte * 10))
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (array_ubyte_eq(self.acc, 10, other.acc, 10) and array_ubyte_eq(self.gyro, 10, other.gyro, 10) and array_ubyte_eq(self.mag, 10, other.mag, 10))
+
+    def __repr__(self):
+        return "{acc : %s, gyro : %s, mag : %s}" % (array_ubyte_to_hex_string(self.acc, 10), array_ubyte_to_hex_string(self.gyro, 10), array_ubyte_to_hex_string(self.mag, 10))
+
+    def __deepcopy__(self, memo):
+        return CalibrationData(acc = copy.deepcopy(self.acc), gyro = copy.deepcopy(self.gyro), mag = copy.deepcopy(self.mag))
+
+FnVoid_VoidP_VoidP_CalibrationDataP = CFUNCTYPE(None, c_void_p, c_void_p, POINTER(CalibrationData))
 FnVoid_VoidP_VoidP_VoidP_UInt = CFUNCTYPE(None, c_void_p, c_void_p, c_void_p, c_uint)
 FnVoid_VoidP = CFUNCTYPE(None, c_void_p)
 class SpiParameters(Structure):
@@ -570,6 +610,24 @@ class LogDownloadHandler(Structure):
     def __deepcopy__(self, memo):
         return LogDownloadHandler(context = self.context, received_progress_update = self.received_progress_update, received_unknown_entry = self.received_unknown_entry, received_unhandled_entry = self.received_unhandled_entry)
 
+class BtleAddress(Structure):
+    _fields_ = [
+        ("address_type" , c_ubyte),
+        ("address" , (c_ubyte * 6))
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (self.address_type == other.address_type and array_ubyte_eq(self.address, 6, other.address, 6))
+
+    def __repr__(self):
+        return "{address_type : %d, address : %s}" % (self.address_type, array_ubyte_to_hex_string(self.address, 6))
+
+    def __deepcopy__(self, memo):
+        return BtleAddress(address_type = self.address_type, address = copy.deepcopy(self.address))
+
 class CalibrationState(Structure):
     _fields_ = [
         ("accelrometer" , c_ubyte),
@@ -648,26 +706,6 @@ class OverflowState(Structure):
 
     def __deepcopy__(self, memo):
         return OverflowState(length = self.length, assert_en = self.assert_en)
-
-class EulerAngles(Structure):
-    _fields_ = [
-        ("heading" , c_float),
-        ("pitch" , c_float),
-        ("roll" , c_float),
-        ("yaw" , c_float)
-    ]
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __eq__(self, other):
-        return (is_close(self.heading, other.heading) and is_close(self.pitch, other.pitch) and is_close(self.roll, other.roll) and is_close(self.yaw, other.yaw))
-
-    def __repr__(self):
-        return "{heading : %.3f, pitch : %.3f, roll : %.3f, yaw : %.3f}" % (self.heading, self.pitch, self.roll, self.yaw)
-
-    def __deepcopy__(self, memo):
-        return EulerAngles(heading = self.heading, pitch = self.pitch, roll = self.roll, yaw = self.yaw)
 
 class CartesianFloat(Structure):
     _fields_ = [
@@ -773,24 +811,6 @@ class DeviceInformation(Structure):
 
     def __deepcopy__(self, memo):
         return DeviceInformation(manufacturer = self.manufacturer, model_number = self.model_number, serial_number = self.serial_number, firmware_revision = self.firmware_revision, hardware_revision = self.hardware_revision)
-
-class BtleAddress(Structure):
-    _fields_ = [
-        ("address_type" , c_ubyte),
-        ("address" , (c_ubyte * 6))
-    ]
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __eq__(self, other):
-        return (self.address_type == other.address_type and array_ubyte_eq(self.address, 6, other.address, 6))
-
-    def __repr__(self):
-        return "{address_type : %d, address : %s}" % (self.address_type, array_ubyte_to_hex_string(self.address, 6))
-
-    def __deepcopy__(self, memo):
-        return BtleAddress(address_type = self.address_type, address = copy.deepcopy(self.address))
 
 class LedPattern(Structure):
     _fields_ = [
@@ -917,6 +937,24 @@ class DfuDelegate(Structure):
     def __deepcopy__(self, memo):
         return DfuDelegate(context = self.context, on_dfu_started = self.on_dfu_started, on_dfu_cancelled = self.on_dfu_cancelled, on_transfer_percentage = self.on_transfer_percentage, on_successful_file_transferred = self.on_successful_file_transferred, on_error = self.on_error)
 
+class BoschTap(Structure):
+    _fields_ = [
+        ("type" , c_ubyte),
+        ("sign" , c_ubyte)
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (self.type == other.type and self.sign == other.sign)
+
+    def __repr__(self):
+        return "{type : %d, sign : %d}" % (self.type, self.sign)
+
+    def __deepcopy__(self, memo):
+        return BoschTap(type = self.type, sign = self.sign)
+
 class Tcs34725ColorAdc(Structure):
     _fields_ = [
         ("clear" , c_ushort),
@@ -937,14 +975,32 @@ class Tcs34725ColorAdc(Structure):
     def __deepcopy__(self, memo):
         return Tcs34725ColorAdc(clear = self.clear, red = self.red, green = self.green, blue = self.blue)
 
+class EulerAngles(Structure):
+    _fields_ = [
+        ("heading" , c_float),
+        ("pitch" , c_float),
+        ("roll" , c_float),
+        ("yaw" , c_float)
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (is_close(self.heading, other.heading) and is_close(self.pitch, other.pitch) and is_close(self.roll, other.roll) and is_close(self.yaw, other.yaw))
+
+    def __repr__(self):
+        return "{heading : %.3f, pitch : %.3f, roll : %.3f, yaw : %.3f}" % (self.heading, self.pitch, self.roll, self.yaw)
+
+    def __deepcopy__(self, memo):
+        return EulerAngles(heading = self.heading, pitch = self.pitch, roll = self.roll, yaw = self.yaw)
+
 class Const:
     SENSOR_FUSION_CALIBRATION_ACCURACY_LOW = 1
+    MODULE_ACC_TYPE_BMA255 = 3
     ADDRESS_TYPE_PRIVATE_NON_RESOLVABLE = 3
     STATUS_ERROR_ENABLE_NOTIFY = 64
     SETTINGS_BATTERY_CHARGE_INDEX = 1
-    LED_REPEAT_INDEFINITELY = 255
-    ACC_ACCEL_X_AXIS_INDEX = 0
-    ADDRESS_TYPE_PRIVATE_RESOLVABLE = 2
     MODULE_BARO_TYPE_BMP280 = 0
     SENSOR_FUSION_CALIBRATION_ACCURACY_MEDIUM = 2
     STATUS_ERROR_SERIALIZATION_FORMAT = 32
@@ -952,14 +1008,23 @@ class Const:
     STATUS_ERROR_TIMEOUT = 16
     STATUS_OK = 0
     SETTINGS_BATTERY_VOLTAGE_INDEX = 0
+    SENSOR_FUSION_CALIBRATION_ACCURACY_HIGH = 3
+    SENSOR_FUSION_CALIBRATION_ACCURACY_UNRELIABLE = 0
+    MODULE_TYPE_NA = -1
+    CD_TCS34725_ADC_GREEN_INDEX = 2
     ADDRESS_TYPE_PUBLIC = 0
     ADDRESS_TYPE_RANDOM_STATIC = 1
+    SETTINGS_POWER_STATUS_UNSUPPORTED = -1
     STATUS_WARNING_INVALID_PROCESSOR_TYPE = 2
     STATUS_WARNING_INVALID_RESPONSE = 8
     MODULE_BARO_TYPE_BME280 = 1
-    MODULE_ACC_TYPE_MMA8452Q = 0
+    ADDRESS_TYPE_PRIVATE_RESOLVABLE = 2
+    SETTINGS_CHARGE_STATUS_UNSUPPORTED = -1
     ACC_ACCEL_Z_AXIS_INDEX = 2
     GPIO_UNUSED_PIN = 255
+    LED_REPEAT_INDEFINITELY = 255
+    ACC_ACCEL_X_AXIS_INDEX = 0
+    MODULE_ACC_TYPE_MMA8452Q = 0
     MAG_BFIELD_Y_AXIS_INDEX = 1
     CD_TCS34725_ADC_CLEAR_INDEX = 0
     STATUS_ERROR_UNSUPPORTED_PROCESSOR = 4
@@ -970,13 +1035,8 @@ class Const:
     MAG_BFIELD_X_AXIS_INDEX = 0
     GYRO_ROTATION_X_AXIS_INDEX = 0
     MODULE_ACC_TYPE_BMI160 = 1
-    SENSOR_FUSION_CALIBRATION_ACCURACY_HIGH = 3
-    MODULE_TYPE_NA = -1
-    CD_TCS34725_ADC_GREEN_INDEX = 2
-    SENSOR_FUSION_CALIBRATION_ACCURACY_UNRELIABLE = 0
     GYRO_ROTATION_Z_AXIS_INDEX = 2
     MAG_BFIELD_Z_AXIS_INDEX = 2
-    MODULE_ACC_TYPE_BMA255 = 3
 
 def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_sensor_fusion_stop.restype = None
@@ -984,6 +1044,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_sensor_fusion_clear_enabled_mask.restype = None
     libmetawear.mbl_mw_sensor_fusion_clear_enabled_mask.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_sensor_fusion_write_calibration_data.restype = None
+    libmetawear.mbl_mw_sensor_fusion_write_calibration_data.argtypes = [c_void_p, POINTER(CalibrationData)]
 
     libmetawear.mbl_mw_sensor_fusion_set_gyro_range.restype = None
     libmetawear.mbl_mw_sensor_fusion_set_gyro_range.argtypes = [c_void_p, c_int]
@@ -1008,6 +1071,12 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_acc_bosch_write_motion_config.restype = None
     libmetawear.mbl_mw_acc_bosch_write_motion_config.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_acc_bosch_set_shock_time.restype = None
+    libmetawear.mbl_mw_acc_bosch_set_shock_time.argtypes = [c_void_p, c_int]
+
+    libmetawear.mbl_mw_acc_bosch_set_quiet_time.restype = None
+    libmetawear.mbl_mw_acc_bosch_set_quiet_time.argtypes = [c_void_p, c_int]
 
     libmetawear.mbl_mw_acc_bosch_disable_orientation_detection.restype = None
     libmetawear.mbl_mw_acc_bosch_disable_orientation_detection.argtypes = [c_void_p]
@@ -1068,6 +1137,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal.restype = c_void_p
     libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal.argtypes = [c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_acc_bosch_set_double_tap_window.restype = None
+    libmetawear.mbl_mw_acc_bosch_set_double_tap_window.argtypes = [c_void_p, c_int]
 
     libmetawear.mbl_mw_mag_bmm150_stop.restype = None
     libmetawear.mbl_mw_mag_bmm150_stop.argtypes = [c_void_p]
@@ -1153,6 +1225,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_cd_tcs34725_set_integration_time.restype = None
     libmetawear.mbl_mw_cd_tcs34725_set_integration_time.argtypes = [c_void_p, c_float]
 
+    libmetawear.mbl_mw_acc_bosch_enable_tap_detection.restype = None
+    libmetawear.mbl_mw_acc_bosch_enable_tap_detection.argtypes = [c_void_p, c_ubyte, c_ubyte]
+
     libmetawear.mbl_mw_baro_bosch_stop.restype = None
     libmetawear.mbl_mw_baro_bosch_stop.argtypes = [c_void_p]
 
@@ -1207,6 +1282,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_acc_mma8452q_write_acceleration_config.restype = None
     libmetawear.mbl_mw_acc_mma8452q_write_acceleration_config.argtypes = [c_void_p]
 
+    libmetawear.mbl_mw_acc_bosch_write_tap_config.restype = None
+    libmetawear.mbl_mw_acc_bosch_write_tap_config.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_acc_mma8452q_set_high_pass_cutoff.restype = None
     libmetawear.mbl_mw_acc_mma8452q_set_high_pass_cutoff.argtypes = [c_void_p, c_float]
 
@@ -1234,26 +1312,14 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_acc_start.restype = None
     libmetawear.mbl_mw_acc_start.argtypes = [c_void_p]
 
-    libmetawear.mbl_mw_acc_bma255_set_odr.restype = None
-    libmetawear.mbl_mw_acc_bma255_set_odr.argtypes = [c_void_p, c_int]
+    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.restype = None
+    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.argtypes = [c_void_p]
 
-    libmetawear.mbl_mw_led_stop.restype = None
-    libmetawear.mbl_mw_led_stop.argtypes = [c_void_p]
+    libmetawear.mbl_mw_baro_bmp280_set_standby_time.restype = None
+    libmetawear.mbl_mw_baro_bmp280_set_standby_time.argtypes = [c_void_p, c_int]
 
-    libmetawear.mbl_mw_spi_write.restype = None
-    libmetawear.mbl_mw_spi_write.argtypes = [c_void_p, POINTER(SpiParameters)]
-
-    libmetawear.mbl_mw_logging_get_time_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_logging_get_time_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_cd_tcs34725_get_adc_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_cd_tcs34725_get_adc_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_event_get_owner.restype = c_void_p
-    libmetawear.mbl_mw_event_get_owner.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_settings_get_disconnect_event.restype = c_void_p
-    libmetawear.mbl_mw_settings_get_disconnect_event.argtypes = [c_void_p]
+    libmetawear.mbl_mw_acc_write_acceleration_config.restype = None
+    libmetawear.mbl_mw_acc_write_acceleration_config.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_sensor_fusion_set_acc_range.restype = None
     libmetawear.mbl_mw_sensor_fusion_set_acc_range.argtypes = [c_void_p, c_int]
@@ -1291,6 +1357,18 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_acc_get_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_get_acceleration_data_signal.argtypes = [c_void_p]
 
+    libmetawear.mbl_mw_settings_read_current_charge_status.restype = None
+    libmetawear.mbl_mw_settings_read_current_charge_status.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
+
+    libmetawear.mbl_mw_cd_tcs34725_get_adc_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_cd_tcs34725_get_adc_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_event_get_owner.restype = c_void_p
+    libmetawear.mbl_mw_event_get_owner.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_settings_get_disconnect_event.restype = c_void_p
+    libmetawear.mbl_mw_settings_get_disconnect_event.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_acc_bosch_get_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_bosch_get_acceleration_data_signal.argtypes = [c_void_p]
 
@@ -1299,6 +1377,15 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_settings_set_device_name.restype = None
     libmetawear.mbl_mw_settings_set_device_name.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
+
+    libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_datasignal_read.restype = None
+    libmetawear.mbl_mw_datasignal_read.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_macro_record.restype = None
+    libmetawear.mbl_mw_macro_record.argtypes = [c_void_p, c_ubyte]
 
     libmetawear.mbl_mw_acc_mma8452q_start.restype = None
     libmetawear.mbl_mw_acc_mma8452q_start.argtypes = [c_void_p]
@@ -1324,6 +1411,12 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_neopixel_clear.restype = None
     libmetawear.mbl_mw_neopixel_clear.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte]
 
+    libmetawear.mbl_mw_acc_read_config.restype = None
+    libmetawear.mbl_mw_acc_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
+
+    libmetawear.mbl_mw_metawearboard_get_module_info.restype = POINTER(ModuleInfo)
+    libmetawear.mbl_mw_metawearboard_get_module_info.argtypes = [c_void_p, POINTER(c_uint)]
+
     libmetawear.mbl_mw_logging_get_reference_time.restype = c_longlong
     libmetawear.mbl_mw_logging_get_reference_time.argtypes = [c_void_p, c_ubyte]
 
@@ -1348,6 +1441,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_acc_mma8452q_set_orientation_delay.restype = None
     libmetawear.mbl_mw_acc_mma8452q_set_orientation_delay.argtypes = [c_void_p, c_ushort]
 
+    libmetawear.mbl_mw_settings_get_power_status_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_settings_get_power_status_data_signal.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_metawearboard_lookup_module.restype = c_int
     libmetawear.mbl_mw_metawearboard_lookup_module.argtypes = [c_void_p, c_int]
 
@@ -1362,6 +1458,18 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_debug_read_stack_overflow_state.restype = None
     libmetawear.mbl_mw_debug_read_stack_overflow_state.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_DataP]
+
+    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.restype = None
+    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_gyro_bmi160_read_config.restype = None
+    libmetawear.mbl_mw_gyro_bmi160_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
+
+    libmetawear.mbl_mw_acc_set_odr.restype = c_float
+    libmetawear.mbl_mw_acc_set_odr.argtypes = [c_void_p, c_float]
+
+    libmetawear.mbl_mw_logging_start.restype = None
+    libmetawear.mbl_mw_logging_start.argtypes = [c_void_p, c_ubyte]
 
     libmetawear.mbl_mw_debug_jump_to_bootloader.restype = None
     libmetawear.mbl_mw_debug_jump_to_bootloader.argtypes = [c_void_p]
@@ -1417,23 +1525,11 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_settings_get_whitelist_data_signal.restype = c_void_p
     libmetawear.mbl_mw_settings_get_whitelist_data_signal.argtypes = [c_void_p, c_ubyte]
 
-    libmetawear.mbl_mw_logging_get_length_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_logging_get_length_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_dataprocessor_math_create_signed.restype = c_int
-    libmetawear.mbl_mw_dataprocessor_math_create_signed.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]
-
-    libmetawear.mbl_mw_debug_spoof_notification.restype = None
-    libmetawear.mbl_mw_debug_spoof_notification.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
-
     libmetawear.mbl_mw_dataprocessor_accounter_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_accounter_create.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP]
 
     libmetawear.mbl_mw_settings_set_scan_response.restype = None
     libmetawear.mbl_mw_settings_set_scan_response.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
-
-    libmetawear.mbl_mw_macro_record.restype = None
-    libmetawear.mbl_mw_macro_record.argtypes = [c_void_p, c_ubyte]
 
     libmetawear.mbl_mw_timer_lookup_id.restype = c_void_p
     libmetawear.mbl_mw_timer_lookup_id.argtypes = [c_void_p, c_ubyte]
@@ -1459,14 +1555,29 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_timer_remove.restype = None
     libmetawear.mbl_mw_timer_remove.argtypes = [c_void_p]
 
+    libmetawear.mbl_mw_acc_bosch_set_threshold.restype = None
+    libmetawear.mbl_mw_acc_bosch_set_threshold.argtypes = [c_void_p, c_float]
+
     libmetawear.mbl_mw_neopixel_init_fast_strand.restype = None
     libmetawear.mbl_mw_neopixel_init_fast_strand.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte, c_int]
+
+    libmetawear.mbl_mw_settings_get_charge_status_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_settings_get_charge_status_data_signal.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_logging_clear_entries.restype = None
     libmetawear.mbl_mw_logging_clear_entries.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_timer_create.restype = None
     libmetawear.mbl_mw_timer_create.argtypes = [c_void_p, c_uint, c_ushort, c_ubyte, c_void_p, FnVoid_VoidP_VoidP]
+
+    libmetawear.mbl_mw_settings_read_current_power_status.restype = None
+    libmetawear.mbl_mw_settings_read_current_power_status.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
+
+    libmetawear.mbl_mw_acc_mma8452q_disable_orientation_detection.restype = None
+    libmetawear.mbl_mw_acc_mma8452q_disable_orientation_detection.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_led_autoplay.restype = None
+    libmetawear.mbl_mw_led_autoplay.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_macro_execute.restype = None
     libmetawear.mbl_mw_macro_execute.argtypes = [c_void_p, c_ubyte]
@@ -1567,6 +1678,15 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_counter_set_state.restype = c_int
     libmetawear.mbl_mw_dataprocessor_counter_set_state.argtypes = [c_void_p, c_uint]
 
+    libmetawear.mbl_mw_acc_set_range.restype = c_float
+    libmetawear.mbl_mw_acc_set_range.argtypes = [c_void_p, c_float]
+
+    libmetawear.mbl_mw_event_end_record.restype = None
+    libmetawear.mbl_mw_event_end_record.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
+
+    libmetawear.mbl_mw_debug_read_schedule_queue_usage.restype = None
+    libmetawear.mbl_mw_debug_read_schedule_queue_usage.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_DataP]
+
     libmetawear.mbl_mw_settings_start_advertising.restype = None
     libmetawear.mbl_mw_settings_start_advertising.argtypes = [c_void_p]
 
@@ -1581,6 +1701,27 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_led_write_pattern.restype = None
     libmetawear.mbl_mw_led_write_pattern.argtypes = [c_void_p, POINTER(LedPattern), c_int]
+
+    libmetawear.mbl_mw_dataprocessor_math_create_signed.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_math_create_signed.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]
+
+    libmetawear.mbl_mw_debug_spoof_notification.restype = None
+    libmetawear.mbl_mw_debug_spoof_notification.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
+
+    libmetawear.mbl_mw_logging_get_length_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_logging_get_length_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_spi_write.restype = None
+    libmetawear.mbl_mw_spi_write.argtypes = [c_void_p, POINTER(SpiParameters)]
+
+    libmetawear.mbl_mw_logging_get_time_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_logging_get_time_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_acc_bma255_set_odr.restype = None
+    libmetawear.mbl_mw_acc_bma255_set_odr.argtypes = [c_void_p, c_int]
+
+    libmetawear.mbl_mw_led_stop.restype = None
+    libmetawear.mbl_mw_led_stop.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_acc_mma8452q_enable_orientation_detection.restype = None
     libmetawear.mbl_mw_acc_mma8452q_enable_orientation_detection.argtypes = [c_void_p]
@@ -1657,20 +1798,20 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_pulse_modify.restype = c_int
     libmetawear.mbl_mw_dataprocessor_pulse_modify.argtypes = [c_void_p, c_float, c_ushort]
 
+    libmetawear.mbl_mw_sensor_fusion_read_calibration_data.restype = None
+    libmetawear.mbl_mw_sensor_fusion_read_calibration_data.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_CalibrationDataP]
+
     libmetawear.mbl_mw_led_load_preset_pattern.restype = None
     libmetawear.mbl_mw_led_load_preset_pattern.argtypes = [POINTER(LedPattern), c_int]
-
-    libmetawear.mbl_mw_acc_mma8452q_disable_orientation_detection.restype = None
-    libmetawear.mbl_mw_acc_mma8452q_disable_orientation_detection.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_led_autoplay.restype = None
-    libmetawear.mbl_mw_led_autoplay.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_neopixel_rotate.restype = None
     libmetawear.mbl_mw_neopixel_rotate.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ushort, c_int]
 
     libmetawear.mbl_mw_led_play.restype = None
     libmetawear.mbl_mw_led_play.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_acc_bosch_disable_tap_detection.restype = None
+    libmetawear.mbl_mw_acc_bosch_disable_tap_detection.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_ibeacon_disable.restype = None
     libmetawear.mbl_mw_ibeacon_disable.argtypes = [c_void_p]
@@ -1719,15 +1860,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_accumulator_create_size.restype = c_int
     libmetawear.mbl_mw_dataprocessor_accumulator_create_size.argtypes = [c_void_p, c_ubyte, c_void_p, FnVoid_VoidP_VoidP]
-
-    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.restype = None
-    libmetawear.mbl_mw_gyro_bmi160_disable_rotation_sampling.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_baro_bmp280_set_standby_time.restype = None
-    libmetawear.mbl_mw_baro_bmp280_set_standby_time.argtypes = [c_void_p, c_int]
-
-    libmetawear.mbl_mw_acc_write_acceleration_config.restype = None
-    libmetawear.mbl_mw_acc_write_acceleration_config.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_als_ltr329_stop.restype = None
     libmetawear.mbl_mw_als_ltr329_stop.argtypes = [c_void_p]
@@ -1780,6 +1912,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_multi_comparator_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_multi_comparator_create.argtypes = [c_void_p, c_int, c_int, POINTER(c_float), c_ubyte, c_void_p, FnVoid_VoidP_VoidP]
 
+    libmetawear.mbl_mw_acc_bosch_get_tap_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_acc_bosch_get_tap_data_signal.argtypes = [c_void_p]
+
     libmetawear.mbl_mw_baro_bosch_set_iir_filter.restype = None
     libmetawear.mbl_mw_baro_bosch_set_iir_filter.argtypes = [c_void_p, c_int]
 
@@ -1795,12 +1930,6 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_lookup_id.restype = c_void_p
     libmetawear.mbl_mw_dataprocessor_lookup_id.argtypes = [c_void_p, c_ubyte]
 
-    libmetawear.mbl_mw_metawearboard_get_module_info.restype = POINTER(ModuleInfo)
-    libmetawear.mbl_mw_metawearboard_get_module_info.argtypes = [c_void_p, POINTER(c_uint)]
-
-    libmetawear.mbl_mw_acc_read_config.restype = None
-    libmetawear.mbl_mw_acc_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
-
     libmetawear.mbl_mw_dataprocessor_delta_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_delta_create.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]
 
@@ -1809,18 +1938,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_math_create_unsigned.restype = c_int
     libmetawear.mbl_mw_dataprocessor_math_create_unsigned.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]
-
-    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.restype = None
-    libmetawear.mbl_mw_acc_bmi160_disable_step_counter.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_gyro_bmi160_read_config.restype = None
-    libmetawear.mbl_mw_gyro_bmi160_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
-
-    libmetawear.mbl_mw_logging_start.restype = None
-    libmetawear.mbl_mw_logging_start.argtypes = [c_void_p, c_ubyte]
-
-    libmetawear.mbl_mw_acc_set_odr.restype = c_float
-    libmetawear.mbl_mw_acc_set_odr.argtypes = [c_void_p, c_float]
 
     libmetawear.mbl_mw_datasignal_log.restype = None
     libmetawear.mbl_mw_datasignal_log.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP]
@@ -1861,6 +1978,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_dataprocessor_time_modify_period.restype = c_int
     libmetawear.mbl_mw_dataprocessor_time_modify_period.argtypes = [c_void_p, c_uint]
 
+    libmetawear.mbl_mw_dataprocessor_fuser_create.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_fuser_create.argtypes = [c_void_p, c_void_p, c_uint, c_void_p, FnVoid_VoidP_VoidP]
+
     libmetawear.mbl_mw_humidity_bme280_set_oversampling.restype = None
     libmetawear.mbl_mw_humidity_bme280_set_oversampling.argtypes = [c_void_p, c_int]
 
@@ -1869,19 +1989,4 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_datasignal_read.restype = None
-    libmetawear.mbl_mw_datasignal_read.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_event_end_record.restype = None
-    libmetawear.mbl_mw_event_end_record.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
-
-    libmetawear.mbl_mw_debug_read_schedule_queue_usage.restype = None
-    libmetawear.mbl_mw_debug_read_schedule_queue_usage.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_DataP]
-
-    libmetawear.mbl_mw_acc_set_range.restype = c_float
-    libmetawear.mbl_mw_acc_set_range.argtypes = [c_void_p, c_float]
 

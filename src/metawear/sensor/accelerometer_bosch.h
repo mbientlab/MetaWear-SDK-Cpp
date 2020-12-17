@@ -83,6 +83,37 @@ typedef enum {
 } MblMwAccBoschOrientationMode;
 
 /**
+ * Available quiet times for tap detection
+ * @author Eric Tsai
+ */
+typedef enum {
+    MBL_MW_ACC_BOSCH_TAP_QUIET_TIME_30ms= 0,
+    MBL_MW_ACC_BOSCH_TAP_QUIET_TIME_20ms
+} MblMwAccBoschTapQuietTime;
+/**
+ * Available shock times for tap detection
+ * @author Eric Tsai
+ */
+typedef enum {
+    MBL_MW_ACC_BOSCH_TAP_SHOCK_TIME_50ms= 0,
+    MBL_MW_ACC_BOSCH_TAP_SHOCK_TIME_75ms
+} MblMwAccBoschTapShockTime;
+/**
+ * Available windows for double tap detection
+ * @author Eric Tsai
+ */
+typedef enum {
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_50ms= 0,
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_100ms,
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_150ms,
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_200ms,
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_250ms,
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_375ms,
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_500ms,
+    MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_700ms
+} MblMwAccBoschDoubleTapWindow;
+
+/**
  * Wrapper class encapsulating responses from any motion detection
  */
 typedef struct {
@@ -132,6 +163,12 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_orientation_detection_data_si
  * @return Pointer to Bosch's motion detection data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_motion_data_signal(const MblMwMetaWearBoard* board);
+/**
+ * Retrieves the data signal representing data from the tap detection algorithm
+ * @param board     Calling object
+ * @return Pointer to Bosch's tap detection data signal
+ */
+METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_tap_data_signal(const MblMwMetaWearBoard* board);
 
 /**
  * Sets the output data rate for the BMI160 accelerometer
@@ -224,6 +261,50 @@ METAWEAR_API void mbl_mw_acc_bosch_enable_orientation_detection(const MblMwMetaW
 METAWEAR_API void mbl_mw_acc_bosch_disable_orientation_detection(const MblMwMetaWearBoard *board);
 
 /**
+ * Sets the tap detector's quiet time parameter
+ * @param board     Calling object
+ * @param time      New quiet time
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_quiet_time(MblMwMetaWearBoard *board, MblMwAccBoschTapQuietTime time);
+/**
+ * Sets the tap detector's shock time parameter
+ * @param board     Calling object
+ * @param time      New shock time
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_shock_time(MblMwMetaWearBoard *board, MblMwAccBoschTapShockTime time);
+/**
+ * Sets the tap detector's double tap window
+ * @param board     Calling object
+ * @param window    New double tap window time
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_double_tap_window(MblMwMetaWearBoard *board, MblMwAccBoschDoubleTapWindow window);
+/**
+ * Sets the tap detector's threshold
+ * @param board     Calling object
+ * @param window    New threshold level
+ */
+METAWEAR_API void mbl_mw_acc_bosch_set_threshold(MblMwMetaWearBoard *board, float threshold);
+/**
+ * Sets the tap detector's double tap window
+ * @param board     Calling object
+ * @param window    New double tap window time
+ */
+METAWEAR_API void mbl_mw_acc_bosch_write_tap_config(const MblMwMetaWearBoard *board);
+/**
+ * Enables the tap detector
+ * @param board             Calling object
+ * @param enable_single     0 to ignore single tap detection, non-zero to detect
+ * @param enable_double     0 to ignore double tap detection, non-zero to detect
+ */
+METAWEAR_API void mbl_mw_acc_bosch_enable_tap_detection(const MblMwMetaWearBoard *board, uint8_t enable_single, uint8_t enable_double);
+/**
+ * Disable the tap detector
+ * @param board     Calling object
+ * @param window    New double tap window time
+ */
+METAWEAR_API void mbl_mw_acc_bosch_disable_tap_detection(const MblMwMetaWearBoard *board);
+
+/**
  * Sets the any motion detector's count parameter
  * @param board     Calling object
  * @param count     Number of consecutive slope data points that must be above the threshold
@@ -250,6 +331,8 @@ METAWEAR_API void mbl_mw_acc_bosch_enable_motion_detection(const MblMwMetaWearBo
  * @param board     Calling object
  */
 METAWEAR_API void mbl_mw_acc_bosch_disable_motion_detection(const MblMwMetaWearBoard *board);
+
+
 /**
  * Switches the accelerometer to active mode.  When in active mode, the accelerometer cannot be configured
  * @param board     Pointer to the board to send the command to

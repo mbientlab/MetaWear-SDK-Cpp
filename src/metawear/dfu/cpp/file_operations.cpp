@@ -9,6 +9,10 @@
 #include "miniz.h"
 #include "json.hpp"
 
+FileOperationsDelegate::~FileOperationsDelegate() {
+
+}
+
 FileOperations::FileOperations(FileOperationsDelegate &fileDelegate, const MblMwMetaWearBoard* board) : binFile(0), fileDelegate(fileDelegate), bootloaderBoard(board), metaDataFile(0) {
 
 }

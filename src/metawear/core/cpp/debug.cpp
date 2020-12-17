@@ -44,8 +44,7 @@ const ResponseHeader
 data->epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();\
 \
 GET_DEBUG_STATE(board)->handler(GET_DEBUG_STATE(board)->context, data);\
-free(data->value);\
-free(data);
+free_data(nullptr, data)
 
 static int32_t schedule_queue_status_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     CAST_RESPONSE(DataInterpreter::BYTE_ARRAY, schedule_queue_context, schedule_queue_handler);

@@ -47,7 +47,7 @@ const ResponseHeader RESPONSE_HEADERS[] {
 };
 
 const ResponseHeader CALIB_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::CALIBRATION_STATE)));
-const uint8_t CALIBRATION_REVISION = 1;
+const uint8_t CALIBRATION_REVISION = 1, CALIB_DATA_REVISION = 2;
 
 struct SensorFusionState {
     struct {
@@ -59,8 +59,10 @@ struct SensorFusionState {
 };
 
 struct SensorFusionTransientState {
+    MblMwCalibrationData* calib_data;
     MblMwFnBoardPtrInt read_config_completed;
-    void *read_config_context;
+    MblMwFnBoardPtrCalibDataPtr read_calib_data_completed;
+    void *read_config_context, *read_calib_data_context;
 };
 
 static unordered_map<const MblMwMetaWearBoard*, SensorFusionTransientState> transient_states;
@@ -74,6 +76,34 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
     transient_states[board].read_config_completed = nullptr;
     transient_states[board].read_config_context = nullptr;
     callback(context, board, MBL_MW_STATUS_OK);
+
+    return 0;
+}
+
+static int32_t received_acc_cal_data(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    MblMwCalibrationData* data = (MblMwCalibrationData*) malloc(sizeof(MblMwCalibrationData));
+    memcpy(data->acc, response + 2, 10);
+    transient_states[board].calib_data = data;
+    
+    uint8_t command[2] = { MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::GYRO_CAL_DATA)) };
+    SEND_COMMAND;
+
+    return 0;
+}
+
+static int32_t received_gyro_cal_data(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    memcpy(transient_states[board].calib_data->gyro, response + 2, 10);
+    
+    uint8_t command[2] = { MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::MAG_CAL_DATA)) };
+    SEND_COMMAND;
+
+    return 0;
+}
+
+static int32_t received_mag_cal_data(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    memcpy(transient_states[board].calib_data->mag, response + 2, 10);
+
+    transient_states[board].read_calib_data_completed(transient_states[board].read_calib_data_context, board, transient_states[board].calib_data);
 
     return 0;
 }
@@ -140,6 +170,12 @@ void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
                 forward_as_tuple(received_config_response));
         board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::CALIBRATION_STATE))),
                 forward_as_tuple(response_handler_data_no_id));
+        board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::ACC_CAL_DATA))),
+                forward_as_tuple(received_acc_cal_data));
+        board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::GYRO_CAL_DATA))),
+                forward_as_tuple(received_gyro_cal_data));
+        board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::MAG_CAL_DATA))),
+                forward_as_tuple(received_mag_cal_data));
 
         SensorFusionTransientState newState = {nullptr};
         transient_states.insert({board, newState});
@@ -310,6 +346,39 @@ void mbl_mw_sensor_fusion_stop(const MblMwMetaWearBoard* board) {
         mbl_mw_acc_disable_acceleration_sampling(board);
         mbl_mw_mag_bmm150_disable_b_field_sampling(board);
         break;
+    }
+}
+
+void mbl_mw_sensor_fusion_read_calibration_data(MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrCalibDataPtr completed) {
+    if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision < CALIB_DATA_REVISION) {
+        completed(context, board, nullptr);
+    } else {
+        transient_states[board].read_calib_data_context = context;
+        transient_states[board].read_calib_data_completed = completed;
+
+        uint8_t command[2] = { MBL_MW_MODULE_SENSOR_FUSION, READ_REGISTER(ORDINAL(SensorFusionRegister::ACC_CAL_DATA)) };
+        SEND_COMMAND;
+    }
+}
+
+void mbl_mw_sensor_fusion_write_calibration_data(const MblMwMetaWearBoard* board, const MblMwCalibrationData* data) {
+    if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision >= CALIB_DATA_REVISION) {
+        uint8_t command[12] = { MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::ACC_CAL_DATA) };
+        memcpy(command + 2, data->acc, sizeof(command) - 2);
+        SEND_COMMAND;
+
+        auto mode = ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode;
+        if (mode == MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS || mode == MBL_MW_SENSOR_FUSION_MODE_NDOF) {
+            command[1] = ORDINAL(SensorFusionRegister::GYRO_CAL_DATA);
+            memcpy(command + 2, data->gyro, sizeof(command) - 2);
+            SEND_COMMAND;
+        }
+
+        if (mode == MBL_MW_SENSOR_FUSION_MODE_M4G || mode == MBL_MW_SENSOR_FUSION_MODE_NDOF || mode == MBL_MW_SENSOR_FUSION_MODE_COMPASS) {
+            command[1] = ORDINAL(SensorFusionRegister::MAG_CAL_DATA);
+            memcpy(command + 2, data->mag, sizeof(command) - 2);
+            SEND_COMMAND;
+        }
     }
 }
 

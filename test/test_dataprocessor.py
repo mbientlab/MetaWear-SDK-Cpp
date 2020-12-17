@@ -921,6 +921,34 @@ class TestAccounter(TestMetaWearBase):
 
         self.assertEqual(offsets, expected)
 
+    def test_count_and_time(self):
+        epochs = []
+        fn_wrapper = FnVoid_VoidP_DataP(lambda ctx, p: epochs.append(p.contents.epoch))
+
+        self.events["processor"].clear()
+        acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.libmetawear.mbl_mw_dataprocessor_packer_create(acc, 2, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create_count(self.processors[1], None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[2], None, self.sensor_data_handler)
+
+        self.events["processor"].clear()
+        barometer = self.libmetawear.mbl_mw_baro_bosch_get_pressure_data_signal(self.board)
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create(barometer, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[3], None, fn_wrapper)
+
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x03, 0x72, 0xA4, 0x03, 0x00, 0x77, 0x6C, 0x84, 0x01]))
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0x8D, 0x00, 0x00, 0x00, 0x4E, 0xFF, 0x35, 0xFD, 0x79, 0x07, 0x4D, 0xFF, 0x35, 0xFD, 0x7D, 0x07]))
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x03, 0xA4, 0xA4, 0x03, 0x00, 0x05, 0x65, 0x84, 0x01]))
+
+        self.assertEqual(epochs[1] - epochs[0], 73)
+
 class TestAccounterCount(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
@@ -1130,3 +1158,142 @@ class TestHpf(TestMetaWearBase):
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x00, 0xef, 0xff, 0x29, 0x00, 0x16, 0x00]))
 
         self.assertEqual(self.data_cartesian_float, expected)
+
+class TestFuser(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
+
+        super().setUp()
+
+        self.acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.gyro = self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
+
+        signals = (c_void_p * 1)()
+        signals[0] = self.gyro
+        self.libmetawear.mbl_mw_dataprocessor_fuser_create(self.acc, signals, 1, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_time_create(self.processors[0], TimeMode.ABSOLUTE, 20, None, self.processor_handler)
+        self.events["processor"].wait()
+
+    def test_data_handling(self):
+        parsed_values = {}
+        def fused_data_handler(context, data):
+            values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
+
+            self.sensorDataHandler(context, values.contents[0])
+            parsed_values['acc'] = self.data
+
+            self.sensorDataHandler(context, values.contents[1])
+            parsed_values['gyro'] = self.data
+        fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], None, fn_wrapper)
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
+        self.assertEqual(parsed_values['acc'], self.data)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+        self.assertEqual(parsed_values['gyro'], self.data)
+
+    def test_commands(self):
+        expected= [
+            [0x09, 0x02, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05],
+            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x14, 0x00, 0x00, 0x00]
+        ]
+
+        self.assertEqual(self.command_history, expected)
+
+class TestFuserAccounter(TestMetaWearBase):
+    def setUp(self):
+        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
+
+        super().setUp()
+
+        self.acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+        self.gyro = self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
+
+        signals = (c_void_p * 1)()
+        signals[0] = self.gyro
+        self.libmetawear.mbl_mw_dataprocessor_fuser_create(self.acc, signals, 1, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_time_create(self.processors[0], TimeMode.ABSOLUTE, 20, None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create_count(self.processors[1], None, self.processor_handler)
+        self.events["processor"].wait()
+
+        self.events["processor"].clear()
+        self.libmetawear.mbl_mw_dataprocessor_accounter_create(self.processors[1], None, self.processor_handler)
+        self.events["processor"].wait()
+
+    def test_data_handling(self):
+        parsed_values = {}
+        def fused_data_handler(context, data):
+            counter = cast(data.contents.extra, POINTER(c_uint)).contents.value
+            self.assertEqual(542, counter)
+
+            values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
+
+            self.sensorDataHandler(context, values.contents[0])
+            parsed_values['acc'] = self.data
+
+            self.sensorDataHandler(context, values.contents[1])
+            parsed_values['gyro'] = self.data
+
+        fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
+
+        parsed_values_no_counter = {}
+        def fused_data_handler_no_counter(context, data):
+            values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
+
+            self.sensorDataHandler(context, values.contents[0])
+            parsed_values_no_counter['acc'] = self.data
+
+            self.sensorDataHandler(context, values.contents[1])
+            parsed_values_no_counter['gyro'] = self.data
+
+        fn_wrapper_no_counter = FnVoid_VoidP_DataP(fused_data_handler_no_counter)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[3], None, fn_wrapper_no_counter)
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x04, 0x1e, 0x02, 0x00, 0x00, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
+        self.assertEqual(parsed_values_no_counter['acc'], self.data)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+        self.assertEqual(parsed_values_no_counter['gyro'], self.data)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[2], None, fn_wrapper)
+        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x03, 0x1e, 0x02, 0x00, 0x00, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
+        self.assertEqual(parsed_values['acc'], self.data)
+
+        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
+        self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+        self.assertEqual(parsed_values['gyro'], self.data)
+
+    def test_commands(self):
+        expected= [
+            [0x09, 0x02, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05],
+            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x14, 0x00, 0x00, 0x00],
+            [0x09, 0x02, 0x09, 0x03, 0x02, 0x60, 0x11, 0x30, 0x03],
+            [0x09, 0x02, 0x09, 0x03, 0x02, 0x60, 0x11, 0x31, 0x03]
+        ]
+
+        self.assertEqual(self.command_history, expected)

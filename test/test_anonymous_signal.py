@@ -3,6 +3,12 @@ from mbientlab.metawear.cbindings import *
 from threading import Event
 
 class AnonymousSignalBase(TestMetaWearBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.acc_range = 0x08
+        self.gyr_range = 0x03
+
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
@@ -18,9 +24,9 @@ class AnonymousSignalBase(TestMetaWearBase):
 
         if (prev != curr):
             if (command[0] == 0x03 and command[1] == 0x83):
-                response = to_string_buffer([0x03, 0x83, 40, 8])
+                response = to_string_buffer([0x03, 0x83, 40, self.acc_range])
             elif (command[0] == 0x13 and command[1] == 0x83):
-                response = to_string_buffer([0x13, 0x83, 40, 3])
+                response = to_string_buffer([0x13, 0x83, 40, self.gyr_range])
             elif(command[0] == 0x19 and command[1] == 0x82):
                 response = to_string_buffer([0x19, 0x82, 0x1, 0xf])
             else:
@@ -365,3 +371,71 @@ class TestTimeout(AnonymousSignalBase):
         result = self.sync_loggers()
         self.assertEqual(result['length'], Const.STATUS_ERROR_TIMEOUT)
         self.assertIsNone(result['signals'])
+
+class TestFuser(AnonymousSignalBase):
+    def setUp(self):
+        self.acc_range = 0x03
+        self.gyr_range = 0x04
+        
+        super().setUp()
+
+    def commandLogger(self, context, board, writeType, characteristic, command, length):
+        prev = len(self.full_history)
+        super().commandLogger(context, board, writeType, characteristic, command, length)
+        curr = len(self.full_history)
+
+        if (prev != curr):
+            response = None
+            if (command[0] == 0xb and command[1] == 0x82):
+                if (command[2] == 0x00):
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x01, 0x60])
+                elif (command[2] == 0x01):
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x01, 0x64])
+                elif (command[2] == 0x02):
+                    response = to_string_buffer([0x0b, 0x82, 0x09, 0x03, 0x01, 0x68])
+                else:
+                    response = to_string_buffer([0x0b, 0x82])
+            elif (command[0] == 0x9 and command[1] == 0x82):
+                if (command[2] == 0x00):
+                    response = to_string_buffer([0x09, 0x82, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe9, 0xff])
+                elif (command[2] == 0x01):
+                    response = to_string_buffer([0x09, 0x82, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x01, 0x02, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe9, 0xff])
+                else:
+                    response = to_string_buffer([0x0b, 0x82])
+
+            if (response != None):
+                self.schedule_response(response)
+
+    def test_sync_loggers(self):
+        self.assertEqual(self.result['length'], 1)
+
+    def test_check_scheme(self):        
+        actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        self.assertEqual("acceleration:fuser?id=1", actual.decode('ascii'))
+
+    def test_handle_download(self):
+        results = []
+        def fused_data_handler(context, data):
+            values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
+
+            self.sensorDataHandler(context, values.contents[0])
+            results.append(self.data)
+
+            self.sensorDataHandler(context, values.contents[1])
+            results.append(self.data)
+
+        fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
+
+        expected= [
+            CartesianFloat(x=-0.02307129, y= 0.02008057, z= 1.022278),
+            CartesianFloat(x=0.2591463, y= 0.4611281, z= 0.04573171),
+            CartesianFloat(x=-0.0123291, y= 0.01885986, z= 1.031372),
+            CartesianFloat(x=0.3048781, y= 0.4954268, z= 0.1105183)
+        ]
+
+        self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], None, fn_wrapper)
+        self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xc0, 0xac, 0x1b, 0x00, 0x00, 0x86, 0xfe, 0x49, 0x01, 0xc1, 0xac, 0x1b, 0x00, 0x00, 0x6d, 0x41, 0x44, 0x00]))
+        self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xc2, 0xac, 0x1b, 0x00, 0x00, 0x79, 0x00, 0x0c, 0x00, 0xc0, 0xc8, 0x1b, 0x00, 0x00, 0x36, 0xff, 0x35, 0x01]))
+        self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xc1, 0xc8, 0x1b, 0x00, 0x00, 0x02, 0x42, 0x50, 0x00, 0xc2, 0xc8, 0x1b, 0x00, 0x00, 0x82, 0x00, 0x1d, 0x00]))
+
+        self.assertEqual(results, expected)
