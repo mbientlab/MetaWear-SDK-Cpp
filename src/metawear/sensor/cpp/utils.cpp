@@ -22,7 +22,7 @@ char* copy_string_index(const char* src, std::uint8_t i) {
 }
 
 char* copy_string(const char* src) {
-    char* buffer = (char*)std::malloc(strlen(src));
+    char* buffer = (char*)std::malloc(strlen(src) + 1);
     strcpy(buffer, src);
     return buffer;
 }

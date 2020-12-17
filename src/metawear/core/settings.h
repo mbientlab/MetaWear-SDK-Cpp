@@ -162,7 +162,7 @@ METAWEAR_API void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearB
  * Retrieves the firmware build id, used for identifying custom firmware build variants 
  * @param board         Calling object
  */
-METAWEAR_API uint8_t mbl_mw_settings_get_firware_build_id(const MblMwMetaWearBoard *board);
+METAWEAR_API uint8_t mbl_mw_settings_get_firmware_build_id(const MblMwMetaWearBoard *board);
 
 /**
  * Reads the current power status if available.  The callback function will be called with:  

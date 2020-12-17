@@ -1579,7 +1579,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * Retrieves the firmware build id, used for identifying custom firmware build variants 
  * @param board         Calling object
  */
-  'mbl_mw_settings_get_firware_build_id': [ref.types.uint8, [ref.refType(MetaWearBoard)]],
+  'mbl_mw_settings_get_firmware_build_id': [ref.types.uint8, [ref.refType(MetaWearBoard)]],
 
 /**
  * Sets the advertisement name
