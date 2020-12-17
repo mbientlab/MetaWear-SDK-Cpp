@@ -16,13 +16,13 @@ This library is platform agnostic and does not contain any Bluetooth code. You a
 
 [MetaWear](https://mbientlab.com) is a complete development and production platform for wearable and connected device applications.
 
-MetaWear features a number of sensors and peripherals all easily controllable over Bluetooth 4.0 Low Energy using this SDK, no firmware or hardware experience needed!
+MetaWear features a number of sensors and peripherals all easily controllable over Bluetooth 4.0/5.0 Low Energy using this SDK, no firmware or hardware experience needed!
 
 The MetaWear hardware comes pre-loaded with a wirelessly upgradeable firmware, so it keeps getting more powerful over time.
 
 ### Requirements
 - [MetaWear board](https://mbientlab.com/store/)
-- A linux/mac machine with Bluetooth 4.0
+- A linux/mac machine with Bluetooth 4.0 or Bluetooth 5.0
 - We are no longer supporting Windows
 
 ### License
