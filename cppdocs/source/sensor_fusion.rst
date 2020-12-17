@@ -90,3 +90,11 @@ Gravity         g      MblMwCartesianFloat
     	mbl_mw_sensor_fusion_enable_data(board, MBL_MW_SENSOR_FUSION_DATA_QUATERNION);
     	mbl_mw_sensor_fusion_start(board);
     }
+
+Reset
+------
+To reset the default orientation of the board while sensor fusion is on or off, you can use the following call (note this is only suported in NDoF and IMUPlus mode): 
+
+::
+    	
+        mbl_mw_sensor_fusion_reset_orientation(board);
