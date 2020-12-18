@@ -1,6 +1,6 @@
 # MetaWear SDK for C++ by MBIENTLAB
 
-[![Platforms](https://img.shields.io/badge/platform-linux%20%7C%20ios%20%7C%20osx-lightgrey)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
+[![Platforms](https://img.shields.io/badge/platform-linux%20%7C%20windows%20%7C%20ios%20%7C%20osx-lightgrey)](https://github.com/mbientlab/MetaWear-SDK-Cpp)
 [![License](https://img.shields.io/cocoapods/l/MetaWear.svg?style=flat)](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md)
 
 ![alt tag](https://raw.githubusercontent.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/master/Images/Metawear.png)
@@ -22,8 +22,10 @@ The MetaWear hardware comes pre-loaded with a wirelessly upgradeable firmware, s
 
 ### Requirements
 - [MetaWear board](https://mbientlab.com/store/)
-- A linux/mac machine with Bluetooth 4.0 or Bluetooth 5.0
-- We are no longer supporting Windows
+- A linux/mac/windows machine with Bluetooth 4.0 or Bluetooth 5.0
+- Our tutorials will mostly reflect usage on ios and linux (see our SDKs)
+- Can work on macOS/iOS/OSX/tvOS (you may need to do some additional dev yourself)
+- Can work on Windows (you will need to do some additional dev yourself)
 
 ### License
 See the [License](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md).
