@@ -23,9 +23,11 @@ The MetaWear hardware comes pre-loaded with a wirelessly upgradeable firmware, s
 ### Requirements
 - [MetaWear board](https://mbientlab.com/store/)
 - A linux/mac/windows machine with Bluetooth 4.0 or Bluetooth 5.0
+
+### Notes
 - Our tutorials will mostly reflect usage on ios and linux (see our SDKs)
-- Can work on macOS/iOS/OSX/tvOS (you may need to do some additional dev yourself)
-- Can work on Windows (you will need to do some additional dev yourself)
+- Can work on macOS/iOS/OSX/tvOS (you may need to do some additional dev yourself - not documented/supported by Mbient)
+- Can work on Windows (you will need to do some additional dev yourself - not documented/supported by Mbient)
 
 ### License
 See the [License](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md).
