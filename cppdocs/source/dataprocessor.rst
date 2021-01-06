@@ -3,9 +3,86 @@
 Data Processor Types
 ====================
 Header files defining the data processors type are in the 
-`processor <https://mbientlab.com/docs/metawear/cpp/latest/dir_ac375e5396e5f8152317e89ec5f046d1.html>`_ folder.  To create a processor, call any 
-functions that has ``create`` in its name.  All data processor create functions are asynchronous and alert the caller when the processor is created on 
-board through callback functions.
+`processor <https://mbientlab.com/docs/metawear/cpp/latest/dir_ac375e5396e5f8152317e89ec5f046d1.html>`_ folder.  
+
+.. list-table:: Data Processors
+   :header-rows: 1
+
+   * - #
+     - Name
+     - Description
+   * - 1
+     - Accounter
+     - Adds additional information to the payload to facilitate packet reconstruction.
+   * - 2
+     - Accumulator
+     - Tallies a running sum of the input.
+   * - 3
+     - Averager
+     - Computes a running average of the input.
+   * - 4
+     - Buffer
+     - Captures input data which can be retrieved at a later point in time.
+   * - 5
+     - Comparator
+     - Only allows data through that satisfies a comparison operation.
+   * - 6
+     - Counter
+     - Counts the number of times an event was fired.
+   * - 7
+     - Delta
+     - Only allows data through that is a min distance from a reference value.
+   * - 8
+     - Fuser
+     - Combine data from multiple data sources into 1 data packet.
+   * - 9
+     - Math
+     - Performs arithmetic on sensor data.
+   * - 10
+     - Packer
+     - Combines multiple data values into 1 BLE packet.
+   * - 11
+     - Passthrough
+     - Gate that only allows data though based on a user configured internal state.
+   * - 12
+     - Pulse
+     - Detects and quantifies a pulse over the input values.
+   * - 13
+     - RMS
+     - Computes the root mean square of the input.
+   * - 14
+     - RSS
+     - Computes the root sum square of the input.
+   * - 15
+     - Sample
+     - Holds data until a certain amount has been collected.
+   * - 16
+     - Threshold
+     - Allows data through that crosses a boundary.
+   * - 17
+     - Timer
+     - Periodically allow data through.
+
+
+To create a processor, call any 
+functions that has ``create`` in its name.  ::
+
+    mbl_mw_dataprocessor_accounter_create()
+    mbl_mw_dataprocessor_math_create()
+    mbl_mw_dataprocessor_threshold_create()
+    
+All data processor create functions are asynchronous and alert the caller when the processor is created on 
+board through callback functions.  ::
+
+    void create_fuser(MblMwMetaWearBoard* board) {
+        static auto fuser_created = [](MblMwDataProcessor* processor) -> void {
+            printf("fuser created\n");
+        };
+
+    auto acc_signal = mbl_mw_acc_get_acceleration_data_signal(board);
+    auto gyro_signal = mbl_mw_acc_get_gyroscope_data_signal(board);
+    mbl_mw_dataprocessor_fuser_create(acc_signal, gyro_signal, 1, create_fuser);
+
 
 Input data signals that are marked with a `MblMwCartesianFloat <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwCartesianFloat.html>`_ id, 
 .i.e accelerometer, gyro, and magnetometer data, are limited to only using the :ref:`dataprocessor-math`, :ref:`dataprocessor-rms`, and 
@@ -14,7 +91,9 @@ Input data signals that are marked with a `MblMwCartesianFloat <https://mbientla
 Accounter
 ---------
 The accounter processor adds additional information to the BTLE packet to reconstruct the data's timestamp, typically used with streaming raw 
-accelerometer, gyro, and magnetometer data.  This processor is designed specifically for streaming, do not use with the logger.  ::
+accelerometer, gyro, and magnetometer data.  
+
+This processor is designed specifically for streaming, DO NOT use with the logger.  ::
 
     #include "metawear/processor/accounter.h"
 
@@ -30,7 +109,9 @@ accelerometer, gyro, and magnetometer data.  This processor is designed specific
 Accumulator
 -----------
 The accumulator computes a running sum over the inputs.  Users can explicitly specify an output size (1 to 4 bytes) or 
-let the API infer an appropriate size.  The output data type id of an accumulator is the same as its input source. ::
+let the API infer an appropriate size.  
+
+The output data type id of an accumulator is the same as its input source. ::
 
     #include "metawear/processor/accumulator.h"
 
@@ -45,8 +126,9 @@ let the API infer an appropriate size.  The output data type id of an accumulato
 
 Average
 -------
-The averager computes a running average over the over the inputs.  It will not produce any output until it has accumulated enough samples to match 
-the specified sample size. The output data type id of averager is the same as its input source. ::
+The averager computes a running average over the over the inputs.  It will not produce any output until it has accumulated enough samples to match the specified sample size. 
+
+The output data type id of averager is the same as its input source. ::
 
     #include "metawear/processor/average.h"
     #include "metawear/sensor/gpio.h"
@@ -66,7 +148,9 @@ Buffer
 ------
 The buffer processor captures input data which can be read at a later time using 
 `mbl_mw_datasignal_read <https://mbientlab.com/docs/metawear/cpp/latest/datasignal_8h.html#a0a456ad1b6d7e7abb157bdf2fc98f179>`_; no output is produced 
-by this processor.  The data type id of a buffer's state is the same as its input source. ::
+by this processor.  
+
+The data type id of a buffer's state is the same as its input source. ::
 
     #include "metawear/processor/buffer.h"
 
@@ -82,8 +166,9 @@ Buffer processors can be used to capture data and retrieve it at a later time by
 
 Comparison
 ----------
-The comparator removes data that does not satisfy the comparison operation.  Callers can force a signed or unsigned comparison, or let the API 
-determine which is appropriate.  The output data type id of comparator is the same as its input source. ::
+The comparator removes data that does not satisfy the comparison operation.  Callers can force a signed or unsigned comparison, or let the API determine which is appropriate.  
+
+The output data type id of comparator is the same as its input source. ::
 
     #include "metawear/processor/comparator.h"
     #include "metawear/sensor/multichanneltemperature.h"
@@ -166,8 +251,9 @@ Counter
 -------
 A counter keeps a tally of how many times it is called.  It can be used by 
 `MblMwEvent <https://mbientlab.com/docs/metawear/cpp/latest/event__fwd_8h.html#a569b89edd88766619bb41a2471743695>`_ pointers to count the numbers of 
-times a MetaWear event was fired and enable simple events to utilize the full set of firmware features.  Counter data is only interpreted as an 
-unsigned integer. ::
+times a MetaWear event was fired and enable simple events to utilize the full set of firmware features.  
+
+Counter data is only interpreted as an unsigned integer. ::
 
     #include "metawear/core/settings.h"
     #include "metawear/processor/counter.h"
@@ -185,8 +271,9 @@ unsigned integer. ::
 Delta
 -----
 A delta processor computes the difference between two successive data values and only allows data through that creates a difference greater in magnitude 
-than the specified threshold.  When creating a delta processor, users will also choose how the processor transforms the output which can, in some cases, 
-alter the output data type id.  
+than the specified threshold.  
+
+When creating a delta processor, users will also choose how the processor transforms the output which can, in some cases, alter the output data type id.  
 
 =============  =======================================  ==============================================
 Output         Transformation                           Data Type ID
@@ -215,8 +302,9 @@ Constants identifying the output modes are defined in the `MblMwDeltaMode <https
 
 High Pass Filter
 ----------------
-High pass filters compute the difference of the current value from a running average of the previous N samples.  Output from this processor is delayed 
-until the first N samples have been received.  ::
+High pass filters compute the difference of the current value from a running average of the previous N samples.  
+
+Output from this processor is delayed until the first N samples have been received.  ::
 
     #include "metawear/processor/average.h"
 
@@ -234,8 +322,9 @@ until the first N samples have been received.  ::
 
 Math
 ----
-The math processor performs arithmetic or logical operations on the input.  Users can force signed or unsigned operation, or allow the API to determine 
-which is appropriate.  Depending on the operation, the output data type id can change.
+The math processor performs arithmetic or logical operations on the input.  Users can force signed or unsigned operation, or allow the API to determine which is appropriate.  
+
+Depending on the operation, the output data type id can change.
 
 ========================    ====================================================
 Operation                   Data Type ID
@@ -311,6 +400,7 @@ Passthrough
 -----------
 The passthrough processor is akin to a gate in which the user has manual control over, exercised by setting the processor's count value using  
 `mbl_mw_dataprocessor_passthrough_set_count <https://mbientlab.com/docs/metawear/cpp/latest/passthrough_8h.html#a537a105294960629fd035adac1a5d65b>`_.  
+
 It has three operation modes that each use the count value differently:
 
 =========== ==========================================
@@ -342,8 +432,9 @@ Constants identifying the operation modes are defined in the
 
 Pulse
 -----
-The pulse processor detects and quantifies a pulse over a set of data.  Pulses are defined as a minimum number of data points that rise above then fall 
-below a threshold and quantified by transforming the collection of data into three different values:
+The pulse processor detects and quantifies a pulse over a set of data.  
+
+Pulses are defined as a minimum number of data points that rise above then fall below a threshold and quantified by transforming the collection of data into three different values:
 
 ========= ======================================== =================================
 Output    Description                              Data Type ID
@@ -377,8 +468,9 @@ Constants defining the different output modes are defined in the
 
 RMS
 ---
-The RMS processor computes the root mean square over multi component data i.e. XYZ values from acceleration data.  The processor will convert 
-`MblMwCartesianFloat <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwCartesianFloat.html>`_ inputs into float outputs.  ::
+The RMS processor computes the root mean square over multi component data i.e. XYZ values from acceleration data.  
+
+The processor will convert `MblMwCartesianFloat <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwCartesianFloat.html>`_ inputs into float outputs.  ::
 
     #include "metawear/processor/rms.h"
     #include "metawear/sensor/accelerometer.h"
@@ -396,8 +488,9 @@ The RMS processor computes the root mean square over multi component data i.e. X
 
 RSS
 ---
-The RSS processor computes the root sum square, or vector magnitude, over multi component data i.e. XYZ values from acceleration data.  The processor 
-will convert `MblMwCartesianFloat <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwCartesianFloat.html>`_ inputs into float outputs.  ::
+The RSS processor computes the root sum square, or vector magnitude, over multi component data i.e. XYZ values from acceleration data.  
+
+The processor will convert `MblMwCartesianFloat <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwCartesianFloat.html>`_ inputs into float outputs.  ::
 
     #include "metawear/processor/rms.h"
     #include "metawear/sensor/accelerometer.h"
@@ -414,7 +507,9 @@ will convert `MblMwCartesianFloat <https://mbientlab.com/docs/metawear/cpp/lates
 Sample
 ------
 The sample processor acts like a bucket, only allowing data through once it has collected a set number of samples. It functions as a data historian of 
-sorts providing a way to look at the data values prior to an event.  The output data type id of an accumulator is the same as its input source. ::
+sorts providing a way to look at the data values prior to an event.  
+
+The output data type id of an accumulator is the same as its input source. ::
 
     #include "metawear/processor/sample.h"
     #include "metawear/sensor/switch.h"
@@ -431,7 +526,9 @@ sorts providing a way to look at the data values prior to an event.  The output 
 
 Threshold
 ---------
-The threshold processor only allows data through that crosses a boundary, either crossing above or below it.  It has two output modes:
+The threshold processor only allows data through that crosses a boundary, either crossing above or below it.  
+
+It has two output modes:
 
 =============  ========================================== ==============================================
 Output         Transformation                             Data Type ID
@@ -461,7 +558,9 @@ Constants identifying the output modes are defined by the
 Time
 ----
 The time processor only allows data to pass at fixed intervals.  It can used to limit the rate at which data is received if your sensor does not have 
-the desired sampling rate.  The processor has two output modes:
+the desired sampling rate.  
+
+The processor has two output modes:
 
 =============  ======================================= ==============================================
 Output         Transformation                          Data Type ID

@@ -2,7 +2,11 @@
 
 Macro
 =====
-The on-board flash memory can also be used to store MetaWear commands instead of sensor data.  Recorded commands can be executed any time after being 
+The on-board flash memory can also be used to store MetaWear commands instead of sensor data. 
+
+A good example of this feature is to change the name of a device permanently so that is does not advertise as MetaWear. 
+
+Recorded commands can be executed any time after being 
 programmed with the functions in `macro.h <https://mbientlab.com/docs/metawear/cpp/0/macro_8h.html>`_ header file.  
 
 Recording Commands
@@ -13,7 +17,20 @@ To record commands:
 2. Use the MetaWear commands that you want programmed  
 3. Exit macro mode with `mbl_mw_macro_end_record <https://mbientlab.com/docs/metawear/cpp/0/macro_8h.html#aa79694ef4d711d84da302983162517eb>`_  
 
+::
+
+        mbl_mw_macro_record(board, 1);
+        // COMMANDS TO RECORD GO HERE
+        mbl_mw_macro_end_record(board, callback);
+
 Macros can be set to run on boot by setting the ``exec_on_boot`` parameter with a non-zero value.
+
+::
+
+    mbl_mw_macro_record(board, 1); // ON BOOT
+    mbl_mw_macro_record(board, 0); // NOT ON BOOT
+
+In this example, the LED will blink blue on boot:
 
 ::
 
@@ -30,6 +47,24 @@ Macros can be set to run on boot by setting the ``exec_on_boot`` parameter with 
         mbl_mw_led_write_pattern(board, &pattern, MBL_MW_LED_COLOR_BLUE);
         mbl_mw_led_play(board);
         mbl_mw_macro_end_record(board, callback);
+    }
+
+In this example, we will change the device name permanently:
+
+::
+
+    void rename_macro(MblMwMetaWearBoard* board) {
+        static auto callback = [](MblMwMetaWearBoard* board, int32_t id) {
+            macro_id = id;
+        };
+
+        // Change the name on BOOT
+        mbl_mw_macro_record(board, 1);
+        mbl_mw_settings_set_device_name(board, 'METAMOO', 7);
+        mbl_mw_macro_end_record(board, callback);
+        
+        // Change the name NOW
+        mbl_mw_macro_execute(macro_id);
     }
 
 Erasing Macros

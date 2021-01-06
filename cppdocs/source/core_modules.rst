@@ -1,7 +1,8 @@
 Core Modules
 ============
 The MetaWear firmware comes with several powerful features that enable developers to fine-tune their board configuration for specific use cases.  
-Outside of the :doc:`sensor_fusion` module (MetaMotion only), all of these features are available on every board.
+
+The :doc:`sensor_fusion` module is available on the MMC, MMR, and MMS only. The other modules are available on all boards.
 
 .. toctree::
     :hidden:

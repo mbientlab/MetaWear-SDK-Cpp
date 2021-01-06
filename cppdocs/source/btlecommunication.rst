@@ -2,7 +2,7 @@
 
 Bluetooth LE Communication
 ==========================
-Because the library does not implement Bluetooth LE communication, users must implement the GATT operations in their target language and pass those 
+The CPP library does not implement Bluetooth LE communication; users must implement the GATT operations in their target language and pass those 
 functions to the C++ API.  The required GATT operations are defined as function pointers in the 
 `MblMwBtleConnection <https://mbientlab.com/docs/metawear/cpp/0/structMblMwBtleConnection.html>`_ struct.
 
