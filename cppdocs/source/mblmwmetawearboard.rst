@@ -3,7 +3,7 @@
 MblMwMetaWearBoard
 ==================
 Like the ``MetaWearBoard`` (Android) and ``MBLMetaWear`` (iOS) classes, the 
-`MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html>`_ struct is the C++ 
+`MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html>`__ struct is the C++ 
 API's representation of a MetaWear board and is the central type for using the API.  The 
 `metawearboard.h <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard_8h.html>`_ header file provides functions for instantiating and 
 retrieving information about a board.
@@ -11,12 +11,12 @@ retrieving information about a board.
 Instantiation
 -------------
 Before you can instantiate a 
-`MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html>`_ struct, you 
-must first create a `MblMwBtleConnection <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwBtleConnection.html>`_ as outlined in the 
+`MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html>`__ struct, you 
+must first create a `MblMwBtleConnection <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwBtleConnection.html>`__ as outlined in the 
 :doc:`btlecommunication` section.  
 
 Once you have your struct properly setup, call 
-`mbl_mw_metawearboard_create <https://mbientlab.com/documents/metawear/cpp/latest/metawearboard_8h.html#ae3adb5c7cfbdc6133796843db339a75e>`_ to instantiate 
+`mbl_mw_metawearboard_create <https://mbientlab.com/documents/metawear/cpp/latest/metawearboard_8h.html#ae3adb5c7cfbdc6133796843db339a75e>`__ to instantiate 
 a `MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html>`_ struct. ::
 
     #include "metawear/core/connection.h"
@@ -30,13 +30,13 @@ a `MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearbo
 Initialize
 ----------
 After you have instantiated a 
-`MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html#a2c238febd06fcaaa403e937489a12652>`_, you then need 
+`MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html#a2c238febd06fcaaa403e937489a12652>`__, you then need 
 to initialize its internal state by calling 
 `mbl_mw_metawearboard_initialize <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard_8h.html#a78afe422e5279121d8ae859a4d8dbe70>`_.  
 Initializing can take a few seconds and will asynchronously alert the caller when it is finished.  If initialization succeeded, ``MBL_MW_STATUS_OK`` 
 will be passed to the callback function, otherwise a non-zero value will be returned instead signalling the task failed.
 
-You can check if a `MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html>`_ 
+You can check if a `MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html>`__ 
 has been initialized by calling 
 `mbl_mw_metawearboard_is_initialized <https://mbientlab.com/documents/metawear/cpp/latest/metawearboard_8h.html#af2cdb8a6af5f20af661a6c6fd05ff45a>`_. 
 

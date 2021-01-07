@@ -53,17 +53,22 @@ In this example, we will change the device name permanently:
 
 ::
 
-    void rename_macro(MblMwMetaWearBoard* board) {
+    #include "metawear/core/macro.h"
+    #include "metawear/peripheral/led.h"
+
+    void setup_macro(MblMwMetaWearBoard* board) {
         static auto callback = [](MblMwMetaWearBoard* board, int32_t id) {
+            cout << "Macro ID = " << id << endl;
             macro_id = id;
         };
 
-        // Change the name on BOOT
+        // Change on boot
         mbl_mw_macro_record(board, 1);
-        mbl_mw_settings_set_device_name(board, 'METAMOO', 7);
+        auto new_name = "METAMOO";
+        mbl_mw_settings_set_device_name(board, new_name, 7);
         mbl_mw_macro_end_record(board, callback);
-        
-        // Change the name NOW
+
+        // Change the name now
         mbl_mw_macro_execute(macro_id);
     }
 

@@ -41,14 +41,14 @@ The sensor fusion algorithm provides raw acceleration, rotation, and magnetic fi
 
 Furthermore, the source of acceleration can be separated into gravity and linear acceleration and both values are also provided. Keep in mind that each sensor fusion mode has different sets of available data and produces it at different rates.
 
-======= ===== ===== ====
-Mode	Acc	  Gyro	Mag
-======= ===== ===== ====
-NDoF	100Hz 100Hz	25Hz
-IMUPlus	100Hz 100Hz	N/A
-Compass	25Hz  N/A	25Hz
-M4G	    50Hz  N/A	50Hz
-======= ===== ===== ====
+======== ====== ====== =====
+Mode	 Acc	Gyro   Mag
+======== ====== ====== =====
+NDoF	 100Hz  100Hz  25Hz
+IMUPlus	 100Hz  100Hz  N/A
+Compass	 25Hz   N/A	   25Hz
+M4G      50Hz   N/A    50Hz
+======== ====== ====== =====
 
 The mode is set with 
 `mbl_mw_sensor_fusion_set_mode <https://mbientlab.com/docs/metawear/cpp/latest/sensor__fusion_8h.html#a138a2d52134dee3772f0df3f9a7d9098>`_ and written 

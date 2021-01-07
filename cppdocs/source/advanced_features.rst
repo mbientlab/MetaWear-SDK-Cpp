@@ -65,7 +65,7 @@ deserializing the state.  ::
 
 Anonymous Signals
 ------------------
-Anonymous data signals are a variant of the :ref:`Logger <MblMwDataLogger>` type used to retrieve logged data from a board that was not programmed by the current host device.  
+Anonymous data signals are a variant of the `Logger <https://mbientlab.com/cppdocs/latest/mblmwlogger.html>`_ type used to retrieve logged data from a board that was not programmed by the current host device.  
 
 For example, a linux device was used to start a log of accelerometer data at 20Hz on a MetaWear board and an Android device is expected to download it from that board at a later time (the Android device therefore does not know about which loggers are running).
 
