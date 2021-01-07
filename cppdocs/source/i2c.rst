@@ -2,7 +2,11 @@
 
 I2C
 ===
-The I2C module allows you to directly communicate with a sensor via the I2C bus.  I2C functions are defined in the 
+The Inter-Integrated Circuit (I2C) Protocol is a protocol intended to allow multiple "peripheral" digital integrated circuits ("chips") to communicate with the MetaWear board. 
+
+The I2C module allows you to directly communicate with a sensor via the I2C bus. If you want to add sensors to the MetaWear board that communicate with I2C, this is possible using the I2C module. 
+
+I2C functions are defined in the 
 `i2c.h <https://mbientlab.com/docs/metawear/cpp/latest/i2c_8h.html>`_ header file.
 
 Data Signal

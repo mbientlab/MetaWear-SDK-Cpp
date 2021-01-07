@@ -2,8 +2,11 @@
 
 Barometer
 =========
-MetaWear RPro and Cpro, and MetaEnvironment boards come with a Bosch barometer.  The specific barometer model varies between the boards although both 
-barometers are nearly identical save for a few settings.  Bosch barometer functions are defined in the 
+A barometer is a scientific instrument that is used to measure air pressure in a certain environment. The absolute barometric pressure sensor can measure pressure from 300 Pascal to 1100 hPa.
+
+MetaWear RPro and Cpro, MMR, MMC, MTR, and MetaEnvironment boards come with a Bosch barometer.  
+
+The specific barometer model varies between the boards although both barometers are nearly identical save for a few settings.  Bosch barometer functions are defined in the 
 `barometer_bosch.h <https://mbientlab.com/docs/metawear/cpp/latest/barometer__bosch_8h.html>`_ header file where functions containing ``baro_bosch`` 
 are barometer agnostic where as functions with ``baro_bmp280`` and ``baro_bme280`` are for those specific barometers. 
 

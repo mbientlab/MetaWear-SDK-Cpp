@@ -2,7 +2,10 @@
 
 Magnetometer
 ============
-MetaWear CPro boards have a `BMM150 <https://www.bosch-sensortec.com/bst/products/all_products/bmm150>`_ geomagnetic sensor for sensing magnetic fields.  
+A magnetometer is a device for detecting and measuring magnetic fields (in Teslas). The device can be used in conjunction with a 3-axis accelerometer to produce orientation independent accurate compass heading information.
+
+MetaWear CPro, MMC, and MMR boards have a `BMM150 <https://www.bosch-sensortec.com/bst/products/all_products/bmm150>`_ geomagnetic sensor for sensing magnetic fields.  
+
 Functions communicating with the magnetometer are defined in the 
 `magnetometer_bmm150.h <https://mbientlab.com/docs/metawear/cpp/latest/magnetometer__bmm150_8h.html>`_.
 

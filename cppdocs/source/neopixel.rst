@@ -2,8 +2,11 @@
 
 NeoPixel
 ========
-The firmware can communicate with `WS2811 <http://www.world-semi.com/en/Driver/Lighting_LED_driver_chip/WS2811/>`_ powered NeoPixel strands.  NeoPixel 
-functions are defined in the `neopixel.h <https://mbientlab.com/docs/metawear/cpp/latest/neopixel_8h.html>`_ header file.
+Neopixels are a specific brand of individually addressable RGB LED (typically sold as a strip). Individually addressable means you can program the fourth LED in the strip to do one thing and the first to do another.
+
+The firmware can communicate with `WS2811 <http://www.world-semi.com/en/Driver/Lighting_LED_driver_chip/WS2811/>`_ powered NeoPixel strands.  
+
+NeoPixel functions are defined in the `neopixel.h <https://mbientlab.com/docs/metawear/cpp/latest/neopixel_8h.html>`_ header file.
 
 Strand Initialization
 ---------------------

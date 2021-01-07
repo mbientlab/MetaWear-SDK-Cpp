@@ -2,7 +2,12 @@
 
 Accelerometer
 =============
-All boards come with an accelerometer.  The specific accelerometer model varies amongst the boards, howevever the API provides accelerometer 
+All boards come with an accelerometer. An accelerometer is an electromechanical device that will measure acceleration forces. 
+These forces may be static, like the constant force of gravity pulling at your feet, or they could be dynamic - caused by moving or vibrating the accelerometer.
+
+Acceleration is measured in units of gravities (g) or units of m/s2. One g unit = 9.81 m/s2.
+
+The specific accelerometer model varies amongst the boards, howevever the API provides accelerometer 
 agnostic functions in the `accelerometer.h <https://mbientlab.com/docs/metawear/cpp/latest/accelerometer_8h.html>`_ header file that can be safely used 
 with all supported accelerometers.
 

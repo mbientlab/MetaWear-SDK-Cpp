@@ -1,11 +1,12 @@
 .. highlight:: cpp
 
-Gyro
-====
-MetaWear RG, RPro, C, and CPro come with a `Bosch BMI160 <http://www.bosch-sensortec.com/bst/products/all_products/bmi160>`_ 6-axis IMU.  The gyro 
+Gyroscope
+==========
+Gyroscopes, or gyros, are devices that measure or maintain rotational motion. The units of angular velocity are measured in degrees per second (°/s) or revolutions per second (RPS). Angular velocity is simply a measurement of speed of rotation.
+
+MetaWear RG, RPro, C, MMR, MMC, MTR, and CPro come with a `Bosch BMI160 <http://www.bosch-sensortec.com/bst/products/all_products/bmi160>`_ 6-axis IMU.  The gyro 
 functionality of this sensor is accessed by the functions in the 
 `gyro_bmi160.h <https://mbientlab.com/docs/metawear/cpp/latest/gyro__bmi160_8h.html>`_ header file.
-
 
 Configuration
 -------------

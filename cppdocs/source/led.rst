@@ -2,8 +2,9 @@
 
 Led
 ===
-All boards come with an on-board RGD LED.  Users can control the LED with the functions in the 
-`led.h <https://mbientlab.com/docs/metawear/cpp/latest/led_8h.html>`_ header file.
+All boards come with an on-board RGB LED.  The RGB LED is able to light up the board in various colors and patterns.
+
+Users can control the LED with the functions in the `led.h <https://mbientlab.com/docs/metawear/cpp/latest/led_8h.html>`_ header file.
 
 Setting Patterns
 ----------------

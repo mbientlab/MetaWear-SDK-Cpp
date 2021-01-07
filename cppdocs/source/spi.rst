@@ -2,8 +2,13 @@
 
 SPI
 ===
-The SPI module allows users to utilize the SPI bus; functions are defined in the 
-`spi.h <https://mbientlab.com/docs/metawear/cpp/latest/spi_8h.html>`_ header file.  
+SPI is also known as Serial Peripheral Interface, it is a synchronous serial data protocol that acts as an interface bus which operates at full-duplex where data can be sent and received simultaneously. 
+
+SPI is one of the most popular communication peripheral used by microcontrollers to send data to one or more peripheral devices like SD cards and sensors quickly over short distances.
+
+The SPI module allows users to utilize the SPI bus. If you want to add a sensor to the MetaWear board that communicates with SPI, this is possible using the SPI module.
+
+Functions are defined in the `spi.h <https://mbientlab.com/docs/metawear/cpp/latest/spi_8h.html>`_ header file.  
 
 Data Signal
 -----------

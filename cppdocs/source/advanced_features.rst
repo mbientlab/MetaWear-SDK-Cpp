@@ -2,12 +2,13 @@
 
 Advanced Features 
 =================
+There are a few advanced features available on the MetaWear board described in this section.
 
 High Frequency Streaming
 ------------------------
-Some developers may want to stream data from multiple motion sensors simultaneously or individually at frequencies higher than 100Hz.  To accommodate 
-this use case, acceleration, angular velocity, and magnetic field data have a packed output mode that combines 3 data samples into 1 ble packett 
-increasing the data throughput by 3x.
+Some developers may want to stream data from multiple motion sensors simultaneously or individually at frequencies higher than 100Hz.  
+
+To accommodate this use case, acceleration, angular velocity, and magnetic field data have a packed output mode that combines 3 data samples into 1 ble packet increasing the data throughput by 3x.
 
 ::
 
@@ -28,12 +29,16 @@ In addition to using packed output, developers will also need to reduce the max 
 also be used to speed up log downloads.  ::
 
     mbl_mw_settings_set_connection_parameters(board, 7.5f, 7.5f, 0, 6000);
+    
+Don't forget the connection parameters can be rejected.
 
 Serialization
 -------------
 The internal state of the 
 `MblMwMetaWearBoard <https://mbientlab.com/docs/metawear/cpp/latest/metawearboard__fwd_8h.html#a2c238febd06fcaaa403e937489a12652>`_ object can be 
-converted into a byte array, which can then be saved to the disk.  You will need to free the allocated memory after you are done using the byte array.  ::
+converted into a byte array, which can then be saved to the disk.  
+
+You will need to free the allocated memory after you are done using the byte array.  ::
 
     uint32_t size;
     uint8_t* state = mbl_mw_metawearboard_serialize(board, &size);
@@ -59,18 +64,18 @@ deserializing the state.  ::
     });
 
 Anonymous Signals
------------------
-Anonymous data signals are a variant of the :ref:`Logger <MblMwDataLogger>` type used to retrieve logged data from a board that was not programmed by 
-the current host device.  Use 
-`mbl_mw_metawearboard_create_anonymous_datasignals <https://mbientlab.com/docs/metawear/cpp/0/metawearboard_8h.html#a218adea4ebd0df4061940325964488b5>`_ 
-to sync the host device with the board's current logger state.  If the function fails, a null pointer will be returned and the uint32_t parameter 
-instead corresponds to a status code from the SDK.
+------------------
+Anonymous data signals are a variant of the :ref:`Logger <MblMwDataLogger>` type used to retrieve logged data from a board that was not programmed by the current host device.  
+
+For example, a linux device was used to start a log of accelerometer data at 20Hz on a MetaWear board and an Android device is expected to download it from that board at a later time (the Android device therefore does not know about which loggers are running).
+
+Use `mbl_mw_metawearboard_create_anonymous_datasignals <https://mbientlab.com/docs/metawear/cpp/0/metawearboard_8h.html#a218adea4ebd0df4061940325964488b5>`_ to sync the host device with the board's current logger state.  
+
+If the function fails, a null pointer will be returned and the uint32_t parameter instead corresponds to a status code from the SDK.
 
 Because of the anonymous nature of the object, users will need to rely on an identifier string to determine what kind of data is being passed to each 
-route.  Generate the identifier string by calling 
-`mbl_mw_logger_generate_identifier <https://mbientlab.com/docs/metawear/cpp/0/logging_8h.html#a86d098570698a184ee93087a6ffc00bb>`_ for each 
-``MblMwDataLogger`` type and match these values with 
-`mbl_mw_anonymous_datasignal_get_identifier <https://mbientlab.com/docs/metawear/cpp/0/anonymous__datasignal_8h.html#a253a854d9b326efc501df320284a6ae6>`_.  ::
+route.  Generate the identifier string by calling `mbl_mw_logger_generate_identifier <https://mbientlab.com/docs/metawear/cpp/0/logging_8h.html#a86d098570698a184ee93087a6ffc00bb>`_ for each 
+``MblMwDataLogger`` type and match these values with `mbl_mw_anonymous_datasignal_get_identifier <https://mbientlab.com/docs/metawear/cpp/0/anonymous__datasignal_8h.html#a253a854d9b326efc501df320284a6ae6>`_.  ::
 
     #include "metawear/core/datasignal.h"
     #include "metawear/core/logging.h"
@@ -86,6 +91,8 @@ route.  Generate the identifier string by calling
             mbl_mw_memory_free(identifier);
         });
     }
+
+A quick example:
 
 ::
 

@@ -2,8 +2,11 @@
 
 Proximity Detector
 ==================
-MetaDetector boards come equipped with a `TSL2671 <http://ams.com/eng/Products/Light-Sensors/Proximity/TSL26711>`_ proximity detector.  Functions 
-communicating with the detector are defined in `proximity_tsl2671.h <https://mbientlab.com/docs/metawear/cpp/latest/proximity__tsl2671_8h.html>`_ 
+Proximity sensors are sensors that detect movement/presence of objects without physical contact.
+
+MetaDetector boards come equipped with a `TSL2671 <http://ams.com/eng/Products/Light-Sensors/Proximity/TSL26711>`_ proximity detector.  
+
+Functions communicating with the detector are defined in `proximity_tsl2671.h <https://mbientlab.com/docs/metawear/cpp/latest/proximity__tsl2671_8h.html>`_ 
 header file.
 
 Configuration

@@ -2,8 +2,11 @@
 
 Ambient Light Sensor
 ====================
-MetaWear RPro and Cpro, and MetaDetector board come with a 
-`Lite-On LTR-329ALS <http://www.mouser.com/ds/2/239/Lite-On_LTR-329ALS-01%20DS_ver1.1-348647.pdf>`_ ambient light sensor.  Functions interacting with 
+Light sensors measure illuminance, which can be used to measure more than the brightness of a light source.
+
+MetaWear RPro and Cpro, and MetaDetector board come with a `Lite-On LTR-329ALS <http://www.mouser.com/ds/2/239/Lite-On_LTR-329ALS-01%20DS_ver1.1-348647.pdf>`_ ambient light sensor that can measure light from 0.01 lux to 64k lux.
+
+Functions interacting with 
 the light sensor are defined in the `ambientlight_ltr329.h <https://mbientlab.com/docs/metawear/cpp/latest/ambientlight__ltr329_8h.html>`_ header file.
 
 Configuration

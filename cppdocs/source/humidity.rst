@@ -2,7 +2,10 @@
 
 Humidity
 ========
-MetaEnvironment boards have a Bosch `BME280 <http://www.bosch-sensortec.com/en/bst/products/all_products/bme280>`_ integrated environmental unit.  
+A humidity sensor senses relative humidity. This means that it measures both air temperature and moisture. Relative humidity, expressed as a percent, is the ratio of actual moisture in the air to the highest amount of moisture air at that temperature can hold.
+
+MetaEnvironment and MTR boards have a Bosch `BME280 <http://www.bosch-sensortec.com/en/bst/products/all_products/bme280>`_ integrated environmental unit.  
+
 Humidity functionality of that sensor are controlled by the functions in the 
 `humidity.h <https://mbientlab.com/docs/metawear/cpp/latest/humidity__bme280_8h.html>`_ header file.
 

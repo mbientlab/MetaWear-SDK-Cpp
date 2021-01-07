@@ -2,6 +2,9 @@
 
 Color Detector
 ==============
+The light sensor works by shining a white light at an object and then recording the reflected colour. It can also record the intensity of the reflection (brightness). 
+Through red, green and blue colour filters the photodiode converts the amount of light to current.
+
 MetaEnvironment boards come equipped with a `TCS34725 <http://ams.com/eng/Products/Light-Sensors/Color-Sensors/TCS34725>`_ color detector.  Enums and 
 functions for interacting with this sensor are defined in the 
 `colordetector_tcs34725.h <https://mbientlab.com/docs/metawear/cpp/latest/colordetector__tcs34725_8h.html>`_ header file.
@@ -42,7 +45,10 @@ Color ADC
 ---------
 To retrieve color adc, call 
 `mbl_mw_datasignal_read <https://mbientlab.com/docs/metawear/cpp/latest/datasignal_8h.html#a0a456ad1b6d7e7abb157bdf2fc98f179>`_ with a color adc data 
-signal.  Users can use the timer functions (see :doc:`timer` section) 
+signal.  
+
+Users can use the timer functions (see :doc:`timer` section) 
+
 to schedule periodic reads.  ::
 
     #include "metawear/core/datasignal.h"

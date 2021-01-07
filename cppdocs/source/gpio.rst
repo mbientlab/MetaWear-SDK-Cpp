@@ -1,8 +1,12 @@
 .. highlight:: cpp
 
-Gpio
+GPIO
 ====
-All boards come with general purpose I/O pins allowing users to attach their own sensors.  Functions for communicating with the gpio pins are in the 
+A general-purpose input/output (GPIO) is an uncommitted digital or analog signal pin on the MetaWear board.
+
+All boards come with general purpose I/O pins allowing users to attach their own sensors. You can attach an analog heart-rate sensor, a thermistor, a push sensor and more using the GPIOs on the MetaWear board. 
+
+Functions for communicating with the gpio pins are in the 
 `gpio.h <https://mbientlab.com/docs/metawear/cpp/latest/gpio_8h.html>`_ header file.
 
 Analog Data
@@ -37,7 +41,6 @@ represented as an unsigned integer but has units of milli volts. ::
 
 Enhanced Analog Reads
 ---------------------
-
 Starting with firmware v1.2.3, additional features have been added to the analog read.  To use these features, call 
 `mbl_mw_datasignal_read_with_parameters <https://mbientlab.com/docs/metawear/cpp/latest/datasignal_8h.html#a71391d5862eb18327ce2aaaac4a12159>`_
 and use a `MblMwGpioAnalogReadParameters <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwGpioAnalogReadParameters.html>`_ struct as the 

@@ -2,7 +2,11 @@
 
 Temperature
 ===========
-All boards come with various temperature sensors that measure ambient temperature.  Functions communicating with the on-board temperature sensors are 
+A temperature sensor measures the ambient temperature in C or F degrees.
+
+All boards come with various temperature sensors that measure ambient temperature. Some of the temperature sensors are on the main CPU chip, others come in analog form as a thermistor and some temperature sensors are included in the barometer chip. 
+
+Functions communicating with the on-board temperature sensors are 
 defined in the `multichanneltemperature.h <https://mbientlab.com/docs/metawear/cpp/latest/multichanneltemperature_8h.html>`_ header file.  
 
 Source Types
