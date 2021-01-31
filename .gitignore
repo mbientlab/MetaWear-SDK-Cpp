@@ -1,4 +1,5 @@
 /doc/
+/cppdocs/upload.sh
 /build/
 /dist/
 *__pycache__*
