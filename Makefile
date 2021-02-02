@@ -24,9 +24,9 @@ endif
 
 LD_FLAGS+=-shared -Wl,
 ifneq ($(KERNEL),Darwin)
-    EXTENSION:=so
-    LIB_SO_NAME:=lib$(APP_NAME).so
-    LD_FLAGS:=$(LD_FLAGS)--soname
+	EXTENSION:=a
+	LIB_NAME:=lib$(APP_NAME).a
+	LD_FLAGS:=–static –disable-shared –enable-static $(LD_FLAGS)
 else
     EXTENSION:=dylib
     LD_FLAGS:=-dynamiclib $(LD_FLAGS)-install_name
@@ -51,7 +51,7 @@ else
     ARCH=
 endif
 
-LD_FLAGS:=$(LD_FLAGS),$(LIB_SHORT_NAME) $(ARCH)
+LD_FLAGS:=$(LD_FLAGS),$(LIB_SO_NAME) $(ARCH)
 
 REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)
 REAL_BUILD_DIR:=$(BUILD_DIR)/$(MACHINE)/$(CONFIGURATION)
@@ -61,7 +61,27 @@ LIBMETAWEAR_JAVASCRIPT_PATH:=$(BINDINGS_DIR)/javascript/libmetawear-path.js
 OBJS:=$(addprefix $(REAL_BUILD_DIR)/,$(SRCS:%.cpp=%.o))
 DEPS:=$(OBJS:%.o=%.d)
 
-APP_OUTPUT:=$(REAL_DIST_DIR)/$(LIB_NAME)
+APP_OUTPUT:=$(REAL_DIST_DIR)/$(LIB_SO_NAME)
+
+static: $(APP_OUTPUT) $(LIBMETAWEAR_JAVASCRIPT_PATH)
+
+$(REAL_BUILD_DIR)/%.o: %.cpp
+	$(CXX) -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
+
+-include $(DEPS)
+
+$(MODULES_BUILD_DIR):
+	mkdir -p $@
+
+$(REAL_DIST_DIR):
+	mkdir -p $@
+
+$(OBJS): | $(MODULES_BUILD_DIR)
+$(APP_OUTPUT): $(OBJS) | $(REAL_DIST_DIR)
+	libtool -o $@ –static –disable-shared –enable-static $(LD_FLAGS) $^
+
+PUBLISH_NAME:=$(APP_NAME)-$(VERSION).tar
+PUBLISH_NAME_ZIP:=$(PUBLISH_NAME).gz
 
 build: $(APP_OUTPUT) $(LIBMETAWEAR_JAVASCRIPT_PATH)
 
@@ -79,8 +99,6 @@ $(REAL_DIST_DIR):
 $(OBJS): | $(MODULES_BUILD_DIR)
 $(APP_OUTPUT): $(OBJS) | $(REAL_DIST_DIR)
 	$(CXX) -o $@ $(LD_FLAGS) $^
-	ln -sf $(LIB_NAME) $(REAL_DIST_DIR)/$(LIB_SHORT_NAME)
-	ln -sf $(LIB_SHORT_NAME) $(REAL_DIST_DIR)/$(LIB_SO_NAME)
 
 PUBLISH_NAME:=$(APP_NAME)-$(VERSION).tar
 PUBLISH_NAME_ZIP:=$(PUBLISH_NAME).gz
