@@ -115,7 +115,6 @@ static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard
     auto signal = dynamic_cast<MblMwDataSignal*>(it->second);
     bool handled= false;
     int64_t epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    
     MblMwDataProcessor* processor = dynamic_cast<MblMwDataProcessor*>(signal);
     const uint8_t* start = response;
     uint32_t extra;
@@ -124,7 +123,6 @@ static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard
             case DataProcessorType::ACCOUNTER: {
                 epoch = extract_accounter_epoch(processor, epoch, &start, len, &extra);
                 auto parent = find_processor(processor, DataProcessorType::PACKER);
-
                 if (parent != nullptr) {
                     uint8_t i = 0, count = get_packer_count(parent), pack_size = get_packer_length(parent);
                     do {

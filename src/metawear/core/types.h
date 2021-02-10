@@ -8,6 +8,24 @@
 #include <stdint.h>
 
 /**
+ * Wrapper class encapsulating responses from any motion detection
+ */
+typedef struct {
+    uint8_t type;               ///<is it a gesture or wakeup
+    uint8_t gesture_code;          ///<type of gesture described in MblMwAccGestureCode
+} MblMwBmi270WristWear;
+
+/**
+ * Wrapper class encapsulating responses from any motion detection
+ */
+typedef struct {
+    uint8_t sign;                   ///< Slope sign of the triggering motion, 0 if negative, non-zero if positive
+    uint8_t x_axis_active;          ///< Non-zero if x-axis triggered the motion interrupt
+    uint8_t y_axis_active;          ///< Non-zero if y-axis triggered the motion interrupt
+    uint8_t z_axis_active;          ///< Non-zero if z-axis triggered the motion interrupt
+} MblMwBoschAnyMotion;
+
+/**
  * Tuple combining float data on a 3D cartesian coordinate system 
  */
 typedef struct {
@@ -74,7 +92,6 @@ typedef struct {
 
 /**
  * Enumeration of sensor orientations
- * @author Eric Tsai
  */
 typedef enum {
     MBL_MW_SENSOR_ORIENTATION_FACE_UP_PORTRAIT_UPRIGHT,

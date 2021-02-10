@@ -15,6 +15,8 @@
 #include "metawear/processor/cpp/dataprocessor_config.h"
 #include "metawear/processor/cpp/dataprocessor_private.h"
 
+#include <iostream>
+
 using namespace std;
 using namespace std::chrono;
 
@@ -69,6 +71,28 @@ static MblMwData* convert_to_int32(bool log_data, const MblMwDataSignal* signal,
     CREATE_MESSAGE(MBL_MW_DT_ID_INT32);
 }
 
+static MblMwData* convert_to_bmi270_gesture(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    MblMwBmi270WristWear *value= (MblMwBmi270WristWear*) malloc(sizeof(MblMwBmi270WristWear));
+
+    value->type = response[0] & 0x03;
+    
+    uint32_t temp = response[0];
+    temp = temp >> 2;
+    value->gesture_code = temp;
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_BOSCH_GESTURE);
+}
+
+static MblMwData* convert_to_bmi270_activity(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+    uint32_t temp = response[0];
+    temp = temp >> 1;
+    
+    uint32_t *value= (uint32_t*) calloc(1, sizeof(uint32_t));
+    memcpy(value, &temp, sizeof(uint32_t));
+
+    CREATE_MESSAGE(MBL_MW_DT_ID_UINT32);
+}
+
 static MblMwData* convert_to_uint32(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t *value= (uint32_t*) calloc(1, sizeof(uint32_t));
 
@@ -91,14 +115,11 @@ static MblMwData* convert_to_mma8452q_acceleration(bool log_data, const MblMwDat
 static MblMwData* convert_to_bosch_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
-
     float scale = bosch_get_data_scale(signal->owner);
-
     MblMwCartesianFloat *value = (MblMwCartesianFloat*)malloc(sizeof(MblMwCartesianFloat));
     value->x = unscaled.x / scale;
     value->y = unscaled.y / scale;
     value->z = unscaled.z / scale;
-
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
@@ -366,6 +387,8 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::BMI160_ROTATION , convert_to_bmi160_rotation },
     { DataInterpreter::BMI160_ROTATION_SINGLE_AXIS , convert_to_bmi160_rotation_single_axis },
     { DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS , convert_to_bmi160_rotation_unsigned_single_axis },
+    { DataInterpreter::BMI270_GESTURE , convert_to_bmi270_gesture },
+    { DataInterpreter::BMI270_ACTIVITY , convert_to_bmi270_activity },
     { DataInterpreter::BOSCH_ACCELERATION , convert_to_bosch_acceleration },
     { DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS , convert_to_bosch_acceleration_single_axis },
     { DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS , convert_to_bosch_acceleration_unsigned_single_axis },

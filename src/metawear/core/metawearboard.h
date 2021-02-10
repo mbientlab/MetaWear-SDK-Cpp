@@ -88,6 +88,7 @@ METAWEAR_API int32_t mbl_mw_metawearboard_is_initialized(const MblMwMetaWearBoar
  * @return Module type used by the board, MBL_MW_MODULE_TYPE_NA if module is not available
  * @see MBL_MW_MODULE_ACC_TYPE_MMA8452Q
  * @see MBL_MW_MODULE_ACC_TYPE_BMI160
+ * @see MBL_MW_MODULE_ACC_TYPE_BMI270
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblMwModule module);
 /**

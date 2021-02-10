@@ -27,3 +27,31 @@ enum class AccelerometerBoschRegister : uint8_t {
     STEP_COUNTER_RESET,
     PACKED_ACC_DATA
 };
+
+enum class AccelerometerBoschBmi270Register : uint8_t {
+    POWER_MODE = 1,
+    DATA_INTERRUPT_ENABLE,
+    DATA_CONFIG,
+    DATA_INTERRUPT,
+
+    PACKED_ACC_DATA = 0x5,
+    
+    FEATURE_ENABLE = 0x6,
+    FEATURE_INTERRUPT_ENABLE,
+    FEATURE_CONFIG,
+
+    MOTION_INTERRUPT = 0x9,
+
+    WRIST_INTERRUPT,
+    
+    STEP_COUNT_INTERRUPT,
+    
+    ACTIVITY_INTERRUPT,
+    TEMP_INTERRUPT,    
+    TEMP_ENABLE,
+    TEMP,
+    
+    OFFSET,
+    
+    DOWNSAMPLING
+};
