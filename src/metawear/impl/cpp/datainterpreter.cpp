@@ -10,7 +10,7 @@
 #include "metawear/core/cpp/datasignal_private.h"
 #include "metawear/sensor/accelerometer_bosch.h"
 #include "metawear/sensor/cpp/accelerometer_bosch_private.h"
-#include "metawear/sensor/cpp/gyro_bmi160_private.h"
+#include "metawear/sensor/cpp/gyro_bosch_private.h"
 #include "metawear/core/cpp/logging_private.h"
 #include "metawear/processor/cpp/dataprocessor_config.h"
 #include "metawear/processor/cpp/dataprocessor_private.h"

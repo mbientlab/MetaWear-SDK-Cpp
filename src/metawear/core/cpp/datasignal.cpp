@@ -10,7 +10,7 @@
 #include "metawear/sensor/cpp/barometer_bosch_private.h"
 #include "metawear/sensor/cpp/colordetector_tcs34725_private.h"
 #include "metawear/sensor/cpp/gpio_private.h"
-#include "metawear/sensor/cpp/gyro_bmi160_private.h"
+#include "metawear/sensor/cpp/gyro_bosch_private.h"
 #include "metawear/sensor/cpp/humidity_bme280_private.h"
 #include "metawear/sensor/cpp/magnetometer_bmm150_private.h"
 #include "metawear/sensor/cpp/multichanneltemperature_private.h"

@@ -7,7 +7,7 @@
 #include "metawear/core/cpp/responseheader.h"
 
 #include "metawear/sensor/accelerometer.h"
-#include "metawear/sensor/gyro_bmi160.h"
+#include "metawear/sensor/gyro_bosch.h"
 #include "metawear/sensor/magnetometer_bmm150.h"
 #include "metawear/sensor/sensor_fusion.h"
 #include "sensor_fusion_private.h"
@@ -232,8 +232,8 @@ void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
         mbl_mw_acc_set_odr(board, 100.f);
         mbl_mw_acc_write_acceleration_config(board);
 
-        mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBmi160Range) (state->config.gyro_range - 1));
-        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BMI160_ODR_100Hz);
+        mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
+        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
         mbl_mw_gyro_bmi160_write_config(board);
 
         mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
@@ -243,8 +243,8 @@ void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
         mbl_mw_acc_set_odr(board, 100.f);
         mbl_mw_acc_write_acceleration_config(board);
 
-        mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBmi160Range) (state->config.gyro_range - 1));
-        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BMI160_ODR_100Hz);
+        mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
+        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
         mbl_mw_gyro_bmi160_write_config(board);
         break;
     case MBL_MW_SENSOR_FUSION_MODE_COMPASS:

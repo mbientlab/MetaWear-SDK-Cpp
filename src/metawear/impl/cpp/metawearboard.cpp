@@ -36,7 +36,7 @@
 #include "metawear/processor/cpp/dataprocessor_private.h"
 
 #include "metawear/sensor/accelerometer.h"
-#include "metawear/sensor/gyro_bmi160.h"
+#include "metawear/sensor/gyro_bosch.h"
 #include "metawear/sensor/sensor_fusion.h"
 
 #include "metawear/sensor/cpp/accelerometer_private.h"
@@ -45,7 +45,7 @@
 #include "metawear/sensor/cpp/colordetector_tcs34725_private.h"
 #include "metawear/sensor/cpp/gpio_private.h"
 #include "metawear/sensor/cpp/gpio_register.h"
-#include "metawear/sensor/cpp/gyro_bmi160_private.h"
+#include "metawear/sensor/cpp/gyro_bosch_private.h"
 #include "metawear/sensor/cpp/humidity_bme280_private.h"
 #include "metawear/sensor/cpp/magnetometer_bmm150_private.h"
 #include "metawear/sensor/cpp/multichanneltemperature_private.h"

@@ -564,7 +564,6 @@ METAWEAR_API void mbl_mw_acc_bmi270_disable_step_detector(const MblMwMetaWearBoa
  * @param acc_data      Selects filtered or unfiltered Accelerometer data for fifo
  */
 METAWEAR_API void mbl_mw_acc_bmi270_fifo_downs(const MblMwMetaWearBoard* board, int gyro_downs, int gyro_data, int acc_downs, int acc_data);
-
 /**
  * Manual compensation for the BMI270 acc
  * The offset compensation registers have a width of 8 bit using two’s complement notation. 

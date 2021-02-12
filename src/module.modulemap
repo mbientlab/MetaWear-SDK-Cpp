@@ -49,7 +49,7 @@ module MetaWearCpp [extern_c] {
     header "metawear/sensor/sensor_fusion.h"
     header "metawear/sensor/accelerometer.h"
     header "metawear/sensor/barometer_bosch.h"
-    header "metawear/sensor/gyro_bmi160.h"
+    header "metawear/sensor/gyro_bosch.h"
     header "metawear/sensor/humidity_bme280.h"
     header "metawear/sensor/colordetector_tcs34725.h"
     header "metawear/sensor/multichanneltemperature.h"
