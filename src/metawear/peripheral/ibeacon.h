@@ -61,7 +61,6 @@ METAWEAR_API void mbl_mw_ibeacon_set_rx_power(const MblMwMetaWearBoard *board, i
  * @param ad_uuid       Byte representation of the UUID in little endian ordering
  */
 METAWEAR_API void mbl_mw_ibeacon_set_uuid(const MblMwMetaWearBoard *board, uint8_t ad_uuid[16]);
-
 /**
  * Enables iBeacon mode.  You will need to disconnect from the board to 
  * advertise as an iBeacon

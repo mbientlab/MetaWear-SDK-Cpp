@@ -52,8 +52,8 @@ typedef struct {
 } MblMwSpiParameters;
 
 /**
- * Retrieves the data signal representing spi data.  The data signal is identified by the id value and if the id is not present, 
- * a new data signal will be created using the length parameter. 
+ * Retrieves the data signal representing spi data.  
+ * The data signal is identified by the id value and if the id is not present, a new data signal will be created using the length parameter. 
  * @param board         Board to communicate with
  * @param length        Number of bytes to read
  * @param id            Numerical id identifying the data

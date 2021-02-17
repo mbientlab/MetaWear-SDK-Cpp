@@ -24,12 +24,17 @@ typedef enum {
 
 /**
  * Retrieves the data signal representing humidity data
+ * Relative humidity is returned as a percentage.
  * @param board         Board the humidity sensor resides on
  * @return Pointer to the data signal
+ * UINT32 is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_humidity_bme280_get_percentage_data_signal(const MblMwMetaWearBoard *board);
 /**
  * Sets the oversampling mode
+ * For the humidity measurement, oversampling is possible to reduce the noise. 
+ * The resolution of the humidity measurement is fixed at 16 bit ADC output.
+ * See MblMwHumidityBme280Oversampling for allowed oversampling values
  * @param board             Board the humidity sensor resides on
  * @param oversampling      New oversampling mode
  */

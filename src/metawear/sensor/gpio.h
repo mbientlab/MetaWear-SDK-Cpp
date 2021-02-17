@@ -54,26 +54,34 @@ typedef struct {
 
 /**
  * Retrieves a data signal representing analog data
+ * See MblMwGpioAnalogReadMode for allowed mode values and see MetaWear datasheet for allowed pin values
  * @param board     Board to receive data from
  * @param pin       GPIO pin to read
  * @param mode      Read mode to use
+ * UINT32 is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_gpio_get_analog_input_data_signal(MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioAnalogReadMode mode);
 /**
  * Retrieves a data signal representing digital data
+ * See MetaWear datasheet for allowed pin values
  * @param board     Board to receive data from
  * @param pin       GPIO pin to read
+ * UINT32 is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_gpio_get_digital_input_data_signal(MblMwMetaWearBoard* board, uint8_t pin);
 /**
  * Retrieves a data signal representing changes in digital data
+ * The monitor provides a callback anytime the value changes
+ * See MetaWear datasheet for allowed pin values
  * @param board     Board to receive data from
  * @param pin       GPIO pin to monitor
+ * UINT32 is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_gpio_get_pin_monitor_data_signal(MblMwMetaWearBoard* board, uint8_t pin);
-
 /**
  * Sets the pin pull mode
+ * A GPIO pin can be pulled up (to high voltage), pulled down (to 0V), or left floating.
+ * See MblMwGpioPullMode for allowed mode values
  * @param board     Board the pin is on
  * @param pin       GPIO pin to modify
  * @param mode      New pull mode
@@ -81,19 +89,24 @@ METAWEAR_API MblMwDataSignal* mbl_mw_gpio_get_pin_monitor_data_signal(MblMwMetaW
 METAWEAR_API void mbl_mw_gpio_set_pull_mode(const MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioPullMode mode);
 /**
  * Sets the digital output state
+ * The GPIO pin is set as an output pin and turned on (high voltage)
+ * See MetaWear datasheet for allowed pin values
  * @param board     Board the pin is on
  * @param pin       GPIO pin to set
  */
 METAWEAR_API void mbl_mw_gpio_set_digital_output(const MblMwMetaWearBoard* board, uint8_t pin);
 /**
  * Clears the digital output state
+ * The GPIO pin is set as an output pin and turned off (0 voltage)
+ * See MetaWear datasheet for allowed pin values
  * @param board     Board the pin is on
  * @param pin       GPIO pin to clear
  */
 METAWEAR_API void mbl_mw_gpio_clear_digital_output(const MblMwMetaWearBoard* board, uint8_t pin);
-
 /**
  * Sets the pin change type to monitor
+ * The monitor provides a callback anytime the value changes by MblMwGpioPinChangeType when pin monitoring is on
+ * See MblMwGpioPinChangeType for allowed type values and see MetaWear datasheet for allowed pin values
  * @param board     Board the pin is on
  * @param pin       GPIO pin to set
  * @param type      Change type to monitor

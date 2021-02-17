@@ -75,20 +75,25 @@ typedef enum {
 } MblMwMagBmm150Odr;
 
 /**
- * Retrieves the data signal representing B field strength
+ * Retrieves the data signal representing B field strength in uT (micro Teslas)
+ * This signal is timestamp,x,y,z mag data
  * @param board         Calling object
  * @return Pointer to the data signal
+ * MblMwCartesianFloat is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_b_field_data_signal(const MblMwMetaWearBoard *board);
 /**
  * Variant of B field data that packs multiple data samples into 1 BLE packet to increase the
  * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
+ * This signal is timestamp,x,y,z,x,y,z,x,y,z mag data (it packs three mag data points in one timestamp)
  * @param board         Calling object
  * @return Pointer to the data signal
+ * [MblMwCartesianFloat, MblMwCartesianFloat, MblMwCartesianFloat] is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_packed_b_field_data_signal(const MblMwMetaWearBoard *board);
 /**
- * Manually configure the sensor, only for advanced users.  It is recommended that users use one of the preset configurations.
+ * Manually configure the sensor, only for advanced users.  
+ * It is recommended that users use one of the preset configurations.
  * @param board         Calling object
  * @param xy_reps       Repetitions on the x/y-axis
  * @param z_reps        Repetitions on the z-axis
@@ -97,18 +102,20 @@ METAWEAR_API MblMwDataSignal* mbl_mw_mag_bmm150_get_packed_b_field_data_signal(c
 METAWEAR_API void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150Odr odr);
 /**
  * Sets the power mode to one of the recommended presets
+ * The BMM150 magnetometer part has four power modes, see MblMwMagBmm150Preset for values
  * @param board         Calling object
  * @param preset        New preset power mode to use
  */
 METAWEAR_API void mbl_mw_mag_bmm150_set_preset(const MblMwMetaWearBoard *board, MblMwMagBmm150Preset preset);
-
 /**
  * Enable B field sampling
+ * The board will start gathering data from the magnetometer
  * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_mag_bmm150_enable_b_field_sampling(const MblMwMetaWearBoard *board);
 /**
  * Disable B field sampling
+ * The board will stop gathering data from the magnetometer
  * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_mag_bmm150_disable_b_field_sampling(const MblMwMetaWearBoard *board);

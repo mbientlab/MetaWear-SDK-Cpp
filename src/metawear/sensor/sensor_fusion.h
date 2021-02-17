@@ -70,6 +70,7 @@ typedef struct {
     uint8_t gyro[10];
     uint8_t mag[10];
 } MblMwCalibrationData;
+
 /**
  * Definition for callback functions that accept an MblMwMetaWearBoard and MblMwCalibrationData pointer
  * @param context       Additional parameters for the callback function
@@ -80,32 +81,37 @@ typedef void(*MblMwFnBoardPtrCalibDataPtr)(void *context, MblMwMetaWearBoard* bo
 
 /**
  * Get the data signal object representing data from the sensor fusion algorithm
+ * The sensor fusion algo is a kalman filter that combines acc, gyro, and mag data into outputs such as correct acceleration, euler angles or quaternions
  * @param board         Calling object
  * @param data          Desired sensor fusion data
  * @return Data signal object  
+ * Return type can be MblMwCorrectedCartesianFloat, MblMwQuaternion, MblMwEulerAngl, MblMwCartesianFloat
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_sensor_fusion_get_data_signal(const MblMwMetaWearBoard* board, MblMwSensorFusionData data);
 /**
- * Get the data signal object representing thecalibration state.  This signal can only be used while the sensor fusion algorithm is running
+ * Get the data signal object representing thecalibration state.  
+ * This signal can only be used while the sensor fusion algorithm is running
  * @param board         Calling object
  * @return Data signal object  
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_sensor_fusion_calibration_state_data_signal(const MblMwMetaWearBoard* board);
-
 /**
  * Set the operation mode
+ * See MblMwSensorFusionMode for allowed values
  * @param board         Calling object
  * @param mode          New operation mode
  */
 METAWEAR_API void mbl_mw_sensor_fusion_set_mode(MblMwMetaWearBoard* board, MblMwSensorFusionMode mode);
 /**
  * Set the accelerometer data range
+ * Sets the range of the acc in Gs, see MblMwSensorFusionAccRange for allowed values
  * @param board         Calling object
  * @param range         New data range of the accelerometer
  */
 METAWEAR_API void mbl_mw_sensor_fusion_set_acc_range(MblMwMetaWearBoard* board, MblMwSensorFusionAccRange range);
 /**
  * Set the gyroscope data range
+ * Sets the range of the gyro in DPS, see MblMwSensorFusionGyroRange for allowed values
  * @param board         Calling object
  * @param range         New data range of the gyroscope
  */
@@ -118,6 +124,7 @@ METAWEAR_API void mbl_mw_sensor_fusion_set_gyro_range(MblMwMetaWearBoard* board,
 METAWEAR_API void mbl_mw_sensor_fusion_reset_orientation(MblMwMetaWearBoard* board);
 /**
  * Write the module configuration to the board
+ * Applies the MODE and RANGE values set in set_*().
  * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board);
@@ -128,7 +135,6 @@ METAWEAR_API void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board);
  * @param completed     Callback function that is executed when the task is finished
  */
 METAWEAR_API void mbl_mw_sensor_fusion_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed);
-
 /**
  * Retrieve IMU calibration data; free the memory allocated for the MblMwCalibrationData pointer with mbl_mw_memory_free.
  * Only call this function when the calibration state of the IMUs is at high accuracy.  
@@ -145,26 +151,28 @@ METAWEAR_API void mbl_mw_sensor_fusion_read_calibration_data(MblMwMetaWearBoard*
  * @param data          Calibration data to load
  */
 METAWEAR_API void mbl_mw_sensor_fusion_write_calibration_data(const MblMwMetaWearBoard* board, const MblMwCalibrationData* data);
-
 /**
  * Set a data enable bit
+ * Turns on the Kalman filter (sensor fusion)
  * @param board         Calling object
  * @param data          Sensor fuson data to enable
  */
 METAWEAR_API void mbl_mw_sensor_fusion_enable_data(MblMwMetaWearBoard* board, MblMwSensorFusionData data);
 /**
  * Clear all data enable bits
+ * Turns off the Kalman filter (sensor fusion)
  * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_sensor_fusion_clear_enabled_mask(MblMwMetaWearBoard* board);
-
 /**
  * Start sensor fusion
+ * The board will start gathering data from the gyroscope, accelerometer, and gyroscope and run the sensor fusion
  * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_sensor_fusion_start(const MblMwMetaWearBoard* board);
 /**
  * Stop sensor fusion
+ * The board will stop gathering data from the gyroscope, accelerometer, and gyroscope and stop the sensor fusion
  * @param board         Calling object
  */
 METAWEAR_API void mbl_mw_sensor_fusion_stop(const MblMwMetaWearBoard* board);

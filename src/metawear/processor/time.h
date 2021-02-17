@@ -20,8 +20,10 @@ typedef enum {
 } MblMwTimeMode;
 
 /**
- * Creates a time delay processor.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
+ * Creates a time delay processor.  
+ * Periodically allow data through. 
+ * Can be used to periodically (andoptinally slowly) get data from sensors
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Operation mode of the processor
  * @param period                How often to allow data through, in milliseconds

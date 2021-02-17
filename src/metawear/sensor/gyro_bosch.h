@@ -70,7 +70,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_high_freq_rotation_data_sig
 /**
  * Variant of rotation data that packs multiple data samples into 1 BLE packet to increase the
  * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
- * This signal is timestamp,x,y,z,x,y,z,x,y,z acc data (it packs three acc data points in one timestamp)
+ * This signal is timestamp,x,y,z,x,y,z,x,y,z gyro data (it packs three acc data points in one timestamp)
  * @return Pointer to the data singal
  * [MblMwCartesianFloat, MblMwCartesianFloat, MblMwCartesianFloat] is return signal data type
  */
@@ -78,7 +78,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi160_get_packed_rotation_data_signal
 /**
  * Variant of rotation data that packs multiple data samples into 1 BLE packet to increase the
  * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
- * This signal is timestamp,x,y,z,x,y,z,x,y,z acc data (it packs three acc data points in one timestamp)
+ * This signal is timestamp,x,y,z,x,y,z,x,y,z acc gyro (it packs three acc data points in one timestamp)
  * @return Pointer to the data singal
  * [MblMwCartesianFloat, MblMwCartesianFloat, MblMwCartesianFloat] is return signal data type
  */
@@ -86,7 +86,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_gyro_bmi270_get_packed_rotation_data_signal
 /**
  * Sets the output data rate for the BMI160 gyroscope
  * The ODR sets the output data frequency in Hz.
- * See MblMwGyroBmi160Odr for allowed values.
+ * See MblMwGyroBoschOdr for allowed values.
  * @param board     Pointer to the board to modify
  * @param odr       Output data rate value to assign
  */
@@ -94,7 +94,7 @@ METAWEAR_API void mbl_mw_gyro_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwGyr
 /**
  * Sets the rotation range
  * The range is in units of degrees per second (dps) for Bosch sensors
- * See MblMwGyroBmi160Range for allowed values.
+ * See MblMwGyroBoschRange for allowed values.
  * @param board     Pointer to the board to modify
  * @param range     New rotation range
  */
@@ -115,7 +115,7 @@ METAWEAR_API void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board
 /**
  * Sets the output data rate for the BMI270 gyroscope
  * The ODR sets the output data frequency in Hz.
- * See MblMwGyroBmi160Odr for allowed values.
+ * See MblMwGyroBoschOdr for allowed values.
  * @param board     Pointer to the board to modify
  * @param odr       Output data rate value to assign
  */
@@ -123,7 +123,7 @@ METAWEAR_API void mbl_mw_gyro_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwGyr
 /**
  * Sets the rotation range for the BMI270 gyroscope
  * The range is in units of degrees per second (dps) for Bosch sensors
- * See MblMwGyroBmi160Range for allowed values.
+ * See MblMwGyroBoschRange for allowed values.
  * @param board     Pointer to the board to modify
  * @param range     New rotation range
  */

@@ -12,8 +12,9 @@ extern "C" {
 #endif
 
 /**
- * Create a packer for the input signal.  A pointer representing the processor will be passed back
- * to the user via a callback function.
+ * Create a packer for the input signal.  
+ * Combines multiple data values into 1 BLE packet.
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param count                 Number of inputs to pack into 1 BLE packet
  * @param context               Pointer to additional data for the callback function
