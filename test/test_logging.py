@@ -201,7 +201,7 @@ class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
     def test_gyro_data(self):
         rot_signal= self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
         roy_y_signal = self.libmetawear.mbl_mw_datasignal_get_component(rot_signal, Const.GYRO_ROTATION_Y_AXIS_INDEX)
-        self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBmi160Range._250dps)
+        self.libmetawear.mbl_mw_gyro_bmi160_set_range(self.board, GyroBoschRange._250dps)
 
         self.libmetawear.mbl_mw_datasignal_log(roy_y_signal, None, self.logger_created)
         self.events["log"].wait()

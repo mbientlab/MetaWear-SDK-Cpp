@@ -80,7 +80,7 @@ route.  Generate the identifier string by calling `mbl_mw_logger_generate_identi
     #include "metawear/core/datasignal.h"
     #include "metawear/core/logging.h"
     #include "metawear/platform/memory.h"
-    #include "metawear/sensor/gyro_bmi160.h"
+    #include "metawear/sensor/gyro_bosch.h"
 
     void identifier_demo(MblMwMetaWearBoard* board) {
         auto gyro = mbl_mw_gyro_bmi160_get_rotation_data_signal(board);
