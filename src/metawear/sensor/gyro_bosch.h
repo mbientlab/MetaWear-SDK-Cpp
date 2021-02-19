@@ -1,6 +1,6 @@
 /**
  * @copyright MbientLab License 
- * @file gyro_bosch.h
+ * @file gyro_bmi160.h
  * @brief Functions for interacting with the BMI160 gyro.
  * @details This sensor is only available on MetaWear RG and RPro boards.
  */
@@ -196,7 +196,7 @@ METAWEAR_API void mbl_mw_gyro_bmi270_disable_rotation_sampling(const MblMwMetaWe
  * @param y_offset  Offset compensation for Gyroscope Y-axis 
  * @param z_offset  Offset compensation for Gyroscope Z-axis
  */
-METAWEAR_API void mbl_mw_gyro_bmi270_acc_offsets(const MblMwMetaWearBoard* board, int x_offset, int y_offset, int z_offset);
+METAWEAR_API void mbl_mw_gyro_bmi270_acc_offsets(const MblMwMetaWearBoard* board, uint8_t x_offset, uint8_t y_offset, uint8_t z_offset);
 
 #ifdef	__cplusplus
 }
