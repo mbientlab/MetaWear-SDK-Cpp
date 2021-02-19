@@ -45,7 +45,6 @@ struct GyroBmi160Config {
     uint8_t:5;
 };
 
-
 struct GyroBmi160State {
     MblMwFnBoardPtrInt read_config_completed;
     void *read_config_context;
@@ -276,10 +275,10 @@ void mbl_mw_gyro_bmi270_disable_rotation_sampling(const MblMwMetaWearBoard *boar
     SEND_COMMAND;
 }
 
-void mbl_mw_gyro_bmi270_acc_offsets(const MblMwMetaWearBoard* board, int x_offset, int y_offset, int z_offset) {
-    uint8_t gyr_usr_off_x_7_0 = (uint8_t)x_offset;
-    uint8_t gyr_usr_off_y_7_0 = (uint8_t)y_offset;
-    uint8_t gyr_usr_off_z_7_0 = (uint8_t)z_offset;
+void mbl_mw_gyro_bmi270_acc_offsets(const MblMwMetaWearBoard* board, uint8_t x_offset, uint8_t y_offset, uint8_t z_offset) {
+    uint8_t gyr_usr_off_x_7_0 = x_offset;
+    uint8_t gyr_usr_off_y_7_0 = y_offset;
+    uint8_t gyr_usr_off_z_7_0 = z_offset;
 
     uint8_t command[5]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::OFFSET), gyr_usr_off_x_7_0, gyr_usr_off_y_7_0, gyr_usr_off_z_7_0};
     SEND_COMMAND;
