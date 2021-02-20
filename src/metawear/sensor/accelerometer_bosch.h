@@ -201,6 +201,24 @@ typedef enum {
 } MblMwAccBoschAxisXyzSign;
 
 /**
+ * Wrapper class encapsulating responses from any motion detection
+ */
+typedef struct {
+    uint8_t sign;                   ///< Slope sign of the triggering motion, 0 if negative, non-zero if positive
+    uint8_t x_axis_active;          ///< Non-zero if x-axis triggered the motion interrupt
+    uint8_t y_axis_active;          ///< Non-zero if y-axis triggered the motion interrupt
+    uint8_t z_axis_active;          ///< Non-zero if z-axis triggered the motion interrupt
+} MblMwBoschAnyMotion;
+
+/**
+ * Wrapper class encapsulating responses from any motion detection
+ */
+typedef struct {
+    uint8_t type;                   ///< Slope sign of the triggering motion, 0 if negative, non-zero if positive
+    uint8_t gesture_code;          ///< Non-zero if x-axis triggered the motion interrupt
+} MblMwBoschGestureType;
+
+/**
  * Retrieves the data signal representing acceleration data from a Bosch accelerometer
  * This signal is timestamp,x,y,z acc data
  * @param board     Pointer to the board to retrieve the signal from
@@ -392,7 +410,7 @@ METAWEAR_API void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWea
  * @param board     Board to modify
  * @param trigger   Number of steps
  */
-METAWEAR_API void mbl_mw_acc_bmi270_set_step_counter_trigger(const MblMwMetaWearBoard* board, uint16_t trigger);
+METAWEAR_API void mbl_mw_acc_bmi270_set_step_counter_trigger(MblMwMetaWearBoard* board, uint16_t trigger);
 /**
  * Enables the BMI270 step counter 
  * The trigger count will trigger the callback signal with the # of steps

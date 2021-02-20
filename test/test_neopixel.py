@@ -1,5 +1,6 @@
 from common import TestMetaWearBase
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestNeoPixelInit(TestMetaWearBase):
     def test_init_slow_strand(self):

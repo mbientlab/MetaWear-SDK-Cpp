@@ -1,6 +1,7 @@
 from common import TestMetaWearBase
 from ctypes import *
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestProximityTsl2671Config(TestMetaWearBase):
     def setUp(self):

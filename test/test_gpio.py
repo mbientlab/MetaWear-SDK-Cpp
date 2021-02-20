@@ -1,6 +1,7 @@
 from common import TestMetaWearBase
 from ctypes import byref, create_string_buffer
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestGpioDigitalConfig(TestMetaWearBase):
     def test_set_digital_out(self):

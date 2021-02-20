@@ -1,5 +1,6 @@
 from common import TestMetaWearBase
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestSensorFusionConfig(TestMetaWearBase):
     acc_ranges = [SensorFusionAccRange._2G, SensorFusionAccRange._4G, SensorFusionAccRange._8G, SensorFusionAccRange._16G]

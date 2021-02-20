@@ -838,16 +838,12 @@ void mbl_mw_acc_bmi160_disable_step_detector(const MblMwMetaWearBoard *board) {
 }
 
 void mbl_mw_acc_bmi270_set_step_counter_trigger(MblMwMetaWearBoard* board, uint16_t trigger) {
-    // Trigger range is 0 to 20460 in steps of 20
-    // 0 means the output is disabled
     if (trigger >= 1 && trigger <= 1023) {
         auto lower_8 = trigger & 0x00ff;
-        //std::cout << lower_8;
         auto higher_2 = (trigger & 0x0300) >> 8;
         ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.watermark_level_0 = lower_8;
         ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.watermark_level_1 = higher_2;
     } else {
-        // Just set 0
         ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.watermark_level_0 = 0;
         ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.watermark_level_1 = 0;
     }

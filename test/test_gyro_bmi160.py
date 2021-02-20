@@ -1,7 +1,8 @@
 import copy
 from common import TestMetaWearBase
 from ctypes import create_string_buffer
-from mbientlab.metawear.cbindings import *
+#from mbientlab.metawear.cbindings import *
+from cbindings import *
 
 class TestGyroBmi160Config(TestMetaWearBase):
     def setUp(self):

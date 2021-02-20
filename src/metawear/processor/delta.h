@@ -21,9 +21,8 @@ typedef enum {
 } MblMwDeltaMode;
 
 /**
- * Create a delta processor.  
- * Only allows data through that is a min distance from a reference value.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a delta processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Output mode of the processor
  * @param magnitude             Min distance from the reference value to allow the input to pass

@@ -1,6 +1,7 @@
 from common import TestMetaWearBase
 from ctypes import byref, create_string_buffer
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestI2cR(TestMetaWearBase):
     def test_read_who_am_i(self):

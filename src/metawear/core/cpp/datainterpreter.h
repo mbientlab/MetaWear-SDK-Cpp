@@ -13,8 +13,6 @@ enum class DataInterpreter : uint8_t {
     BOSCH_ALTITUDE,
     BMI160_ROTATION,
     BMI160_ROTATION_SINGLE_AXIS,
-    BMI270_GESTURE,
-    BMI270_ACTIVITY,
     BOSCH_ACCELERATION,
     BOSCH_ACCELERATION_SINGLE_AXIS,
     MMA8452Q_ACCELERATION,
@@ -44,7 +42,9 @@ enum class DataInterpreter : uint8_t {
     BOSCH_ANY_MOTION,
     SENSOR_FUSION_CALIB_STATE,
     FUSED_DATA,
-    BOSCH_TAP
+    BOSCH_TAP,
+    BMI270_GESTURE,
+    BMI270_ACTIVITY
 };
 
 enum class FirmwareConverter : uint8_t {

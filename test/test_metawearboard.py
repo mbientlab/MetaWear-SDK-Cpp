@@ -1,7 +1,8 @@
 from common import TestMetaWearBase, to_string_buffer, to_ubyte_pointer
 from ctypes import *
 from logdata import *
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 from test_dataprocessor import TestGpioFeedbackSetup
 from test_logging import TestAccelerometerLoggingBase, TestGyroYAxisLoggingBase
 import serializedstate

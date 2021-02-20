@@ -15,8 +15,8 @@ extern "C" {
 #endif
 
 /**
- * Get the data signal representing a processor's internal state.  
- * Processors that have an internal state are: accumulator, buffer, counter, delta, and passthrough.
+ * Get the data signal representing a processor's internal state.  Processors that have an internal state are: accumulator, buffer, 
+ * counter, delta, and passthrough.
  * @param processor         Processor to access
  * @return Pointer to the data signal, null if the processor does not have an internal state
  */

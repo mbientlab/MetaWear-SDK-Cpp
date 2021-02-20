@@ -21,9 +21,8 @@ typedef enum {
 } MblMwPassthroughMode;
 
 /**
- * Create a passthrough processor.  
- * Gate that only allows data though based on a user configured internal state.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a passthrough processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Processor's operation mode
  * @param count                 Internal count to initial the processor with

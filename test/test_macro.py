@@ -1,6 +1,7 @@
 from common import TestMetaWearBase
 from ctypes import byref
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 import threading
 
 class TestMacro(TestMetaWearBase):

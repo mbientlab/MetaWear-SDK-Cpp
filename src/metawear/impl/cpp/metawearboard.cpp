@@ -115,6 +115,7 @@ static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard
     auto signal = dynamic_cast<MblMwDataSignal*>(it->second);
     bool handled= false;
     int64_t epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    
     MblMwDataProcessor* processor = dynamic_cast<MblMwDataProcessor*>(signal);
     const uint8_t* start = response;
     uint32_t extra;
@@ -123,6 +124,7 @@ static int32_t forward_response(const ResponseHeader& header, MblMwMetaWearBoard
             case DataProcessorType::ACCOUNTER: {
                 epoch = extract_accounter_epoch(processor, epoch, &start, len, &extra);
                 auto parent = find_processor(processor, DataProcessorType::PACKER);
+
                 if (parent != nullptr) {
                     uint8_t i = 0, count = get_packer_count(parent), pack_size = get_packer_length(parent);
                     do {
@@ -587,17 +589,10 @@ MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board) {
         return MBL_MW_MODEL_METATRACKER;
     }
     if (board->module_number == "5") {
-        if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_AMBIENT_LIGHT) != MBL_MW_MODULE_TYPE_NA) {
-            return MBL_MW_MODEL_METAMOTION_R;
-        } else {
-            return MBL_MW_MODEL_METAMOTION_RL;
-        }
+        return MBL_MW_MODEL_METAMOTION_R;
     }
     if (board->module_number == "6") {
         return MBL_MW_MODEL_METAMOTION_C;
-    }
-    if (board->module_number == "8") {
-        return MBL_MW_MODEL_METAMOTION_S;
     }
 
     return MBL_MW_MODEL_NA;
@@ -615,9 +610,7 @@ const char * MODEL_NAMES[] = {
     "MetaHealth",
     "MetaTracker",
     "MetaMotion R",
-    "MetaMotion C",
-    "MetaMotion RL",
-    "MetaMotion S"
+    "MetaMotion C"
 };
 const char* mbl_mw_metawearboard_get_model_name(const MblMwMetaWearBoard* board) {
     return MODEL_NAMES[mbl_mw_metawearboard_get_model(board) + 1];

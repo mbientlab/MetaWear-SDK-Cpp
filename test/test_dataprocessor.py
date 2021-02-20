@@ -1,6 +1,7 @@
 from common import TestMetaWearBase, to_string_buffer
 from ctypes import *
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 import threading
 
 class TestDataProcessingChain(TestMetaWearBase):

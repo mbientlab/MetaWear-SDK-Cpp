@@ -55,6 +55,7 @@ METAWEAR_API void mbl_mw_neopixel_init_fast_strand(const MblMwMetaWearBoard *boa
  * @param strand    Strand index to free
  */
 METAWEAR_API void mbl_mw_neopixel_free_strand(const MblMwMetaWearBoard *board, uint8_t strand);
+
 /**
  * Enables strand holding which will not refresh with any LED changes until the hold is disabled.  
  * This let you to form complex LED patterns without having the strand refresh with partial changes.
@@ -87,6 +88,7 @@ METAWEAR_API void mbl_mw_neopixel_clear(const MblMwMetaWearBoard *board, uint8_t
  * @param blue      Blue value, between [0, 255]
  */
 METAWEAR_API void mbl_mw_neopixel_set_color(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t pixel, uint8_t red, uint8_t green, uint8_t blue);
+
 /**
  * Rotates the pixels on a strand
  * @param board         Pointer to the board to send the command to

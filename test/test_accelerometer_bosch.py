@@ -1,5 +1,6 @@
 from common import TestMetaWearBase, to_string_buffer
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 from ctypes import create_string_buffer
 
 class AccelerometerBoschBase:
@@ -74,14 +75,14 @@ class AccelerometerBoschBase:
             self.libmetawear.mbl_mw_acc_set_range(self.board, 8.0)
             self.libmetawear.mbl_mw_acc_bosch_set_any_motion_count(self.board, 4)
             self.libmetawear.mbl_mw_acc_bosch_set_any_motion_threshold(self.board, 0.75)
-            self.libmetawear.mbl_mw_acc_bosch_write_motion_config(self.board)
+            self.libmetawear.mbl_mw_acc_bosch_write_motion_config(self.board,2)
             
-            self.libmetawear.mbl_mw_acc_bosch_enable_motion_detection(self.board)
+            self.libmetawear.mbl_mw_acc_bosch_enable_motion_detection(self.board,2)
 
             self.assertEqual(self.command_history, expected)
 
         def test_disable(self):
-            self.libmetawear.mbl_mw_acc_bosch_disable_motion_detection(self.board)
+            self.libmetawear.mbl_mw_acc_bosch_disable_motion_detection(self.board,2)
             self.assertEqual(self.command, [0x03, 0x09, 0x00, 0x7f])
 
         def test_handle_response(self):

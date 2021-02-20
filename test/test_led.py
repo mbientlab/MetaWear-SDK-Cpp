@@ -1,6 +1,7 @@
 from ctypes import byref, create_string_buffer
 from common import TestMetaWearBase
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestLedControl(TestMetaWearBase):
     def test_play(self):

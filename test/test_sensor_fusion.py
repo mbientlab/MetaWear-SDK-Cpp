@@ -1,6 +1,7 @@
 from common import TestMetaWearBase, to_string_buffer
 from ctypes import create_string_buffer
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 from threading import Event
 import copy
 

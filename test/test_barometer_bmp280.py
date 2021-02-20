@@ -1,6 +1,7 @@
 from barometer_bosch_base import BarometerBoschBase
 from common import TestMetaWearBase
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestBarometerBmp280Config(BarometerBoschBase.TestBarometerBoschConfig):
     def setUp(self):

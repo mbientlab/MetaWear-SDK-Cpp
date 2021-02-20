@@ -29,9 +29,8 @@ typedef enum {
 } MblMwMathOperation;
 
 /**
- * Create a math processor where signed/unsigned operation is inferred.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a math processor where signed/unsigned operation is inferred.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
  * @param rhs                   Right hand side of the operation that requires 2 inputs
@@ -41,9 +40,8 @@ typedef enum {
 METAWEAR_API int32_t mbl_mw_dataprocessor_math_create(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a math processor using signed operations.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a math processor using signed operations.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
  * @param rhs                   Right hand side of the operation that requires 2 inputs
@@ -53,9 +51,8 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_math_create(MblMwDataSignal *source, M
 METAWEAR_API int32_t mbl_mw_dataprocessor_math_create_signed(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a math processor using unsigned operations.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a math processor using unsigned operations.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
  * @param rhs                   Right hand side of the operation that requires 2 inputs

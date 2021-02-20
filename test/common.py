@@ -1,5 +1,6 @@
 from ctypes import *
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 from threading import Timer, Event
 import copy
 import os

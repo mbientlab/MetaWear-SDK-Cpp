@@ -34,9 +34,8 @@ typedef enum {
 } MblMwComparatorMode;
 
 /**
- * Create a comparator processor where signed/unsigned is inferred.  
- * Only allows data through that satisfies a comparison operation.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a comparator processor where signed/unsigned is inferred.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -46,9 +45,8 @@ typedef enum {
 METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
         void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a comparator processor specifically for a signed comparison.  
- * Only allows data through that satisfies a comparison operation.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a comparator processor specifically for a signed comparison.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -58,9 +56,8 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create(MblMwDataSignal *sou
 METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create_signed(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
         void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a comparator processor specifically for an unsigned comparison. 
- * Only allows data through that satisfies a comparison operation. 
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a comparator processor specifically for an unsigned comparison.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -69,6 +66,7 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create_signed(MblMwDataSign
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create_unsigned(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
  * Modifies the comparator processor, changing the operation and reference value
  * @param comparator            Comparator processor to modify
@@ -88,6 +86,7 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_modify(MblMwDataProcessor *
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_modify_signal(MblMwDataProcessor *comparator, MblMwComparatorOperation op, 
         MblMwDataSignal *reference_signal);
+
 /**
  * Create a multi-value comparator where a signed/unsigned comparison is inferred.  This feature is only available on firmware v1.2.3 and later.  
  * A pointer representing the processor will be passed back to the user via a callback function.
@@ -127,6 +126,7 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_multi_comparator_create_signed(MblMwDa
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_multi_comparator_create_unsigned(MblMwDataSignal* source, MblMwComparatorOperation op, MblMwComparatorMode mode, 
         float references[], uint8_t references_length, void *context, MblMwFnDataProcessor processor_created);
+
 /**
  * Modifies the multi-value comparator, changing the operation and reference values.  This feature is only available on firmware v1.2.3 and later.
  * @param comparator            Comparator processor to modify

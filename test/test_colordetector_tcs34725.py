@@ -1,6 +1,7 @@
 from common import TestMetaWearBase
 from ctypes import c_float, create_string_buffer
-from mbientlab.metawear.cbindings import *
+from cbindings import *
+#from mbientlab.metawear.cbindings import *
 
 class TestColorDetectorTcs34725Config(TestMetaWearBase):
     def setUp(self):

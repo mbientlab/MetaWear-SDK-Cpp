@@ -1,6 +1,7 @@
 from common import TestMetaWearBase
 from ctypes import byref, cast, c_ubyte, c_void_p, create_string_buffer
-from mbientlab.metawear.cbindings import SpiParameters, SpiFrequency, SpiMode
+from cbindings import *
+#from mbientlab.metawear.cbindings import SpiParameters, SpiFrequency, SpiMode
 
 class TestSpiRPro(TestMetaWearBase):
     def setUp(self):

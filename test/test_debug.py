@@ -1,5 +1,6 @@
 from common import TestMetaWearBase, to_string_buffer
-from mbientlab.metawear.cbindings import OverflowState
+from cbindings import *
+#from mbientlab.metawear.cbindings import OverflowState
 
 class TestDebug(TestMetaWearBase):
     def test_mbl_mw_debug_reset(self):
