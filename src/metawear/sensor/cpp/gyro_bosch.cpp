@@ -285,7 +285,7 @@ void mbl_mw_gyro_bmi270_acc_offsets(const MblMwMetaWearBoard* board, uint8_t x_o
 }
 
 void create_gyro_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
-    switch(signal->owner->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
+    switch(signal->owner->module_info.at(MBL_MW_MODULE_GYRO).implementation) {
     case MBL_MW_MODULE_GYRO_TYPE_BMI160:
         switch(CLEAR_READ(signal->header.register_id)) {
         case ORDINAL(GyroBmi160Register::DATA):

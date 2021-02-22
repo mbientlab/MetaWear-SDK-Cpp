@@ -344,8 +344,8 @@ var Model = new Enum({
   'METAHEALTH': 7,
   'METATRACKER': 8,
   'METAMOTION_R': 9,
-  'METAMOTION_C': 10,
-  'METAMOTION_RL': 11,
+  'METAMOTION_RL': 10,
+  'METAMOTION_C': 11,
   'METAMOTION_S': 12
 }, ref.types.int);
 Model.alignment = 4;
@@ -668,6 +668,13 @@ var FnVoid_VoidP_DataLoggerP = ffi.Function(ref.types.void, [ref.refType(ref.typ
 var Timer = ref.types.void;
 var FnVoid_VoidP_TimerP = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(Timer)]);
 var FnVoid_VoidP_MetaWearBoardP_Int = ffi.Function(ref.types.void, [ref.refType(ref.types.void), ref.refType(MetaWearBoard), ref.types.int32]);
+var BoschAnyMotion = Struct({
+  'sign': ref.types.uint8,
+  'x_axis_active': ref.types.uint8,
+  'y_axis_active': ref.types.uint8,
+  'z_axis_active': ref.types.uint8
+});
+
 var I2cReadParameters = Struct({
   'device_addr': ref.types.uint8,
   'register_addr': ref.types.uint8
@@ -705,30 +712,11 @@ var OverflowState = Struct({
   'assert_en': ref.types.uint8
 });
 
-var Tcs34725ColorAdc = Struct({
-  'clear': ref.types.uint16,
-  'red': ref.types.uint16,
-  'green': ref.types.uint16,
-  'blue': ref.types.uint16
-});
-
-var BatteryState = Struct({
-  'voltage': ref.types.uint16,
-  'charge': ref.types.uint8
-});
-
 var CorrectedCartesianFloat = Struct({
   'x': ref.types.float,
   'y': ref.types.float,
   'z': ref.types.float,
   'accuracy': ref.types.uint8
-});
-
-var BoschAnyMotion = Struct({
-  'sign': ref.types.uint8,
-  'x_axis_active': ref.types.uint8,
-  'y_axis_active': ref.types.uint8,
-  'z_axis_active': ref.types.uint8
 });
 
 var EulerAngles = Struct({
@@ -805,12 +793,29 @@ var DfuDelegate = Struct({
   'on_error': FnVoid_VoidP_charP
 });
 
+var BatteryState = Struct({
+  'voltage': ref.types.uint16,
+  'charge': ref.types.uint8
+});
+
+var Tcs34725ColorAdc = Struct({
+  'clear': ref.types.uint16,
+  'red': ref.types.uint16,
+  'green': ref.types.uint16,
+  'blue': ref.types.uint16
+});
+
 var DeviceInformation = Struct({
   'manufacturer': ref.types.CString,
   'model_number': ref.types.CString,
   'serial_number': ref.types.CString,
   'firmware_revision': ref.types.CString,
   'hardware_revision': ref.types.CString
+});
+
+var BoschGestureType = Struct({
+  'type': ref.types.uint8,
+  'gesture_code': ref.types.uint8
 });
 
 var ModuleInfo = Struct({
@@ -840,11 +845,6 @@ var SpiParameters = Struct({
   'miso_pin': ref.types.uint8,
   'lsb_first': ref.types.uint8,
   'use_nrf_pins': ref.types.uint8
-});
-
-var Bmi270WristWear = Struct({
-  'type': ref.types.uint8,
-  'gesture_code': ref.types.uint8
 });
 
 function Const() {
@@ -1065,9 +1065,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_gyro_bmi270_set_range': [ref.types.void, [ref.refType(MetaWearBoard), GyroBoschRange]],
 
 /**
- * Create an accumulator whose output is the same size as the input.  
- * Keeps a running sum of the input
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create an accumulator whose output is the same size as the input.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
@@ -1098,10 +1097,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_mma8452q_set_high_pass_cutoff': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.float]],
 
 /**
- * Create an rms processor.  
- * Computes the root mean square of the input.
- * Works on inputs such as acc, gyro, and magnetometer data (x,y,z)
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create an rms processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
@@ -1109,9 +1106,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_rms_create': [ref.types.int32, [ref.refType(DataSignal), ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
- * Create a packer for the input signal.  
- * Combines multiple data values into 1 BLE packet.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a packer for the input signal.  A pointer representing the processor will be passed back
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param count                 Number of inputs to pack into 1 BLE packet
  * @param context               Pointer to additional data for the callback function
@@ -1127,8 +1123,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_time_modify_period': [ref.types.int32, [ref.refType(DataProcessor), ref.types.uint32]],
 
 /**
- * Create an accounter in code mode for the input signal.  
- * The count value is accessed through the MblMwData struct's <code>extra</code> field.
+ * Create an accounter in code mode for the input signal.  The count value is accessed through the MblMwData struct's <code>extra</code> field.
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param context               Pointer to additional data for the callback function
@@ -1264,9 +1259,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_comparator_modify': [ref.types.int32, [ref.refType(DataProcessor), ComparatorOperation, ref.types.float]],
 
 /**
- * Create a comparator processor where signed/unsigned is inferred.  
- * Only allows data through that satisfies a comparison operation.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a comparator processor where signed/unsigned is inferred.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -1285,17 +1279,14 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_neopixel_rotate_indefinitely': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, NeoPixelRotDirection]],
 
 /**
- * Drives a buzzer - Pulls down the HCD pin
- * The MetaWear has a driver for motor or buzzers that are 3C compatible (check the datasheet)
+ * Drives a buzzer
  * @param board             Pointer to the board to send the command to
  * @param pulse_width_ms    How long to run the buzzer, in milliseconds
  */
   'mbl_mw_haptic_start_buzzer': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
 
 /**
- * Drives a motor - Pulls down the HCD pin
- * The MetaWear has a driver for motor or buzzers that are 3C compatible (check the datasheet)
- * This is not a full PWM driver.
+ * Drives a motor
  * @param board             Pointer to the board to send the command to
  * @param duty_cycle_per    Strength of the motor, between [0, 100] percent
  * @param pulse_width_ms    How long to run the motor, in milliseconds
@@ -1303,9 +1294,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_haptic_start_motor': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.float, ref.types.uint16]],
 
 /**
- * Create a threshold processor.  
- * Allows data through that crosses a boundary according to MblMwThresholdMode
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a threshold processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Processor output mode
  * @param boundary              Limit that triggers an event when data crosses it
@@ -1349,9 +1339,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_neopixel_clear': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8]],
 
 /**
- * Create an accounter for the input signal.  
- * Adds additional information to the BTLE packet in the form of a counter
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create an accounter for the input signal.  A pointer representing the processor will be passed back
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
@@ -1379,10 +1368,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_gpio_start_pin_monitoring': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
 
 /**
- * Creates a time delay processor.  
- * Periodically allow data through. 
- * Can be used to periodically (andoptinally slowly) get data from sensors
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Creates a time delay processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Operation mode of the processor
  * @param period                How often to allow data through, in milliseconds
@@ -1424,9 +1411,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_ibeacon_set_tx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
 
 /**
- * Create a pulse detector. 
- * Detects and quantifies a pulse over the input values.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a pulse detector.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param output                Output type of the processor
  * @param threshold             Value the data must exceed for a valid pulse
@@ -1437,9 +1423,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_pulse_create': [ref.types.int32, [ref.refType(DataSignal), PulseOutput, ref.types.float, ref.types.uint16, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
 
 /**
- * Create a comparator processor specifically for a signed comparison.  
- * Only allows data through that satisfies a comparison operation.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a comparator processor specifically for a signed comparison.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -1568,9 +1553,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_metawearboard_get_module_info': [ref.refType(ModuleInfo), [ref.refType(MetaWearBoard), ref.refType(ref.types.uint32)]],
 
 /**
- * Create a low-pass filter 
- * Uses the averager to create a moving average.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a low-pass filter.  A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param size                  Number of previous data samples to compare against, Recommended
  *                              to be a power of 2 for faster computation.
@@ -1603,7 +1586,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @return Module type used by the board, MBL_MW_MODULE_TYPE_NA if module is not available
  * @see MBL_MW_MODULE_ACC_TYPE_MMA8452Q
  * @see MBL_MW_MODULE_ACC_TYPE_BMI160
- * @see MBL_MW_MODULE_ACC_TYPE_BMI270
  */
   'mbl_mw_metawearboard_lookup_module': [ref.types.int32, [ref.refType(MetaWearBoard), Module]],
 
@@ -1616,9 +1598,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_sensor_fusion_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
 
 /**
- * Create a sample delay processor.  
- * Holds data until a certain amount has been collected.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a sample delay processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param bin_size              Number of samples to hold before letting data through
  * @param context               Pointer to additional data for the callback function
@@ -1648,8 +1629,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_logging_get_length_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
- * Get the data signal representing a processor's internal state.  
- * Processors that have an internal state are: accumulator, buffer, counter, delta, and passthrough.
+ * Get the data signal representing a processor's internal state.  Processors that have an internal state are: accumulator, buffer, 
+ * counter, delta, and passthrough.
  * @param processor         Processor to access
  * @return Pointer to the data signal, null if the processor does not have an internal state
  */
@@ -1726,9 +1707,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_bmi270_wrist_wakeup_angle_nonfocus': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint16]],
 
 /**
- * Create an accumulator with a specific output size.  
- * Keeps a running sum of the input and returns the output as the specified size
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create an accumulator with a specific output size.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param output_size           Output size, between [1, 4] bytes
  * @param context               Pointer to additional data for the callback function
@@ -1780,9 +1760,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_logger_subscribe': [ref.types.void, [ref.refType(DataLogger), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
 
 /**
- * Create a math processor where signed/unsigned operation is inferred.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a math processor where signed/unsigned operation is inferred.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
  * @param rhs                   Right hand side of the operation that requires 2 inputs
@@ -1840,9 +1819,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_metawearboard_deserialize': [ref.types.int32, [ref.refType(MetaWearBoard), ref.refType(ref.types.uint8), ref.types.uint32]],
 
 /**
- * Create a fuser processor.  
- * Combine data from multiple data sources into 1 data packet.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a fuser processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param ops                   Array of data signals to combine into 1 message
  * @param n_ops                 Number of items in the array
@@ -1861,9 +1839,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_switch_get_state_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
- * Create a math processor using unsigned operations.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a math processor using unsigned operations.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
  * @param rhs                   Right hand side of the operation that requires 2 inputs
@@ -2016,9 +1993,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_bmi270_axis_remap': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschAxisXyzRemap, AccBoschAxisXyzSign]],
 
 /**
- * Create a buffer processor. 
- * Captures input data which can be retrieved at a later point in time
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a buffer processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
@@ -2120,9 +2096,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_debug_read_schedule_queue_usage': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_DataP]],
 
 /**
- * Create a passthrough processor.  
- * Gate that only allows data though based on a user configured internal state.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a passthrough processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Processor's operation mode
  * @param count                 Internal count to initial the processor with
@@ -2283,9 +2258,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_dataprocessor_math_modify_rhs_signal': [ref.types.int32, [ref.refType(DataProcessor), ref.refType(DataSignal)]],
 
 /**
- * Create a counter with an output size of 1 byte.  
- * Counts the number of times an event was fired.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a counter with an output size of 1 byte.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Event the processor is counting
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
@@ -2310,9 +2284,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_settings_read_current_charge_status': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
 
 /**
- * Create a comparator processor specifically for an unsigned comparison. 
- * Only allows data through that satisfies a comparison operation. 
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a comparator processor specifically for an unsigned comparison.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -2556,10 +2529,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_settings_read_current_power_status': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
 
 /**
- * Create an rss processor.  
- * A pointer representing the processor will be passed back to the user via a callback function.
- * Computes the root sum square of the input.
- * Works on inputs such as acc, gyro, and magnetometer data (x,y,z)
+ * Create an rss processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
@@ -2589,9 +2560,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_als_ltr329_start': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Create a math processor using signed operations.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a math processor using signed operations.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
  * @param rhs                   Right hand side of the operation that requires 2 inputs
@@ -2772,9 +2742,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_bmi160_reset_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Create a delta processor.  
- * Only allows data through that is a min distance from a reference value.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a delta processor.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Output mode of the processor
  * @param magnitude             Min distance from the reference value to allow the input to pass
@@ -3212,9 +3181,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_neopixel_stop_rotation': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
 
 /**
- * Create a counter with a specific output size.  
- * Counts the number of times an event was fired with a specific output size
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a counter with a specific output size.  A pointer representing the processor will be passed back 
+ * to the user via a callback function.
  * @param source                Event the processor is counting
  * @param size                  Output size, between [1, 4] bytes
  * @param context               Pointer to additional data for the callback function
@@ -3596,9 +3564,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_acc_bmi160_write_step_counter_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Create a high-pass filter
- * Uses the averager to compute the difference of the current value from a running average of the previous (amount of) "size" samples.
- * A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a high-pass filter.  A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param size                  Number of previous data samples to compare against, Recommended
  *                              to be a power of 2 for faster computation.
@@ -3905,7 +3871,9 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 
 module.exports = {
   Const: Const,
+  BoschGestureType: BoschGestureType,
   DeviceInformation: DeviceInformation,
+  BatteryState: BatteryState,
   DfuDelegate: DfuDelegate,
   FnVoid_VoidP_charP: FnVoid_VoidP_charP,
   BtleConnection: BtleConnection,
@@ -3918,7 +3886,6 @@ module.exports = {
   CartesianFloat: CartesianFloat,
   FnVoid_VoidP_UByte_Long_UByteP_UByte: FnVoid_VoidP_UByte_Long_UByteP_UByte,
   CorrectedCartesianFloat: CorrectedCartesianFloat,
-  BatteryState: BatteryState,
   Quaternion: Quaternion,
   OverflowState: OverflowState,
   LoggingTime: LoggingTime,
@@ -3976,7 +3943,6 @@ module.exports = {
   AccBoschTypewrist: AccBoschTypewrist,
   EulerAngles: EulerAngles,
   AccMma8452qRange: AccMma8452qRange,
-  Bmi270WristWear: Bmi270WristWear,
   GyroBoschOdr: GyroBoschOdr,
   AccBoschAxisXyzRemap: AccBoschAxisXyzRemap,
   AccMma8452qOdr: AccMma8452qOdr,

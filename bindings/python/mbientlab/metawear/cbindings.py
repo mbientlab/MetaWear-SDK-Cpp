@@ -306,8 +306,8 @@ class Model:
     METAHEALTH = 7
     METATRACKER = 8
     METAMOTION_R = 9
-    METAMOTION_C = 10
-    METAMOTION_RL = 11
+    METAMOTION_RL = 10
+    METAMOTION_C = 11
     METAMOTION_S = 12
 
 class MetaWearRChannel:
@@ -583,6 +583,26 @@ class Data(Structure):
 FnVoid_VoidP_DataP = CFUNCTYPE(None, c_void_p, POINTER(Data))
 FnVoid_VoidP = CFUNCTYPE(None, c_void_p)
 FnVoid_VoidP_Int = CFUNCTYPE(None, c_void_p, c_int)
+class BoschAnyMotion(Structure):
+    _fields_ = [
+        ("sign" , c_ubyte),
+        ("x_axis_active" , c_ubyte),
+        ("y_axis_active" , c_ubyte),
+        ("z_axis_active" , c_ubyte)
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (self.sign == other.sign and self.x_axis_active == other.x_axis_active and self.y_axis_active == other.y_axis_active and self.z_axis_active == other.z_axis_active)
+
+    def __repr__(self):
+        return "{sign : %d, x_axis_active : %d, y_axis_active : %d, z_axis_active : %d}" % (self.sign, self.x_axis_active, self.y_axis_active, self.z_axis_active)
+
+    def __deepcopy__(self, memo):
+        return BoschAnyMotion(sign = self.sign, x_axis_active = self.x_axis_active, y_axis_active = self.y_axis_active, z_axis_active = self.z_axis_active)
+
 class I2cReadParameters(Structure):
     _fields_ = [
         ("device_addr" , c_ubyte),
@@ -698,44 +718,6 @@ class OverflowState(Structure):
     def __deepcopy__(self, memo):
         return OverflowState(length = self.length, assert_en = self.assert_en)
 
-class Tcs34725ColorAdc(Structure):
-    _fields_ = [
-        ("clear" , c_ushort),
-        ("red" , c_ushort),
-        ("green" , c_ushort),
-        ("blue" , c_ushort)
-    ]
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __eq__(self, other):
-        return (self.clear == other.clear and self.red == other.red and self.green == other.green and self.blue == other.blue)
-
-    def __repr__(self):
-        return "{clear : %d, red : %d, green : %d, blue : %d}" % (self.clear, self.red, self.green, self.blue)
-
-    def __deepcopy__(self, memo):
-        return Tcs34725ColorAdc(clear = self.clear, red = self.red, green = self.green, blue = self.blue)
-
-class BatteryState(Structure):
-    _fields_ = [
-        ("voltage" , c_ushort),
-        ("charge" , c_ubyte)
-    ]
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __eq__(self, other):
-        return (self.voltage == other.voltage and self.charge == other.charge)
-
-    def __repr__(self):
-        return "{voltage : %d, charge : %d}" % (self.voltage, self.charge)
-
-    def __deepcopy__(self, memo):
-        return BatteryState(voltage = self.voltage, charge = self.charge)
-
 class CorrectedCartesianFloat(Structure):
     _fields_ = [
         ("x" , c_float),
@@ -755,26 +737,6 @@ class CorrectedCartesianFloat(Structure):
 
     def __deepcopy__(self, memo):
         return CorrectedCartesianFloat(x = self.x, y = self.y, z = self.z, accuracy = self.accuracy)
-
-class BoschAnyMotion(Structure):
-    _fields_ = [
-        ("sign" , c_ubyte),
-        ("x_axis_active" , c_ubyte),
-        ("y_axis_active" , c_ubyte),
-        ("z_axis_active" , c_ubyte)
-    ]
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __eq__(self, other):
-        return (self.sign == other.sign and self.x_axis_active == other.x_axis_active and self.y_axis_active == other.y_axis_active and self.z_axis_active == other.z_axis_active)
-
-    def __repr__(self):
-        return "{sign : %d, x_axis_active : %d, y_axis_active : %d, z_axis_active : %d}" % (self.sign, self.x_axis_active, self.y_axis_active, self.z_axis_active)
-
-    def __deepcopy__(self, memo):
-        return BoschAnyMotion(sign = self.sign, x_axis_active = self.x_axis_active, y_axis_active = self.y_axis_active, z_axis_active = self.z_axis_active)
 
 class EulerAngles(Structure):
     _fields_ = [
@@ -965,6 +927,44 @@ class DfuDelegate(Structure):
     def __deepcopy__(self, memo):
         return DfuDelegate(context = self.context, on_dfu_started = self.on_dfu_started, on_dfu_cancelled = self.on_dfu_cancelled, on_transfer_percentage = self.on_transfer_percentage, on_successful_file_transferred = self.on_successful_file_transferred, on_error = self.on_error)
 
+class BatteryState(Structure):
+    _fields_ = [
+        ("voltage" , c_ushort),
+        ("charge" , c_ubyte)
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (self.voltage == other.voltage and self.charge == other.charge)
+
+    def __repr__(self):
+        return "{voltage : %d, charge : %d}" % (self.voltage, self.charge)
+
+    def __deepcopy__(self, memo):
+        return BatteryState(voltage = self.voltage, charge = self.charge)
+
+class Tcs34725ColorAdc(Structure):
+    _fields_ = [
+        ("clear" , c_ushort),
+        ("red" , c_ushort),
+        ("green" , c_ushort),
+        ("blue" , c_ushort)
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (self.clear == other.clear and self.red == other.red and self.green == other.green and self.blue == other.blue)
+
+    def __repr__(self):
+        return "{clear : %d, red : %d, green : %d, blue : %d}" % (self.clear, self.red, self.green, self.blue)
+
+    def __deepcopy__(self, memo):
+        return Tcs34725ColorAdc(clear = self.clear, red = self.red, green = self.green, blue = self.blue)
+
 class DeviceInformation(Structure):
     _fields_ = [
         ("manufacturer" , c_char_p),
@@ -985,6 +985,24 @@ class DeviceInformation(Structure):
 
     def __deepcopy__(self, memo):
         return DeviceInformation(manufacturer = self.manufacturer, model_number = self.model_number, serial_number = self.serial_number, firmware_revision = self.firmware_revision, hardware_revision = self.hardware_revision)
+
+class BoschGestureType(Structure):
+    _fields_ = [
+        ("type" , c_ubyte),
+        ("gesture_code" , c_ubyte)
+    ]
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return (self.type == other.type and self.gesture_code == other.gesture_code)
+
+    def __repr__(self):
+        return "{type : %d, gesture_code : %d}" % (self.type, self.gesture_code)
+
+    def __deepcopy__(self, memo):
+        return BoschGestureType(type = self.type, gesture_code = self.gesture_code)
 
 class ModuleInfo(Structure):
     _fields_ = [
@@ -1053,24 +1071,6 @@ class SpiParameters(Structure):
 
     def __deepcopy__(self, memo):
         return SpiParameters(mode = self.mode, frequency = self.frequency, data = self.data, data_length = self.data_length, slave_select_pin = self.slave_select_pin, clock_pin = self.clock_pin, mosi_pin = self.mosi_pin, miso_pin = self.miso_pin, lsb_first = self.lsb_first, use_nrf_pins = self.use_nrf_pins)
-
-class Bmi270WristWear(Structure):
-    _fields_ = [
-        ("type" , c_ubyte),
-        ("gesture_code" , c_ubyte)
-    ]
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    def __eq__(self, other):
-        return (self.type == other.type and self.gesture_code == other.gesture_code)
-
-    def __repr__(self):
-        return "{type : %d, gesture_code : %d}" % (self.type, self.gesture_code)
-
-    def __deepcopy__(self, memo):
-        return Bmi270WristWear(type = self.type, gesture_code = self.gesture_code)
 
 class Const:
     MODULE_BARO_TYPE_BME280 = 1
