@@ -306,7 +306,9 @@ class Model:
     METAHEALTH = 7
     METATRACKER = 8
     METAMOTION_R = 9
-    METAMOTION_C = 10
+    METAMOTION_RL = 10
+    METAMOTION_C = 11
+    METAMOTION_S = 12
 
 class MetaWearRChannel:
     ON_DIE = 0

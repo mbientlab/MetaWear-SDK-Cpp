@@ -589,11 +589,19 @@ MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board) {
         return MBL_MW_MODEL_METATRACKER;
     }
     if (board->module_number == "5") {
-        return MBL_MW_MODEL_METAMOTION_R;
+        if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_AMBIENT_LIGHT) != MBL_MW_MODULE_TYPE_NA) {
+            return MBL_MW_MODEL_METAMOTION_R;
+        } else {
+            return MBL_MW_MODEL_METAMOTION_RL;
+        }
     }
     if (board->module_number == "6") {
         return MBL_MW_MODEL_METAMOTION_C;
     }
+    if (board->module_number == "8") {
+        return MBL_MW_MODEL_METAMOTION_S;
+    }
+
 
     return MBL_MW_MODEL_NA;
 }
@@ -610,7 +618,9 @@ const char * MODEL_NAMES[] = {
     "MetaHealth",
     "MetaTracker",
     "MetaMotion R",
-    "MetaMotion C"
+    "MetaMotion RL",
+    "MetaMotion C",
+    "MetaMotion S"
 };
 const char* mbl_mw_metawearboard_get_model_name(const MblMwMetaWearBoard* board) {
     return MODEL_NAMES[mbl_mw_metawearboard_get_model(board) + 1];

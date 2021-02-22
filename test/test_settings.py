@@ -1,6 +1,6 @@
 from common import TestMetaWearBase, to_string_buffer
 from ctypes import *
-from cbindings import *
+from cbindings import BatteryState, FnVoid_VoidP_Int, FnVoid_VoidP_VoidP_Int, LedColor, LedPattern, Const
 #from mbientlab.metawear.cbindings import BatteryState, FnVoid_VoidP_Int, FnVoid_VoidP_VoidP_Int, LedColor, LedPattern, Const
 from threading import Event
 

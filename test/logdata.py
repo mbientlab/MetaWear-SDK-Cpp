@@ -1,5 +1,5 @@
 from ctypes import create_string_buffer
-from cbindings import *
+from cbindings import CartesianFloat
 #from mbientlab.metawear.cbindings import CartesianFloat
 
 class Bmi160Accelerometer:
