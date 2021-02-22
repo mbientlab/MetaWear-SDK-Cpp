@@ -56,14 +56,16 @@ METAWEAR_API MblMwMetaWearBoard* mbl_mw_metawearboard_create(const MblMwBtleConn
  */
 METAWEAR_API void mbl_mw_metawearboard_free(MblMwMetaWearBoard *board);
 /**
- * Sets how long the API should wait before a required response is received.  You should increase this value if operations such as 
- * API initialization, creating timer, loggers, and data processors, and recording commands consistently time out.
+ * Sets how long the API should wait before a required response is received.  
+ * You should increase this value if operations such as API initialization, creating timer, 
+ * loggers, and data processors, and recording commands consistently time out.
  * @param board                 Board to configure
  * @param response_time_ms      How long to wait for a response, from [0, 4000]ms.  Use 0ms for indefinite timeout
  */
 METAWEAR_API void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard* board, uint16_t response_time_ms);
 /**
- * Initialize the API's internal state.  This function is non-blocking and will alert the caller when the operation is complete.
+ * Initialize the API's internal state.  
+ * This function is non-blocking and will alert the caller when the operation is complete.
  * @param board         Board to initialize
  * @param context       Pointer to additional data for the callback function
  * @param initialized   Callback function to be executed when the board is initialized
@@ -91,12 +93,14 @@ METAWEAR_API int32_t mbl_mw_metawearboard_is_initialized(const MblMwMetaWearBoar
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblMwModule module);
 /**
- * Determines the board model of the currently connected device.  Only call this function after the board has been initialized.
+ * Determines the board model of the currently connected device.  
+ * Only call this function after the board has been initialized.
  * @return Board model, MBL_MW_MODEL_NA if unable to determine
  */
 METAWEAR_API MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board);
 /**
- * Determines the board model of the currently connected device.  Only call this function after the board has been initialized.
+ * Determines the board model of the currently connected device.  
+ * Only call this function after the board has been initialized.
  * @return Friendly name representing the board model 
  */
 METAWEAR_API const char* mbl_mw_metawearboard_get_model_name(const MblMwMetaWearBoard* board);
@@ -116,14 +120,16 @@ METAWEAR_API const MblMwDeviceInformation* mbl_mw_metawearboard_get_device_infor
 METAWEAR_API MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMetaWearBoard* board, uint32_t* size);
 
 /**
- * Serializes the API state.  The memory allocated by the function must be freed by calling mbl_mw_memory_free.
+ * Serializes the API state.  
+ * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
  * @param board         Board to serialize
  * @param size          Pointer to where the size of the returned byte array will be written to
  * @return Byte array of the serialized state
  */
 METAWEAR_API uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_t* size);
 /**
- * Deserializes API state.  This function must be executed before calling mbl_mw_metawearboard_initialize.
+ * Deserializes API state.  
+ * This function must be executed before calling mbl_mw_metawearboard_initialize.
  * @param board         Board to deserialize
  * @param state         Byte array holding the the information state
  * @param size          Byte array size
@@ -132,8 +138,8 @@ METAWEAR_API uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* b
 METAWEAR_API int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size);
 
 /**
- * Reads the current state of the board and creates anonymous data signals based on what data is being logged,  If this task failed, a 
- * null pointer will be passed into the `anonymous_signals` parameter
+ * Reads the current state of the board and creates anonymous data signals based on what data is being logged.
+ * If this task failed, a null pointer will be passed into the `anonymous_signals` parameter
  * @param board         Calling object
  * @param context       Pointer to additional data for the callback function
  * @param created       Callback function to be executed once the task is completed.

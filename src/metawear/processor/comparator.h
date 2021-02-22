@@ -34,8 +34,9 @@ typedef enum {
 } MblMwComparatorMode;
 
 /**
- * Create a comparator processor where signed/unsigned is inferred.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
+ * Create a comparator processor where signed/unsigned is inferred.  
+ * Only allows data through that satisfies a comparison operation.
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -45,8 +46,9 @@ typedef enum {
 METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
         void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a comparator processor specifically for a signed comparison.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
+ * Create a comparator processor specifically for a signed comparison.  
+ * Only allows data through that satisfies a comparison operation.
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to
@@ -56,8 +58,9 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create(MblMwDataSignal *sou
 METAWEAR_API int32_t mbl_mw_dataprocessor_comparator_create_signed(MblMwDataSignal *source, MblMwComparatorOperation op, float reference, 
         void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a comparator processor specifically for an unsigned comparison.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
+ * Create a comparator processor specifically for an unsigned comparison. 
+ * Only allows data through that satisfies a comparison operation. 
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Comparison operation to execute
  * @param reference             Reference value to compare the input to

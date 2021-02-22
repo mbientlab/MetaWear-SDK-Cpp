@@ -44,15 +44,16 @@ METAWEAR_API void mbl_mw_datasignal_unsubscribe(MblMwDataSignal *signal);
 METAWEAR_API int32_t mbl_mw_datasignal_is_readable(const MblMwDataSignal* signal);
 
 /**
- * Reads data from sensor represented by the data signal.  Data is forwarded to the callback function 
- * assigned by the mbl_mw_datasignal_subscribe function
+ * Reads data from sensor represented by the data signal.  
+ * Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function
  * @param signal    Data signal to read from
  */
 METAWEAR_API void mbl_mw_datasignal_read(const MblMwDataSignal* signal);
 
 /**
- * Reads data from sensor represented by the data signal.  Data is forwarded to the callback function 
- * assigned by the mbl_mw_datasignal_subscribe function.  This variant is for reads that require additional parameters.  
+ * Reads data from sensor represented by the data signal.
+ * Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function.  
+ * This variant is for reads that require additional parameters.  
  * @param signal        Data signal to read from
  * @param parameters    Additional parameters required for the read operation
  */

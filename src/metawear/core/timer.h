@@ -17,8 +17,8 @@ extern "C" {
 #endif
 
 /**
- * Creates a timer that will run for a set number of repetitions.  A pointer representing the timer will be passed to the user 
- * through a callback function
+ * Creates a timer that will run for a set number of repetitions.  
+ * A pointer representing the timer will be passed to the user through a callback function
  * @param board             Board the timer belongs to
  * @param period            How often to 
  * @param repetitions       Number of events the timer will fire
@@ -28,8 +28,8 @@ extern "C" {
  */
 METAWEAR_API void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, void *context, MblMwFnTimerPtr received_timer);
 /**
- * Creates a timer that will run indefinitely.  A pointer representing the timer will be passed to the user 
- * through a callback function
+ * Creates a timer that will run indefinitely.  
+ * A pointer representing the timer will be passed to the user through a callback function
  * @param board             Board the timer belongs to
  * @param period            How often to 
  * @param delay             Zero if the tiemr should immediately fire, non-zero to delay the first event

@@ -20,8 +20,9 @@ typedef enum {
 } MblMwThresholdMode;
 
 /**
- * Create a threshold processor.  A pointer representing the processor will be passed back 
- * to the user via a callback function.
+ * Create a threshold processor.  
+ * Allows data through that crosses a boundary according to MblMwThresholdMode
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Processor output mode
  * @param boundary              Limit that triggers an event when data crosses it

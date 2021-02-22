@@ -16,7 +16,9 @@ extern "C" {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_average_create(MblMwDataSignal *source, uint8_t size, void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a high-pass filter.  A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a high-pass filter
+ * Uses the averager to compute the difference of the current value from a running average of the previous (amount of) "size" samples.
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param size                  Number of previous data samples to compare against, Recommended
  *                              to be a power of 2 for faster computation.
@@ -25,7 +27,9 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_average_create(MblMwDataSignal *source
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_highpass_create(MblMwDataSignal *source, uint8_t size, void *context, MblMwFnDataProcessor processor_created);
 /**
- * Create a low-pass filter.  A pointer representing the processor will be passed back to the user via a callback function.
+ * Create a low-pass filter 
+ * Uses the averager to create a moving average.
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param size                  Number of previous data samples to compare against, Recommended
  *                              to be a power of 2 for faster computation.
