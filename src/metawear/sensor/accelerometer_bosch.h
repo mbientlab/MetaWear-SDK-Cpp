@@ -435,6 +435,13 @@ METAWEAR_API void mbl_mw_acc_bmi270_write_step_counter_config(const MblMwMetaWea
  */
 METAWEAR_API void mbl_mw_acc_bmi270_reset_step_counter(const MblMwMetaWearBoard *board);
 /**
+ * Reads the current step count.  The callback function will be called with:  
+ * @param board         Calling object
+ * @param context       Pointer to additional data for the callback function
+ * @param handler       Callback function that is executed when the task is finished
+ */
+METAWEAR_API void mbl_mw_acc_bmi270_read_step_counter(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler);
+/**
  * Sets the arm side the MetaWear is worn on for gesture recognition
  * Device in left (0 - false) or right (1 - true) arm. 
  * By default, the wearable device is assumed to be in left arm i.e. default value is 0 - false.

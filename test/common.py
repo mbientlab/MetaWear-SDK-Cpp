@@ -235,7 +235,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.metawear_motion_rl_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x01\x01', 4),
+            0x03: create_string_buffer(b'\x03\x80\x01\x02', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x03\x01\x02', 8),
             0x05: create_string_buffer(b'\x05\x80\x00\x01\x03\x03\x03\x03\x01', 9),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -249,9 +249,9 @@ class TestMetaWearBase(unittest.TestCase):
             0x0f: create_string_buffer(b'\x0f\x80\x00\x01\x08', 5),
             0x10: create_string_buffer(b'\x10\x80', 2),
             0x11: create_string_buffer(b'\x11\x80\x00\x03', 4),
-            0x12: create_string_buffer(b'\x12\x80\x00\x00', 4),
+            0x12: create_string_buffer(b'\x12\x80', 2),
             0x13: create_string_buffer(b'\x13\x80\x00\x01', 4),
-            0x14: create_string_buffer(b'\x14\x80\x00\x00', 4),
+            0x14: create_string_buffer(b'\x14\x80', 2),
             0x15: create_string_buffer(b'\x15\x80\x00\x01', 4),
             0x16: create_string_buffer(b'\x16\x80', 2),
             0x17: create_string_buffer(b'\x17\x80', 2),
@@ -262,7 +262,7 @@ class TestMetaWearBase(unittest.TestCase):
         self.metawear_motion_s_services= {
             0x01: create_string_buffer(b'\x01\x80\x00\x00', 4),
             0x02: create_string_buffer(b'\x02\x80\x00\x00', 4),
-            0x03: create_string_buffer(b'\x03\x80\x01\x01', 4),
+            0x03: create_string_buffer(b'\x03\x80\x04\x00', 4),
             0x04: create_string_buffer(b'\x04\x80\x01\x00\x00\x03\x01\x02', 8),
             0x05: create_string_buffer(b'\x05\x80\x00\x01\x03\x03\x03\x03\x01', 9),
             0x06: create_string_buffer(b'\x06\x80\x00\x00', 4),
@@ -277,7 +277,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x10: create_string_buffer(b'\x10\x80', 2),
             0x11: create_string_buffer(b'\x11\x80\x00\x03', 4),
             0x12: create_string_buffer(b'\x12\x80\x00\x00', 4),
-            0x13: create_string_buffer(b'\x13\x80\x00\x01', 4),
+            0x13: create_string_buffer(b'\x13\x80\x01\x00', 4),
             0x14: create_string_buffer(b'\x14\x80\x00\x00', 4),
             0x15: create_string_buffer(b'\x15\x80\x00\x01', 4),
             0x16: create_string_buffer(b'\x16\x80', 2),
@@ -352,10 +352,10 @@ class TestMetaWearBase(unittest.TestCase):
                 model_number= create_string_buffer(b'1', 1)
             elif (self.boardType == TestMetaWearBase.METAWEAR_CPRO_BOARD or self.boardType == TestMetaWearBase.METAWEAR_DETECT_BOARD or self.boardType == TestMetaWearBase.METAWEAR_ENV_BOARD):
                 model_number= create_string_buffer(b'2', 1)
-            elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD):
+            elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD or self.boardType == TestMetaWearBase.METAWEAR_MOTION_RL_BOARD):
                 model_number= create_string_buffer(b'5', 1)
             elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_S_BOARD):
-                model_number= create_string_buffer(b'5', 1)
+                model_number= create_string_buffer(b'8', 1)
             elif (self.boardType == TestMetaWearBase.CUSTOM_BOARD):
                 model_number= create_string_buffer(self.custom_module_number, 1)
 
@@ -397,6 +397,10 @@ class TestMetaWearBase(unittest.TestCase):
             elif (self.boardType == TestMetaWearBase.METAWEAR_ENV_BOARD and command[0] in self.metawear_environment_services):
                 service_response= self.metawear_environment_services[command[0]]
             elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD and command[0] in self.metawear_motion_r_services):
+                service_response= self.metawear_motion_r_services[command[0]]
+            elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_RL_BOARD and command[0] in self.metawear_motion_rl_services):
+                service_response= self.metawear_motion_r_services[command[0]]
+            elif (self.boardType == TestMetaWearBase.METAWEAR_MOTION_S_BOARD and command[0] in self.metawear_motion_s_services):
                 service_response= self.metawear_motion_r_services[command[0]]
             elif (self.boardType == TestMetaWearBase.CUSTOM_BOARD):
                 service_response= self.lookup_module_response(command[0])

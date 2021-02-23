@@ -78,7 +78,7 @@ const ResponseHeader BOSCH_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, OR
     BOSCH_ORIENTATION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT)),
     BOSCH_TAP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT)),
     BMI160_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_INTERRUPT)),
-    BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_DATA))),
+    BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_DATA)),
     BOSCH_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::PACKED_ACC_DATA)),
     BMI270_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::MOTION_INTERRUPT)),
     BMI270_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT)),
@@ -424,6 +424,8 @@ struct AccBoschState {
     MblMwFnBoardPtrInt read_config_completed;
     void *read_config_context;
     uint8_t motion_mask;
+    MblMwFnBoardPtrInt read_step_counter_handler;
+    void *read_step_counter_context;
 };
 
 static unordered_map<const MblMwMetaWearBoard*, AccBoschState> states;
@@ -454,7 +456,27 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
     states[board].read_config_completed = nullptr;
     states[board].read_config_context = nullptr;
     callback(context, board, MBL_MW_STATUS_OK);
+    
+    return MBL_MW_STATUS_OK;
+}
 
+#include <iostream>
+
+static int32_t received_step_counter_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    uint32_t step_count = 0;
+    if (len == 0x04) {
+        uint16_t first = response[len-2];
+        uint16_t second = response[len-1] << 8;
+        uint16_t tempy = second | first;
+        step_count = tempy;
+    }
+    
+    auto step_callback = states[board].read_step_counter_handler;
+    auto step_context = states[board].read_step_counter_context;
+    states[board].read_step_counter_handler = nullptr;
+    states[board].read_step_counter_context = nullptr;
+    step_callback(step_context, board, step_count);
+    
     return MBL_MW_STATUS_OK;
 }
 
@@ -506,7 +528,7 @@ static void init_accelerometer_bosch(MblMwMetaWearBoard *board, void *config) {
     board->responses.emplace(BOSCH_TAP_DETECTOR, response_handler_data_no_id);
     board->responses.emplace(BOSCH_ORIENTATION_DETECTOR, response_handler_data_no_id);
 
-    AccBoschState newState = {nullptr, nullptr, 0x0};
+    AccBoschState newState = {nullptr, nullptr, 0x0, nullptr, nullptr};
     states.insert({board, newState});
 }
 
@@ -575,7 +597,10 @@ void init_accelerometer_bmi270(MblMwMetaWearBoard *board) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))),
         forward_as_tuple(received_config_response));
     
-    AccBoschState newState = {nullptr, nullptr, 0x0};
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT))),
+        forward_as_tuple(received_step_counter_response));
+    
+    AccBoschState newState = {nullptr, nullptr, 0x0, nullptr, nullptr};
     states.insert({board, newState});
 }
 
@@ -875,6 +900,14 @@ void mbl_mw_acc_bmi270_reset_step_counter(const MblMwMetaWearBoard* board) {
     ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.reset_counter=1;
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap;
     memcpy(command + 3, &config, sizeof(config));
+    SEND_COMMAND;
+}
+
+void mbl_mw_acc_bmi270_read_step_counter(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler) {
+    states[board].read_step_counter_handler = handler;
+    states[board].read_step_counter_context = context;
+        
+    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT))};
     SEND_COMMAND;
 }
 
