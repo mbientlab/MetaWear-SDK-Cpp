@@ -1179,6 +1179,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_gyro_bmi270_set_range.restype = None
     libmetawear.mbl_mw_gyro_bmi270_set_range.argtypes = [c_void_p, c_int]
 
+    libmetawear.mbl_mw_gyro_bmi160_read_config.restype = None
+    libmetawear.mbl_mw_gyro_bmi160_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
+
     libmetawear.mbl_mw_dataprocessor_accumulator_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_accumulator_create.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP]
 
@@ -1220,9 +1223,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_pulse_modify.restype = c_int
     libmetawear.mbl_mw_dataprocessor_pulse_modify.argtypes = [c_void_p, c_float, c_ushort]
-
-    libmetawear.mbl_mw_dataprocessor_average_create.restype = c_int
-    libmetawear.mbl_mw_dataprocessor_average_create.argtypes = [c_void_p, c_ubyte, c_void_p, FnVoid_VoidP_VoidP]
 
     libmetawear.mbl_mw_settings_get_battery_state_data_signal.restype = c_void_p
     libmetawear.mbl_mw_settings_get_battery_state_data_signal.argtypes = [c_void_p]
@@ -1352,9 +1352,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_lowpass_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_lowpass_create.argtypes = [c_void_p, c_ubyte, c_void_p, FnVoid_VoidP_VoidP]
-
-    libmetawear.mbl_mw_gyro_bmi160_read_config.restype = None
-    libmetawear.mbl_mw_gyro_bmi160_read_config.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
 
     libmetawear.mbl_mw_dataprocessor_passthrough_set_count.restype = c_int
     libmetawear.mbl_mw_dataprocessor_passthrough_set_count.argtypes = [c_void_p, c_ushort]
@@ -1619,6 +1616,12 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_dataprocessor_comparator_create_unsigned.restype = c_int
     libmetawear.mbl_mw_dataprocessor_comparator_create_unsigned.argtypes = [c_void_p, c_int, c_float, c_void_p, FnVoid_VoidP_VoidP]
+
+    libmetawear.mbl_mw_dataprocessor_average_create.restype = c_int
+    libmetawear.mbl_mw_dataprocessor_average_create.argtypes = [c_void_p, c_ubyte, c_void_p, FnVoid_VoidP_VoidP]
+
+    libmetawear.mbl_mw_acc_bmi270_read_step_counter.restype = None
+    libmetawear.mbl_mw_acc_bmi270_read_step_counter.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
 
     libmetawear.mbl_mw_acc_bmi270_disable_wrist_wakeup.restype = None
     libmetawear.mbl_mw_acc_bmi270_disable_wrist_wakeup.argtypes = [c_void_p]

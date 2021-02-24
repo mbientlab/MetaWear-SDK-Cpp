@@ -78,14 +78,15 @@ const ResponseHeader BOSCH_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, OR
     BOSCH_ORIENTATION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT)),
     BOSCH_TAP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT)),
     BMI160_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_INTERRUPT)),
-    BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_DATA)),
+    BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_DATA))),
     BOSCH_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::PACKED_ACC_DATA)),
     BMI270_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::MOTION_INTERRUPT)),
     BMI270_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT)),
     BMI270_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT)),
     BMI270_WRIST_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::WRIST_INTERRUPT)),
     BMI270_ACTIVITY_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::ACTIVITY_INTERRUPT)),
-    BMI270_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::PACKED_ACC_DATA));
+    BMI270_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::PACKED_ACC_DATA)),
+    FAKE(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::PACKED_ACC_DATA));
 
 struct AccBmi270Config {
     struct {
@@ -586,13 +587,11 @@ void init_accelerometer_bmi270(MblMwMetaWearBoard *board) {
     }
     board->responses[BMI270_ACTIVITY_DETECTOR]= response_handler_data_no_id;
 
-    if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).revision >= PACKED_ACC_REVISION) {
-        if (!board->module_events.count(BMI270_PACKED_ACCEL_RESPONSE_HEADER)) {
-            board->module_events[BMI270_PACKED_ACCEL_RESPONSE_HEADER]= new MblMwDataSignal(BMI270_PACKED_ACCEL_RESPONSE_HEADER, board, 
-                DataInterpreter::BOSCH_ACCELERATION, FirmwareConverter::BOSCH_ACCELERATION, 3, 2, 1, 0);
-        }
-        board->responses[BMI270_PACKED_ACCEL_RESPONSE_HEADER]= response_handler_packed_data;
+    if (!board->module_events.count(BMI270_PACKED_ACCEL_RESPONSE_HEADER)) {
+        board->module_events[BMI270_PACKED_ACCEL_RESPONSE_HEADER]= new MblMwDataSignal(BMI270_PACKED_ACCEL_RESPONSE_HEADER, board, 
+            DataInterpreter::BOSCH_ACCELERATION, FirmwareConverter::BOSCH_ACCELERATION, 3, 2, 1, 0);
     }
+    board->responses[BMI270_PACKED_ACCEL_RESPONSE_HEADER]= response_handler_packed_data;
 
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))),
         forward_as_tuple(received_config_response));
@@ -693,12 +692,14 @@ MblMwDataSignal* mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(const M
 
 MblMwDataSignal* mbl_mw_acc_bosch_get_packed_acceleration_data_signal(const MblMwMetaWearBoard* board) {
     auto implementation= board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation;
-    if (implementation == MBL_MW_MODULE_ACC_TYPE_BMI160 || implementation == MBL_MW_MODULE_ACC_TYPE_BMA255) {
+    if (implementation == MBL_MW_MODULE_ACC_TYPE_BMI160) {
+        GET_DATA_SIGNAL(BOSCH_PACKED_ACCEL_RESPONSE_HEADER);
+    } else if (implementation == MBL_MW_MODULE_ACC_TYPE_BMA255) {
         GET_DATA_SIGNAL(BOSCH_PACKED_ACCEL_RESPONSE_HEADER);
     } else if (implementation == MBL_MW_MODULE_ACC_TYPE_BMI270) {
-        GET_DATA_SIGNAL(BMI270_PACKED_ACCEL_RESPONSE_HEADER);
+	GET_DATA_SIGNAL(BMI270_PACKED_ACCEL_RESPONSE_HEADER);
     } else {
-        return nullptr;
+	return nullptr;
     }
     
 }
@@ -749,13 +750,8 @@ void mbl_mw_acc_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi270Odr odr)
     auto config= (AccBmi270Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER);
 
     config->set_output_data_rate(odr);
-    if (odr < MBL_MW_ACC_BMI270_ODR_12_5Hz) {
-        config->acc.us= 1;
-        config->acc.bwp= 0;
-    } else {
-        config->acc.us= 0;
-        config->acc.bwp= 2;
-    }
+    config->acc.us= 1;
+    config->acc.bwp= 2;
 }
 
 void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi160Odr odr) {
@@ -864,7 +860,7 @@ void mbl_mw_acc_bmi160_disable_step_detector(const MblMwMetaWearBoard *board) {
 
 void mbl_mw_acc_bmi270_set_step_counter_trigger(MblMwMetaWearBoard* board, uint16_t trigger) {
     if (trigger >= 1 && trigger <= 1023) {
-        auto lower_8 = trigger & 0x00ff;
+	auto lower_8 = trigger & 0x00ff;
         auto higher_2 = (trigger & 0x0300) >> 8;
         ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.watermark_level_0 = lower_8;
         ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.watermark_level_1 = higher_2;
@@ -901,6 +897,7 @@ void mbl_mw_acc_bmi270_reset_step_counter(const MblMwMetaWearBoard* board) {
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap;
     memcpy(command + 3, &config, sizeof(config));
     SEND_COMMAND;
+    ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.reset_counter=0;
 }
 
 void mbl_mw_acc_bmi270_read_step_counter(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler) {
