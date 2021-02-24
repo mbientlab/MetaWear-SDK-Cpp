@@ -1,7 +1,7 @@
 /**
  * @copyright MbientLab License 
  * @file accelerometer_bosch.h
- * @brief Interacts with the supported Bosch accelerometers, currenly BMI270, BMI160 and BMA255
+ * @brief Interacts with the supported Bosch accelerometers, currently BMI270, BMI160 and BMA255
  * @details The BMI160 and BMA255 sensors are identical except for the output data rates.  Functions that are generic for 
  * both accelerometers have "bosch" in the name whereas functions specific to either accelerometer are contain their model 
  * i.e. "bmi160" or "bma255".
