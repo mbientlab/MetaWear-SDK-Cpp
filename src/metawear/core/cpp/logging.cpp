@@ -34,7 +34,7 @@ using namespace std::chrono;
 
 #define GET_LOGGER_STATE(board) static_pointer_cast<LoggerState>(board->logger_state)
 
-const uint8_t REVISION_EXTENDED_LOGGING= 2, ENTRY_ID_MASK= 0x1f, RESET_UID_MASK= 0x7, 
+const uint8_t REVISION_EXTENDED_LOGGING= 2, MMS_REVISION = 3, ENTRY_ID_MASK= 0x1f, RESET_UID_MASK= 0x7, 
         LOG_ENTRY_SIZE= (uint8_t) sizeof(uint32_t), ROOT_SIGNAL_INDEX= 0xff;
 const double TICK_TIME_STEP= (48.0 / 32768.0) * 1000.0;         ///< milliseconds
 
@@ -698,6 +698,13 @@ void mbl_mw_logging_stop(const MblMwMetaWearBoard* board) {
     SEND_COMMAND;
 }
 
+void mbl_mw_logging_flush_page(const MblMwMetaWearBoard* board) {
+    if (board->module_info.at(MBL_MW_MODULE_LOGGING).revision == MMS_REVISION) {
+        uint8_t command[3]= {MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::PAGE_FLUSH), 1};
+        SEND_COMMAND;
+    }
+}
+
 void mbl_mw_logging_clear_entries(const MblMwMetaWearBoard* board) {
     if (board->module_info.at(MBL_MW_MODULE_LOGGING).revision == REVISION_EXTENDED_LOGGING) {
         uint8_t command[3]= {MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::READOUT_PAGE_COMPLETED), 1};
@@ -707,7 +714,6 @@ void mbl_mw_logging_clear_entries(const MblMwMetaWearBoard* board) {
     uint8_t command[6]= {MBL_MW_MODULE_LOGGING, ORDINAL(LoggingRegister::REMOVE_ENTRIES), 0xff, 0xff, 0xff, 0xff};
     SEND_COMMAND;
 }
-
 
 void mbl_mw_logging_download_common(MblMwMetaWearBoard* board, uint8_t n_notifies) {
     auto state= GET_LOGGER_STATE(board);
@@ -753,7 +759,6 @@ void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, cons
     
     mbl_mw_logging_download_common(board, n_notifies);
 }
-
 
 void mbl_mw_logging_raw_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwRawLogDownloadHandler* handler) {
     board->responses[LOGGING_READOUT_NOTIFY_HEADER] = raw_logging_response_readout_notify;

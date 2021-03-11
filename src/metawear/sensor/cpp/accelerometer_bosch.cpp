@@ -594,7 +594,7 @@ void init_accelerometer_bmi270(MblMwMetaWearBoard *board) {
         board->responses[BMI270_PACKED_ACCEL_RESPONSE_HEADER]= response_handler_packed_data;
     }
 
-    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))),
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschBmi270Register::DATA_CONFIG))),
         forward_as_tuple(received_config_response));
     
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT))),

@@ -61,6 +61,7 @@ METAWEAR_API void mbl_mw_acc_write_acceleration_config(const MblMwMetaWearBoard*
 /**
  * Pulls the current accelerometer output data rate and data range from the sensor
  * Reads the ODR and RANGE values set in the sensor.
+ * This is a debug function, the data is return in the context ptr as AccBmi160Config->acc/AccBmi270Config->acc/Mma8452qConfig->acc
  * @param board         Calling object
  * @param context       Pointer to additional data for the callback function
  * @param completed     Callback function that is executed when the task is finished

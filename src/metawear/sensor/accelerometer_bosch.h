@@ -271,14 +271,6 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_detector_data_signal(co
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_step_detector_data_signal(const MblMwMetaWearBoard* board);
 /**
- * Retrieves the data signal representing data from the BMI270 step detector
- * This signal simply detects a step, it does not count it
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to the board's BMI270 step detector data signal
- * No return data type
- */
-METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_step_detector_data_signal(const MblMwMetaWearBoard* board);
-/**
  * Retrieves the data signal representing data from the wrist gesture algorithm
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI270 step detector data signal
@@ -406,7 +398,9 @@ METAWEAR_API void mbl_mw_acc_bmi160_disable_step_detector(const MblMwMetaWearBoa
 METAWEAR_API void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWearBoard *board);
 /**
  * Sets the watermark level of the step counter
- * The Step-counter will trigger output every time this number of steps are counted. 
+ * The Step-counter will trigger output every time this number of steps are counted.
+ * Holds implicitly a 20x factor, so the range is 0 to 20460, with resolution of 20 steps. 
+ * If 0, the output is disabled. If 1, it will count to 20 steps. 
  * @param board     Board to modify
  * @param trigger   Number of steps
  */
@@ -609,7 +603,8 @@ METAWEAR_API void mbl_mw_acc_bmi270_axis_remap(const MblMwMetaWearBoard *board, 
 /**
  * Set the hysteresis offset (degrees) for portrait/landscape detection
  * Upside/downside recognition hysteresis is not configurable.
- * See the BMI160 datasheet for more information. Not supported by the BMI270.
+ * See the BMI160 datasheet for more information. 
+ * Not supported by the BMI270.
  * @param board         Calling object
  * @param hysteresis    New calculation mode
  */
@@ -617,7 +612,8 @@ METAWEAR_API void mbl_mw_acc_bosch_set_orientation_hysteresis(MblMwMetaWearBoard
 /**
  * Set the orientation calculation mode
  * Options include: Symmetrical, High asymmetrical, Low asymmetrical
- * See the BMI160 datasheet for more information. Not supported by the BMI270.
+ * See the BMI160 datasheet for more information. 
+ * Not supported by the BMI270.
  * @param board         Calling object
  * @param mode          New calculation mode
  */
@@ -742,7 +738,8 @@ METAWEAR_API void mbl_mw_acc_bosch_set_sig_motion_blocksize(MblMwMetaWearBoard *
 /**
  * Writes the motion configuration to the remote device
  * Applies the threshold and count parameter or blocksize depending on motion type and settings from set_*_*()
- * For the BMI270, types include no motion, significant motion, and any motion. Ignored for other Bosch sensors.
+ * For the BMI270, types include no motion, significant motion, and any motion. 
+ * Ignored for other Bosch sensors.
  * @param board     Calling object
  * @param type      Type of motion requested
  */
@@ -750,7 +747,8 @@ METAWEAR_API void mbl_mw_acc_bosch_write_motion_config(const MblMwMetaWearBoard 
 /**
  * Enables motion detection
  * The signal will callback if any motion is sensed based on the motion config
- * For the BMI270, signals include no motion, significant motion, and any motion. Ignored for other Bosch sensors.
+ * For the BMI270, signals include no motion, significant motion, and any motion. 
+ * Ignored for other Bosch sensors.
  * @param board     Calling object
  * @param type      Type of motion requested
  */

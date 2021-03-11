@@ -16,4 +16,5 @@ enum class LoggingRegister : uint8_t {
     CIRCULAR_BUFFER,
     READOUT_PAGE_COMPLETED = 0xd,
     READOUT_PAGE_CONFIRM,
+    PAGE_FLUSH = 0x10,
 };

@@ -60,6 +60,13 @@ METAWEAR_API void mbl_mw_logging_start(const MblMwMetaWearBoard* board, uint8_t 
  */
 METAWEAR_API void mbl_mw_logging_stop(const MblMwMetaWearBoard* board);
 /**
+ * Flushes logging data (pending writes) to the MMS memory
+ * Should be called for the MMS when done with logging and ready to download data
+ * For MMS only.
+ * @param board                 Board to stop logging
+ */
+METAWEAR_API void mbl_mw_logging_flush_page(const MblMwMetaWearBoard* board);
+/**
  * Clear the logger of saved entries
  * @param board                 Board to remove entries from
  */
@@ -71,7 +78,6 @@ METAWEAR_API void mbl_mw_logging_clear_entries(const MblMwMetaWearBoard* board);
  * @param handler                   Handler for processing logger responses
  */
 METAWEAR_API void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwLogDownloadHandler* handler);
-
 /**
  * Retrieves the id value identifying the logger
  * @param logger            Logger to lookup
@@ -144,7 +150,6 @@ METAWEAR_API int64_t mbl_mw_logging_get_reference_time(const MblMwMetaWearBoard 
  */
 METAWEAR_API void mbl_mw_logging_set_reference_time(const MblMwMetaWearBoard *board, uint8_t reset_uid, int64_t reference_epoch);
 
-
 /**
  * Callback functions for handling notifications from the logger
  */
@@ -156,10 +161,10 @@ typedef struct {
     /**
      * Called when a log entry is received
      * @param context               Pointer to the <code>context</code> field
-     * @param entry_id              Logger id of the entry
-     * @param reset_uid             Reset id when this entry was logged
-     * @param entry_tick            Raw time when this entry was logged
-     * @param data                  Raw data
+     * @param entry_id              Logger id of the entry (logger id)
+     * @param reset_uid             Reset id when this entry was logged (unique counter that increments when the device resets)
+     * @param entry_tick            Raw time when this entry was logged (clock tick the data was logged on in units of 48/32768 seconds - 0.00146484375 sec)
+     * @param data                  Raw data (4 bytes)
      */
     void (*received_entry)(void *context, uint8_t entry_id, uint8_t reset_uid, uint32_t entry_tick, uint32_t data);
     /**
