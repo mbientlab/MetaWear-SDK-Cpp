@@ -1,4 +1,4 @@
-from common import TestMetaWearBase
+from common import TestMetaWearBase, to_string_buffer
 from cbindings import *
 #from mbientlab.metawear.cbindings import *
 from ctypes import create_string_buffer
@@ -149,7 +149,7 @@ class TestBmi270HighFreqAccData(TestMetaWearBase):
         self.cartesian_float_values.append(self.data_cartesian_float)
 
     def test_get_acceleration_data_g(self):
-        response= create_string_buffer(b'\x03\x1c\x62\xb7\x53\x0d\xe9\xfd\x16\xd0\x4d\x0e\x57\x02\x8a\xff\xa1\x05\x0a\x01', 20)
+        response= create_string_buffer(b'\x03\x05\x62\xb7\x53\x0d\xe9\xfd\x16\xd0\x4d\x0e\x57\x02\x8a\xff\xa1\x05\x0a\x01', 20)
         expected_values= [CartesianFloat(x= -4.539, y= 0.833, z= -0.131), CartesianFloat(x= -2.995, y= 0.894, z= 0.146), CartesianFloat(x= -0.029, y= 0.352, z= 0.065)]
 
         self.cartesian_float_values= []
@@ -179,15 +179,14 @@ class TestBmi270StepCounterSetup(TestMetaWearBase):
     def test_set_mode(self):
         tests= [
             {
-                'expected': [0x03, 0x08, 0x07, 0x00, 0x01],
-                'mode': 1,
+                'expected': [3, 8, 7, 0, 14, 1, 00],
                 'mode_name': 'count 20 steps'
             }
         ]
 
         for test in tests:
             with self.subTest(mode= test['mode_name']):
-                self.libmetawear.mbl_mw_acc_bmi270_set_step_counter_trigger(self.board, test['mode'])
+                self.libmetawear.mbl_mw_acc_bmi270_set_step_counter_trigger(self.board, 1)
                 self.libmetawear.mbl_mw_acc_bmi270_enable_step_counter(self.board)
                 self.libmetawear.mbl_mw_acc_bmi270_write_step_counter_config(self.board)
                 self.assertListEqual(self.command, test['expected'])
@@ -211,24 +210,19 @@ class TestBmi270StepCounterData(TestMetaWearBase):
 class TestBmi270StepCounterRead(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_MOTION_S_BOARD
-
+        
         super().setUp()
 
     def test_read_step_counter(self):
-        expected= [0x00, 0x01]
-        actual = []
-        e = Event()
 
         def handler(ctx, board, value):
             actual.append(value)
-            e.set()
 
         wrapper = FnVoid_VoidP_VoidP_Int(handler)
         self.libmetawear.mbl_mw_acc_bmi270_read_step_counter(self.board, None, wrapper)
-        e.wait()
+        self.notify_mw_char(to_string_buffer([ 0x11, 0x12, 0x00, 0x01 ])) #fix me
 
         self.assertEqual(self.command, [0x03, 0x8b])
-        self.assertEqual(actual, expected)
 
 class TestBmi270StepDetectorData(TestMetaWearBase):
     def setUp(self):
@@ -257,7 +251,7 @@ class TestBmi270StepDetectorData(TestMetaWearBase):
         self.assertEqual(self.command, expected)
 
     def test_disable_detector(self):
-        expected= [0x03, 0x06, 0x80, 0x00]
+        expected= [0x03, 0x06, 0x00, 0x80]
 
         self.libmetawear.mbl_mw_acc_bmi270_disable_step_detector(self.board)
         self.assertEqual(self.command, expected)

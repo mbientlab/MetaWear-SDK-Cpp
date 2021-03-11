@@ -34,7 +34,7 @@ enum class AccelerometerBoschBmi270Register : uint8_t {
     DATA_CONFIG,
     DATA_INTERRUPT,
 
-    PACKED_ACC_DATA = 0x5,
+    PACKED_ACC_DATA,
     
     FEATURE_ENABLE = 0x6,
     FEATURE_INTERRUPT_ENABLE,
