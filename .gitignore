@@ -1,3 +1,5 @@
+c-binding-generator/build/
+c-binding-generator/dist/
 /doc/
 /cppdocs/upload.sh
 /build/

@@ -1035,12 +1035,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_gyro_bmi270_stop': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
- * Switches the gyro to standby mode.
- * @param board     Pointer to the board to send the command to
- */
-  'mbl_mw_gyro_bmi160_stop': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
  * Switches the gyro to active mode.  
  * While in active mode, the gyro cannot be configured
  * @param board     Pointer to the board to send the command to
@@ -1071,6 +1065,13 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param completed     Callback function that is executed when the task is finished
  */
   'mbl_mw_gyro_bmi160_read_config': [ref.types.void, [ref.refType(MetaWearBoard), ref.refType(ref.types.void), FnVoid_VoidP_MetaWearBoardP_Int]],
+
+/**
+ * Writes the configuration to the sendor
+ * Applies the ODR and RANGE values set in set_range() and set_odr().
+ * @param board     Pointer to the board to send the command to
+ */
+  'mbl_mw_gyro_bmi160_write_config': [ref.types.void, [ref.refType(MetaWearBoard)]],
 
 /**
  * Create an accumulator whose output is the same size as the input.  
@@ -1488,30 +1489,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_logging_set_reference_time': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.int64]],
 
 /**
- * Get the device boot time for a given reset_uid.  This reference time
- * is automatically calulated at connection time.
- * @param board                 Board to use
- * @param reset_uid             Reset id
- * @return Number of milliseconds since epoch that the given reset_uid occured
- */
-  'mbl_mw_logging_get_reference_time': [ref.types.int64, [ref.refType(MetaWearBoard), ref.types.uint8]],
-
-/**
- * Removes all data processors and timers from the MetaWear board
- * @param board         Board to tear down
- */
-  'mbl_mw_metawearboard_tear_down': [ref.types.void, [ref.refType(MetaWearBoard)]],
-
-/**
- * Retrieves the data signal representing acceleration data from a Bosch accelerometer
- * This signal is timestamp,x,y,z acc data
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to the board's BMI160 acceleration data signal
- * MblMwCartesianFloat is return signal data type
- */
-  'mbl_mw_acc_bosch_get_acceleration_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
-
-/**
  * Writes the step counter configuration to the sensor
  * Applies the TRIGGER set by set_step_counter_trigger()
  * @param board     Board to write to
@@ -1543,6 +1520,12 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @return Logger object identified by the id, null if no object is found
  */
   'mbl_mw_logger_lookup_id': [ref.refType(DataLogger), [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Removes the logger from the board
+ * @param logger                logger to remove
+ */
+  'mbl_mw_logger_remove': [ref.types.void, [ref.refType(DataLogger)]],
 
 /**
  * Sets pixel color
@@ -1706,6 +1689,44 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_ibeacon_set_rx_power': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.int8]],
 
 /**
+ * Get the device boot time for a given reset_uid.  This reference time
+ * is automatically calulated at connection time.
+ * @param board                 Board to use
+ * @param reset_uid             Reset id
+ * @return Number of milliseconds since epoch that the given reset_uid occured
+ */
+  'mbl_mw_logging_get_reference_time': [ref.types.int64, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Removes all data processors and timers from the MetaWear board
+ * @param board         Board to tear down
+ */
+  'mbl_mw_metawearboard_tear_down': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Retrieves the data signal representing acceleration data from a Bosch accelerometer
+ * This signal is timestamp,x,y,z acc data
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the board's BMI160 acceleration data signal
+ * MblMwCartesianFloat is return signal data type
+ */
+  'mbl_mw_acc_bosch_get_acceleration_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
+
+/**
+ * Switches the gyro to standby mode.
+ * @param board     Pointer to the board to send the command to
+ */
+  'mbl_mw_gyro_bmi160_stop': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Flushes logging data (pending writes) to the MMS memory
+ * Should be called for the MMS when done with logging and ready to download data
+ * For MMS only.
+ * @param board                 Board to stop logging
+ */
+  'mbl_mw_logging_flush_page': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
  * Creates an instance of the MblMwMetaWearBoard struct
  * @param connection    Connection struct the new MblMwMetaWearBoard variable will use for btle communication
  * @return Pointer to the newly created struct
@@ -1848,15 +1869,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param processor_created     Callback function to be executed when the processor is created
  */
   'mbl_mw_dataprocessor_fuser_create': [ref.types.int32, [ref.refType(DataSignal), ArrayDataSignalP, ref.types.uint32, ref.refType(ref.types.void), FnVoid_VoidP_DataProcessorP]],
-
-/**
- * Retrieves the data signal representing switch state data
- * The switch is either pushed (1) or not pushed (0)
- * @param board     Pointer to the board to retrieve the signal from
- * @return Pointer to the switch data signal
- * UINT32 is return signal data type 
- */
-  'mbl_mw_switch_get_state_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
  * Create a math processor using unsigned operations.  
@@ -2220,12 +2232,6 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param received_timer    Callback function to be executed when the timer is created
  */
   'mbl_mw_timer_create_indefinite': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint32, ref.types.uint8, ref.refType(ref.types.void), FnVoid_VoidP_TimerP]],
-
-/**
- * Removes the logger from the board
- * @param logger                logger to remove
- */
-  'mbl_mw_logger_remove': [ref.types.void, [ref.refType(DataLogger)]],
 
 /**
  * Modifies the threshold processor configuration
@@ -2724,7 +2730,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 /**
  * Writes the motion configuration to the remote device
  * Applies the threshold and count parameter or blocksize depending on motion type and settings from set_*_*()
- * For the BMI270, types include no motion, significant motion, and any motion. Ignored for other Bosch sensors.
+ * For the BMI270, types include no motion, significant motion, and any motion. 
+ * Ignored for other Bosch sensors.
  * @param board     Calling object
  * @param type      Type of motion requested
  */
@@ -2783,6 +2790,15 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param board     Board to reset
  */
   'mbl_mw_acc_bmi160_reset_step_counter': [ref.types.void, [ref.refType(MetaWearBoard)]],
+
+/**
+ * Retrieves the data signal representing switch state data
+ * The switch is either pushed (1) or not pushed (0)
+ * @param board     Pointer to the board to retrieve the signal from
+ * @return Pointer to the switch data signal
+ * UINT32 is return signal data type 
+ */
+  'mbl_mw_switch_get_state_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
 
 /**
  * Create a delta processor.  
@@ -2852,7 +2868,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 /**
  * Enables motion detection
  * The signal will callback if any motion is sensed based on the motion config
- * For the BMI270, signals include no motion, significant motion, and any motion. Ignored for other Bosch sensors.
+ * For the BMI270, signals include no motion, significant motion, and any motion. 
+ * Ignored for other Bosch sensors.
  * @param board     Calling object
  * @param type      Type of motion requested
  */
@@ -2915,7 +2932,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 /**
  * Set the hysteresis offset (degrees) for portrait/landscape detection
  * Upside/downside recognition hysteresis is not configurable.
- * See the BMI160 datasheet for more information. Not supported by the BMI270.
+ * See the BMI160 datasheet for more information. 
+ * Not supported by the BMI270.
  * @param board         Calling object
  * @param hysteresis    New calculation mode
  */
@@ -3640,7 +3658,9 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 
 /**
  * Sets the watermark level of the step counter
- * The Step-counter will trigger output every time this number of steps are counted. 
+ * The Step-counter will trigger output every time this number of steps are counted.
+ * Holds implicitly a 20x factor, so the range is 0 to 20460, with resolution of 20 steps. 
+ * If 0, the output is disabled. If 1, it will count to 20 steps. 
  * @param board     Board to modify
  * @param trigger   Number of steps
  */
@@ -3810,7 +3830,8 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 /**
  * Set the orientation calculation mode
  * Options include: Symmetrical, High asymmetrical, Low asymmetrical
- * See the BMI160 datasheet for more information. Not supported by the BMI270.
+ * See the BMI160 datasheet for more information. 
+ * Not supported by the BMI270.
  * @param board         Calling object
  * @param mode          New calculation mode
  */
@@ -3843,6 +3864,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
 /**
  * Pulls the current accelerometer output data rate and data range from the sensor
  * Reads the ODR and RANGE values set in the sensor.
+ * This is a debug function, the data is return in the context ptr as AccBmi160Config->acc/AccBmi270Config->acc/Mma8452qConfig->acc
  * @param board         Calling object
  * @param context       Pointer to additional data for the callback function
  * @param completed     Callback function that is executed when the task is finished
@@ -3907,14 +3929,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param board     Calling object
  * @param type      Type of motion requested
  */
-  'mbl_mw_acc_bosch_disable_motion_detection': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschMotion]],
-
-/**
- * Writes the configuration to the sendor
- * Applies the ODR and RANGE values set in set_range() and set_odr().
- * @param board     Pointer to the board to send the command to
- */
-  'mbl_mw_gyro_bmi160_write_config': [ref.types.void, [ref.refType(MetaWearBoard)]]
+  'mbl_mw_acc_bosch_disable_motion_detection': [ref.types.void, [ref.refType(MetaWearBoard), AccBoschMotion]]
 });
 
 module.exports = {

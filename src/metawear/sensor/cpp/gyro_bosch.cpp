@@ -27,6 +27,7 @@ using std::vector;
 #define CREATE_ROT_SIGNAL_SINGLE(offset) CREATE_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION_SINGLE_AXIS, 1, offset)
 #define CREATE_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_ROT_RESPONSE_HEADER, board, interpreter, \
         FirmwareConverter::BMI160_ROTATION, channels, 2, 1, offset)
+#define CREATE_BMI270_ROT_SIGNAL_SINGLE(offset) CREATE_BMI270_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION_SINGLE_AXIS, 1, offset)        
 #define CREATE_BMI270_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_BMI270_ROT_RESPONSE_HEADER, board, interpreter, \
         FirmwareConverter::BMI160_ROTATION, channels, 2, 1, offset)
 
@@ -132,9 +133,9 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
                 board->module_events[GYRO_BMI270_ROT_RESPONSE_HEADER] = rotation;
             }
             if (!rotation->components.size()) {
-                rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(0));
-                rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(2));
-                rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(4));
+                rotation->components.push_back(CREATE_BMI270_ROT_SIGNAL_SINGLE(0));
+                rotation->components.push_back(CREATE_BMI270_ROT_SIGNAL_SINGLE(2));
+                rotation->components.push_back(CREATE_BMI270_ROT_SIGNAL_SINGLE(4));
             }
 
             board->responses[GYRO_BMI270_ROT_RESPONSE_HEADER]= response_handler_data_no_id;

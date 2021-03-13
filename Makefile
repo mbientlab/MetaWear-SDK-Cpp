@@ -16,8 +16,6 @@ MODULES_SRC_DIR= $(addsuffix /cpp, $(addprefix $(SOURCE_DIR)/, $(MODULES)))
 SRCS:=$(foreach src_dir, $(MODULES_SRC_DIR), $(shell find $(src_dir) -name \*.cpp))
 EXPORT_HEADERS:=$(foreach module, $(addprefix $(SOURCE_DIR)/, $(MODULES)), $(shell find $(module) -maxdepth 1 -name \*.h))
 
-$(info    VAR is $(EXPORT_HEADERS))
-
 ifeq ($(CONFIGURATION),debug)
     APP_NAME:=$(APP_NAME)_d
     CXXFLAGS+=-g
@@ -73,7 +71,7 @@ APP_OUTPUT:=$(REAL_DIST_DIR)/$(LIB_NAME)
 build: $(APP_OUTPUT)
 
 $(REAL_BUILD_DIR)/%.o: %.cpp
-	$(CXX) -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
+	clang-5.0 -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
 
 -include $(DEPS)
 
@@ -128,13 +126,12 @@ define n
 
 endef
 MASTER_HEADERS:=$(subst @,${n},$(foreach header, $(EXPORT_HEADERS), $(addprefix \#include ", $(addsuffix "@,$(header)))))
-$(info    VAR is $(MASTER_HEADERS))
 
 $(BUILD_DIR)/metawear.h: $(EXPORT_HEADERS)
 	$(file > $@,$(MASTER_HEADERS))
 
 bindings: $(BUILD_DIR)/metawear.h
-	$(MAKE) CXX=$(CXX) -C c-binding-generator/ -j4
+	$(MAKE) CXX=clang-5.0 -C c-binding-generator/ -j4
 	$(MAKE) APP_NAME=metawearbinding MODULES=metawear/generator \
         CXXFLAGS="-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -Ic-binding-generator/src -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS"
 	./c-binding-generator/dist/$(CONFIGURATION)/bin/$(MACHINE)/cbinds --cxx-flags "-std=c++11 -I. -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS" \
@@ -159,7 +156,7 @@ swiftbindings:
 
 test: build
 	make pythonbindings
-	python3 -m unittest discover -s test
+	python3.7 -m unittest discover -s test
 
 test-debug: build
 	make pythonbindings

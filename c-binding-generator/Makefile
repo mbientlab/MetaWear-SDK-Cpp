@@ -2,7 +2,7 @@
 
 include config.mk
 
-CXXFLAGS+=-std=c++11 -Wall -Werror -I$(SOURCE_DIR) -I/usr/local/opt/llvm/include
+CXXFLAGS+=-std=c++11 -Wall -Werror -I$(SOURCE_DIR) -I/usr/lib/llvm-7/include
 
 ifeq ($(CONFIGURATION),debug)
     CXXFLAGS+=-g
@@ -13,7 +13,7 @@ else ifeq ($(CONFIGURATION),release)
 else
     $(error Invalid value for "CONFIGURATION", must be 'release' or 'debug')
 endif
-LDFLAGS+=-lclang -ldl -rdynamic -L/usr/local/opt/llvm/lib
+LDFLAGS+=-lclang -ldl -rdynamic -L/usr/lib/llvm-7/lib
 
 ifeq ($(MACHINE),x86)
     CXXFLAGS+=-m32
@@ -39,7 +39,7 @@ build: $(MODULES_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
 -include $(DEPS)
 
 $(REAL_BUILD_DIR)/%.o: %.cpp
-	$(CXX) -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
+	clang-5.0 -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
 
 $(APP_OUTPUT): $(OBJS)
 	$(CXX) -o $@ $^ $(LDFLAGS)

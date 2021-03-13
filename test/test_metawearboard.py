@@ -802,7 +802,8 @@ class TestModel(TestMetaWearBase):
             ["metawear cpro", TestMetaWearBase.METAWEAR_CPRO_BOARD, Model.METAWEAR_CPRO, "MetaWear CPro"],
             ["metaenv", TestMetaWearBase.METAWEAR_ENV_BOARD, Model.METAENV, "MetaEnvironment"],
             ["metadetect", TestMetaWearBase.METAWEAR_DETECT_BOARD, Model.METADETECT, "MetaDetector"],
-            ["metamotion r", TestMetaWearBase.METAWEAR_MOTION_R_BOARD, Model.METAMOTION_R, "MetaMotion R"]
+            ["metamotion r", TestMetaWearBase.METAWEAR_MOTION_R_BOARD, Model.METAMOTION_R, "MetaMotion R"],
+            ["metamotion s", TestMetaWearBase.METAWEAR_MOTION_S_BOARD, Model.METAMOTION_S, "MetaMotion S"]
         ]
 
     def test_get_model(self):

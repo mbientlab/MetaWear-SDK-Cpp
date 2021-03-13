@@ -34,7 +34,7 @@ using namespace std::chrono;
 
 #define GET_LOGGER_STATE(board) static_pointer_cast<LoggerState>(board->logger_state)
 
-const uint8_t REVISION_EXTENDED_LOGGING= 2, MMS_REVISION = 3, ENTRY_ID_MASK= 0x1f, RESET_UID_MASK= 0x7, 
+const uint8_t REVISION_EXTENDED_LOGGING= 2, MMS_REVISION= 3, ENTRY_ID_MASK= 0x1f, RESET_UID_MASK= 0x7, 
         LOG_ENTRY_SIZE= (uint8_t) sizeof(uint32_t), ROOT_SIGNAL_INDEX= 0xff;
 const double TICK_TIME_STEP= (48.0 / 32768.0) * 1000.0;         ///< milliseconds
 
