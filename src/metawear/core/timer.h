@@ -50,7 +50,6 @@ METAWEAR_API uint8_t mbl_mw_timer_get_id(const MblMwTimer* timer);
  * @return Timer object identified by the id, null if no object is found
  */
 METAWEAR_API MblMwTimer* mbl_mw_timer_lookup_id(const MblMwMetaWearBoard* board, uint8_t id);
-
 /**
  * Starts a timer
  * @param timer     Timer to start

@@ -17,13 +17,13 @@ extern "C" {
 
 /**
  * Retrieves an individual value from a multi-valued datasignal i.e. MblMwCartesianFloat datasignal is 3 float values.  
+ * For example, the x component for the acc x,y,z can be retrieved with this function
  * These individual signals can use the full suite of 
  * @param signal                Data signal to lookup
  * @param index                 Index of the component to return
  * @return Signal component, null if signal is signle valued
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_datasignal_get_component(const MblMwDataSignal* signal, uint8_t index);
-
 /**
  * Subscribes to a data stream, processing messages with the given handler
  * @param signal                Data signal to subscribe to
@@ -42,14 +42,12 @@ METAWEAR_API void mbl_mw_datasignal_unsubscribe(MblMwDataSignal *signal);
  * @return Zero if not readable, non-zero if it is
  */
 METAWEAR_API int32_t mbl_mw_datasignal_is_readable(const MblMwDataSignal* signal);
-
 /**
  * Reads data from sensor represented by the data signal.  
  * Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function
  * @param signal    Data signal to read from
  */
 METAWEAR_API void mbl_mw_datasignal_read(const MblMwDataSignal* signal);
-
 /**
  * Reads data from sensor represented by the data signal.
  * Data is forwarded to the callback function assigned by the mbl_mw_datasignal_subscribe function.  
@@ -58,7 +56,6 @@ METAWEAR_API void mbl_mw_datasignal_read(const MblMwDataSignal* signal);
  * @param parameters    Additional parameters required for the read operation
  */
 METAWEAR_API void mbl_mw_datasignal_read_with_parameters(const MblMwDataSignal* signal, const void* parameters);
-
 /**
  * Creates an MblMwDataLogger for the signal
  * @param signal                Data signal to log

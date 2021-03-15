@@ -61,7 +61,6 @@ METAWEAR_API void mbl_mw_led_load_preset_pattern(MblMwLedPattern* pattern, MblMw
  * @param color     Color the pattern is configuring
  */
 METAWEAR_API void mbl_mw_led_write_pattern(const MblMwMetaWearBoard* board, const MblMwLedPattern* pattern, MblMwLedColor color);
-
 /**
  * Plays any programmed patterns, and immediately plays any patterns programmed later
  * @param board     Pointer to the board to send the command to

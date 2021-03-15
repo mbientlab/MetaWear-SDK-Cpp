@@ -82,7 +82,6 @@ METAWEAR_API void mbl_mw_metawearboard_tear_down(MblMwMetaWearBoard *board);
  * @return Zero if not initialized, non-zero if it is
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_is_initialized(const MblMwMetaWearBoard *board);
-
 /**
  * Checks module type i.e. what kind of accelerometer is being used  
  * @param board         Board to check
@@ -110,7 +109,6 @@ METAWEAR_API const char* mbl_mw_metawearboard_get_model_name(const MblMwMetaWear
  * @return Struct holding the characteristics
  */
 METAWEAR_API const MblMwDeviceInformation* mbl_mw_metawearboard_get_device_information(const MblMwMetaWearBoard* board);
-
 /**
  * Returns information about the onboard modules
  * @param board             Calling object
@@ -118,7 +116,6 @@ METAWEAR_API const MblMwDeviceInformation* mbl_mw_metawearboard_get_device_infor
  * @return Array of info objects
  */
 METAWEAR_API MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMetaWearBoard* board, uint32_t* size);
-
 /**
  * Serializes the API state.  
  * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
@@ -136,7 +133,6 @@ METAWEAR_API uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* b
  * @return MBL_MW_STATUS_OK if successful, MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT if failed
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size);
-
 /**
  * Reads the current state of the board and creates anonymous data signals based on what data is being logged.
  * If this task failed, a null pointer will be passed into the `anonymous_signals` parameter

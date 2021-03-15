@@ -42,7 +42,6 @@ METAWEAR_API void mbl_mw_debug_reset_after_gc(const MblMwMetaWearBoard *board);
  * @param board     Calling object
  */
 METAWEAR_API void mbl_mw_debug_enable_power_save(const MblMwMetaWearBoard *board);
-
 /**
  * Enables/disables stack overflow assertion.  Function will do nothing if feature is unsupported.
  * @param board     Calling object
@@ -56,7 +55,6 @@ METAWEAR_API void mbl_mw_debug_set_stack_overflow_assertion(const MblMwMetaWearB
  * @param handler   Callback function for handling the received data
  */
 METAWEAR_API void mbl_mw_debug_read_stack_overflow_state(const MblMwMetaWearBoard *board, void *context, MblMwFnData handler);
-
 /**
  * Reads the internal queues' current usage statistics; data is returned as a byte array.  
  * If feature is unspported, nullptr will be passed to the `handler` parameter
@@ -65,7 +63,6 @@ METAWEAR_API void mbl_mw_debug_read_stack_overflow_state(const MblMwMetaWearBoar
  * @param handler   Callback function for handling the received data
  */
 METAWEAR_API void mbl_mw_debug_read_schedule_queue_usage(const MblMwMetaWearBoard *board, void *context, MblMwFnData handler);
-
 /**
  * Creates a synthetic notification internally to the MetaWear system.  Useful for testing.
  * @param board     Calling object
@@ -73,7 +70,6 @@ METAWEAR_API void mbl_mw_debug_read_schedule_queue_usage(const MblMwMetaWearBoar
  * @param lenght    Size of the value array
  */
 METAWEAR_API void mbl_mw_debug_spoof_notification(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length);
-
 /**
  * Sends a raw command directly to the MetaWear.  Useful for testing.
  * @param board     Calling object
@@ -81,7 +77,6 @@ METAWEAR_API void mbl_mw_debug_spoof_notification(const MblMwMetaWearBoard *boar
  * @param lenght    Size of the value array
  */
 METAWEAR_API void mbl_mw_debug_send_command(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length);
-
 /**
  * Retrieves a data signal representing the key register value.  This is a simple
  * 4 byte scratch register.

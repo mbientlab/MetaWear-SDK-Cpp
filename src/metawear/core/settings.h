@@ -90,9 +90,9 @@ METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_power_status_data_signal(const
  * @return Pointer to the charge status signal, nullptr if unsupported
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_settings_get_charge_status_data_signal(const MblMwMetaWearBoard* board);
-
 /**
  * Sets the advertisement name
+ * Can be used to rename the device
  * @param board             Board to modify
  * @param device_name       Byte array containing the device name, max 8 ASCII characters
  * @param len               Length of the array
@@ -163,7 +163,6 @@ METAWEAR_API void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearB
  * @param board         Calling object
  */
 METAWEAR_API uint8_t mbl_mw_settings_get_firmware_build_id(const MblMwMetaWearBoard *board);
-
 /**
  * Reads the current power status if available.  The callback function will be called with:  
  * 1    - power source is attached  

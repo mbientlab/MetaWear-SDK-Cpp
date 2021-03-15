@@ -159,7 +159,6 @@ typedef enum {
 } MblMwAccBoschTapShockTime;
 /**
  * Available windows for double tap detection
- * @author Eric Tsai
  */
 typedef enum {
     MBL_MW_ACC_BOSCH_DOUBLE_TAP_WINDOW_50ms= 0,
@@ -174,7 +173,6 @@ typedef enum {
 
 /**
  * Available windows for double tap detection
- * @author Eric Tsai
  */
 typedef enum {
     MBL_MW_ACC_BOSCH_AXIS_XYZ_REMAP_XYZ= 0,
@@ -187,7 +185,6 @@ typedef enum {
 
 /**
  * Available windows for double tap detection
- * @author Eric Tsai
  */
 typedef enum {
     MBL_MW_ACC_BOSCH_AXIS_XYZ_SIGN_000= 0,
