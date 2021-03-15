@@ -12,7 +12,8 @@ extern "C" {
 #endif
 
 /**
- * Create a buffer processor. 
+ * Create a buffer processor.
+ * Stores one entry. Great for temporarily storing the output of other processors.
  * Captures input data which can be retrieved at a later point in time
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor

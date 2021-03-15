@@ -21,12 +21,12 @@ typedef enum {
 
 /**
  * Create a threshold processor.  
- * Allows data through that crosses a boundary according to MblMwThresholdMode
+ * Allows data through that crosses a boundary (threshold) according to MblMwThresholdMode
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
- * @param mode                  Processor output mode
- * @param boundary              Limit that triggers an event when data crosses it
- * @param hysteresis            Min distance between the limit and value to signal a successful crossing
+ * @param mode                  Processor output mode (absolute mode, output is value | binary mode output is 1 rising edge, -1 if falling)
+ * @param boundary              Limit (threshold) that triggers an event when data crosses it
+ * @param hysteresis            Min distance (error/diff) between the limit and value to signal a successful crossing
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created
  */
@@ -35,8 +35,8 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_threshold_create(MblMwDataSignal *sour
 /**
  * Modifies the threshold processor configuration
  * @param threshold             Threshold processor to modify
- * @param boundary              Limit that triggers an event when data crosses it
- * @param hysteresis            Min distance between the limit and value to signal a successful crossing
+ * @param boundary              Limit (threshold) that triggers an event when data crosses it
+ * @param hysteresis            Min distance (error/diff) between the limit and value to signal a successful crossing
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
  * a non-threshold processor was passed in
  */

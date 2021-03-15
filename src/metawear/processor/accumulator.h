@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 /**
- * Create an accumulator whose output is the same size as the input.  
+ * Create an accumulator whose output is the same size as the input. 
  * Keeps a running sum of the input
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
@@ -31,7 +31,8 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_accumulator_create(MblMwDataSignal *so
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_accumulator_create_size(MblMwDataSignal *source, uint8_t output_size, void *context, MblMwFnDataProcessor processor_created);
 /**
- * Overwrites the current running sum with a new value
+ * Overwrites the current accumulator value with a new value
+ * Can be used to reset the running sum
  * @param accumulator           Accumulator processor to modify
  * @param new_running_sum       New running sum of the accumulator
  * @return  MBL_MW_STATUS_OK if processor state was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if a non-accumulator 

@@ -30,7 +30,7 @@ typedef enum {
 
 /**
  * Create a math processor where signed/unsigned operation is inferred.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
+ * Performs simple arithmetic on sensor data. See MblMwMathOperation for allowed ops.
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
@@ -42,7 +42,7 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_math_create(MblMwDataSignal *source, M
         void *context, MblMwFnDataProcessor processor_created);
 /**
  * Create a math processor using signed operations.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
+ * Performs simple arithmetic on sensor data. See MblMwMathOperation for allowed ops.
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute
@@ -54,7 +54,7 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_math_create_signed(MblMwDataSignal *so
         void *context, MblMwFnDataProcessor processor_created);
 /**
  * Create a math processor using unsigned operations.  
- * Performs arithmetic on sensor data. See MblMwMathOperation for allowed ops.
+ * Performs simple arithmetic on sensor data. See MblMwMathOperation for allowed ops.
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param op                    Math operation to compute

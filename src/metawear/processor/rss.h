@@ -13,9 +13,9 @@ extern "C" {
 
 /**
  * Create an rss processor.  
- * A pointer representing the processor will be passed back to the user via a callback function.
  * Computes the root sum square of the input.
  * Works on inputs such as acc, gyro, and magnetometer data (x,y,z)
+ * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param context               Pointer to additional data for the callback function
  * @param processor_created     Callback function to be executed when the processor is created

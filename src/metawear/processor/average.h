@@ -37,9 +37,8 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_highpass_create(MblMwDataSignal *sourc
  * @param processor_created     Callback function to be executed when the processor is created
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_lowpass_create(MblMwDataSignal *source, uint8_t size, void *context, MblMwFnDataProcessor processor_created);
-
 /**
- * Resets the running average
+ * Resets the running average (averager current value)
  * @param average       Average processor to reset
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
  * a non-average processor was passed in
@@ -47,6 +46,8 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_lowpass_create(MblMwDataSignal *source
 METAWEAR_API int32_t mbl_mw_dataprocessor_average_reset(MblMwDataProcessor *average);
 /**
  * Modifies the sample size of the average processor
+ * The sample size is the number of previous data samples to compare against
+ * Recommended to be a power of 2 for faster computation.
  * @param average       Average processor to modify
  * @param size          New sample size to use
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 

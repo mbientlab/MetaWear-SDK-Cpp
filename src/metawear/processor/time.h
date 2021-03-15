@@ -21,8 +21,8 @@ typedef enum {
 
 /**
  * Creates a time delay processor.  
- * Periodically allow data through. 
- * Can be used to periodically (andoptinally slowly) get data from sensors
+ * Can be used to periodically allow data through. 
+ * Can be used to slowly (low freq/sampling rate) get data from sensors (i.e count to 30 and take a temp reading)
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param mode                  Operation mode of the processor

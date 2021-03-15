@@ -23,7 +23,7 @@ typedef enum {
 
 /**
  * Create a pulse detector. 
- * Detects and quantifies a pulse over the input values.
+ * Detects and quantifies a pulse over the input values using the threshold and width specified.
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
  * @param output                Output type of the processor

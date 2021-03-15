@@ -22,6 +22,8 @@ typedef enum {
 
 /**
  * Create a passthrough processor.  
+ * On a pass-count, only the count # of samples will go through and then the processor will shut off.
+ * On a pass-conditional, if the count=0, all data is blocked. if the count>0, all data is passed.
  * Gate that only allows data though based on a user configured internal state.
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor

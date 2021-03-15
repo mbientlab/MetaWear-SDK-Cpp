@@ -12,7 +12,8 @@ extern "C" {
 #endif
 
 /**
- * Create an accounter for the input signal.  
+ * Adds a system timer (timestamp) to the input signal. 
+ * Not typically used.
  * Adds additional information to the BTLE packet in the form of a counter
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
@@ -22,7 +23,8 @@ extern "C" {
 METAWEAR_API int32_t mbl_mw_dataprocessor_accounter_create(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created);
 
 /**
- * Create an accounter in code mode for the input signal.  
+ * Adds a simple counter (1,2,3...) to the input signal.  
+ * Great to make sure the packets are coming in order.
  * The count value is accessed through the MblMwData struct's <code>extra</code> field.
  * A pointer representing the processor will be passed back to the user via a callback function.
  * @param source                Data signal providing the input for the processor
