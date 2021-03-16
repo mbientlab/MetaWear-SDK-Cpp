@@ -1182,6 +1182,9 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_gyro_bmi160_write_config.restype = None
     libmetawear.mbl_mw_gyro_bmi160_write_config.argtypes = [c_void_p]
 
+    libmetawear.mbl_mw_gyro_bmi160_set_range.restype = None
+    libmetawear.mbl_mw_gyro_bmi160_set_range.argtypes = [c_void_p, c_int]
+
     libmetawear.mbl_mw_dataprocessor_accumulator_create.restype = c_int
     libmetawear.mbl_mw_dataprocessor_accumulator_create.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP]
 
@@ -1262,9 +1265,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_settings_set_scan_response.restype = None
     libmetawear.mbl_mw_settings_set_scan_response.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
-
-    libmetawear.mbl_mw_neopixel_rotate.restype = None
-    libmetawear.mbl_mw_neopixel_rotate.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ushort, c_int]
 
     libmetawear.mbl_mw_dataprocessor_remove.restype = None
     libmetawear.mbl_mw_dataprocessor_remove.argtypes = [c_void_p]
@@ -1382,6 +1382,18 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_acc_bosch_get_packed_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_bosch_get_packed_acceleration_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_neopixel_rotate.restype = None
+    libmetawear.mbl_mw_neopixel_rotate.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ushort, c_int]
+
+    libmetawear.mbl_mw_settings_enable_3V_regulator.restype = None
+    libmetawear.mbl_mw_settings_enable_3V_regulator.argtypes = [c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.restype = c_void_p
+    libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.argtypes = [c_void_p]
+
+    libmetawear.mbl_mw_acc_bmi270_disable_step_counter.restype = None
+    libmetawear.mbl_mw_acc_bmi270_disable_step_counter.argtypes = [c_void_p]
 
     libmetawear.mbl_mw_event_end_record.restype = None
     libmetawear.mbl_mw_event_end_record.argtypes = [c_void_p, c_void_p, FnVoid_VoidP_VoidP_Int]
@@ -1953,12 +1965,6 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_i2c_write.restype = None
     libmetawear.mbl_mw_i2c_write.argtypes = [c_void_p, c_ubyte, c_ubyte, POINTER(c_ubyte), c_ubyte]
 
-    libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.restype = c_void_p
-    libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.argtypes = [c_void_p]
-
-    libmetawear.mbl_mw_acc_bmi270_disable_step_counter.restype = None
-    libmetawear.mbl_mw_acc_bmi270_disable_step_counter.argtypes = [c_void_p]
-
     libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_get_packed_acceleration_data_signal.argtypes = [c_void_p]
 
@@ -2204,9 +2210,6 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_acc_bosch_set_any_motion_threshold.restype = None
     libmetawear.mbl_mw_acc_bosch_set_any_motion_threshold.argtypes = [c_void_p, c_float]
-
-    libmetawear.mbl_mw_gyro_bmi160_set_range.restype = None
-    libmetawear.mbl_mw_gyro_bmi160_set_range.argtypes = [c_void_p, c_int]
 
     libmetawear.mbl_mw_acc_bosch_set_quiet_time.restype = None
     libmetawear.mbl_mw_acc_bosch_set_quiet_time.argtypes = [c_void_p, c_int]

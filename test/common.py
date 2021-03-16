@@ -283,7 +283,7 @@ class TestMetaWearBase(unittest.TestCase):
             0x0d: create_string_buffer(b'\x0d\x80\x00\x01', 4),
             0x0f: create_string_buffer(b'\x0f\x80\x00\x01\x08', 5),
             0x10: create_string_buffer(b'\x10\x80', 2),
-            0x11: create_string_buffer(b'\x11\x80\x00\x03', 4),
+            0x11: create_string_buffer(b'\x11\x80\x00\x09', 4),
             0x12: create_string_buffer(b'\x12\x80\x00\x00', 4),
             0x13: create_string_buffer(b'\x13\x80\x01\x00', 4),
             0x14: create_string_buffer(b'\x14\x80\x00\x00', 4),

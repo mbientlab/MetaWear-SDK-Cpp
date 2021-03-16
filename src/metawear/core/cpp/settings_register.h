@@ -14,5 +14,6 @@ enum class SettingsRegister : uint8_t {
     POWER_STATUS = 0x11,
     CHARGE_STATUS,
     WHITELIST_FILTER_MODE,
-    WHITELIST_ADDRESSES
+    WHITELIST_ADDRESSES,
+    THREE_VOLT_POWER = 0x1c
 };
