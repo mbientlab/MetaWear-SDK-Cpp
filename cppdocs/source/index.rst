@@ -6,8 +6,9 @@
 Introduction
 ============
 The MetaWear C++ API provides a low level implementation of the `MetaWear <https://mbientlab.com/metawear/>`_ Bluetooth LE protocol that can be used in 
-C/C++ projects or by higher level languages such as Javascript and Python; it **does not** provide any Bluetooth LE functionality.  Source code for 
-the API is available on the `Metawear-SDK-Cpp <https://github.com/mbientlab/Metawear-SDK-Cpp>`_ project page which also include Javascript and Python 
+C/C++ projects or by higher level languages such as Javascript and Python; it **does not** provide any Bluetooth LE functionality.  
+
+Source code for the API is available on the `Metawear-SDK-Cpp <https://github.com/mbientlab/Metawear-SDK-Cpp>`_ project page which also include Javascript and Python 
 bindings.
 
 .. toctree::

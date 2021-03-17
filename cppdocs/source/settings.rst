@@ -122,3 +122,16 @@ A more detailed explanation of about BTLE connection parameters can be found on 
         mbl_mw_settings_set_connection_parameters(board, 10.f, 1024.f, 0, 6000);
     }
 
+MMS 3V Regulator
+---------------------
+The MMS (MetaMotion) board has a 3V regulator that can be turned on and off for IOs.
+
+It is automatically turned on to power the coin vibration motor (if there is one attached), the ambient light sensor, and the LED.
+
+However, if you have an external peripheral on the IOs that needs 3V power (such as a buzzer or UV sensor), you can use this function to turn on the power: ::
+
+    mbl_mw_settings_enable_3V_regulator(board, 1);
+
+And to turn it off: ::
+
+    mbl_mw_settings_enable_3V_regulator(board, 0);

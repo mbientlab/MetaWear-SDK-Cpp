@@ -1,8 +1,8 @@
 /**
  * @copyright MbientLab License 
- * @file gyro_bmi160.h
- * @brief Functions for interacting with the BMI160 gyro.
- * @details This sensor is only available on MetaWear RG and RPro boards.
+ * @file gyro_bosch.h
+ * @brief Functions for interacting with the BMI160 and BMI270 gyro.
+ * @details This sensor is only available on MMR, MMS, MetaWear RG and RPro boards.
  */
 #pragma once
 
