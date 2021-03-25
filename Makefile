@@ -1,4 +1,4 @@
-.PHONY: build clean test doc archive publish install generator bindings pythonbindings javascriptbindings swiftbindings
+.PHONY: build stbuild clean test doc archive publish install generator bindings pythonbindings javascriptbindings swiftbindings
 
 include config.mk
 include project_version.mk
@@ -34,7 +34,8 @@ ifneq ($(KERNEL),Darwin)
     LD_FLAGS:=$(LD_FLAGS)--soname
 else
     EXTENSION:=dylib
-    LD_FLAGS:=-flat_namespace -undefined suppress -dynamiclib $(LD_FLAGS)-install_name
+    ST_LD_FLAGS:=-flat_namespace -undefined suppress
+    LD_FLAGS:=-dynamiclib $(LD_FLAGS)-install_name
 endif
 LIB_SO_NAME:=lib$(APP_NAME).$(EXTENSION)
 LIB_SHORT_NAME:=$(LIB_SO_NAME).$(VERSION_MAJOR)
@@ -61,17 +62,18 @@ LD_FLAGS:=$(LD_FLAGS),$(LIB_SHORT_NAME) $(ARCH)
 REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)
 REAL_BUILD_DIR:=$(BUILD_DIR)/$(MACHINE)/$(CONFIGURATION)
 MODULES_BUILD_DIR:=$(addprefix $(REAL_BUILD_DIR)/, $(MODULES_SRC_DIR))
-LIBMETAWEAR_JAVASCRIPT_PATH:=$(BUILD_DIR)/bindings/javascript/libmetawear-path.js
+LIBMETAWEAR_JAVASCRIPT_PATH:=$(BINDINGS_DIR)/javascript/libmetawear-path.js
+#LIBMETAWEAR_JAVASCRIPT_PATH:=$(BUILD_DIR)/bindings/javascript/libmetawear-path.js
 
 OBJS:=$(addprefix $(REAL_BUILD_DIR)/,$(SRCS:%.cpp=%.o))
 DEPS:=$(OBJS:%.o=%.d)
 
 APP_OUTPUT:=$(REAL_DIST_DIR)/$(LIB_NAME)
 
-build: $(APP_OUTPUT)
+build: $(APP_OUTPUT) $(LIBMETAWEAR_JAVASCRIPT_PATH)
 
 $(REAL_BUILD_DIR)/%.o: %.cpp
-	clang-5.0 -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
+	$(CXX) -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
 
 -include $(DEPS)
 
@@ -86,6 +88,25 @@ $(APP_OUTPUT): $(OBJS) | $(REAL_DIST_DIR)
 	$(CXX) -o $@ $(LD_FLAGS) $^
 	ln -sf $(LIB_NAME) $(REAL_DIST_DIR)/$(LIB_SHORT_NAME)
 	ln -sf $(LIB_SHORT_NAME) $(REAL_DIST_DIR)/$(LIB_SO_NAME)
+
+#build: $(APP_OUTPUT)
+
+#$(REAL_BUILD_DIR)/%.o: %.cpp
+#	clang-5.0 -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
+
+#-include $(DEPS)
+
+#$(MODULES_BUILD_DIR):
+#	mkdir -p $@
+
+#$(REAL_DIST_DIR):
+#	mkdir -p $@
+
+#$(OBJS): | $(MODULES_BUILD_DIR)
+#$(APP_OUTPUT): $(OBJS) | $(REAL_DIST_DIR)
+#	$(CXX) -o $@ $(LD_FLAGS) $(ST_LD_FLAGS) $^
+#	ln -sf $(LIB_NAME) $(REAL_DIST_DIR)/$(LIB_SHORT_NAME)
+#	ln -sf $(LIB_SHORT_NAME) $(REAL_DIST_DIR)/$(LIB_SO_NAME)
 
 PUBLISH_NAME:=$(APP_NAME)-$(VERSION).tar
 PUBLISH_NAME_ZIP:=$(PUBLISH_NAME).gz
