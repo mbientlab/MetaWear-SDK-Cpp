@@ -140,13 +140,11 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
 
             board->responses[GYRO_BMI270_ROT_RESPONSE_HEADER]= response_handler_data_no_id;
 
-            if (board->module_info.at(MBL_MW_MODULE_GYRO).revision >= PACKED_ROT_REVISION) {
-                if (!board->module_events.count(GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER)) {
-                    board->module_events[GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER]= new MblMwDataSignal(GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER, board, 
-                        DataInterpreter::BMI160_ROTATION, FirmwareConverter::BMI160_ROTATION, 3, 2, 1, 0);
-                }
-                board->responses[GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER]= response_handler_packed_data;
+            if (!board->module_events.count(GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER)) {
+                board->module_events[GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER]= new MblMwDataSignal(GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER, board, 
+                    DataInterpreter::BMI160_ROTATION, FirmwareConverter::BMI160_ROTATION, 3, 2, 1, 0);
             }
+            board->responses[GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER]= response_handler_packed_data;
 
             board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi270Register::CONFIG))),
                     forward_as_tuple(received_config_response));

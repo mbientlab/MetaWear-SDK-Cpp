@@ -46,7 +46,7 @@ ifeq ($(MACHINE),x86)
 else ifeq ($(MACHINE),x64)
 	ARCH=-m64
 else ifeq ($(MACHINE),arm)
-	ARCH=-marm
+#	ARCH=-marm
 else
     $(error Unrecognized "MACHINE" value, use 'x86', 'x64', or 'arm')
 endif
