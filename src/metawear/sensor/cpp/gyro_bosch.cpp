@@ -222,7 +222,7 @@ void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, void *conte
     states[board].read_config_context = context;
     states[board].read_config_completed = completed;
 
-    uint8_t command[2]= {MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi270Register::CONFIG))};
+    uint8_t command[2]= {MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi160Register::CONFIG))};
     SEND_COMMAND;
 }
 
