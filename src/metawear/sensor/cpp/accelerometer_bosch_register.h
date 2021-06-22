@@ -20,7 +20,7 @@ enum class AccelerometerBmi160Register : uint8_t {
     ORIENT_INTERRUPT,
 
     ///<step counter/detector BMI160 only
-    STEP_DETECTOR_INTERRUPT_EN= 0x17,
+    STEP_DETECTOR_INTERRUPT_EN = 0x17,
     STEP_DETECTOR_CONFIG,
     STEP_DETECTOR_INTERRUPT,
     STEP_COUNTER_DATA,
@@ -34,7 +34,7 @@ enum class AccelerometerBmi270Register : uint8_t {
     DATA_CONFIG,
     DATA_INTERRUPT,
 
-    PACKED_ACC_DATA,
+    PACKED_ACC_DATA = 0x5,
     
     FEATURE_ENABLE = 0x6,
     FEATURE_INTERRUPT_ENABLE,

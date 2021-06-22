@@ -34,9 +34,9 @@ using std::vector;
 const float FSR_SCALE[5]= {16.4f, 32.8f, 65.6f, 131.2f, 262.4f};
 const uint8_t PACKED_ROT_REVISION= 1;
 const ResponseHeader    GYRO_BMI160_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA)),
-                        GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::PACKED_DATA)),
+                        GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::PACKED_GYRO_DATA)),
                         GYRO_BMI270_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::DATA)),
-                        GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::PACKED_DATA));
+                        GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::PACKED_GYRO_DATA));
 
 struct GyroBoschConfig {
     uint8_t gyr_odr : 4;
