@@ -122,7 +122,7 @@ static MblMwData* convert_to_bosch_acceleration_unsigned_single_axis(bool log_da
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bmi160_rotation(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bosch_rotation(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
 
@@ -136,7 +136,7 @@ static MblMwData* convert_to_bmi160_rotation(bool log_data, const MblMwDataSigna
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
-static MblMwData* convert_to_bmi160_rotation_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bosch_rotation_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
     CAST_INT32(unscaled)
 
@@ -146,7 +146,7 @@ static MblMwData* convert_to_bmi160_rotation_single_axis(bool log_data, const Mb
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
-static MblMwData* convert_to_bmi160_rotation_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
+static MblMwData* convert_to_bosch_rotation_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled= 0;
     CAST_UINT32(unscaled)
 
@@ -385,9 +385,9 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::TEMPERATURE , convert_to_temperature },
     { DataInterpreter::BOSCH_PRESSURE , convert_to_bmp280_pressure },
     { DataInterpreter::BOSCH_ALTITUDE , convert_to_bmp280_altitude },
-    { DataInterpreter::BMI160_ROTATION , convert_to_bmi160_rotation },
-    { DataInterpreter::BMI160_ROTATION_SINGLE_AXIS , convert_to_bmi160_rotation_single_axis },
-    { DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS , convert_to_bmi160_rotation_unsigned_single_axis },
+    { DataInterpreter::BOSCH_ROTATION , convert_to_bosch_rotation },
+    { DataInterpreter::BOSCH_ROTATION_SINGLE_AXIS , convert_to_bosch_rotation_single_axis },
+    { DataInterpreter::BOSCH_ROTATION_UNSIGNED_SINGLE_AXIS , convert_to_bosch_rotation_unsigned_single_axis },
     { DataInterpreter::BOSCH_ACCELERATION , convert_to_bosch_acceleration },
     { DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS , convert_to_bosch_acceleration_single_axis },
     { DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS , convert_to_bosch_acceleration_unsigned_single_axis },
@@ -462,7 +462,7 @@ unordered_map<FirmwareConverter, FnDataSignalFloat> number_to_firmware_converter
     { FirmwareConverter::BME280_HUMIDITY , bme280_humidity_to_firmware },
     { FirmwareConverter::BOSCH_ACCELERATION , bosch_acc_to_firmware },
     { FirmwareConverter::BOSCH_BAROMETER , bosch_baro_to_firmware },
-    { FirmwareConverter::BMI160_ROTATION , bosch_gyro_to_firmware },
+    { FirmwareConverter::BOSCH_ROTATION , bosch_gyro_to_firmware },
     { FirmwareConverter::MMA8452Q_ACCELERATION , mma8452q_to_firmware},
     { FirmwareConverter::TEMPERATURE , temp_to_firmware},
     { FirmwareConverter::Q16_16_FIXED_POINT , q16_16_fixed_point_to_firmware},

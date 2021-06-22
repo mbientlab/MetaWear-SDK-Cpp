@@ -69,23 +69,24 @@ const uint8_t BMA255_DEFAULT_CONFIG[]= {
 const float ORIENT_HYS_G_PER_STEP = 0.0625f;
 const uint8_t FSR_BITMASKS[4]= {0x3, 0x5, 0x8, 0xc}, PACKED_ACC_REVISION= 1;
 const uint8_t BMI270_FSR_BITMASKS[4]= {0x0, 0x1, 0x2, 0x3};
-const unordered_map<uint8_t, float> FSR_SCALE= {{0x3, 16384.f}, {0x5, 8192.f}, {0x8, 4096.f}, {0xc, 2048.f}},
+const unordered_map<uint8_t, float> BMA255_FSR_SCALE= {{0x3, 16384.f}, {0x5, 8192.f}, {0x8, 4096.f}, {0xc, 2048.f}},
+    BMI160_FSR_SCALE= {{0x3, 16384.f}, {0x5, 8192.f}, {0x8, 4096.f}, {0xc, 2048.f}},
     BMI270_FSR_SCALE= {{0x0, 16384.f}, {0x1, 8192.f}, {0x2, 4096.f}, {0x3, 2048.f}},
     BOSCH_MOTION_THS_STEPS = {{0x3, 0.00391f}, {0x5, 0.00781f}, {0x8, 0.01563f}, {0xc, 0.03125f}},
     BOSCH_TAP_THS_STEPS = {{0x3, 0.0625f}, {0x5, 0.125f}, {0x8, 0.250f}, {0xc, 0.5f}};
-const ResponseHeader BOSCH_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT)),
-    BOSCH_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT)),
-    BOSCH_ORIENTATION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT)),
-    BOSCH_TAP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT)),
-    BMI160_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_INTERRUPT)),
-    BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_DATA))),
-    BOSCH_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::PACKED_ACC_DATA)),
-    BMI270_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::MOTION_INTERRUPT)),
-    BMI270_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT)),
-    BMI270_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT)),
-    BMI270_WRIST_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::WRIST_INTERRUPT)),
-    BMI270_ACTIVITY_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::ACTIVITY_INTERRUPT)),
-    BMI270_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::PACKED_ACC_DATA));
+const ResponseHeader BOSCH_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::DATA_INTERRUPT)),
+    BOSCH_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::MOTION_INTERRUPT)),
+    BOSCH_ORIENTATION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::ORIENT_INTERRUPT)),
+    BOSCH_TAP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::TAP_INTERRUPT)),
+    BMI160_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::STEP_DETECTOR_INTERRUPT)),
+    BMI160_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBmi160Register::STEP_COUNTER_DATA))),
+    BMI160_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::PACKED_ACC_DATA)),
+    BMI270_MOTION_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::MOTION_INTERRUPT)),
+    BMI270_STEP_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::STEP_COUNT_INTERRUPT)),
+    BMI270_STEP_COUNTER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::STEP_COUNT_INTERRUPT)),
+    BMI270_WRIST_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::WRIST_INTERRUPT)),
+    BMI270_ACTIVITY_DETECTOR(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::ACTIVITY_INTERRUPT)),
+    BMI270_PACKED_ACCEL_RESPONSE_HEADER(MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::PACKED_ACC_DATA));
 
 struct AccBmi270Config {
     struct {
@@ -515,14 +516,14 @@ static void init_accelerometer_bosch(MblMwMetaWearBoard *board, void *config) {
     }
 
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).revision >= PACKED_ACC_REVISION) {
-        if (!board->module_events.count(BOSCH_PACKED_ACCEL_RESPONSE_HEADER)) {
-            board->module_events[BOSCH_PACKED_ACCEL_RESPONSE_HEADER]= new MblMwDataSignal(BOSCH_PACKED_ACCEL_RESPONSE_HEADER, board, 
+        if (!board->module_events.count(BMI160_PACKED_ACCEL_RESPONSE_HEADER)) {
+            board->module_events[BMI160_PACKED_ACCEL_RESPONSE_HEADER]= new MblMwDataSignal(BMI160_PACKED_ACCEL_RESPONSE_HEADER, board, 
                 DataInterpreter::BOSCH_ACCELERATION, FirmwareConverter::BOSCH_ACCELERATION, 3, 2, 1, 0);
         }
-        board->responses[BOSCH_PACKED_ACCEL_RESPONSE_HEADER]= response_handler_packed_data;
+        board->responses[BMI160_PACKED_ACCEL_RESPONSE_HEADER]= response_handler_packed_data;
     }
 
-    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))),
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBmi160Register::DATA_CONFIG))),
         forward_as_tuple(received_config_response));
     board->responses.emplace(BOSCH_MOTION_DETECTOR, response_handler_data_no_id);
     board->responses.emplace(BOSCH_TAP_DETECTOR, response_handler_data_no_id);
@@ -592,10 +593,10 @@ void init_accelerometer_bmi270(MblMwMetaWearBoard *board) {
     }
     board->responses[BMI270_PACKED_ACCEL_RESPONSE_HEADER]= response_handler_packed_data;
 
-    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschBmi270Register::DATA_CONFIG))),
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBmi270Register::DATA_CONFIG))),
         forward_as_tuple(received_config_response));
     
-    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT))),
+    board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBmi270Register::STEP_COUNT_INTERRUPT))),
         forward_as_tuple(received_step_counter_response));
     
     AccBoschState newState = {nullptr, nullptr, 0x0, nullptr, nullptr};
@@ -660,16 +661,16 @@ void read_accelerometer_bosch_acceleration_config(const MblMwMetaWearBoard* boar
     states[board].read_config_context = context;
     states[board].read_config_completed = completed;
 
-    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschRegister::DATA_CONFIG))};
+    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBmi160Register::DATA_CONFIG))};
     SEND_COMMAND;
 }
 
 float bosch_get_data_scale(const MblMwMetaWearBoard *board) {
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_BMI160:
-        return FSR_SCALE.at(((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc.range);
+        return BMI160_FSR_SCALE.at(((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc.range);
     case MBL_MW_MODULE_ACC_TYPE_BMA255:
-        return FSR_SCALE.at(((AccBma255Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc.range);    
+        return BMA255_FSR_SCALE.at(((AccBma255Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc.range);    
     case MBL_MW_MODULE_ACC_TYPE_BMI270:
         return BMI270_FSR_SCALE.at(((AccBmi270Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc.range);
     default:
@@ -692,11 +693,11 @@ MblMwDataSignal* mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(const M
 MblMwDataSignal* mbl_mw_acc_bosch_get_packed_acceleration_data_signal(const MblMwMetaWearBoard* board) {
     auto implementation= board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation;
     if (implementation == MBL_MW_MODULE_ACC_TYPE_BMI160) {
-        GET_DATA_SIGNAL(BOSCH_PACKED_ACCEL_RESPONSE_HEADER);
+        GET_DATA_SIGNAL(BMI160_PACKED_ACCEL_RESPONSE_HEADER);
     } else if (implementation == MBL_MW_MODULE_ACC_TYPE_BMA255) {
-        GET_DATA_SIGNAL(BOSCH_PACKED_ACCEL_RESPONSE_HEADER);
+        GET_DATA_SIGNAL(BMI160_PACKED_ACCEL_RESPONSE_HEADER);
     } else if (implementation == MBL_MW_MODULE_ACC_TYPE_BMI270) {
-	GET_DATA_SIGNAL(BMI270_PACKED_ACCEL_RESPONSE_HEADER);
+	    GET_DATA_SIGNAL(BMI270_PACKED_ACCEL_RESPONSE_HEADER);
     } else {
 	return nullptr;
     }
@@ -785,7 +786,7 @@ void mbl_mw_acc_bosch_set_range(MblMwMetaWearBoard *board, MblMwAccBoschRange ra
 }
 
 void mbl_mw_acc_bosch_write_acceleration_config(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::DATA_CONFIG)};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::DATA_CONFIG)};
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_BMI160: {
         auto config= ((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc;
@@ -835,7 +836,7 @@ void mbl_mw_acc_bmi160_disable_step_counter(MblMwMetaWearBoard* board) {
 }
 
 void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWearBoard* board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_CONFIG)};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::STEP_DETECTOR_CONFIG)};
     auto config= ((AccBmi160Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->step_counter;
 
     memcpy(command + 2, &config, sizeof(config));
@@ -843,17 +844,17 @@ void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWearBoard* board
 }
 
 void mbl_mw_acc_bmi160_reset_step_counter(const MblMwMetaWearBoard* board) {
-    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_COUNTER_RESET)};
+    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::STEP_COUNTER_RESET)};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bmi160_enable_step_detector(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_INTERRUPT_EN), 1, 0};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::STEP_DETECTOR_INTERRUPT_EN), 1, 0};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bmi160_disable_step_detector(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::STEP_DETECTOR_INTERRUPT_EN), 0, 1};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::STEP_DETECTOR_INTERRUPT_EN), 0, 1};
     SEND_COMMAND;
 }
 
@@ -870,28 +871,28 @@ void mbl_mw_acc_bmi270_set_step_counter_trigger(MblMwMetaWearBoard* board, uint1
 }
 
 void mbl_mw_acc_bmi270_enable_step_counter(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x02, 0x00};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x02, 0x00};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x02, 0x00};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x02, 0x00};
     send_command(board, command2, sizeof(command2));
 }
 
 void mbl_mw_acc_bmi270_disable_step_counter(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x02};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x02};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x02};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x02};
     send_command(board, command2, sizeof(command2));
 }
 
 void mbl_mw_acc_bmi270_write_step_counter_config(const MblMwMetaWearBoard* board) {
-    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.index};
+    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.index};
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap;
     memcpy(command + 3, &config, sizeof(config));
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bmi270_reset_step_counter(const MblMwMetaWearBoard* board) {
-    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.index};
+    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.index};
     ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap.reset_counter=1;
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.step_counter_3.bitmap;
     memcpy(command + 3, &config, sizeof(config));
@@ -903,21 +904,21 @@ void mbl_mw_acc_bmi270_read_step_counter(MblMwMetaWearBoard* board, void* contex
     states[board].read_step_counter_handler = handler;
     states[board].read_step_counter_context = context;
         
-    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBoschBmi270Register::STEP_COUNT_INTERRUPT))};
+    uint8_t command[2]= {MBL_MW_MODULE_ACCELEROMETER, READ_REGISTER(ORDINAL(AccelerometerBmi270Register::STEP_COUNT_INTERRUPT))};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bmi270_enable_step_detector(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x80, 0x00};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x80, 0x00};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x80, 0x00};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x80, 0x00};
     send_command(board, command2, sizeof(command2));
 }
 
 void mbl_mw_acc_bmi270_disable_step_detector(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x80};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x80};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x80};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x80};
     send_command(board, command2, sizeof(command2));
 }
 
@@ -954,7 +955,7 @@ void mbl_mw_acc_bosch_set_orientation_mode(MblMwMetaWearBoard *board, MblMwAccBo
 }
 
 void mbl_mw_acc_bosch_write_orientation_config(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_CONFIG)};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::ORIENT_CONFIG)};
     
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_BMI160: {
@@ -1037,7 +1038,7 @@ void mbl_mw_acc_bosch_set_threshold(MblMwMetaWearBoard *board, float threshold) 
 }
 
 void mbl_mw_acc_bosch_write_tap_config(const MblMwMetaWearBoard *board) {
-    vector<uint8_t> command = {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_CONFIG)};
+    vector<uint8_t> command = {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::TAP_CONFIG)};
     
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_BMI160: {
@@ -1066,12 +1067,12 @@ void mbl_mw_acc_bosch_enable_tap_detection(const MblMwMetaWearBoard *board, uint
         mask|= 0x1;
     }
 
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT_ENABLE), mask, 0};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::TAP_INTERRUPT_ENABLE), mask, 0};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_disable_tap_detection(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::TAP_INTERRUPT_ENABLE), 0x00, 0x03};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::TAP_INTERRUPT_ENABLE), 0x00, 0x03};
     SEND_COMMAND;
 }
 
@@ -1162,7 +1163,7 @@ void mbl_mw_acc_bosch_set_no_motion_threshold(MblMwMetaWearBoard *board, float t
 }
 
 void mbl_mw_acc_bosch_write_motion_config(const MblMwMetaWearBoard *board, MblMwAccBoschMotion type) {
-    vector<uint8_t> command = {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_CONFIG)};
+    vector<uint8_t> command = {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::MOTION_CONFIG)};
     states.at(board).motion_mask = 0x7;
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
         case MBL_MW_MODULE_ACC_TYPE_BMI160: {
@@ -1180,21 +1181,21 @@ void mbl_mw_acc_bosch_write_motion_config(const MblMwMetaWearBoard *board, MblMw
         case MBL_MW_MODULE_ACC_TYPE_BMI270: {
             switch(type) {
                 case MBL_MW_ACC_BOSCH_MOTION_SIGMOTION: {
-                    uint8_t command[5]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.sig_motion.index};
+                    uint8_t command[5]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.sig_motion.index};
                     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.sig_motion.bitmap;
                     memcpy(command + 3, &config, sizeof(config));
                     SEND_COMMAND;
                     break;
                 }
                 case MBL_MW_ACC_BOSCH_MOTION_NOMOTION: {
-                    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.no_motion.index};
+                    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.no_motion.index};
                     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.no_motion.bitmap;
                     memcpy(command + 3, &config, sizeof(config));
                     SEND_COMMAND;
                     break;
                 }
                 case MBL_MW_ACC_BOSCH_MOTION_ANYMOTION: {
-                    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.any_motion.index};
+                    uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.any_motion.index};
                     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.any_motion.bitmap;
                     memcpy(command + 3, &config, sizeof(config));
                     SEND_COMMAND;
@@ -1212,30 +1213,30 @@ void mbl_mw_acc_bosch_enable_motion_detection(const MblMwMetaWearBoard *board, M
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
         case MBL_MW_MODULE_ACC_TYPE_BMI160:
         case MBL_MW_MODULE_ACC_TYPE_BMA255: {
-            uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT_ENABLE), states.at(board).motion_mask, 0};
+            uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::MOTION_INTERRUPT_ENABLE), states.at(board).motion_mask, 0};
             SEND_COMMAND;
             break;
         }
         case MBL_MW_MODULE_ACC_TYPE_BMI270: {
             switch(type) {
                 case MBL_MW_ACC_BOSCH_MOTION_SIGMOTION: {
-                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x01, 0x00};
+                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x01, 0x00};
                     send_command(board, command1, sizeof(command1));
-                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x01, 0x00};
+                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x01, 0x00};
                     send_command(board, command2, sizeof(command2));
                     break;
                 }
                 case MBL_MW_ACC_BOSCH_MOTION_NOMOTION: {
-                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x20, 0x00};
+                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x20, 0x00};
                     send_command(board, command1, sizeof(command1));
-                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x20, 0x00};
+                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x20, 0x00};
                     send_command(board, command2, sizeof(command2));
                     break;
                 }
                 case MBL_MW_ACC_BOSCH_MOTION_ANYMOTION: {
-                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x40, 0x00};
+                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x40, 0x00};
                     send_command(board, command1, sizeof(command1));
-                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x40, 0x00};
+                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x40, 0x00};
                     send_command(board, command2, sizeof(command2));
                     break;
                 }
@@ -1249,30 +1250,30 @@ void mbl_mw_acc_bosch_disable_motion_detection(const MblMwMetaWearBoard *board, 
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
         case MBL_MW_MODULE_ACC_TYPE_BMI160:
         case MBL_MW_MODULE_ACC_TYPE_BMA255: {
-            uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT_ENABLE), 0, 0x7f};
+            uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::MOTION_INTERRUPT_ENABLE), 0, 0x7f};
             SEND_COMMAND;
             break;
             }
         case MBL_MW_MODULE_ACC_TYPE_BMI270: {
             switch(type) {
                 case MBL_MW_ACC_BOSCH_MOTION_SIGMOTION: {
-                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x01};
+                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x01};
                     send_command(board, command1, sizeof(command1));
-                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x01};
+                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x01};
                     send_command(board, command2, sizeof(command2));
                     break;
                 }
                 case MBL_MW_ACC_BOSCH_MOTION_NOMOTION: {
-                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x20};
+                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x20};
                     send_command(board, command1, sizeof(command1));
-                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x20};
+                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x20};
                     send_command(board, command2, sizeof(command2));
                     break;
                 }
                 case MBL_MW_ACC_BOSCH_MOTION_ANYMOTION: {
-                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x40};
+                    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x40};
                     send_command(board, command1, sizeof(command1));
-                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x40};
+                    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x40};
                     send_command(board, command2, sizeof(command2));
                     break;
                 }
@@ -1332,23 +1333,23 @@ void mbl_mw_acc_bmi270_wrist_gesture_duration(const MblMwMetaWearBoard *board, u
 }
 
 void mbl_mw_acc_bmi270_write_wrist_gesture_config(const MblMwMetaWearBoard* board) {
-    uint8_t command[11]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.wrist_gesture.index};
+    uint8_t command[11]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.wrist_gesture.index};
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.wrist_gesture.bitmap;
     memcpy(command + 3, &config, sizeof(config));
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bmi270_enable_wrist_gesture(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x10, 0x00};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x10, 0x00};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x10, 0x00};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x10, 0x00};
     send_command(board, command2, sizeof(command2));
 }
 
 void mbl_mw_acc_bmi270_disable_wrist_gesture(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x10};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x10};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x10};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x10};
     send_command(board, command2, sizeof(command2));
 }
 
@@ -1425,37 +1426,37 @@ void mbl_mw_acc_bmi270_wrist_wakeup_tilt_pu(const MblMwMetaWearBoard *board, uin
 }
 
 void mbl_mw_acc_bmi270_write_wrist_wakeup_config(const MblMwMetaWearBoard* board) {
-    uint8_t command[15]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.wrist_wakeup.index};
+    uint8_t command[15]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.wrist_wakeup.index};
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.wrist_wakeup.bitmap;
     memcpy(command + 3, &config, sizeof(config));
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bmi270_enable_wrist_wakeup(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x08, 0x00};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x08, 0x00};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x08, 0x00};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x08, 0x00};
     send_command(board, command2, sizeof(command2));
 }
 
 void mbl_mw_acc_bmi270_disable_wrist_wakeup(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x08};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x08};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x08};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x08};
     send_command(board, command2, sizeof(command2));
 }
 
 void mbl_mw_acc_bmi270_enable_activity_detection(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x04, 0x00};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x04, 0x00};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x04, 0x00};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x04, 0x00};
     send_command(board, command2, sizeof(command2));
 }
 
 void mbl_mw_acc_bmi270_disable_activity_detection(const MblMwMetaWearBoard *board) {
-    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x04};
+    uint8_t command1[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_INTERRUPT_ENABLE), 0x00, 0x04};
     send_command(board, command1, sizeof(command1));
-    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_ENABLE), 0x00, 0x04};
+    uint8_t command2[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_ENABLE), 0x00, 0x04};
     send_command(board, command2, sizeof(command2));
 }
 
@@ -1534,7 +1535,7 @@ void mbl_mw_acc_bmi270_axis_remap(const MblMwMetaWearBoard* board, MblMwAccBosch
             ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.axis_remap.bitmap.map_z_axis_sign = 1;
             break;
     }
-    uint8_t command[5]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.axis_remap.index};
+    uint8_t command[5]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::FEATURE_CONFIG), ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.axis_remap.index};
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->feature_config.axis_remap.bitmap;
     memcpy(command + 3, &config, sizeof(config));
     SEND_COMMAND;
@@ -1547,7 +1548,7 @@ void mbl_mw_acc_bmi270_acc_offsets(const MblMwMetaWearBoard* board, uint16_t x_o
     ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->nv_offset.off_acc_y = y_offset;
     ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->nv_offset.off_acc_z = z_offset;
 
-    uint8_t command[6]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::OFFSET)};
+    uint8_t command[6]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::OFFSET)};
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->nv_offset;
     memcpy(command + 2, &config, sizeof(config));
     SEND_COMMAND;
@@ -1559,54 +1560,54 @@ void mbl_mw_acc_bmi270_fifo_downs(const MblMwMetaWearBoard* board, uint8_t gyro_
     ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->fifo_downs.acc_fifo_downs = acc_downs;
     ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->fifo_downs.acc_fifo_filt_data = acc_data;
 
-    uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschBmi270Register::DOWNSAMPLING)};
+    uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi270Register::DOWNSAMPLING)};
     auto config= ((AccBmi270Config*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->fifo_downs;
     memcpy(command + 2, &config, sizeof(config));
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_enable_orientation_detection(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT_ENABLE), 1, 0};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::ORIENT_INTERRUPT_ENABLE), 1, 0};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_disable_orientation_detection(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT_ENABLE), 0, 1};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::ORIENT_INTERRUPT_ENABLE), 0, 1};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_start(const MblMwMetaWearBoard *board) {
-    uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::POWER_MODE), 1};
+    uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::POWER_MODE), 1};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_stop(const MblMwMetaWearBoard *board) {
-    uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::POWER_MODE), 0};
+    uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::POWER_MODE), 0};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_enable_acceleration_sampling(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT_ENABLE), 1, 0};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::DATA_INTERRUPT_ENABLE), 1, 0};
     SEND_COMMAND;
 }
 
 void mbl_mw_acc_bosch_disable_acceleration_sampling(const MblMwMetaWearBoard *board) {
-    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT_ENABLE), 0, 1};
+    uint8_t command[4]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::DATA_INTERRUPT_ENABLE), 0, 1};
     SEND_COMMAND;
 }
 
 void create_acc_bosch_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
-    case ORDINAL(AccelerometerBoschRegister::DATA_INTERRUPT):
+    case ORDINAL(AccelerometerBmi160Register::DATA_INTERRUPT):
         uri << "acceleration";
         if (signal->length() <= 2) {
             uri << "[" << (int) (signal->offset >> 1) << "]";
         }
         break;
-    case ORDINAL(AccelerometerBoschRegister::ORIENT_INTERRUPT):
+    case ORDINAL(AccelerometerBmi160Register::ORIENT_INTERRUPT):
         uri << "orientation";
         break;
-    case ORDINAL(AccelerometerBoschRegister::MOTION_INTERRUPT):
+    case ORDINAL(AccelerometerBmi160Register::MOTION_INTERRUPT):
         uri << "bosch-motion";
         break;
     }
@@ -1614,13 +1615,13 @@ void create_acc_bosch_uri(const MblMwDataSignal* signal, stringstream& uri) {
 
 void create_acc_bmi270_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
-    case ORDINAL(AccelerometerBoschBmi270Register::DATA_INTERRUPT):
+    case ORDINAL(AccelerometerBmi270Register::DATA_INTERRUPT):
         uri << "acceleration";
         if (signal->length() <= 2) {
             uri << "[" << (int) (signal->offset >> 1) << "]";
         }
         break;
-    case ORDINAL(AccelerometerBoschBmi270Register::MOTION_INTERRUPT):
+    case ORDINAL(AccelerometerBmi270Register::MOTION_INTERRUPT):
         uri << "bosch-motion";
         break;
     }

@@ -24,21 +24,21 @@ using std::stringstream;
 using std::unordered_map;
 using std::vector;
 
-#define CREATE_ROT_SIGNAL_SINGLE(offset) CREATE_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION_SINGLE_AXIS, 1, offset)
-#define CREATE_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_ROT_RESPONSE_HEADER, board, interpreter, \
-        FirmwareConverter::BMI160_ROTATION, channels, 2, 1, offset)
-#define CREATE_BMI270_ROT_SIGNAL_SINGLE(offset) CREATE_BMI270_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION_SINGLE_AXIS, 1, offset)        
+#define CREATE_BMI160_ROT_SIGNAL_SINGLE(offset) CREATE_BMI160_ROT_SIGNAL(DataInterpreter::BOSCH_ROTATION_SINGLE_AXIS, 1, offset)
+#define CREATE_BMI160_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_BMI160_ROT_RESPONSE_HEADER, board, interpreter, \
+        FirmwareConverter::BOSCH_ROTATION, channels, 2, 1, offset)
+#define CREATE_BMI270_ROT_SIGNAL_SINGLE(offset) CREATE_BMI270_ROT_SIGNAL(DataInterpreter::BOSCH_ROTATION_SINGLE_AXIS, 1, offset)        
 #define CREATE_BMI270_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_BMI270_ROT_RESPONSE_HEADER, board, interpreter, \
-        FirmwareConverter::BMI160_ROTATION, channels, 2, 1, offset)
+        FirmwareConverter::BOSCH_ROTATION, channels, 2, 1, offset)
 
 const float FSR_SCALE[5]= {16.4f, 32.8f, 65.6f, 131.2f, 262.4f};
 const uint8_t PACKED_ROT_REVISION= 1;
-const ResponseHeader    GYRO_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA)),
-                        GYRO_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::PACKED_DATA)),
+const ResponseHeader    GYRO_BMI160_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA)),
+                        GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::PACKED_DATA)),
                         GYRO_BMI270_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::DATA)),
                         GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::PACKED_DATA));
 
-struct GyroBmi160Config {
+struct GyroBoschConfig {
     uint8_t gyr_odr : 4;
     uint8_t gyr_bwp : 2;
     uint8_t:2;
@@ -46,15 +46,15 @@ struct GyroBmi160Config {
     uint8_t:5;
 };
 
-struct GyroBmi160State {
+struct GyroBoschState {
     MblMwFnBoardPtrInt read_config_completed;
     void *read_config_context;
 };
 
-static unordered_map<const MblMwMetaWearBoard*, GyroBmi160State> states;
+static unordered_map<const MblMwMetaWearBoard*, GyroBoschState> states;
 
 static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
-    memcpy(board->module_config.at(MBL_MW_MODULE_GYRO), response + 2, sizeof(GyroBmi160Config));
+    memcpy(board->module_config.at(MBL_MW_MODULE_GYRO), response + 2, sizeof(GyroBoschConfig));
 
     auto callback = states[board].read_config_completed;
     auto context = states[board].read_config_context;
@@ -66,7 +66,7 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
 }
 
 float bosch_gyro_get_data_scale(const MblMwMetaWearBoard *board) {
-    return FSR_SCALE[((GyroBmi160Config*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range];
+    return FSR_SCALE[((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range];
 }
 
 void init_gyro_module(MblMwMetaWearBoard *board) {
@@ -74,9 +74,9 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
     case MBL_MW_MODULE_GYRO_TYPE_BMI160:
         if (board->module_info.count(MBL_MW_MODULE_GYRO) && board->module_info.at(MBL_MW_MODULE_GYRO).present) {
             if (!board->module_config.count(MBL_MW_MODULE_GYRO)) {
-                GyroBmi160Config *new_config = (GyroBmi160Config*)malloc(sizeof(GyroBmi160Config));
+                GyroBoschConfig *new_config = (GyroBoschConfig*)malloc(sizeof(GyroBoschConfig));
 
-                memset(new_config, 0, sizeof(GyroBmi160Config));
+                memset(new_config, 0, sizeof(GyroBoschConfig));
                 new_config->gyr_bwp = 2;
                 new_config->gyr_odr = MBL_MW_GYRO_BOSCH_ODR_100Hz;
                 new_config->gyr_range = MBL_MW_GYRO_BOSCH_RANGE_2000dps;
@@ -84,41 +84,41 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
             }
 
             MblMwDataSignal* rotation;
-            if (board->module_events.count(GYRO_ROT_RESPONSE_HEADER)) {
-                rotation = dynamic_cast<MblMwDataSignal*>(board->module_events[GYRO_ROT_RESPONSE_HEADER]);
+            if (board->module_events.count(GYRO_BMI160_ROT_RESPONSE_HEADER)) {
+                rotation = dynamic_cast<MblMwDataSignal*>(board->module_events[GYRO_BMI160_ROT_RESPONSE_HEADER]);
             } else {
-                rotation = CREATE_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION, 3, 0);
-                board->module_events[GYRO_ROT_RESPONSE_HEADER] = rotation;
+                rotation = CREATE_BMI160_ROT_SIGNAL(DataInterpreter::BOSCH_ROTATION, 3, 0);
+                board->module_events[GYRO_BMI160_ROT_RESPONSE_HEADER] = rotation;
             }
             if (!rotation->components.size()) {
-                rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(0));
-                rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(2));
-                rotation->components.push_back(CREATE_ROT_SIGNAL_SINGLE(4));
+                rotation->components.push_back(CREATE_BMI160_ROT_SIGNAL_SINGLE(0));
+                rotation->components.push_back(CREATE_BMI160_ROT_SIGNAL_SINGLE(2));
+                rotation->components.push_back(CREATE_BMI160_ROT_SIGNAL_SINGLE(4));
             }
 
-            board->responses[GYRO_ROT_RESPONSE_HEADER]= response_handler_data_no_id;
+            board->responses[GYRO_BMI160_ROT_RESPONSE_HEADER]= response_handler_data_no_id;
 
             if (board->module_info.at(MBL_MW_MODULE_GYRO).revision >= PACKED_ROT_REVISION) {
-                if (!board->module_events.count(GYRO_PACKED_ROT_RESPONSE_HEADER)) {
-                    board->module_events[GYRO_PACKED_ROT_RESPONSE_HEADER]= new MblMwDataSignal(GYRO_PACKED_ROT_RESPONSE_HEADER, board, 
-                        DataInterpreter::BMI160_ROTATION, FirmwareConverter::BMI160_ROTATION, 3, 2, 1, 0);
+                if (!board->module_events.count(GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER)) {
+                    board->module_events[GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER]= new MblMwDataSignal(GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER, board, 
+                        DataInterpreter::BOSCH_ROTATION, FirmwareConverter::BOSCH_ROTATION, 3, 2, 1, 0);
                 }
-                board->responses[GYRO_PACKED_ROT_RESPONSE_HEADER]= response_handler_packed_data;
+                board->responses[GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER]= response_handler_packed_data;
             }
 
             board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi160Register::CONFIG))),
                     forward_as_tuple(received_config_response));
 
-            GyroBmi160State newState = {nullptr};
+            GyroBoschState newState = {nullptr};
             states.insert({board, newState});
         }
         break;
     case MBL_MW_MODULE_GYRO_TYPE_BMI270:
         if (board->module_info.count(MBL_MW_MODULE_GYRO) && board->module_info.at(MBL_MW_MODULE_GYRO).present) {
             if (!board->module_config.count(MBL_MW_MODULE_GYRO)) {
-                GyroBmi160Config *new_config = (GyroBmi160Config*)malloc(sizeof(GyroBmi160Config));
+                GyroBoschConfig *new_config = (GyroBoschConfig*)malloc(sizeof(GyroBoschConfig));
 
-                memset(new_config, 0, sizeof(GyroBmi160Config));
+                memset(new_config, 0, sizeof(GyroBoschConfig));
                 new_config->gyr_bwp = 2;
                 new_config->gyr_odr = MBL_MW_GYRO_BOSCH_ODR_100Hz;
                 new_config->gyr_range = MBL_MW_GYRO_BOSCH_RANGE_2000dps;
@@ -129,7 +129,7 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
             if (board->module_events.count(GYRO_BMI270_ROT_RESPONSE_HEADER)) {
                 rotation = dynamic_cast<MblMwDataSignal*>(board->module_events[GYRO_BMI270_ROT_RESPONSE_HEADER]);
             } else {
-                rotation = CREATE_BMI270_ROT_SIGNAL(DataInterpreter::BMI160_ROTATION, 3, 0);
+                rotation = CREATE_BMI270_ROT_SIGNAL(DataInterpreter::BOSCH_ROTATION, 3, 0);
                 board->module_events[GYRO_BMI270_ROT_RESPONSE_HEADER] = rotation;
             }
             if (!rotation->components.size()) {
@@ -142,14 +142,14 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
 
             if (!board->module_events.count(GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER)) {
                 board->module_events[GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER]= new MblMwDataSignal(GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER, board, 
-                    DataInterpreter::BMI160_ROTATION, FirmwareConverter::BMI160_ROTATION, 3, 2, 1, 0);
+                    DataInterpreter::BOSCH_ROTATION, FirmwareConverter::BOSCH_ROTATION, 3, 2, 1, 0);
             }
             board->responses[GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER]= response_handler_packed_data;
 
             board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_GYRO, READ_REGISTER(ORDINAL(GyroBmi270Register::CONFIG))),
                     forward_as_tuple(received_config_response));
 
-            GyroBmi160State newState = {nullptr};
+            GyroBoschState newState = {nullptr};
             states.insert({board, newState});
         }
         break;    
@@ -163,7 +163,7 @@ void free_gyro_module(MblMwMetaWearBoard *board) {
 }
 
 MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWearBoard *board) {
-    GET_DATA_SIGNAL(GYRO_ROT_RESPONSE_HEADER);
+    GET_DATA_SIGNAL(GYRO_BMI160_ROT_RESPONSE_HEADER);
 }
 
 MblMwDataSignal* mbl_mw_gyro_bmi270_get_rotation_data_signal(const MblMwMetaWearBoard *board) {
@@ -175,7 +175,7 @@ MblMwDataSignal* mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(const Mbl
 }
 
 MblMwDataSignal* mbl_mw_gyro_bmi160_get_packed_rotation_data_signal(const MblMwMetaWearBoard *board) {
-    GET_DATA_SIGNAL(GYRO_PACKED_ROT_RESPONSE_HEADER);
+    GET_DATA_SIGNAL(GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER);
 }
 
 MblMwDataSignal* mbl_mw_gyro_bmi270_get_packed_rotation_data_signal(const MblMwMetaWearBoard *board) {
@@ -183,38 +183,38 @@ MblMwDataSignal* mbl_mw_gyro_bmi270_get_packed_rotation_data_signal(const MblMwM
 }
 
 void serialize_gyro_config(const MblMwMetaWearBoard *board, vector<uint8_t>& state) {
-    SERIALIZE_MODULE_CONFIG(GyroBmi160Config, MBL_MW_MODULE_GYRO);
+    SERIALIZE_MODULE_CONFIG(GyroBoschConfig, MBL_MW_MODULE_GYRO);
 }
 
 void deserialize_gyro_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
-    DESERIALIZE_MODULE_CONFIG(GyroBmi160Config, MBL_MW_MODULE_GYRO);
+    DESERIALIZE_MODULE_CONFIG(GyroBoschConfig, MBL_MW_MODULE_GYRO);
 }
 
 void mbl_mw_gyro_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwGyroBoschOdr odr) {
-    ((GyroBmi160Config*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_odr= odr;
+    ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_odr= odr;
 }
 
 void mbl_mw_gyro_bmi160_set_range(MblMwMetaWearBoard *board, MblMwGyroBoschRange range) {
-    ((GyroBmi160Config*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range= range;
+    ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range= range;
 }
 
 void mbl_mw_gyro_bmi160_write_config(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::CONFIG)};
-    memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_GYRO), sizeof(GyroBmi160Config));
+    memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_GYRO), sizeof(GyroBoschConfig));
     SEND_COMMAND;
 }
 
 void mbl_mw_gyro_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwGyroBoschOdr odr) {
-    ((GyroBmi160Config*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_odr= odr;
+    ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_odr= odr;
 }
 
 void mbl_mw_gyro_bmi270_set_range(MblMwMetaWearBoard *board, MblMwGyroBoschRange range) {
-    ((GyroBmi160Config*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range= range;
+    ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range= range;
 }
 
 void mbl_mw_gyro_bmi270_write_config(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::CONFIG)};
-    memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_GYRO), sizeof(GyroBmi160Config));
+    memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_GYRO), sizeof(GyroBoschConfig));
     SEND_COMMAND;
 }
 

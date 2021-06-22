@@ -140,8 +140,8 @@ MblMwDataProcessor* MblMwDataProcessor::transform(const MblMwDataSignal* input, 
             case DataInterpreter::MMA8452Q_ACCELERATION:
                 processor->interpreter = DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS;
                 break;
-            case DataInterpreter::BMI160_ROTATION:
-                processor->interpreter = DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS;
+            case DataInterpreter::BOSCH_ROTATION:
+                processor->interpreter = DataInterpreter::BOSCH_ROTATION_UNSIGNED_SINGLE_AXIS;
                 break;
             case DataInterpreter::BMM150_B_FIELD:
                 processor->interpreter = DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS;

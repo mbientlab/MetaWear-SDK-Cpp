@@ -1,6 +1,6 @@
 #pragma once
 
-enum class AccelerometerBoschRegister : uint8_t {
+enum class AccelerometerBmi160Register : uint8_t {
     POWER_MODE = 1,
     DATA_INTERRUPT_ENABLE,
     DATA_CONFIG,
@@ -28,7 +28,7 @@ enum class AccelerometerBoschRegister : uint8_t {
     PACKED_ACC_DATA
 };
 
-enum class AccelerometerBoschBmi270Register : uint8_t {
+enum class AccelerometerBmi270Register : uint8_t {
     POWER_MODE = 1,
     DATA_INTERRUPT_ENABLE,
     DATA_CONFIG,

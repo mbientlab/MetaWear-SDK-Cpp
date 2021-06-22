@@ -174,8 +174,8 @@ void MblMwDataSignal::make_signed() {
     case DataInterpreter::UINT32:
         interpreter = DataInterpreter::INT32;
         break;
-    case DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS:
-        interpreter = DataInterpreter::BMI160_ROTATION_SINGLE_AXIS;
+    case DataInterpreter::BOSCH_ROTATION_UNSIGNED_SINGLE_AXIS:
+        interpreter = DataInterpreter::BOSCH_ROTATION_SINGLE_AXIS;
         break;
     case DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS:
         interpreter = DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS;
@@ -201,8 +201,8 @@ void MblMwDataSignal::make_unsigned() {
     case DataInterpreter::INT32:
         interpreter = DataInterpreter::UINT32;
         break;
-    case DataInterpreter::BMI160_ROTATION_SINGLE_AXIS:
-        interpreter = DataInterpreter::BMI160_ROTATION_UNSIGNED_SINGLE_AXIS;
+    case DataInterpreter::BOSCH_ROTATION_SINGLE_AXIS:
+        interpreter = DataInterpreter::BOSCH_ROTATION_UNSIGNED_SINGLE_AXIS;
         break;
     case DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS:
         interpreter = DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS;
