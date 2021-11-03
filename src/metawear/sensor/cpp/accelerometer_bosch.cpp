@@ -33,20 +33,21 @@ using std::vector;
 #define GET_CONFIG(x) ((x*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))
 
 const uint8_t BMI270_DEFAULT_CONFIG[]= {
-    0xa8, 0x02,
-    0x00,
-    0x00,
-    0x88, 0x00, 0x00,
-    0x05, 0xE0, 0xAA, 0x38, 0x01,
-    0x05, 0xE0, 0x90, 0x30, 0x02,
-    0xFA, 0x00, 0x03,
-    0x2D, 0x01, 0xD4, 0x7B, 0x3B, 0x01, 0xDB, 0x7A, 0x04, 0x00, 0x3F, 0x7B, 0xCD, 0x6C, 0xC3, 0x4C, 0x04,
-    0x85, 0x09, 0xC3, 0x04, 0xEC, 0xE6, 0x0C, 0x46, 0x01, 0x00, 0x27, 0x00, 0x19, 0x00, 0x96, 0x00, 0x05,
-    0xA0, 0x00, 0x01, 0x00, 0x0C, 0x00, 0xF0, 0x3C, 0x00, 0x01, 0x01, 0x00, 0x03, 0x00, 0x01, 0x00, 0x06,
-    0x00, 0x0E, 0x00, 0x00, 0x07,
-    0x05, 0x00, 0xEE, 0x06, 0x04, 0x00, 0xC8, 0x00, 0x08,
-    0xA8, 0x05, 0xEE, 0x06, 0x00, 0x04, 0xBC, 0x02, 0xB3, 0x00, 0x85, 0x07, 0x09,
-    0x00, 0x00, 0x00, 0x00, 0x00
+    0xa8, 0x02, // acc range
+    0x00, // feature enable
+    0x00, // feature int enable
+    0x88, 0x00, 0x00, // remap
+    0x05, 0xE0, 0xAA, 0x38, 0x01, // any motion
+    0x05, 0xE0, 0x90, 0x30, 0x02, // no motion
+    0xFA, 0x00, 0x03, // sig motion
+    0x2D, 0x01, 0xD4, 0x7B, 0x3B, 0x01, 0xDB, 0x7A, 0x04, 0x00, 0x3F, 0x7B, 0xCD, 0x6C, 0xC3, 0x4C, 0x04, // step counter 1
+    0x85, 0x09, 0xC3, 0x04, 0xEC, 0xE6, 0x0C, 0x46, 0x01, 0x00, 0x27, 0x00, 0x19, 0x00, 0x96, 0x00, 0x05, // step counter 2
+    0xA0, 0x00, 0x01, 0x00, 0x0C, 0x00, 0xF0, 0x3C, 0x00, 0x01, 0x01, 0x00, 0x03, 0x00, 0x01, 0x00, 0x06, // step counter 3
+    0x00, 0x0E, 0x00, 0x00, 0x07,  // step counter 4
+    0x05, 0x00, 0xEE, 0x06, 0x04, 0x00, 0xC8, 0x00, 0x08, // wrist wakeup
+    0xA8, 0x05, 0xEE, 0x06, 0x00, 0x04, 0xBC, 0x02, 0xB3, 0x00, 0x85, 0x07, 0x09, // wristwakeup
+    0x00, 0x00, 0x00, 0x00, // offset
+    0x00 // fifo downs
 };
 const uint8_t BMI160_DEFAULT_CONFIG[]= {
     0x28, 0x03,
@@ -92,10 +93,10 @@ struct AccBmi270Config {
     struct {
         uint8_t odr:4; //bit 0-4
         uint8_t bwp:3;
-        uint8_t us:1;
+        uint8_t us:1; // acc_conf.acc_filter_perf
         uint8_t range:3; //bit 0-3
         uint8_t:5; 
-    } acc; //DATA_CONFIG
+    } acc; //ACC_RANGE, ACC_CONFIG 0x02, 0xa8
     struct {
         uint8_t sig_motion:1; //bit 0
         uint8_t step_counter:1;
@@ -105,7 +106,7 @@ struct AccBmi270Config {
         uint8_t no_motion:1;
         uint8_t any_motion:1; 
         uint8_t step_detector:1;
-    } feature_enable; //FEATURE_ENABLE
+    } feature_enable; //FEATURE_ENABLE 0x00
     struct {
         uint8_t sig_motion:1; //bit 0
         uint8_t step_counter:1;
@@ -115,7 +116,7 @@ struct AccBmi270Config {
         uint8_t no_motion:1;
         uint8_t any_motion:1; 
         uint8_t step_detector:1;
-    } feature_int_enable; //FEATURE_INTERRUPT_ENABLE
+    } feature_int_enable; //FEATURE_INTERRUPT_ENABLE 0x00
     struct {
         struct {
             struct {
@@ -128,7 +129,7 @@ struct AccBmi270Config {
                 uint8_t:7; 
             } bitmap;
             uint8_t index = 0;
-        } axis_remap; //REMAP
+        } axis_remap; //REMAP 0x88 0x00
         struct {
             struct {
                 uint8_t duration_0; //bit 0
@@ -141,7 +142,7 @@ struct AccBmi270Config {
                 uint8_t :5; 
             } bitmap;
             uint8_t index = 1;
-        } any_motion; //ANYMOTION
+        } any_motion; //ANYMOTION 0x05 0xE0
         struct {
             struct {
                 uint8_t duration_0; //bit 0
@@ -154,7 +155,7 @@ struct AccBmi270Config {
                 uint8_t :5; 
             } bitmap;
             uint8_t index = 2;
-        } no_motion; //NOMOTION
+        } no_motion; //NOMOTION 0x05 0xE0
         struct {
             struct {
                 uint8_t block_size0; //bit 0
@@ -182,7 +183,7 @@ struct AccBmi270Config {
                 uint8_t param_81;
             } bitmap;
             uint8_t index = 4;
-        } step_counter_0; //STEPCOUNTER0   
+        } step_counter_0; //STEPCOUNTER1
         struct {
             struct {
                 uint8_t param_90;
@@ -203,7 +204,7 @@ struct AccBmi270Config {
                 uint8_t param_161;
             } bitmap;
             uint8_t index = 5;
-        } step_counter_1; //STEPCOUNTER1   
+        } step_counter_1; //STEPCOUNTER2 0x85 0x09
         struct {
             struct {
                 uint8_t param_170;
@@ -224,7 +225,7 @@ struct AccBmi270Config {
                 uint8_t param_241;
             } bitmap;
             uint8_t index = 6;
-        } step_counter_2; //STEPCOUNTER2   
+        } step_counter_2; //STEPCOUNTER3 0xA0 0x00
         struct {
             struct {
                 uint8_t param_250;          //bit 0-7
@@ -235,7 +236,7 @@ struct AccBmi270Config {
                 uint8_t:5;                  //bit 3-7
             } bitmap;
             uint8_t index = 7;
-        } step_counter_3; //STEPCOUNTER3   
+        } step_counter_3; //STEPCOUNTER4 0x0E 0x00
         struct {
             struct {
                 uint8_t:4; //out_conf //bit 0
@@ -250,7 +251,7 @@ struct AccBmi270Config {
                 uint8_t max_duration1;
             } bitmap;
             uint8_t index = 8;
-        } wrist_gesture; //WRISTGESTURE 
+        } wrist_gesture; //WRISTGESTURE 0x05 0x00
         struct {
             struct {
                 uint8_t min_angle_focus0;
@@ -267,7 +268,7 @@ struct AccBmi270Config {
                 uint8_t max_tilt_pu1;
             } bitmap;
             uint8_t index = 9;
-        } wrist_wakeup; //WRISTWAKEUP
+        } wrist_wakeup; //WRISTWAKEUP 0xA8 0x05 0xEE 0x06 0x00 0x04 0xBC 0x02 0xB3 0x00 0x85 0x07
     } feature_config; //FEATURE_CONFIG
     struct {
         uint8_t spi_en:1; //bit 0
@@ -278,7 +279,7 @@ struct AccBmi270Config {
         uint8_t off_acc_x:8;
         uint8_t off_acc_y:8; 
         uint8_t off_acc_z:8;
-    } nv_offset; //OFFSET
+    } nv_offset; //OFFSET 0x00, 0x00, 0x00, 0x00
     struct {
         uint8_t gyr_fifo_downs:3; //bit 0
         uint8_t gyr_fifo_filt_data:1;
@@ -752,6 +753,9 @@ void mbl_mw_acc_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi270Odr odr)
     config->set_output_data_rate(odr);
     config->acc.us= 1;
     config->acc.bwp= 2;
+    if (odr < MBL_MW_ACC_BMI270_ODR_12_5Hz) {
+        config->acc.us= 0;
+    }
 }
 
 void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi160Odr odr) {
@@ -1578,6 +1582,12 @@ void mbl_mw_acc_bosch_disable_orientation_detection(const MblMwMetaWearBoard *bo
 
 void mbl_mw_acc_bosch_start(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerBmi160Register::POWER_MODE), 1};
+    if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation == MBL_MW_MODULE_ACC_TYPE_BMI270) {
+        auto config= (AccBmi270Config*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER);
+        if (config->acc.us == 0) {
+            command[2] = 2;
+        }
+    }
     SEND_COMMAND;
 }
 
