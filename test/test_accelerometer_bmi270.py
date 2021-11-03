@@ -12,22 +12,22 @@ class TestAccBmi270Config(TestMetaWearBase):
     def test_set_odr(self):
         tests= [
             {
-                'expected': [0x03, 0x03, 0xA1, 0x02],
+                'expected': [0x03, 0x03, 0x21, 0x02],
                 'odr': AccBmi270Odr._0_78125Hz,
                 'odr_name': '0.78125Hz'
             },
             {
-                'expected': [0x03, 0x03, 0xA2, 0x02],
+                'expected': [0x03, 0x03, 0x22, 0x02],
                 'odr': AccBmi270Odr._1_5625Hz,
                 'odr_name': '1.5625Hz'
             },
             {
-                'expected': [0x03, 0x03, 0xA3, 0x02],
+                'expected': [0x03, 0x03, 0x23, 0x02],
                 'odr': AccBmi270Odr._3_125Hz,
                 'odr_name': '3.125Hz'
             },
             {
-                'expected': [0x03, 0x03, 0xA4, 0x02],
+                'expected': [0x03, 0x03, 0x24, 0x02],
                 'odr': AccBmi270Odr._6_25Hz,
                 'odr_name': '6.25Hz'
             },

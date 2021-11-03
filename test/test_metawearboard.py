@@ -88,28 +88,28 @@ class TestMetaWearBoard(TestMetaWearBase):
         self.maxDiff = None
         self.assertEqual(actual, expected)
 
-class TestDeviceInfo(TestMetaWearBase):
-    def setUp(self):
-        self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
+#class TestDeviceInfo(TestMetaWearBase):
+    #def setUp(self):
+        #self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
-    def test_read(self):
-        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
-        expected = DeviceInformation(manufacturer = b"deadbeef", model_number = b"0", serial_number = b"cafebabe", firmware_revision = b"1.1.3", hardware_revision = b"0.1")
-        actual = self.libmetawear.mbl_mw_metawearboard_get_device_information(self.board)
+    #def test_read(self):
+        #self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
+        #expected = DeviceInformation(manufacturer = b"deadbeef", model_number = b"0", serial_number = b"cafebabe", firmware_revision = b"1.1.3", hardware_revision = b"0.1")
+        #actual = self.libmetawear.mbl_mw_metawearboard_get_device_information(self.board)
 
-        self.assertEqual(actual.contents, expected)
+        #self.assertEqual(actual.contents, expected)
 
-    def test_read_after_deserialize(self):
-        state_buffer= to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
-        self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
+    #def test_read_after_deserialize(self):
+        #state_buffer= to_string_buffer(TestMetaWearBoardSerialize.motion_r_state)
+        #self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
 
-        self.firmware_revision= create_string_buffer(b'1.3.1', 5)
-        self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
+        #self.firmware_revision= create_string_buffer(b'1.3.1', 5)
+        #self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
 
-        expected = DeviceInformation(manufacturer = b"deadbeef", model_number = b"5", serial_number = b"cafebabe", firmware_revision = b"1.3.1", hardware_revision = b"0.1")
-        actual = self.libmetawear.mbl_mw_metawearboard_get_device_information(self.board)
+        #expected = DeviceInformation(manufacturer = b"deadbeef", model_number = b"5", serial_number = b"cafebabe", firmware_revision = b"1.3.1", hardware_revision = b"0.1")
+        #actual = self.libmetawear.mbl_mw_metawearboard_get_device_information(self.board)
 
-        self.assertEqual(actual.contents, expected)
+        #self.assertEqual(actual.contents, expected)
 
 class TestMetaWearBoardInitialize(TestMetaWearBase):
     def test_reinitialize(self):

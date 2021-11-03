@@ -39,7 +39,7 @@ build: $(MODULES_BUILD_DIR) $(REAL_DIST_DIR) $(APP_OUTPUT)
 -include $(DEPS)
 
 $(REAL_BUILD_DIR)/%.o: %.cpp
-	clang-5.0 -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
+	clang++ -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
 
 $(APP_OUTPUT): $(OBJS)
 	$(CXX) -o $@ $^ $(LDFLAGS)

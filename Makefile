@@ -92,7 +92,7 @@ $(APP_OUTPUT): $(OBJS) | $(REAL_DIST_DIR)
 #build: $(APP_OUTPUT)
 
 #$(REAL_BUILD_DIR)/%.o: %.cpp
-#	clang-5.0 -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
+#	clang++ -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
 
 #-include $(DEPS)
 
@@ -152,7 +152,7 @@ $(BUILD_DIR)/metawear.h: $(EXPORT_HEADERS)
 	$(file > $@,$(MASTER_HEADERS))
 
 bindings: $(BUILD_DIR)/metawear.h
-	$(MAKE) CXX=clang-5.0 -C c-binding-generator/ -j4
+	$(MAKE) CXX=clang++ -C c-binding-generator/ -j4
 	$(MAKE) APP_NAME=metawearbinding MODULES=metawear/generator \
         CXXFLAGS="-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -Ic-binding-generator/src -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS"
 	./c-binding-generator/dist/$(CONFIGURATION)/bin/$(MACHINE)/cbinds --cxx-flags "-std=c++11 -I. -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS" \
