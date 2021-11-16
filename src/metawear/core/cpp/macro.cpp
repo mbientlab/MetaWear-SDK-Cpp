@@ -50,6 +50,13 @@ static int32_t macro_add_cmd_response(MblMwMetaWearBoard *board, const uint8_t *
     return MBL_MW_STATUS_OK;
 }
 
+static int32_t macro_add_cmd_response_raw(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
+    auto state = GET_MACRO_STATE(board);
+    state->commands_recorded(state->commands_recorded_context, board, response[2]);
+
+    return MBL_MW_STATUS_OK;
+}
+
 void init_macro_module(MblMwMetaWearBoard *board) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_MACRO, ORDINAL(MacroRegister::BEGIN)),
         forward_as_tuple(macro_add_cmd_response));
