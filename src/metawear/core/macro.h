@@ -23,6 +23,8 @@ extern "C" {
  * @param exec_on_boot      True if the commands should be executed when the board powers on
  */
 METAWEAR_API void mbl_mw_macro_record(MblMwMetaWearBoard *board, uint8_t exec_on_boot);
+
+METAWEAR_API void mbl_mw_macro_record_raw(MblMwMetaWearBoard *board, uint8_t exec_on_boot, void *context, MblMwFnBoardPtrInt ready);
 /**
  * Ends macro recording.  
  * An numerical id representing the macro will be passed to the callback function when the operation is complete.

@@ -21,6 +21,7 @@ using std::vector;
 #define GET_MACRO_STATE(board) static_pointer_cast<MacroState>(board->macro_state)
 
 const size_t PARTIAL_LENGTH = 2;
+const ResponseHeader MACRO_BEGIN(MBL_MW_MODULE_MACRO, ORDINAL(MacroRegister::BEGIN));
 
 struct MacroState {
     MacroState();
@@ -67,6 +68,16 @@ void mbl_mw_macro_record(MblMwMetaWearBoard *board, uint8_t exec_on_boot) {
     state->commands.clear();
     state->is_recording = true;
     state->exec_on_boot = exec_on_boot == 0 ? 0 : 1;
+}
+
+void mbl_mw_macro_record_raw(MblMwMetaWearBoard *board, uint8_t exec_on_boot, void *context, MblMwFnBoardPtrInt ready) {
+    auto state = GET_MACRO_STATE(board);
+    board->responses[MACRO_BEGIN] = macro_add_cmd_response_raw;
+    state->commands_recorded_context = context;
+    state->commands_recorded = ready;
+    
+    uint8_t command[3]= {MBL_MW_MODULE_MACRO, ORDINAL(MacroRegister::BEGIN), exec_on_boot};
+    send_command(board, command, sizeof(command));
 }
 
 void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, void *context, MblMwFnBoardPtrInt commands_recorded) {
