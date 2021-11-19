@@ -12,9 +12,6 @@
 extern "C" {
 #endif
 
-const uint8_t MBL_MW_MODULE_GYRO_TYPE_BMI160 = 0;            ///< Constant identifying the BMI160 accelerometer module type
-const uint8_t MBL_MW_MODULE_GYRO_TYPE_BMI270 = 1;            ///< Constant identifying the BMI270 accelerometer module type
-
 //@{
 /** Indices for component values of the rotation data signal, used with mbl_mw_datasignal_get_component */
 const uint8_t MBL_MW_GYRO_ROTATION_X_AXIS_INDEX = 0, 

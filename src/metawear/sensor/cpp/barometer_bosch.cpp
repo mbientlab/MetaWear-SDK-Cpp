@@ -19,6 +19,9 @@ using std::memcpy;
 using std::piecewise_construct;
 using std::vector;
 
+const uint8_t MBL_MW_MODULE_BARO_TYPE_BMP280 = 0;            ///< Constant identifying the BMP280 barometer module type
+const uint8_t MBL_MW_MODULE_BARO_TYPE_BME280 = 1;            ///< Constant identifying the BME280 barometer module type
+
 const vector<float> BMP280_STANDBY_VALUES= {0.5f, 62.5f, 125.f, 250.f, 500.f, 1000.f, 2000.f, 4000.f},
         BME280_STANDBY_VALUES= {0.5f, 62.5f, 125.f, 250.f, 500.f, 1000.f, 10.f, 20.f};
 

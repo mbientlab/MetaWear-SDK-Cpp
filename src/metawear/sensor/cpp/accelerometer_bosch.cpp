@@ -32,6 +32,10 @@ using std::vector;
         FirmwareConverter::BOSCH_ACCELERATION, channels, 2, 1, offset)
 #define GET_CONFIG(x) ((x*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))
 
+const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI160 = 1;            ///< Constant identifying the BMI160 accelerometer module type
+const uint8_t MBL_MW_MODULE_ACC_TYPE_BMA255 = 3;            ///< Constant identifying the BMA255 accelerometer module type
+const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI270 = 4;            ///< Constant identifying the BMI270 accelerometer module type
+
 const uint8_t BMI270_DEFAULT_CONFIG[]= {
     0xa8, 0x02, // acc range
     0x00, // feature enable

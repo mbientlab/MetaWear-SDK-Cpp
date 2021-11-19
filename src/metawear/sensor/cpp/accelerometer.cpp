@@ -18,6 +18,11 @@ const float INVALID_SETTING= -1;
 using std::stringstream;
 using std::vector;
 
+const uint8_t MBL_MW_MODULE_ACC_TYPE_MMA8452Q = 0;          ///< Constant identifying the MMA8452Q accelerometer type
+const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI160 = 1;            ///< Constant identifying the BMI160 accelerometer module type
+const uint8_t MBL_MW_MODULE_ACC_TYPE_BMA255 = 3;            ///< Constant identifying the BMA255 accelerometer module type
+const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI270 = 4;            ///< Constant identifying the BMI270 accelerometer module type
+
 static const vector<float> MMA8452Q_ODR_VALUES= {800.f, 400.f, 200.f, 100.f, 50.f, 12.5f, 6.25f, 1.56f},
     MMA8452Q_FSR_VALUES= {2.f, 4.f, 8.f},
     BMI270_ODR_VALUES= {0.78125f, 1.5625f, 3.125f, 6.25f, 12.5f, 25.f, 50.f, 100.f, 200.f, 400.f, 800.f, 1600.f},

@@ -14,10 +14,6 @@
 extern "C" {
 #endif
 
-const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI160 = 1;            ///< Constant identifying the BMI160 accelerometer module type
-const uint8_t MBL_MW_MODULE_ACC_TYPE_BMA255 = 3;            ///< Constant identifying the BMA255 accelerometer module type
-const uint8_t MBL_MW_MODULE_ACC_TYPE_BMI270 = 4;            ///< Constant identifying the BMI270 accelerometer module type
-
 /**
  * Available wrist gestures on the BMI270
  */

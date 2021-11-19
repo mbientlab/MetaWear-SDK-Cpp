@@ -28,6 +28,8 @@ using std::unordered_map;
 #define CREATE_ACC_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(MMA8452Q_ACCEL_RESPONSE_HEADER, board, interpreter, \
         FirmwareConverter::MMA8452Q_ACCELERATION, channels, 2, 1, offset)
 
+const uint8_t MBL_MW_MODULE_ACC_TYPE_MMA8452Q = 0;          ///< Constant identifying the MMA8452Q accelerometer type
+
 const uint8_t MMA8452Q_DEFAULT_CONFIG[]= {
     0x00, 0x00, 0x18, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00,

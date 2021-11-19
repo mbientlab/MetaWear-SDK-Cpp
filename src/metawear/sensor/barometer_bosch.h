@@ -14,9 +14,6 @@
 extern "C" {
 #endif
 
-const uint8_t MBL_MW_MODULE_BARO_TYPE_BMP280 = 0;            ///< Constant identifying the BMP280 barometer module type
-const uint8_t MBL_MW_MODULE_BARO_TYPE_BME280 = 1;            ///< Constant identifying the BME280 barometer module type
-
 /**
  * Supported oversampling modes on the Bosch barometers
  */

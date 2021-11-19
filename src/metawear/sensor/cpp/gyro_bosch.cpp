@@ -31,6 +31,9 @@ using std::vector;
 #define CREATE_BMI270_ROT_SIGNAL(interpreter, channels, offset) new MblMwDataSignal(GYRO_BMI270_ROT_RESPONSE_HEADER, board, interpreter, \
         FirmwareConverter::BOSCH_ROTATION, channels, 2, 1, offset)
 
+const uint8_t MBL_MW_MODULE_GYRO_TYPE_BMI160 = 0;            ///< Constant identifying the BMI160 accelerometer module type
+const uint8_t MBL_MW_MODULE_GYRO_TYPE_BMI270 = 1;            ///< Constant identifying the BMI270 accelerometer module type
+
 const float FSR_SCALE[5]= {16.4f, 32.8f, 65.6f, 131.2f, 262.4f};
 const uint8_t PACKED_ROT_REVISION= 1;
 const ResponseHeader    GYRO_BMI160_ROT_RESPONSE_HEADER(MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA)),
