@@ -178,7 +178,8 @@ int32_t response_handler_packed_data(MblMwMetaWearBoard *board, const uint8_t *r
     MblMwDataSignal* signal;
     auto it = board->module_events.find(header);
 
-    if (it == board->module_events.end() || (signal = dynamic_cast<MblMwDataSignal*>(it->second))->handler == nullptr) {
+    signal = dynamic_cast<MblMwDataSignal*>(it->second);
+    if (it == board->module_events.end() || signal->handler == nullptr) {
         return MBL_MW_STATUS_WARNING_UNEXPECTED_SENSOR_DATA;
     }
 
