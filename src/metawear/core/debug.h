@@ -83,8 +83,9 @@ METAWEAR_API void mbl_mw_debug_spoof_notification(const MblMwMetaWearBoard *boar
  * Creates a fake button event with the data 0x02.
  * Requires that the switch signal be streaming or logging to add a spoofed event in the logger.
  * @param board     Calling object
+ * @param value     Value to spoof, 1 byte
  */
-METAWEAR_API void mbl_mw_debug_spoof_button_event(const MblMwMetaWearBoard *board);
+METAWEAR_API void mbl_mw_debug_spoof_button_event(const MblMwMetaWearBoard *board, uint8_t value);
 
 /**
  * Sends a raw command directly to the MetaWear.  Useful for testing.

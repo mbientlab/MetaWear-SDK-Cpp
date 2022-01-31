@@ -46,9 +46,9 @@ class TestDebug(TestMetaWearBase):
         self.assertEqual(self.command, expected)
 
     def test_switch_spoof(self):
-        expected = [0xfe, 0x03, 0x01, 0x01, 0x00, 0x02]
+        expected = [0xfe, 0x03, 0x01, 0x01, 0x00, 0x03]
 
-        self.libmetawear.mbl_mw_debug_spoof_button_event(self.board)
+        self.libmetawear.mbl_mw_debug_spoof_button_event(self.board, 0x03)
         print("TestDebug \n")
         self.assertEqual(self.command, expected)
 
