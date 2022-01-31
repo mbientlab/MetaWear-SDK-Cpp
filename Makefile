@@ -176,7 +176,7 @@ swiftbindings:
 	$(MAKE) bindings CREATOR=createSwiftGenerator OUTPUT=$(SWIFT_BINDINGS)
 
 test: build
-	#make pythonbindings
+	make pythonbindings
 	python3 -m unittest discover -s test
 
 test-debug: build
