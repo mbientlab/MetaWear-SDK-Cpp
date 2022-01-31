@@ -35,6 +35,8 @@ using std::unordered_map;
 #define LINEAR_ACC_RESPONSE_HEADER RESPONSE_HEADERS[MBL_MW_SENSOR_FUSION_DATA_LINEAR_ACC]
 
 const float ACC_RANGES[] = {2.f, 4.f, 8.f, 16.f};
+const uint8_t MBL_MW_MODULE_GYRO_TYPE_BMI160 = 0;            ///< Constant identifying the BMI160 accelerometer module type
+const uint8_t MBL_MW_MODULE_GYRO_TYPE_BMI270 = 1;            ///< Constant identifying the BMI270 accelerometer module type
 
 const ResponseHeader RESPONSE_HEADERS[] {
     ResponseHeader(MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::CORRECTED_ACC)),
@@ -67,6 +69,7 @@ struct SensorFusionTransientState {
 
 static unordered_map<const MblMwMetaWearBoard*, SensorFusionTransientState> transient_states;
 
+// Helper function - received a configuration response from board
 static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = (SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION);
     memcpy(&(state->config), response + 2, sizeof(state->config));
@@ -80,6 +83,7 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
     return 0;
 }
 
+// Helper function - acc calibration data
 static int32_t received_acc_cal_data(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     MblMwCalibrationData* data = (MblMwCalibrationData*) malloc(sizeof(MblMwCalibrationData));
     memcpy(data->acc, response + 2, 10);
@@ -91,6 +95,7 @@ static int32_t received_acc_cal_data(MblMwMetaWearBoard *board, const uint8_t *r
     return 0;
 }
 
+// Helper function - gyro calibration data
 static int32_t received_gyro_cal_data(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     memcpy(transient_states[board].calib_data->gyro, response + 2, 10);
     
@@ -100,6 +105,7 @@ static int32_t received_gyro_cal_data(MblMwMetaWearBoard *board, const uint8_t *
     return 0;
 }
 
+// Helper function - mag calibration data
 static int32_t received_mag_cal_data(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     memcpy(transient_states[board].calib_data->mag, response + 2, 10);
 
@@ -108,6 +114,7 @@ static int32_t received_mag_cal_data(MblMwMetaWearBoard *board, const uint8_t *r
     return 0;
 }
 
+// Helper function - init module
 void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
     if (board->module_info.count(MBL_MW_MODULE_SENSOR_FUSION) && board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).present) {
         if (!board->module_config.count(MBL_MW_MODULE_SENSOR_FUSION)) {
@@ -182,22 +189,27 @@ void init_sensor_fusion_module(MblMwMetaWearBoard* board) {
     }
 }
 
+// Helper function - free module
 void free_sensor_fusion_module(MblMwMetaWearBoard* board) {
     transient_states.erase(board);
 }
 
+// Helper function - serialize module
 void serialize_sensor_fusion_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
     SERIALIZE_MODULE_CONFIG(SensorFusionState, MBL_MW_MODULE_SENSOR_FUSION);
 }
 
+// Helper fuction - deserialize module
 void deserialize_sensor_fusion_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
     DESERIALIZE_MODULE_CONFIG(SensorFusionState, MBL_MW_MODULE_SENSOR_FUSION);
 }
 
+// Get sensor fusion signal
 MblMwDataSignal* mbl_mw_sensor_fusion_get_data_signal(const MblMwMetaWearBoard* board, MblMwSensorFusionData data) {
     GET_DATA_SIGNAL(RESPONSE_HEADERS[data]);
 }
 
+// Sensor fusion signal
 MblMwDataSignal* mbl_mw_sensor_fusion_calibration_state_data_signal(const MblMwMetaWearBoard* board) {
     if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision < CALIBRATION_REVISION) {
         return nullptr;
@@ -205,18 +217,22 @@ MblMwDataSignal* mbl_mw_sensor_fusion_calibration_state_data_signal(const MblMwM
     GET_DATA_SIGNAL(CALIB_STATE_RESPONSE_HEADER);
 }
 
+// Set the sensor fusion mode
 void mbl_mw_sensor_fusion_set_mode(MblMwMetaWearBoard* board, MblMwSensorFusionMode mode) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode = mode;
 }
 
+// Set the range of the acc
 void mbl_mw_sensor_fusion_set_acc_range(MblMwMetaWearBoard* board, MblMwSensorFusionAccRange range) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.acc_range = range;
 }
 
+// Set the range of the gyro
 void mbl_mw_sensor_fusion_set_gyro_range(MblMwMetaWearBoard* board, MblMwSensorFusionGyroRange range) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.gyro_range = (range + 1);
 }
 
+// Write the sendor fusion config
 void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
     auto state = (SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION);
 
@@ -224,45 +240,89 @@ void mbl_mw_sensor_fusion_write_config(MblMwMetaWearBoard* board) {
     memcpy(command + 2, &(state->config), sizeof(state->config));
     SEND_COMMAND;
 
-    switch(state->config.mode) {
-    case MBL_MW_SENSOR_FUSION_MODE_SLEEP:
+    switch(board->module_info.at(MBL_MW_MODULE_GYRO).implementation) {
+    case MBL_MW_MODULE_GYRO_TYPE_BMI160:
+        switch(state->config.mode) {
+        case MBL_MW_SENSOR_FUSION_MODE_SLEEP:
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_NDOF:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 100.f);
+            mbl_mw_acc_write_acceleration_config(board);
+
+            mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
+            mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
+            mbl_mw_gyro_bmi160_write_config(board);
+
+            mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 100.f);
+            mbl_mw_acc_write_acceleration_config(board);
+
+            mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
+            mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
+            mbl_mw_gyro_bmi160_write_config(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 25.f);
+            mbl_mw_acc_write_acceleration_config(board);
+
+            mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_M4G:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 50.f);
+            mbl_mw_acc_write_acceleration_config(board);
+
+            mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
+        }
         break;
-    case MBL_MW_SENSOR_FUSION_MODE_NDOF:
-        mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
-        mbl_mw_acc_set_odr(board, 100.f);
-        mbl_mw_acc_write_acceleration_config(board);
+    case MBL_MW_MODULE_GYRO_TYPE_BMI270:
+        switch(state->config.mode) {
+        case MBL_MW_SENSOR_FUSION_MODE_SLEEP:
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_NDOF:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 100.f);
+            mbl_mw_acc_write_acceleration_config(board);
 
-        mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
-        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
-        mbl_mw_gyro_bmi160_write_config(board);
+            mbl_mw_gyro_bmi270_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
+            mbl_mw_gyro_bmi270_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
+            mbl_mw_gyro_bmi270_write_config(board);
 
-        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
+            mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 100.f);
+            mbl_mw_acc_write_acceleration_config(board);
+
+            mbl_mw_gyro_bmi270_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
+            mbl_mw_gyro_bmi270_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
+            mbl_mw_gyro_bmi270_write_config(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 25.f);
+            mbl_mw_acc_write_acceleration_config(board);
+
+            mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_M4G:
+            mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
+            mbl_mw_acc_set_odr(board, 50.f);
+            mbl_mw_acc_write_acceleration_config(board);
+
+            mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
+        }
         break;
-    case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
-        mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
-        mbl_mw_acc_set_odr(board, 100.f);
-        mbl_mw_acc_write_acceleration_config(board);
-
-        mbl_mw_gyro_bmi160_set_range(board, (MblMwGyroBoschRange) (state->config.gyro_range - 1));
-        mbl_mw_gyro_bmi160_set_odr(board, MBL_MW_GYRO_BOSCH_ODR_100Hz);
-        mbl_mw_gyro_bmi160_write_config(board);
-        break;
-    case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
-        mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
-        mbl_mw_acc_set_odr(board, 25.f);
-        mbl_mw_acc_write_acceleration_config(board);
-
-        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
-        break;
-    case MBL_MW_SENSOR_FUSION_MODE_M4G:
-        mbl_mw_acc_set_range(board, ACC_RANGES[state->config.acc_range]);
-        mbl_mw_acc_set_odr(board, 50.f);
-        mbl_mw_acc_write_acceleration_config(board);
-
-        mbl_mw_mag_bmm150_configure(board, 9, 15, MBL_MW_MAG_BMM150_ODR_25Hz);
     }
 }
 
+// Read the sensor fusion config
 void mbl_mw_sensor_fusion_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
     transient_states[board].read_config_context = context;
     transient_states[board].read_config_completed = completed;
@@ -270,41 +330,78 @@ void mbl_mw_sensor_fusion_read_config(const MblMwMetaWearBoard* board, void *con
     SEND_COMMAND;
 }
 
+// Set enable
 void mbl_mw_sensor_fusion_enable_data(MblMwMetaWearBoard* board, MblMwSensorFusionData data) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->enable_mask |= (0x1 << (int) data);
 }
 
+// Clear enable
 void mbl_mw_sensor_fusion_clear_enabled_mask(MblMwMetaWearBoard* board) {
     ((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->enable_mask = 0x0;
 }
 
+// Start sensor fusion
 void mbl_mw_sensor_fusion_start(const MblMwMetaWearBoard* board) {
-    switch(((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode) {
-    case MBL_MW_SENSOR_FUSION_MODE_NDOF:
-        mbl_mw_acc_enable_acceleration_sampling(board);
-        mbl_mw_gyro_bmi160_enable_rotation_sampling(board);
-        mbl_mw_mag_bmm150_enable_b_field_sampling(board);
-        mbl_mw_acc_start(board);
-        mbl_mw_gyro_bmi160_start(board);
-        mbl_mw_mag_bmm150_start(board);
+    switch(board->module_info.at(MBL_MW_MODULE_GYRO).implementation) {
+    case MBL_MW_MODULE_GYRO_TYPE_BMI160:
+        switch(((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode) {
+        case MBL_MW_SENSOR_FUSION_MODE_NDOF:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi160_enable_rotation_sampling(board);
+            mbl_mw_mag_bmm150_enable_b_field_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_gyro_bmi160_start(board);
+            mbl_mw_mag_bmm150_start(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi160_enable_rotation_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_gyro_bmi160_start(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_enable_b_field_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_mag_bmm150_start(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_M4G:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_enable_b_field_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_mag_bmm150_start(board);
+            break;
+        }
         break;
-    case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
-        mbl_mw_acc_enable_acceleration_sampling(board);
-        mbl_mw_gyro_bmi160_enable_rotation_sampling(board);
-        mbl_mw_acc_start(board);
-        mbl_mw_gyro_bmi160_start(board);
-        break;
-    case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
-        mbl_mw_acc_enable_acceleration_sampling(board);
-        mbl_mw_mag_bmm150_enable_b_field_sampling(board);
-        mbl_mw_acc_start(board);
-        mbl_mw_mag_bmm150_start(board);
-        break;
-    case MBL_MW_SENSOR_FUSION_MODE_M4G:
-        mbl_mw_acc_enable_acceleration_sampling(board);
-        mbl_mw_mag_bmm150_enable_b_field_sampling(board);
-        mbl_mw_acc_start(board);
-        mbl_mw_mag_bmm150_start(board);
+    case MBL_MW_MODULE_GYRO_TYPE_BMI270:
+        switch(((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode) {
+        case MBL_MW_SENSOR_FUSION_MODE_NDOF:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi270_enable_rotation_sampling(board);
+            mbl_mw_mag_bmm150_enable_b_field_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_gyro_bmi270_start(board);
+            mbl_mw_mag_bmm150_start(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi270_enable_rotation_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_gyro_bmi270_start(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_enable_b_field_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_mag_bmm150_start(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_M4G:
+            mbl_mw_acc_enable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_enable_b_field_sampling(board);
+            mbl_mw_acc_start(board);
+            mbl_mw_mag_bmm150_start(board);
+            break;
+        }
         break;
     }
 
@@ -316,6 +413,7 @@ void mbl_mw_sensor_fusion_start(const MblMwMetaWearBoard* board) {
     send_command(board, start_cmd, sizeof(start_cmd));
 }
 
+// Stop sensor fusion
 void mbl_mw_sensor_fusion_stop(const MblMwMetaWearBoard* board) {
     uint8_t stop_cmd[3] = {MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::ENABLE), 0x0};
     send_command(board, stop_cmd, sizeof(stop_cmd));
@@ -323,36 +421,71 @@ void mbl_mw_sensor_fusion_stop(const MblMwMetaWearBoard* board) {
     uint8_t disable_cmd[4] = {MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::OUTPUT_ENABLE), 0x0, 0x7f};
     send_command(board, disable_cmd, sizeof(disable_cmd));
 
-    switch(((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode) {
-    case MBL_MW_SENSOR_FUSION_MODE_NDOF:
-        mbl_mw_acc_stop(board);
-        mbl_mw_gyro_bmi160_stop(board);
-        mbl_mw_mag_bmm150_stop(board);
-        mbl_mw_acc_disable_acceleration_sampling(board);
-        mbl_mw_gyro_bmi160_disable_rotation_sampling(board);
-        mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+    switch(board->module_info.at(MBL_MW_MODULE_GYRO).implementation) {
+    case MBL_MW_MODULE_GYRO_TYPE_BMI160:
+        switch(((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode) {
+        case MBL_MW_SENSOR_FUSION_MODE_NDOF:
+            mbl_mw_acc_stop(board);
+            mbl_mw_gyro_bmi160_stop(board);
+            mbl_mw_mag_bmm150_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi160_disable_rotation_sampling(board);
+            mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
+            mbl_mw_acc_stop(board);
+            mbl_mw_gyro_bmi160_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi160_disable_rotation_sampling(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
+            mbl_mw_acc_stop(board);
+            mbl_mw_mag_bmm150_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_M4G:
+            mbl_mw_acc_stop(board);
+            mbl_mw_mag_bmm150_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+            break;
+        }
         break;
-    case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
-        mbl_mw_acc_stop(board);
-        mbl_mw_gyro_bmi160_stop(board);
-        mbl_mw_acc_disable_acceleration_sampling(board);
-        mbl_mw_gyro_bmi160_disable_rotation_sampling(board);
-        break;
-    case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
-        mbl_mw_acc_stop(board);
-        mbl_mw_mag_bmm150_stop(board);
-        mbl_mw_acc_disable_acceleration_sampling(board);
-        mbl_mw_mag_bmm150_disable_b_field_sampling(board);
-        break;
-    case MBL_MW_SENSOR_FUSION_MODE_M4G:
-        mbl_mw_acc_stop(board);
-        mbl_mw_mag_bmm150_stop(board);
-        mbl_mw_acc_disable_acceleration_sampling(board);
-        mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+    case MBL_MW_MODULE_GYRO_TYPE_BMI270:
+        switch(((SensorFusionState*) board->module_config.at(MBL_MW_MODULE_SENSOR_FUSION))->config.mode) {
+        case MBL_MW_SENSOR_FUSION_MODE_NDOF:
+            mbl_mw_acc_stop(board);
+            mbl_mw_gyro_bmi270_stop(board);
+            mbl_mw_mag_bmm150_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi160_disable_rotation_sampling(board);
+            mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_IMU_PLUS:
+            mbl_mw_acc_stop(board);
+            mbl_mw_gyro_bmi270_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_gyro_bmi270_disable_rotation_sampling(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_COMPASS:
+            mbl_mw_acc_stop(board);
+            mbl_mw_mag_bmm150_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+            break;
+        case MBL_MW_SENSOR_FUSION_MODE_M4G:
+            mbl_mw_acc_stop(board);
+            mbl_mw_mag_bmm150_stop(board);
+            mbl_mw_acc_disable_acceleration_sampling(board);
+            mbl_mw_mag_bmm150_disable_b_field_sampling(board);
+            break;
+        }
         break;
     }
 }
 
+// Read the acc, mag, gyro calibration data
 void mbl_mw_sensor_fusion_read_calibration_data(MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrCalibDataPtr completed) {
     if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision < CALIB_DATA_REVISION) {
         completed(context, board, nullptr);
@@ -365,6 +498,7 @@ void mbl_mw_sensor_fusion_read_calibration_data(MblMwMetaWearBoard* board, void 
     }
 }
 
+// Reset the orientation
 void mbl_mw_sensor_fusion_reset_orientation(MblMwMetaWearBoard* board) {
     if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision >= RESET_ORIENTATION_REVISION) {
     	uint8_t reset_cmd[3] = {MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::RESET_ORIENTATION), 0x1};
@@ -372,6 +506,7 @@ void mbl_mw_sensor_fusion_reset_orientation(MblMwMetaWearBoard* board) {
     }
 }
 
+// Write the calibration data
 void mbl_mw_sensor_fusion_write_calibration_data(const MblMwMetaWearBoard* board, const MblMwCalibrationData* data) {
     if (board->module_info.at(MBL_MW_MODULE_SENSOR_FUSION).revision >= CALIB_DATA_REVISION) {
         uint8_t command[12] = { MBL_MW_MODULE_SENSOR_FUSION, ORDINAL(SensorFusionRegister::ACC_CAL_DATA) };
@@ -393,6 +528,7 @@ void mbl_mw_sensor_fusion_write_calibration_data(const MblMwMetaWearBoard* board
     }
 }
 
+// Name for the loggers
 void create_sensor_fusion_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SensorFusionRegister::CORRECTED_ACC):

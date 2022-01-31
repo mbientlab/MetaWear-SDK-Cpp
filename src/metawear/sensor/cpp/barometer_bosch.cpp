@@ -38,6 +38,7 @@ struct BoschBaroConfig {
     uint8_t standby_time:3;
 };
 
+// Helper function - init module
 void init_barometer_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_BAROMETER) && board->module_info.at(MBL_MW_MODULE_BAROMETER).present) {
         if (!board->module_config.count(MBL_MW_MODULE_BAROMETER)) {
@@ -71,27 +72,32 @@ void init_barometer_module(MblMwMetaWearBoard *board) {
     }
 }
 
-
+// Helpfer function - serialize
 void serialize_barometer_config(const MblMwMetaWearBoard *board, vector<uint8_t>& state) {
     SERIALIZE_MODULE_CONFIG(BoschBaroConfig, MBL_MW_MODULE_BAROMETER);
 }
 
+// Helper function - deserialize
 void deserialize_barometer_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
     DESERIALIZE_MODULE_CONFIG(BoschBaroConfig, MBL_MW_MODULE_BAROMETER);
 }
 
+// Get pressure signal (logged/streamed)
 MblMwDataSignal* mbl_mw_baro_bosch_get_pressure_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(BARO_PRESSURE_RESPONSE_HEADER);
 }
 
+// Get pressure signal (one time read)
 MblMwDataSignal* mbl_mw_baro_bosch_get_pressure_read_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(BARO_PRESSURE_READ_RESPONSE_HEADER);
 }
 
+// Get altitude signal
 MblMwDataSignal* mbl_mw_baro_bosch_get_altitude_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(BARO_ALTITUDE_RESPONSE_HEADER);
 }
 
+// Set oversampling
 void mbl_mw_baro_bosch_set_oversampling(MblMwMetaWearBoard *board, MblMwBaroBoschOversampling oversampling) {
     auto config= (BoschBaroConfig*) board->module_config.at(MBL_MW_MODULE_BAROMETER);
 
@@ -101,18 +107,22 @@ void mbl_mw_baro_bosch_set_oversampling(MblMwMetaWearBoard *board, MblMwBaroBosc
     }
 }
 
+// Set iir filter
 void mbl_mw_baro_bosch_set_iir_filter(MblMwMetaWearBoard *board, MblMwBaroBoschIirFilter iir_filter) {
     ((BoschBaroConfig*) board->module_config.at(MBL_MW_MODULE_BAROMETER))->iir_filter= iir_filter;
 }
 
+// Set standby for bmp
 void mbl_mw_baro_bmp280_set_standby_time(MblMwMetaWearBoard *board, MblMwBaroBmp280StandbyTime standby_time) {
     ((BoschBaroConfig*) board->module_config.at(MBL_MW_MODULE_BAROMETER))->standby_time= standby_time;
 }
 
+// Set standby for bme
 void mbl_mw_baro_bme280_set_standby_time(MblMwMetaWearBoard *board, MblMwBaroBme280StandbyTime standby_time) {
     ((BoschBaroConfig*) board->module_config.at(MBL_MW_MODULE_BAROMETER))->standby_time= standby_time;
 }
 
+// Set standby
 float mbl_mw_baro_bosch_set_standby_time(MblMwMetaWearBoard *board, float standby_time_ms) {
     uint8_t index;
 
@@ -130,22 +140,26 @@ float mbl_mw_baro_bosch_set_standby_time(MblMwMetaWearBoard *board, float standb
     }
 }
 
+// Write the config
 void mbl_mw_baro_bosch_write_config(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_BAROMETER, ORDINAL(BarometerBmp280Register::CONFIG)};
     memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_BAROMETER), sizeof(BoschBaroConfig));
     SEND_COMMAND;
 }
 
+// Start the barometer
 void mbl_mw_baro_bosch_start(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_BAROMETER, ORDINAL(BarometerBmp280Register::CYCLIC), 1, 1};
     SEND_COMMAND;
 }
 
+// Stop the barometer
 void mbl_mw_baro_bosch_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_BAROMETER, ORDINAL(BarometerBmp280Register::CYCLIC), 0, 0};
     SEND_COMMAND;
 }
 
+// Name for the loggers
 void create_barometer_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(BarometerBmp280Register::PRESSURE):

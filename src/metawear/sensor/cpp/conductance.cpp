@@ -14,6 +14,7 @@
 using std::forward_as_tuple;
 using std::piecewise_construct;
 
+// Helper function - init module
 void init_conductance_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_CONDUCTANCE) && board->module_info.at(MBL_MW_MODULE_CONDUCTANCE).present) {
         uint8_t num_channels = mbl_mw_conductance_get_num_channels(board);
@@ -30,20 +31,24 @@ void init_conductance_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Get conductance signal
 MblMwDataSignal* mbl_mw_conductance_get_data_signal(const MblMwMetaWearBoard *board, uint8_t channel) {
     ResponseHeader header(MBL_MW_MODULE_CONDUCTANCE, READ_REGISTER(ORDINAL(ConductanceRegister::CONDUCTANCE)), channel);
     return board->module_events.count(header) ? dynamic_cast<MblMwDataSignal*>(board->module_events.at(header)) : nullptr;
 }
 
+// Get number of channels
 uint8_t mbl_mw_conductance_get_num_channels(const MblMwMetaWearBoard *board) {
     return ORDINAL(board->module_info.at(MBL_MW_MODULE_CONDUCTANCE).extra[0]);
 }
 
+// Calibrate
 void mbl_mw_conductance_calibrate(const MblMwMetaWearBoard *board) {
     uint8_t command[2]= {MBL_MW_MODULE_CONDUCTANCE, ORDINAL(ConductanceRegister::CALIBRATE)};
     SEND_COMMAND;
 }
 
+// Set range
 void mbl_mw_conductance_set_range(MblMwMetaWearBoard *board, MblMwConductanceRange range) {
     uint8_t command[3]= {MBL_MW_MODULE_CONDUCTANCE, ORDINAL(ConductanceRegister::MODE), ORDINAL(range)};
     SEND_COMMAND;

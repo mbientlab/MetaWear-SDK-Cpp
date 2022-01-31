@@ -52,7 +52,7 @@ typedef struct {
 } MblMwSpiParameters;
 
 /**
- * Retrieves the data signal representing spi data.  
+ * Retrieves the data signal representing SPI data.  
  * The data signal is identified by the id value and if the id is not present, a new data signal will be created using the length parameter. 
  * @param board         Board to communicate with
  * @param length        Number of bytes to read
@@ -60,8 +60,9 @@ typedef struct {
  * @return Pointer to the spi data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_spi_get_data_signal(MblMwMetaWearBoard* board, uint8_t length, uint8_t id);
+
 /**
- * Writes data via the spi bus
+ * Writes data via the SPI busm the parameters include the data, ss, frequency and more, see MblMwSpiParameters.
  * @param board             Board to communicate with
  * @param parameters        Parameters configuring the read
  */

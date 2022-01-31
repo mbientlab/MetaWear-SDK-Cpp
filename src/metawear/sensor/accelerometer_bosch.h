@@ -128,7 +128,6 @@ typedef enum {
 
 /**
  * Calculation modes controlling the conditions that determine the sensor's orientation
- * @author Eric Tsai
  */
 typedef enum {
     /** Default mode */
@@ -139,20 +138,20 @@ typedef enum {
 
 /**
  * Available quiet times for tap detection
- * @author Eric Tsai
  */
 typedef enum {
     MBL_MW_ACC_BOSCH_TAP_QUIET_TIME_30ms= 0,
     MBL_MW_ACC_BOSCH_TAP_QUIET_TIME_20ms
 } MblMwAccBoschTapQuietTime;
+
 /**
  * Available shock times for tap detection
- * @author Eric Tsai
  */
 typedef enum {
     MBL_MW_ACC_BOSCH_TAP_SHOCK_TIME_50ms= 0,
     MBL_MW_ACC_BOSCH_TAP_SHOCK_TIME_75ms
 } MblMwAccBoschTapShockTime;
+
 /**
  * Available windows for double tap detection
  */
@@ -219,10 +218,12 @@ typedef struct {
  * MblMwCartesianFloat is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_acceleration_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * @deprecated As of v0.8.0 and will be removed in v1.0.0.  Use mbl_mw_acc_bosch_get_packed_acceleration_data_signal instead.
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Variant of acceleration data that packs multiple data samples into 1 BLE packet to increase the
  * data throughput.  This data signal cannot be used with data processing or logging, only with streaming.
@@ -231,38 +232,47 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_high_freq_acceleration_data_s
  * [MblMwCartesianFloat, MblMwCartesianFloat, MblMwCartesianFloat] is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_packed_acceleration_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the BMI160 step counter
- * This signal represents the number of steps a user has taken
+ * This signal represents the number of steps a user has taken (steps = 275)
+ * This signal can be read once but should not be streamed or logged.
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI160 step counter data signal
  * UINT32 is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_counter_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the BMI270 step counter
- * This signal represents the number of steps a user has taken
+ * This signal represents the number of steps a user has taken (steps = 275)
+ * This signal can be read once but should not be streamed or logged.
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI270 step counter data signal
  * UINT32 is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_step_counter_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the BMI160 step detector
- * This signal simply detects a step, it does not count it
+ * This signal simply detects a step, it does not count it (step recorded at time t)
+ * This signal can be streamed or logged. This signal cannot be read or polled (read in loop).
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI160 step detector data signal
  * No return data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi160_get_step_detector_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the BMI270 step detector
- * This signal simply detects a step, it does not count it
+ * This signal simply detects a step, it does not count it (step recorded at time t)
+ * This signal can be streamed or logged. This signal cannot be read or polled (read in loop).
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's BMI270 step detector data signal
  * No return data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_step_detector_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the wrist gesture algorithm
  * @param board     Pointer to the board to retrieve the signal from
@@ -270,6 +280,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_step_detector_data_signal(co
  * UINT32 is return signal data type represented by MblMwAccGestureCode
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_wrist_detector_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the activity detection algorithm
  * @param board     Pointer to the board to retrieve the signal from
@@ -277,6 +288,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_wrist_detector_data_signal(c
  * UINT32 is return signal data type represented by MblMwAccActivityCode
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_activity_detector_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the orientation detection algorithm
  * This signal is identical to smartphone orientation (portrait, landscape)
@@ -286,6 +298,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bmi270_get_activity_detector_data_signa
  * MblMwSensorOrientation is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_orientation_detection_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the motion detection algorithm
  * This signal retrieves either "no motion", "any motion" or "significant motion" depending on user settings
@@ -294,6 +307,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_orientation_detection_data_si
  * UINT32 is return signal data type represented by MblMwAccMotionTypes
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_motion_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves the data signal representing data from the tap detection algorithm
  * This signal retrieves the number of taps the board has been subjected to based on user settings
@@ -303,6 +317,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_motion_data_signal(const MblM
  * MblMwBoschTap is return signal data type
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_tap_data_signal(const MblMwMetaWearBoard* board);
+
 /**
  * Sets the output data rate for the BMI160 accelerometer
  * The ODR sets the output data frequency in Hz.
@@ -311,6 +326,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_acc_bosch_get_tap_data_signal(const MblMwMe
  * @param odr       Output data rate value to assign
  */
 METAWEAR_API void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi160Odr odr);
+
 /**
  * Sets the output data rate for the BMI160 accelerometer
  * The ODR sets the output data frequency in Hz.
@@ -319,6 +335,7 @@ METAWEAR_API void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccB
  * @param odr       Output data rate value to assign
  */
 METAWEAR_API void mbl_mw_acc_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi270Odr odr);
+
 /**
  * Sets the output data rate for the BMI160 accelerometer
  * The ODR sets the output data frequency in Hz.
@@ -327,6 +344,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwAccB
  * @param odr       Output data rate value to assign
  */
 METAWEAR_API void mbl_mw_acc_bma255_set_odr(MblMwMetaWearBoard *board, MblMwAccBma255Odr odr);
+
 /**
  * Sets the acceleration range
  * The range is in units of Gs between 2 and 16gs for Bosch sensors
@@ -335,12 +353,14 @@ METAWEAR_API void mbl_mw_acc_bma255_set_odr(MblMwMetaWearBoard *board, MblMwAccB
  * @param range     Acceleration range to assign
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_range(MblMwMetaWearBoard *board, MblMwAccBoschRange range);
+
 /**
  * Writes the acceleration settings to the sensor
  * Applies the ODR and RANGE values set in set_range() and set_odr().
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bosch_write_acceleration_config(const MblMwMetaWearBoard *board);
+
 /**
  * Sets the operational mode of the step counter
  * - Normal mode (default setting, recommended for most applications)
@@ -350,45 +370,53 @@ METAWEAR_API void mbl_mw_acc_bosch_write_acceleration_config(const MblMwMetaWear
  * @param mode      New operation mode
  */
 METAWEAR_API void mbl_mw_acc_bmi160_set_step_counter_mode(MblMwMetaWearBoard* board, MblMwAccBmi160StepCounterMode mode);
+
 /**
  * Enables the BMI160 step counter
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi160_enable_step_counter(MblMwMetaWearBoard* board);
+
 /**
  * Disables the BMI160 step counter
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi160_disable_step_counter(MblMwMetaWearBoard* board);
+
 /**
  * Writes the step counter configuration to the sensor
  * Applies the MODE set by set_step_counter_mode()
  * @param board     Board to write to
  */
 METAWEAR_API void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWearBoard *board);
+
 /**
  * Resets the BMI160 step counter (step counter = 0)
  * Does not disable the step counter
  * @param board     Board to reset
  */
 METAWEAR_API void mbl_mw_acc_bmi160_reset_step_counter(const MblMwMetaWearBoard *board);
+
 /**
  * Enables the BMI160 step detector 
  * A callback will notify the user when a step is detected but will NOT count steps
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bmi160_enable_step_detector(const MblMwMetaWearBoard *board);
+
 /**
  * Disables the BMI160 step detector
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bmi160_disable_step_detector(const MblMwMetaWearBoard *board);
+
 /**
  * Writes the step counter configuration to the sensor
  * Applies the MODE set by set_step_counter_mode()
  * @param board     Board to write to
  */
 METAWEAR_API void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWearBoard *board);
+
 /**
  * Sets the watermark level of the step counter
  * The Step-counter will trigger output every time this number of steps are counted.
@@ -398,29 +426,34 @@ METAWEAR_API void mbl_mw_acc_bmi160_write_step_counter_config(const MblMwMetaWea
  * @param trigger   Number of steps
  */
 METAWEAR_API void mbl_mw_acc_bmi270_set_step_counter_trigger(MblMwMetaWearBoard* board, uint16_t trigger);
+
 /**
  * Enables the BMI270 step counter 
  * The trigger count will trigger the callback signal with the # of steps
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi270_enable_step_counter(const MblMwMetaWearBoard *board);
+
 /**
  * Disables the BMI270 step counter
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi270_disable_step_counter(const MblMwMetaWearBoard *board);
+
 /**
  * Writes the step counter configuration to the sensor
  * Applies the TRIGGER set by set_step_counter_trigger()
  * @param board     Board to write to
  */
 METAWEAR_API void mbl_mw_acc_bmi270_write_step_counter_config(const MblMwMetaWearBoard *board);
+
 /**
  * Resets the BMI270 step counter (step counter = 0)
  * Does not disable the step counter
  * @param board     Board to reset
  */
 METAWEAR_API void mbl_mw_acc_bmi270_reset_step_counter(const MblMwMetaWearBoard *board);
+
 /**
  * Reads the current step count.  The callback function will be called with:  
  * @param board         Calling object
@@ -428,6 +461,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_reset_step_counter(const MblMwMetaWearBoard 
  * @param handler       Callback function that is executed when the task is finished
  */
 METAWEAR_API void mbl_mw_acc_bmi270_read_step_counter(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler);
+
 /**
  * Sets the arm side the MetaWear is worn on for gesture recognition
  * Device in left (0 - false) or right (1 - true) arm. 
@@ -436,6 +470,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_read_step_counter(MblMwMetaWearBoard* board,
  * @param side      1 = Right arm, 0 = Left arm
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_gesture_armside(const MblMwMetaWearBoard *board, uint8_t side);
+
 /**
  * Sets the tilt angle for gesture recognition
  * Sine of the minimum tilt angle in portrait down direction of the device when wrist is rolled away (roll-out) from user. 
@@ -445,6 +480,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_wrist_gesture_armside(const MblMwMetaWearBoa
  * @param peak      Tilt Angle
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_gesture_peak(const MblMwMetaWearBoard* board, uint16_t peak);
+
 /**
  * Value of minimum time difference between wrist roll-out and roll-in movement during flick gesture. 
  * Range is 3 to 5 samples at 50Hz (i.e. 0.06 to 0.1 seconds). Default value is 4 (i.e. 0.08 seconds).
@@ -452,6 +488,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_wrist_gesture_peak(const MblMwMetaWearBoard*
  * @param sample      
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_gesture_samples(const MblMwMetaWearBoard* board, uint16_t samples);
+
 /**
  * Sets the maximum time for the gesture recognition
  * Maximum time within which gesture movement has to be completed. 
@@ -460,22 +497,26 @@ METAWEAR_API void mbl_mw_acc_bmi270_wrist_gesture_samples(const MblMwMetaWearBoa
  * @param duration      
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_gesture_duration(const MblMwMetaWearBoard* board, uint16_t duration);
+
 /**
  * Writes the wrist gesture recognition configuration to the sensor
  * Applies the ARM SIDE, PEAK, SAMPLE and DURATION set by set_wrist_gesture_*()
  * @param board     Board to write to
  */
 METAWEAR_API void mbl_mw_acc_bmi270_write_wrist_gesture_config(const MblMwMetaWearBoard* board);
+
 /**
  * Enables the BMI270 wrist gesture recognition
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi270_enable_wrist_gesture(const MblMwMetaWearBoard* board);
+
 /**
  * Disables the BMI270 wrist gesture recognition
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi270_disable_wrist_gesture(const MblMwMetaWearBoard* board);
+
 /**
  * Sets the minimum angle change for wrist wakeup
  * Cosine of minimum expected attitude change of the device within 1 second time window when moving within focus position. 
@@ -484,6 +525,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_disable_wrist_gesture(const MblMwMetaWearBoa
  * @param angle     Minimum angle
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_angle_focus(const MblMwMetaWearBoard* board, uint16_t angle);
+
 /**
  * Sets the maximum angle change for wrist wakeup
  * Cosine of minimum expected attitude change of the device within 1 second time window when moving from non-focus to focus position. 
@@ -492,6 +534,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_angle_focus(const MblMwMetaWear
  * @param angle     Maximum angle
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_angle_nonfocus(const MblMwMetaWearBoard* board, uint16_t angle);
+
 /**
  * Sets the 
  * Sine of the maximum allowed downward tilt angle in landscape right direction of the device, when it is in focus position. 
@@ -500,6 +543,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_angle_nonfocus(const MblMwMetaW
  * @param angle     Maximum tilt angle in Landscape Right mode 
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_tilt_lr(const MblMwMetaWearBoard* board, uint16_t angle);
+
 /**
  * Sets the 
  * Sine of the maximum allowed downward tilt angle in landscape left direction of the device, when it is in focus position.
@@ -516,6 +560,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_tilt_ll(const MblMwMetaWearBoar
  * @param angle     Maximum tilt angle in Portrait Down mode 
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_tilt_pd(const MblMwMetaWearBoard* board, uint16_t angle);
+
 /**
  * Sets the 
  * Sine of the maximum allowed forward tilt angle in portrait up direction of the device, when it is in focus position. 
@@ -524,44 +569,52 @@ METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_tilt_pd(const MblMwMetaWearBoar
  * @param angle     Maximum tilt angle in Portrait Up mode 
  */
 METAWEAR_API void mbl_mw_acc_bmi270_wrist_wakeup_tilt_pu(const MblMwMetaWearBoard* board, uint16_t angle);
+
 /**
  * Writes the wrist gesture recognition configuration to the sensor
  * Applies the ARM SIDE, PEAK, SAMPLE and DURATION set by set_wrist_gesture_*()
  * @param board     Board to write to
  */
 METAWEAR_API void mbl_mw_acc_bmi270_write_wrist_wakeup_config(const MblMwMetaWearBoard* board);
+
 /**
  * Enables the BMI270 wrist wakeup recognition
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi270_enable_wrist_wakeup(const MblMwMetaWearBoard* board);
+
 /**
  * Disables the BMI270 wrist wakeup recognition
  * @param board     Board to modify
  */
 METAWEAR_API void mbl_mw_acc_bmi270_disable_wrist_wakeup(const MblMwMetaWearBoard* board);
+
 /**
  * Enables the BMI270 activity detector 
  * A callback will notify the user when an activity is detected (walking, running, still)
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bmi270_enable_activity_detection(const MblMwMetaWearBoard *board);
+
 /**
  * Disables the BMI270 activity detector
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bmi270_disable_activity_detection(const MblMwMetaWearBoard *board);
+
 /**
  * Enables the BMI270 step detector 
  * A callback will notify the user when a step is detected but will NOT count steps
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bmi270_enable_step_detector(const MblMwMetaWearBoard *board);
+
 /**
  * Disables the BMI270 step detector
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bmi270_disable_step_detector(const MblMwMetaWearBoard *board);
+
 /**
  * Downsampling for the BMI270 acc
  * See BMI270 datasheet for more details
@@ -572,6 +625,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_disable_step_detector(const MblMwMetaWearBoa
  * @param acc_data      Selects filtered or unfiltered Accelerometer data for fifo
  */
 METAWEAR_API void mbl_mw_acc_bmi270_fifo_downs(const MblMwMetaWearBoard* board, uint8_t gyro_downs, uint8_t gyro_data, uint8_t acc_downs, uint8_t acc_data);
+
 /**
  * Manual compensation for the BMI270 acc
  * The offset compensation registers have a width of 8 bit using two’s complement notation.
@@ -582,6 +636,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_fifo_downs(const MblMwMetaWearBoard* board, 
  * @param z_offset  Offset compensation for Accelerometer Z-axis
  */
 METAWEAR_API void mbl_mw_acc_bmi270_acc_offsets(const MblMwMetaWearBoard* board, uint16_t x_offset, uint16_t y_offset, uint16_t z_offset);
+
 /**
  * Remaps the BMI270 axis
  * If the coordinate system of the MetaWear differs from the sensor coordinate system described in the BMI270 datasheet,
@@ -593,6 +648,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_acc_offsets(const MblMwMetaWearBoard* board,
  * @param sign      X,Y,Z axis flip/sign
  */
 METAWEAR_API void mbl_mw_acc_bmi270_axis_remap(const MblMwMetaWearBoard *board, MblMwAccBoschAxisXyzRemap map, MblMwAccBoschAxisXyzSign sign);
+
 /**
  * Set the hysteresis offset (degrees) for portrait/landscape detection
  * Upside/downside recognition hysteresis is not configurable.
@@ -602,6 +658,7 @@ METAWEAR_API void mbl_mw_acc_bmi270_axis_remap(const MblMwMetaWearBoard *board, 
  * @param hysteresis    New calculation mode
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_orientation_hysteresis(MblMwMetaWearBoard *board, float hysteresis);
+
 /**
  * Set the orientation calculation mode
  * Options include: Symmetrical, High asymmetrical, Low asymmetrical
@@ -611,6 +668,7 @@ METAWEAR_API void mbl_mw_acc_bosch_set_orientation_hysteresis(MblMwMetaWearBoard
  * @param mode          New calculation mode
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_orientation_mode(MblMwMetaWearBoard *board, MblMwAccBoschOrientationMode mode);
+
 /**
  * Writes the orientation detection settings to the board
  * Applies MODE and HYSTERESIS from set_orientation_hysteresis() and set_orientation_mode()
@@ -618,18 +676,21 @@ METAWEAR_API void mbl_mw_acc_bosch_set_orientation_mode(MblMwMetaWearBoard *boar
  * @param board     Calling object
  */
 METAWEAR_API void mbl_mw_acc_bosch_write_orientation_config(const MblMwMetaWearBoard *board);
+
 /**
  * Enables orientation detection
  * Not supported by the BMI270.
  * @param board     Calling object
  */
 METAWEAR_API void mbl_mw_acc_bosch_enable_orientation_detection(const MblMwMetaWearBoard *board);
+
 /**
  * Disables orientation detection
  * Not supported by the BMI270.
  * @param board     Calling object
  */
 METAWEAR_API void mbl_mw_acc_bosch_disable_orientation_detection(const MblMwMetaWearBoard *board);
+
 /**
  * Sets the tap detector's quiet time parameter
  * Selects a tap quiet duration of ‘0’->30 ms, ‘1’->20 ms (i.e how long to wait for another tap)
@@ -640,6 +701,7 @@ METAWEAR_API void mbl_mw_acc_bosch_disable_orientation_detection(const MblMwMeta
  * @param time      New quiet time
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_quiet_time(MblMwMetaWearBoard *board, MblMwAccBoschTapQuietTime time);
+
 /**
  * Sets the tap detector's shock time parameter
  * Selects a tap shock duration of ‘0’->50ms, ‘1’->75ms (i.e how long a tap can be)
@@ -649,6 +711,7 @@ METAWEAR_API void mbl_mw_acc_bosch_set_quiet_time(MblMwMetaWearBoard *board, Mbl
  * @param time      New shock time
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_shock_time(MblMwMetaWearBoard *board, MblMwAccBoschTapShockTime time);
+
 /**
  * Sets the tap detector's double tap window
  * The time window between two taps is between 12.5ms and 500ms. 
@@ -658,6 +721,7 @@ METAWEAR_API void mbl_mw_acc_bosch_set_shock_time(MblMwMetaWearBoard *board, Mbl
  * @param window    New double tap window time
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_double_tap_window(MblMwMetaWearBoard *board, MblMwAccBoschDoubleTapWindow window);
+
 /**
  * Sets the tap detector's threshold
  * Threshold of the single/double-tap interrupt corresponding to an acceleration difference.
@@ -667,6 +731,7 @@ METAWEAR_API void mbl_mw_acc_bosch_set_double_tap_window(MblMwMetaWearBoard *boa
  * @param window    New threshold level
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_threshold(MblMwMetaWearBoard *board, float threshold);
+
 /**
  * Sets the tap detector's double tap window
  * Applies the duration, quiet window, shock, and threshold from set_threshold(), set_double_tap_window(), set_shock_time(), set_quiet_time().
@@ -675,6 +740,7 @@ METAWEAR_API void mbl_mw_acc_bosch_set_threshold(MblMwMetaWearBoard *board, floa
  * @param window    New double tap window time
  */
 METAWEAR_API void mbl_mw_acc_bosch_write_tap_config(const MblMwMetaWearBoard *board);
+
 /**
  * Enables the tap detector
  * Not supported by the BMI270.
@@ -683,6 +749,7 @@ METAWEAR_API void mbl_mw_acc_bosch_write_tap_config(const MblMwMetaWearBoard *bo
  * @param enable_double     0 to ignore double tap detection, non-zero to detect
  */
 METAWEAR_API void mbl_mw_acc_bosch_enable_tap_detection(const MblMwMetaWearBoard *board, uint8_t enable_single, uint8_t enable_double);
+
 /**
  * Disable the tap detector
  * Not supported by the BMI270.
@@ -690,6 +757,7 @@ METAWEAR_API void mbl_mw_acc_bosch_enable_tap_detection(const MblMwMetaWearBoard
  * @param window    New double tap window time
  */
 METAWEAR_API void mbl_mw_acc_bosch_disable_tap_detection(const MblMwMetaWearBoard *board);
+
 /**
  * Sets the any motion detector's count parameter
  * Any-motion generates an interrupt when the absolute value of the acceleration exceeds a "threshold"
@@ -700,6 +768,7 @@ METAWEAR_API void mbl_mw_acc_bosch_disable_tap_detection(const MblMwMetaWearBoar
  * @param count     Number of consecutive slope data points that must be above the threshold
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_any_motion_count(MblMwMetaWearBoard *board, uint8_t count);
+
 /**
  * Sets the any motion detector's threshold parameter
  * Any-motion generates an interrupt when the absolute value of the acceleration exceeds a "threshold"
@@ -710,24 +779,28 @@ METAWEAR_API void mbl_mw_acc_bosch_set_any_motion_count(MblMwMetaWearBoard *boar
  * @param threshold Value that the slope data points must be above
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_any_motion_threshold(MblMwMetaWearBoard *board, float threshold);
+
 /**
  * Sets the no motion detector's count parameter
  * @param board     Calling object
  * @param count     Number of consecutive slope data points that must be above the threshold
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_no_motion_count(MblMwMetaWearBoard *board, uint8_t count);
+
 /**
  * Sets the no motion detector's threshold parameter
  * @param board     Calling object
  * @param threshold Value that the slope data points must be above
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_no_motion_threshold(MblMwMetaWearBoard *board, float threshold);
+
 /**
  * Sets the sig motion detector's blocksize parameter
  * @param board     Calling object
  * @param threshold Value that the slope data points must be above
  */
 METAWEAR_API void mbl_mw_acc_bosch_set_sig_motion_blocksize(MblMwMetaWearBoard *board, uint16_t blocksize);
+
 /**
  * Writes the motion configuration to the remote device
  * Applies the threshold and count parameter or blocksize depending on motion type and settings from set_*_*()
@@ -737,6 +810,7 @@ METAWEAR_API void mbl_mw_acc_bosch_set_sig_motion_blocksize(MblMwMetaWearBoard *
  * @param type      Type of motion requested
  */
 METAWEAR_API void mbl_mw_acc_bosch_write_motion_config(const MblMwMetaWearBoard *board, MblMwAccBoschMotion type);
+
 /**
  * Enables motion detection
  * The signal will callback if any motion is sensed based on the motion config
@@ -746,29 +820,34 @@ METAWEAR_API void mbl_mw_acc_bosch_write_motion_config(const MblMwMetaWearBoard 
  * @param type      Type of motion requested
  */
 METAWEAR_API void mbl_mw_acc_bosch_enable_motion_detection(const MblMwMetaWearBoard *board, MblMwAccBoschMotion type);
+
 /**
  * Disables motion detection
  * @param board     Calling object
  * @param type      Type of motion requested
  */
 METAWEAR_API void mbl_mw_acc_bosch_disable_motion_detection(const MblMwMetaWearBoard *board, MblMwAccBoschMotion type);
+
 /**
  * Switches the accelerometer to active mode
  * When in active mode, the accelerometer cannot be configured.
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bosch_start(const MblMwMetaWearBoard *board);
+
 /**
  * Switches the accelerometer to standby mode (low power state)
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bosch_stop(const MblMwMetaWearBoard *board);
+
 /**
  * Enables acceleration sampling
  * The board will start gathering data from the accelerometer
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_acc_bosch_enable_acceleration_sampling(const MblMwMetaWearBoard *board);
+
 /**
  * Disables acceleration sampling
  * The board will stop gathering data from the accelerometer

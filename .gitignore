@@ -1,3 +1,4 @@
+.vscode
 c-binding-generator/build/
 c-binding-generator/dist/
 /doc/

@@ -1158,8 +1158,8 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses.restype = None
     libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses.argtypes = [c_void_p, c_ubyte]
 
-    libmetawear.mbl_mw_gyro_bmi270_acc_offsets.restype = None
-    libmetawear.mbl_mw_gyro_bmi270_acc_offsets.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte]
+    libmetawear.mbl_mw_gyro_bmi270_offsets.restype = None
+    libmetawear.mbl_mw_gyro_bmi270_offsets.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte]
 
     libmetawear.mbl_mw_gyro_bmi160_enable_rotation_sampling.restype = None
     libmetawear.mbl_mw_gyro_bmi160_enable_rotation_sampling.argtypes = [c_void_p]

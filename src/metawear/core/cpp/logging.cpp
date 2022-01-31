@@ -278,7 +278,7 @@ static void processor_synced(MblMwMetaWearBoard* board, stack<ProcessorEntry>& e
     auto fill_processor = [board](MblMwDataSignal* parent, const ProcessorEntry& entry) {
         auto next = MblMwDataProcessor::transform(parent, entry.config);
         next->header.data_id = entry.id;
-
+        next->remove = false;
         if (board->module_events.count(next->header)) {
             auto temp = board->module_events.at(next->header);
             delete next;

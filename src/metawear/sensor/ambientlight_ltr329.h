@@ -51,50 +51,56 @@ typedef enum {
 } MblMwAlsLtr329MeasurementRate;
 
 /**
- * Retrieves the data signal representing LTR329 illuminance data
+ * Retrieves the data signal representing LTR329 illuminance data.
  * This signal represents the luminance in lux
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the board's LTR329 illuminance data signal
  * UINT32 is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board);
+
 /**
- * Sets the sensor gain
+ * Sets the sensor gain.
  * There are altogether six gain settings (1X, 2X, 4X, 8X, 48X and 96X) available for user to configure
  * See MblMwAlsLtr329Gain for allowed values
  * @param board     Pointer to the board to modify
  * @param gain      Sensor gain value to set
  */
 METAWEAR_API void mbl_mw_als_ltr329_set_gain(MblMwMetaWearBoard *board, MblMwAlsLtr329Gain gain);
+
 /**
- * Sets the sensor integration time
+ * Sets the sensor integration time.
  * Measurement time for each full light measurement (ALS) cycle - 100ms (default) to 350 ms
  * See MblMwAlsLtr329IntegrationTime for allowed values
  * @param board     Pointer to the board to modify
  * @param integration_time      Integration time value to set
  */
 METAWEAR_API void mbl_mw_als_ltr329_set_integration_time(MblMwMetaWearBoard *board, MblMwAlsLtr329IntegrationTime integration_time);
+
 /**
- * Sets the sensor measurement rate
+ * Sets the sensor measurement rate.
  * Frequency of light measurement - 50ms (default) to 2000 ms
  * See MblMwAlsLtr329MeasurementRate for allowed values
  * @param board     Pointer to the board to modify
  * @param measurement_rate      Measurement rate value to set
  */
 METAWEAR_API void mbl_mw_als_ltr329_set_measurement_rate(MblMwMetaWearBoard *board, MblMwAlsLtr329MeasurementRate measurement_rate);
+
 /**
- * Writes the configuration to the LTR329 sensor
+ * Writes the configuration to the LTR329 sensor.
  * Applies the INTEGRATION TIME, MEASUREMENT RATE, and GAIN values set in set_*().
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_als_ltr329_write_config(const MblMwMetaWearBoard *board);
+
 /**
- * Starts illuminance sampling
+ * Starts illuminance sampling.
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_als_ltr329_start(const MblMwMetaWearBoard *board);
+
 /**
- * Stops illuminance sampling
+ * Stops illuminance sampling.
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_als_ltr329_stop(const MblMwMetaWearBoard *board);

@@ -174,6 +174,7 @@ struct AccMma8452qState {
 
 static unordered_map<const MblMwMetaWearBoard*, AccMma8452qState> states;
 
+// Helper function - received config response
 static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto config = &((Mma8452qConfig*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc;
     memcpy(config, response + 2, sizeof(*config));
@@ -187,6 +188,7 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
     return MBL_MW_STATUS_OK;
 }
 
+// Helper function - init module
 void init_accelerometer_mma8452q(MblMwMetaWearBoard *board) {
     MblMwDataSignal* acc;
     
@@ -231,18 +233,22 @@ void init_accelerometer_mma8452q(MblMwMetaWearBoard *board) {
     states.insert({board, newState});
 }
 
+// Helper function - free module
 void free_accelerometer_mma8452q(MblMwMetaWearBoard *board) {
     states.erase(board);
 }
 
+// Helper function - serialize
 void serialize_accelerometer_mma8452q_config(const MblMwMetaWearBoard* board, std::vector<uint8_t>& state) {
     SERIALIZE_MODULE_CONFIG(Mma8452qConfig, MBL_MW_MODULE_ACCELEROMETER);
 }
 
+// Helper function - deserialize
 void deserialize_accelerometer_mma8452q_config(MblMwMetaWearBoard* board, uint8_t** state_stream) {
     DESERIALIZE_MODULE_CONFIG(Mma8452qConfig, MBL_MW_MODULE_ACCELEROMETER);
 }
 
+// Get acc signal
 MblMwDataSignal* mbl_mw_acc_mma8452q_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation != MBL_MW_MODULE_ACC_TYPE_MMA8452Q) {
         return nullptr;
@@ -250,10 +256,12 @@ MblMwDataSignal* mbl_mw_acc_mma8452q_get_acceleration_data_signal(const MblMwMet
     GET_DATA_SIGNAL(MMA8452Q_ACCEL_RESPONSE_HEADER);
 }
 
+// Get acc signal
 MblMwDataSignal* mbl_mw_acc_mma8452q_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     return mbl_mw_acc_mma8452q_get_packed_acceleration_data_signal(board);
 }
 
+// Get packed signal
 MblMwDataSignal* mbl_mw_acc_mma8452q_get_packed_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation != MBL_MW_MODULE_ACC_TYPE_MMA8452Q) {
         return nullptr;
@@ -261,14 +269,17 @@ MblMwDataSignal* mbl_mw_acc_mma8452q_get_packed_acceleration_data_signal(const M
     GET_DATA_SIGNAL(MMA8452Q_PACKED_ACCEL_RESPONSE_HEADER);
 }
 
+// Set odr
 void mbl_mw_acc_mma8452q_set_odr(MblMwMetaWearBoard *board, MblMwAccMma8452qOdr odr) {
     ((Mma8452qConfig*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc.dr= odr;
 }
 
+// Set range
 void mbl_mw_acc_mma8452q_set_range(MblMwMetaWearBoard *board, MblMwAccMma8452qRange range) {
     ((Mma8452qConfig*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER))->acc.fs= range;
 }
 
+// Set high pass
 void mbl_mw_acc_mma8452q_set_high_pass_cutoff(MblMwMetaWearBoard *board, float frequency) {
     auto config = ((Mma8452qConfig*)board->module_config.at(MBL_MW_MODULE_ACCELEROMETER));
     if (frequency != 0) {
@@ -280,26 +291,31 @@ void mbl_mw_acc_mma8452q_set_high_pass_cutoff(MblMwMetaWearBoard *board, float f
     }
 }
 
+// Start acc
 void mbl_mw_acc_mma8452q_start(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::GLOBAL_ENABLE), 1};
     SEND_COMMAND;
 }
 
+// Stop acc
 void mbl_mw_acc_mma8452q_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::GLOBAL_ENABLE), 0};
     SEND_COMMAND;
 }
 
+// Enable sampling
 void mbl_mw_acc_mma8452q_enable_acceleration_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::DATA_ENABLE), 1};
     SEND_COMMAND;
 }
 
+// Disable sampling
 void mbl_mw_acc_mma8452q_disable_acceleration_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::DATA_ENABLE), 0};
     SEND_COMMAND;
 }
 
+// Write config
 void mbl_mw_acc_mma8452q_write_acceleration_config(const MblMwMetaWearBoard *board) {
     uint8_t command[7]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::DATA_CONFIG)};
 
@@ -309,6 +325,7 @@ void mbl_mw_acc_mma8452q_write_acceleration_config(const MblMwMetaWearBoard *boa
     SEND_COMMAND;
 }
 
+// Read config
 void read_accelerometer_mma8452q_acceleration_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
     states[board].read_config_context = context;
     states[board].read_config_completed = completed;
@@ -317,6 +334,7 @@ void read_accelerometer_mma8452q_acceleration_config(const MblMwMetaWearBoard* b
     SEND_COMMAND;
 }
 
+// Name for the loggers
 void create_acc_mma8452q_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(AccelerometerMma8452qRegister::DATA_VALUE):
@@ -331,6 +349,7 @@ void create_acc_mma8452q_uri(const MblMwDataSignal* signal, stringstream& uri) {
     }
 }
 
+// Get orientation signal
 MblMwDataSignal* mbl_mw_acc_mma8452q_get_orientation_detection_data_signal(const MblMwMetaWearBoard* board) {
     if (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation != MBL_MW_MODULE_ACC_TYPE_MMA8452Q) {
         return nullptr;
@@ -338,10 +357,12 @@ MblMwDataSignal* mbl_mw_acc_mma8452q_get_orientation_detection_data_signal(const
     GET_DATA_SIGNAL(MMA8452Q_ORIENTATION_RESPONSE_HEADER);
 }
 
+// Set orientation delay
 void mbl_mw_acc_mma8452q_set_orientation_delay(MblMwMetaWearBoard *board, uint16_t delay) {
     states[board].orient_delay = delay;
 }
 
+// Enable orientation sampling
 void mbl_mw_acc_mma8452q_enable_orientation_detection(const MblMwMetaWearBoard *board) {
     auto config = (Mma8452qConfig*) board->module_config.at(MBL_MW_MODULE_ACCELEROMETER);
     config->orientation.pl_count = static_cast<uint8_t>(states[board].orient_delay / ORIENTATION_STEPS[config->acc.mods][config->acc.dr]);
@@ -355,6 +376,7 @@ void mbl_mw_acc_mma8452q_enable_orientation_detection(const MblMwMetaWearBoard *
     SEND_COMMAND;
 }
 
+// Disable orientation sampling
 void mbl_mw_acc_mma8452q_disable_orientation_detection(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_ACCELEROMETER, ORDINAL(AccelerometerMma8452qRegister::ORIENTATION_ENABLE), 0};
     SEND_COMMAND;

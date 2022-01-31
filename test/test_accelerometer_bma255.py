@@ -37,6 +37,7 @@ class TestAccBma255Config(TestMetaWearBase):
             with self.subTest(range= test['range_name']):
                 self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, test['range'])
                 self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
+                print("TestAccBma255Config \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_set_odr(self):
@@ -87,6 +88,7 @@ class TestAccBma255Config(TestMetaWearBase):
             with self.subTest(odr= test['odr_name']):
                 self.libmetawear.mbl_mw_acc_bma255_set_odr(self.board, test['odr'])
                 self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
+                print("TestAccBma255Config \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_set_odr_and_range(self):
@@ -95,18 +97,21 @@ class TestAccBma255Config(TestMetaWearBase):
         self.libmetawear.mbl_mw_acc_bma255_set_odr(self.board, AccBma255Odr._250Hz)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
         self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
+        print("TestAccBma255Config \n")
         self.assertListEqual(self.command, expected)
 
     def test_enable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_acc_bosch_enable_acceleration_sampling(self.board)
+        print("TestAccBma255Config \n")
         self.assertListEqual(self.command, expected)
 
     def test_disable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x00, 0x01]
 
         self.libmetawear.mbl_mw_acc_bosch_disable_acceleration_sampling(self.board)
+        print("TestAccBma255Config \n")
         self.assertListEqual(self.command, expected)
 
 class TestAccBma255Data(TestMetaWearBase):
@@ -121,12 +126,14 @@ class TestAccBma255Data(TestMetaWearBase):
         expected= [0x03, 0x04, 0x01]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, None, self.sensor_data_handler)
+        print("TestAccBma255Data \n")
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe_data(self):
         expected= [0x03, 0x04, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.signal)
+        print("TestAccBma255Data \n")
         self.assertListEqual(self.command, expected)
 
     def test_handle_data(self):
@@ -136,6 +143,7 @@ class TestAccBma255Data(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
         self.notify_mw_char(response)
+        print("TestAccBma255Data \n")
         self.assertEqual(self.data_cartesian_float, expected)
 
     def test_handle_data_component(self):
@@ -165,6 +173,7 @@ class TestAccBma255Data(TestMetaWearBase):
                 self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
                 self.notify_mw_char(response)
 
+                print("TestAccBma255Data \n")
                 self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.0001)
 
 class TestBma255HighFreqAccdata(TestMetaWearBase):
@@ -188,16 +197,19 @@ class TestBma255HighFreqAccdata(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
         self.notify_mw_char(response)
+        print("TestBma255HighFreqAccdata \n")
         self.assertEqual(self.cartesian_float_values, expected_values)
 
     def test_subscribe(self):
         expected= [0x03, 0x1c, 0x01]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
+        print("TestBma255HighFreqAccdata \n")
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe(self):
         expected= [0x03, 0x1c, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
+        print("TestBma255HighFreqAccdata \n")
         self.assertListEqual(self.command, expected)

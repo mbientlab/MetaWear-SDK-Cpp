@@ -30,6 +30,8 @@ struct Tcs34725Config {
     uint8_t illuminator;
 };
 
+
+// Helpfer function - init module
 void init_colordetector_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_COLOR_DETECTOR) && board->module_info.at(MBL_MW_MODULE_COLOR_DETECTOR).present) {
         if (!board->module_config.count(MBL_MW_MODULE_COLOR_DETECTOR)) {
@@ -57,34 +59,42 @@ void init_colordetector_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Helper function - serialize
 void serialize_colordetector_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
     SERIALIZE_MODULE_CONFIG(Tcs34725Config, MBL_MW_MODULE_COLOR_DETECTOR);
 }
 
+// Helpfer function - deserialize
 void deserialize_colordetector_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
     DESERIALIZE_MODULE_CONFIG(Tcs34725Config, MBL_MW_MODULE_COLOR_DETECTOR);
 }
 
+// Get the color signal
 MblMwDataSignal* mbl_mw_cd_tcs34725_get_adc_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(CD_TCS34725_ADC_RESPONSE_HEADER);
 }
 
+// Set integration time
 void mbl_mw_cd_tcs34725_set_integration_time(MblMwMetaWearBoard *board, float time) {
     ((Tcs34725Config*) board->module_config.at(MBL_MW_MODULE_COLOR_DETECTOR))->integration_time= (uint8_t) (256.f - time / 2.4f);
 }
 
+// Set gain
 void mbl_mw_cd_tcs34725_set_gain(MblMwMetaWearBoard *board, MblMwColorDetectorTcs34725Gain gain) {
     ((Tcs34725Config*) board->module_config.at(MBL_MW_MODULE_COLOR_DETECTOR))->gain= gain;
 }
 
+// Enable LED
 void mbl_mw_cd_tcs34725_enable_illuminator_led(MblMwMetaWearBoard *board) {
     ((Tcs34725Config*) board->module_config.at(MBL_MW_MODULE_COLOR_DETECTOR))->illuminator= 1;
 }
 
+// Disable LED
 void mbl_mw_cd_tcs34725_disable_illuminator_led(MblMwMetaWearBoard *board) {
     ((Tcs34725Config*) board->module_config.at(MBL_MW_MODULE_COLOR_DETECTOR))->illuminator= 0;
 }
 
+// Write config
 void mbl_mw_cd_tcs34725_write_config(const MblMwMetaWearBoard *board) {
     uint8_t command[5]= { MBL_MW_MODULE_COLOR_DETECTOR, ORDINAL(ColorDetectorTcs34725Register::MODE) };
     memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_COLOR_DETECTOR), sizeof(Tcs34725Config));
@@ -92,6 +102,7 @@ void mbl_mw_cd_tcs34725_write_config(const MblMwMetaWearBoard *board) {
     SEND_COMMAND;
 }
 
+// Name for the loggers
 void create_colordetector_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(ColorDetectorTcs34725Register::RGB_COLOR):

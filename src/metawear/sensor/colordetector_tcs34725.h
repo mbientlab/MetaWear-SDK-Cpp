@@ -36,6 +36,7 @@ typedef enum {
  * MblMwTcs34725ColorAdc is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_cd_tcs34725_get_adc_data_signal(const MblMwMetaWearBoard *board);
+
 /**
  * Sets the integration time - 2.4ms to 614.4ms in 2.4ms increments
  * The RGBC integration time impacts both the resolution and the sensitivity of the RGBC reading.
@@ -44,6 +45,7 @@ METAWEAR_API MblMwDataSignal* mbl_mw_cd_tcs34725_get_adc_data_signal(const MblMw
  * @param time          New integration time to use, between [2.4, 614.4] milliseconds
  */
 METAWEAR_API void mbl_mw_cd_tcs34725_set_integration_time(MblMwMetaWearBoard *board, float time);
+
 /**
  * Sets the analog gain scale
  * RGBC gain control for the RGBC photodiodes - 1x, 4x, 16x, 60x
@@ -52,17 +54,20 @@ METAWEAR_API void mbl_mw_cd_tcs34725_set_integration_time(MblMwMetaWearBoard *bo
  * @param gain          New gain scale to use
  */
 METAWEAR_API void mbl_mw_cd_tcs34725_set_gain(MblMwMetaWearBoard *board, MblMwColorDetectorTcs34725Gain gain);
+
 /**
  * Writes the configuration to the sensor
  * Applies the INTEGRATION TIME, and GAIN values set in set_*().
  * @param board         Board the sensor resides on
  */
 METAWEAR_API void mbl_mw_cd_tcs34725_write_config(const MblMwMetaWearBoard *board);
+
 /**
  * Enable the illuminator LED
  * @param board         Board to modify
  */
 METAWEAR_API void mbl_mw_cd_tcs34725_enable_illuminator_led(MblMwMetaWearBoard *board);
+
 /**
  * Disable the illuminator LED
  * @param board          Board to modify

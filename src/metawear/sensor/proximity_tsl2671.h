@@ -31,20 +31,22 @@ typedef enum {
 } MblMwProximityTsl2671Current;
 
 /**
- * Retrieves the data signal representing ADC values for the proximity of an object to the MetaWear
+ * Retrieves the data signal representing ADC values for the proximity of an object to the MetaWear.
  * @param board         Board the sensor resides on
  * @return Pointer to the data signal
  * UINT32 is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_proximity_tsl2671_get_adc_data_signal(const MblMwMetaWearBoard *board);
+
 /**
- * Sets the integration time
+ * Sets the integration time.
  * The proximity integration time (PTIME) is the period of time that the internal ADC converts the analog signal to a digital count. 
  * It is recommend that this be set to a minimum of PTIME = 0xFF or 2.72 ms.
  * @param board         Board to modify
  * @param time          New integration time to use, between [2.72, 693.6] milliseconds
  */
 METAWEAR_API void mbl_mw_proximity_tsl2671_set_integration_time(MblMwMetaWearBoard *board, float time);
+
 /**
  * Sets the pulse count.  Sensitivity increase by the sqrt of pulse count.
  * The proximity pulse count register sets the number of proximity pulses that will be transmitted. 
@@ -55,8 +57,9 @@ METAWEAR_API void mbl_mw_proximity_tsl2671_set_integration_time(MblMwMetaWearBoa
  * @param n_pulses      Number of pulses to use for proximity detection, between [1, 255]
  */
 METAWEAR_API void mbl_mw_proximity_tsl2671_set_n_pulses(MblMwMetaWearBoard *board, uint8_t n_pulses);
+
 /**
- * Sets the photodiode that responds to light to be used
+ * Sets the photodiode that responds to light to be used.
  * Channel 0 photodiode (CH0), which is responsive to both visible and infrared light
  * Channel 1 photodiode (CH1), which is responsive primarily to infrared light
  * See MblMwProximityTsl2671Channel for allowed values
@@ -64,6 +67,7 @@ METAWEAR_API void mbl_mw_proximity_tsl2671_set_n_pulses(MblMwMetaWearBoard *boar
  * @param channel       New receiver channel to use
  */
 METAWEAR_API void mbl_mw_proximity_tsl2671_set_receiver_channel(MblMwMetaWearBoard *board, MblMwProximityTsl2671Channel channel);
+
 /**
  * Sets the current driving the light transmitter.  
  * An internal LED driver can be configured to provide a constant current sink of 12.5 mA, 25 mA, 50 mA, or 100 mA of current.
@@ -73,8 +77,9 @@ METAWEAR_API void mbl_mw_proximity_tsl2671_set_receiver_channel(MblMwMetaWearBoa
  * @param current       New driver current to use
  */
 METAWEAR_API void mbl_mw_proximity_tsl2671_set_transmitter_current(MblMwMetaWearBoard *board, MblMwProximityTsl2671Current current);
+
 /**
- * Writes the configuration to the sensor
+ * Writes the configuration to the sensor.
  * Applies the INTEGRATION TIME, RECEIVER CHANNEL, PULSES and CURRENT values set in set_*().
  * @param board         Board the sensor resides on
  */

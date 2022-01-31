@@ -17,6 +17,7 @@ using std::stringstream;
 
 const ResponseHeader HUMIDITY_BME280_ADC_RESPONSE_HEADER(MBL_MW_MODULE_HUMIDITY, READ_REGISTER(ORDINAL(HumidityBme280Register::HUMIDITY)));
 
+// Helper function - init module
 void init_humidity_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_HUMIDITY) && board->module_info.at(MBL_MW_MODULE_HUMIDITY).present) {
         if (!board->module_events.count(HUMIDITY_BME280_ADC_RESPONSE_HEADER)) {
@@ -27,15 +28,18 @@ void init_humidity_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Set percentage
 MblMwDataSignal* mbl_mw_humidity_bme280_get_percentage_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(HUMIDITY_BME280_ADC_RESPONSE_HEADER);
 }
 
+// Set oversampling
 void mbl_mw_humidity_bme280_set_oversampling(const MblMwMetaWearBoard *board, MblMwHumidityBme280Oversampling oversampling) {
     uint8_t command[3]= { MBL_MW_MODULE_HUMIDITY, ORDINAL(HumidityBme280Register::MODE), static_cast<uint8_t>(oversampling) };
     SEND_COMMAND;
 }
 
+// Name for the loggers
 void create_humidity_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(HumidityBme280Register::HUMIDITY):

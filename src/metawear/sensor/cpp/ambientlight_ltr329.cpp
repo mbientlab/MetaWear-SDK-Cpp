@@ -32,6 +32,7 @@ struct Ltr329Config {
     uint8_t:2;
 };
 
+// Helper function - init module
 void init_ambient_light_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_AMBIENT_LIGHT) && board->module_info.at(MBL_MW_MODULE_AMBIENT_LIGHT).present) {
         if (!board->module_config.count(MBL_MW_MODULE_AMBIENT_LIGHT)) {
@@ -50,18 +51,23 @@ void init_ambient_light_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Helper function - serialize
 void serialize_ambient_light_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
     SERIALIZE_MODULE_CONFIG(Ltr329Config, MBL_MW_MODULE_AMBIENT_LIGHT);
 }
 
+// Helper function - deserialize
 void deserialize_ambient_light_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
     DESERIALIZE_MODULE_CONFIG(Ltr329Config, MBL_MW_MODULE_AMBIENT_LIGHT);
 }
 
+// Get ambient light data signal
 MblMwDataSignal* mbl_mw_als_ltr329_get_illuminance_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(LTR329_ILLUMINANCE_RESPONSE_HEADER);
 }
 
+
+// Set gain
 void mbl_mw_als_ltr329_set_gain(MblMwMetaWearBoard *board, MblMwAlsLtr329Gain gain) {
     switch(gain) {
         case MBL_MW_ALS_LTR329_GAIN_48X:
@@ -74,30 +80,36 @@ void mbl_mw_als_ltr329_set_gain(MblMwMetaWearBoard *board, MblMwAlsLtr329Gain ga
     }
 }
 
+// Set integration time
 void mbl_mw_als_ltr329_set_integration_time(MblMwMetaWearBoard *board, MblMwAlsLtr329IntegrationTime integration_time) {
     ((Ltr329Config*) board->module_config.at(MBL_MW_MODULE_AMBIENT_LIGHT))->als_integration_time= integration_time;
 }
 
+// Set measurement rate
 void mbl_mw_als_ltr329_set_measurement_rate(MblMwMetaWearBoard *board, MblMwAlsLtr329MeasurementRate measurement_rate) {
     ((Ltr329Config*) board->module_config.at(MBL_MW_MODULE_AMBIENT_LIGHT))->als_measurement_rate= measurement_rate;
 }
 
+// Write config
 void mbl_mw_als_ltr329_write_config(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_AMBIENT_LIGHT, ORDINAL(AmbientLightLtr329Register::CONFIG)};
     memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_AMBIENT_LIGHT), sizeof(Ltr329Config));
     SEND_COMMAND;
 }
 
+// Start ambient light
 void mbl_mw_als_ltr329_start(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_AMBIENT_LIGHT, ORDINAL(AmbientLightLtr329Register::ENABLE), 1};
     SEND_COMMAND;
 }
 
+// Stop ambient light
 void mbl_mw_als_ltr329_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_AMBIENT_LIGHT, ORDINAL(AmbientLightLtr329Register::ENABLE), 0};
     SEND_COMMAND;
 }
 
+// Name for the loggers
 void create_als_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(AmbientLightLtr329Register::OUTPUT):

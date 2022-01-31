@@ -80,6 +80,7 @@ void MblMwSpiSignal::read(const void* parameters) const {
     send_command(owner, command.data(), (uint8_t) command.size());
 }
 
+// Helper function - init module
 void init_serialpassthrough_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_I2C) && board->module_info.at(MBL_MW_MODULE_I2C).present) {
         board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_I2C, READ_REGISTER(ORDINAL(SerialPassthroughRegister::I2C_READ_WRITE))),
@@ -92,6 +93,7 @@ void init_serialpassthrough_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Get data signal for i2c
 MblMwDataSignal* mbl_mw_i2c_get_data_signal(MblMwMetaWearBoard *board, uint8_t length, uint8_t id) {
     ResponseHeader header(MBL_MW_MODULE_I2C, READ_REGISTER(ORDINAL(SerialPassthroughRegister::I2C_READ_WRITE)), id);
 
@@ -101,6 +103,7 @@ MblMwDataSignal* mbl_mw_i2c_get_data_signal(MblMwMetaWearBoard *board, uint8_t l
     return dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
 }
 
+// Get data signal for spi
 MblMwDataSignal* mbl_mw_spi_get_data_signal(MblMwMetaWearBoard* board, uint8_t length, uint8_t id) {
     if (board->module_info.count(MBL_MW_MODULE_I2C) && board->module_info.at(MBL_MW_MODULE_I2C).present && 
             board->module_info.at(MBL_MW_MODULE_I2C).revision >= SPI_REVISION) {
@@ -114,6 +117,7 @@ MblMwDataSignal* mbl_mw_spi_get_data_signal(MblMwMetaWearBoard* board, uint8_t l
     return nullptr;
 }
 
+// i2c write
 void mbl_mw_i2c_write(const MblMwMetaWearBoard *board, uint8_t device_addr, uint8_t register_addr, const uint8_t* value, uint8_t length) {
     vector<uint8_t> command= { MBL_MW_MODULE_I2C, ORDINAL(SerialPassthroughRegister::I2C_READ_WRITE), device_addr, register_addr, 0xff, length};
     command.insert(command.end(), value, value + length);
@@ -121,6 +125,7 @@ void mbl_mw_i2c_write(const MblMwMetaWearBoard *board, uint8_t device_addr, uint
     send_command(board, command.data(), (uint8_t) command.size());
 }
 
+// spi write
 void mbl_mw_spi_write(const MblMwMetaWearBoard* board, const MblMwSpiParameters* parameters) {
     const MblMwSpiParameters* read_parameters= (const MblMwSpiParameters*) parameters;
     SpiBitFields fields(read_parameters);
@@ -132,6 +137,7 @@ void mbl_mw_spi_write(const MblMwMetaWearBoard* board, const MblMwSpiParameters*
     send_command(board, command.data(), (uint8_t) command.size());
 }
 
+// Name for the loggers
 void create_serialpassthrough_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SerialPassthroughRegister::I2C_READ_WRITE):

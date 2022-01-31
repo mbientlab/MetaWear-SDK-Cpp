@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 /**
- * Retrieves the data signal representing switch state data
+ * Retrieves the data signal representing switch state data.
  * The switch is either pushed (1) or not pushed (0)
  * @param board     Pointer to the board to retrieve the signal from
  * @return Pointer to the switch data signal

@@ -1019,7 +1019,7 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
  * @param y_offset  Offset compensation for Gyroscope Y-axis 
  * @param z_offset  Offset compensation for Gyroscope Z-axis
  */
-  'mbl_mw_gyro_bmi270_acc_offsets': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8]],
+  'mbl_mw_gyro_bmi270_offsets': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8, ref.types.uint8, ref.types.uint8]],
 
 /**
  * Enables rotation sampling

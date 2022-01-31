@@ -16,6 +16,7 @@ using std::out_of_range;
 using std::piecewise_construct;
 using std::stringstream;
 
+// Helper function - init module
 void init_multichannel_temp_module(MblMwMetaWearBoard *board) {
     for(uint8_t channel = 0; channel < (uint8_t) board->module_info.at(MBL_MW_MODULE_TEMPERATURE).extra.size(); channel++) {
         ResponseHeader header(MBL_MW_MODULE_TEMPERATURE, READ_REGISTER(ORDINAL(MultiChannelTempRegister::TEMPERATURE)), channel);
@@ -29,17 +30,20 @@ void init_multichannel_temp_module(MblMwMetaWearBoard *board) {
         forward_as_tuple(response_handler_data_with_id));
 }
 
+// Get temperature signal
 MblMwDataSignal* mbl_mw_multi_chnl_temp_get_temperature_data_signal(const MblMwMetaWearBoard *board, uint8_t channel) {
     ResponseHeader header(MBL_MW_MODULE_TEMPERATURE, READ_REGISTER(ORDINAL(MultiChannelTempRegister::TEMPERATURE)), channel);
     return board->module_events.count(header) ? dynamic_cast<MblMwDataSignal*>(board->module_events.at(header)) : nullptr;
 }
 
+// Configure the external thermistor (which pin is which)
 void mbl_mw_multi_chnl_temp_configure_ext_thermistor(const MblMwMetaWearBoard *board, uint8_t channel, uint8_t data_pin, 
         uint8_t pulldown_pin, uint8_t active_high) {
     uint8_t command[6]= {MBL_MW_MODULE_TEMPERATURE, ORDINAL(MultiChannelTempRegister::MODE), channel, data_pin, pulldown_pin, active_high};
     SEND_COMMAND;
 }
 
+// Returns the channel ID
 MblMwTemperatureSource mbl_mw_multi_chnl_temp_get_source(const MblMwMetaWearBoard *board, uint8_t channel) {
     try {
         return (MblMwTemperatureSource) board->module_info.at(MBL_MW_MODULE_TEMPERATURE).extra.at(channel);
@@ -48,6 +52,7 @@ MblMwTemperatureSource mbl_mw_multi_chnl_temp_get_source(const MblMwMetaWearBoar
     }
 }
 
+// Returns the number of channels
 uint8_t mbl_mw_multi_chnl_temp_get_num_channels(const MblMwMetaWearBoard *board) {
     try {
         return (uint8_t) board->module_info.at(MBL_MW_MODULE_TEMPERATURE).extra.size();
@@ -56,6 +61,7 @@ uint8_t mbl_mw_multi_chnl_temp_get_num_channels(const MblMwMetaWearBoard *board)
     }
 }
 
+// Name for the loggers
 void create_temp_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(MultiChannelTempRegister::TEMPERATURE):

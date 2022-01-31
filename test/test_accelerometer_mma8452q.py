@@ -9,6 +9,7 @@ class TestMma8452qConfiguration(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_acc_mma8452q_set_odr(self.board, AccMma8452qOdr._50Hz)
         self.libmetawear.mbl_mw_acc_mma8452q_write_acceleration_config(self.board)
+        print("TestMma8452qConfiguration \n")
         self.assertListEqual(self.command, expected)
 
     def test_set_range(self):
@@ -16,6 +17,7 @@ class TestMma8452qConfiguration(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_acc_mma8452q_set_range(self.board, AccMma8452qRange._8G)
         self.libmetawear.mbl_mw_acc_mma8452q_write_acceleration_config(self.board)
+        print("TestMma8452qConfiguration \n")
         self.assertListEqual(self.command, expected)
 
     def test_set_odr_and_range(self):
@@ -24,18 +26,21 @@ class TestMma8452qConfiguration(TestMetaWearBase):
         self.libmetawear.mbl_mw_acc_mma8452q_set_odr(self.board, AccMma8452qOdr._200Hz)
         self.libmetawear.mbl_mw_acc_mma8452q_set_range(self.board, AccMma8452qRange._4G)
         self.libmetawear.mbl_mw_acc_mma8452q_write_acceleration_config(self.board)
+        print("TestMma8452qConfiguration \n")
         self.assertListEqual(self.command, expected)
 
     def test_enable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x01]
 
         self.libmetawear.mbl_mw_acc_mma8452q_enable_acceleration_sampling(self.board)
+        print("TestMma8452qConfiguration \n")
         self.assertListEqual(self.command, expected)
 
     def test_disable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x00]
 
         self.libmetawear.mbl_mw_acc_mma8452q_disable_acceleration_sampling(self.board)
+        print("TestMma8452qConfiguration \n")
         self.assertListEqual(self.command, expected)
 
 class TestAccMma8452qAccelerationData(TestMetaWearBase):
@@ -51,6 +56,7 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
 
+        print("TestAccMma8452qAccelerationData \n")
         self.assertEqual(self.data_cartesian_float, expected)
 
     def test_handle_data_component(self):
@@ -79,18 +85,21 @@ class TestAccMma8452qAccelerationData(TestMetaWearBase):
                 self.libmetawear.mbl_mw_datasignal_subscribe(acc_component, None, self.sensor_data_handler)
                 self.notify_mw_char(response)
                 
+                print("TestAccMma8452qAccelerationData \n")
                 self.assertAlmostEqual(self.data_float.value, test['expected'], delta = 0.001)
 
     def test_stream_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
+        print("TestAccMma8452qAccelerationData \n")
         self.assertListEqual(self.command, expected)
 
     def test_end_stream_acceleration_data(self):
         expected= [0x03, 0x04, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
+        print("TestAccMma8452qAccelerationData \n")
         self.assertListEqual(self.command, expected)
 
 class TestAccMma8452qHighFreqAccData(TestMetaWearBase):
@@ -112,18 +121,21 @@ class TestAccMma8452qHighFreqAccData(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
 
+        print("TestAccMma8452qHighFreqAccData \n")
         self.assertEqual(self.cartesian_float_values, expected_values)
 
     def test_stream_acceleration_data(self):
         expected= [0x03, 0x12, 0x01]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
+        print("TestAccMma8452qHighFreqAccData \n")
         self.assertListEqual(self.command, expected)
 
     def test_end_stream_acceleration_data(self):
         expected= [0x03, 0x12, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
+        print("TestAccMma8452qHighFreqAccData \n")
         self.assertListEqual(self.command, expected)
 
 class TestOrientation(TestMetaWearBase):
@@ -134,6 +146,7 @@ class TestOrientation(TestMetaWearBase):
         ]
 
         self.libmetawear.mbl_mw_acc_mma8452q_enable_orientation_detection(self.board)
+        print("TestOrientation \n")
         self.assertEqual(self.command_history, expected)
 
     def test_disable(self):
@@ -143,6 +156,7 @@ class TestOrientation(TestMetaWearBase):
         ]
 
         self.libmetawear.mbl_mw_acc_mma8452q_disable_orientation_detection(self.board)
+        print("TestOrientation \n")
         self.assertEqual(self.command_history, expected)
 
     def test_handle_response(self):
@@ -195,6 +209,7 @@ class TestOrientation(TestMetaWearBase):
                 self.libmetawear.mbl_mw_datasignal_subscribe(orientation, None, self.sensor_data_handler)
                 
                 self.notify_mw_char(to_string_buffer(test['response']))
+                print("TestOrientation \n")
                 self.assertEqual(self.data_int32.value, test['expected'])
 
 class TestHighPassFilter(TestMetaWearBase):
@@ -234,4 +249,5 @@ class TestHighPassFilter(TestMetaWearBase):
                 self.libmetawear.mbl_mw_acc_mma8452q_set_high_pass_cutoff(self.board, test['cutoffs'][test['odr']])
                 self.libmetawear.mbl_mw_acc_mma8452q_write_acceleration_config(self.board)
 
+                print("TestHighPassFilter \n")
                 self.assertEqual(self.command, [0x03, 0x03, 0x10, test['mask'], TestHighPassFilter.ODR_MASKS[test['odr']], 0x00, 0x00])
