@@ -23,8 +23,9 @@ extern "C" {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_sample_create(MblMwDataSignal *source, uint8_t bin_size,
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
- * Modify the bin size of a sample delay processor
+ * Modify the bin size of a sample delay processor.
  * @param sample_delay          Sample processor to modify
  * @param bin_size              Number of samples to hold before letting data through
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 

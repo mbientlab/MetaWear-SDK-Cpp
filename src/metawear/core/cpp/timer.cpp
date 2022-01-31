@@ -26,6 +26,7 @@ struct TimerState : public AsyncCreator {
     void *timer_context;
 };
 
+// Helper function - timer created
 static int32_t timer_created(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = GET_TIMER_STATE(board);
 
@@ -58,6 +59,7 @@ void MblMwTimer::remove_from_board() {
     SEND_COMMAND_BOARD(owner);
 }
 
+// Helper function - init module
 void init_timer_module(MblMwMetaWearBoard *board) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::TIMER_ENTRY)),
         forward_as_tuple(timer_created));
@@ -67,10 +69,12 @@ void init_timer_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Helper function - free module
 void free_timer_module(void *state) {
     delete (TimerState*) state;
 }
 
+// Helper function - disconnect timer
 void disconnect_timer(MblMwMetaWearBoard* board) {
     auto state = GET_TIMER_STATE(board);
     if (state != nullptr) {
@@ -78,6 +82,7 @@ void disconnect_timer(MblMwMetaWearBoard* board) {
     }
 }
 
+// Timer create
 void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t repetitions, uint8_t delay, void *context, MblMwFnTimerPtr received_timer) {
     auto state = GET_TIMER_STATE(board);
 
@@ -99,30 +104,35 @@ void mbl_mw_timer_create(MblMwMetaWearBoard *board, uint32_t period, uint16_t re
     state->create_next(false);
 }
 
+// Timer create indef
 void mbl_mw_timer_create_indefinite(MblMwMetaWearBoard *board, uint32_t period, uint8_t delay, void *context, MblMwFnTimerPtr received_timer) {
     return mbl_mw_timer_create(board, period, REPEAT_INDEFINITELY, delay, context, received_timer);
 }
 
-
+// Timer get id
 uint8_t mbl_mw_timer_get_id(const MblMwTimer* timer) {
     return timer->header.data_id;
 }
 
+// Timer lookup id
 MblMwTimer* mbl_mw_timer_lookup_id(const MblMwMetaWearBoard* board, uint8_t id) {
     ResponseHeader map_key(MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::NOTIFY), id);
     return board->module_events.count(map_key) ? dynamic_cast<MblMwTimer*>(board->module_events.at(map_key)) : nullptr;
 }
 
+// Timer start
 void mbl_mw_timer_start(const MblMwTimer* timer) {
     uint8_t command[3]= {MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::START), timer->header.data_id};
     SEND_COMMAND_BOARD(timer->owner);
 }
 
+// Timer stop
 void mbl_mw_timer_stop(const MblMwTimer* timer) {
     uint8_t command[3]= {MBL_MW_MODULE_TIMER, ORDINAL(TimerRegister::STOP), timer->header.data_id};
     SEND_COMMAND_BOARD(timer->owner);
 }
 
+// Timer remove
 void mbl_mw_timer_remove(MblMwTimer* timer) {
     timer->owner->module_events.erase(timer->header);
     delete timer;

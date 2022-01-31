@@ -30,14 +30,15 @@ typedef struct {
 } MblMwGattChar;
 
 /**
- * Definition for callback functions that accept a void pointer and byte array
+ * Definition for callback functions that accept a void pointer and byte array.
  * @param caller        Object the callback is designated for
  * @param start         Pointer to the beginning of the byte array
  * @param length        Length of the byte array
  */
 typedef int32_t(*MblMwFnIntVoidPtrArray)(const void* caller, const uint8_t* start, uint8_t length);
+
 /**
- * Definition for callback functions that accept a void pointer and an int32
+ * Definition for callback functions that accept a void pointer and an int32.
  * @param caller        Object the callback is designated for
  * @param value         Additional value passed to the function for context specific callbacks
  */
@@ -52,7 +53,7 @@ typedef struct {
      */
     void *context;
     /** 
-     * Writes the characteristic and value to the device
+     * Writes the characteristic and value to the device.
      * @param context           Pointer to the <code>context</code> field
      * @param caller            Object using this function pointer
      * @param characteristic    Gatt characteristic to write
@@ -62,7 +63,7 @@ typedef struct {
     void (*write_gatt_char)(void *context, const void* caller, MblMwGattCharWriteType writeType, const MblMwGattChar* characteristic, 
             const uint8_t* value, uint8_t length);
     /**
-     * Reads the value of the characteristic from the device
+     * Reads the value of the characteristic from the device.
      * @param context               Pointer to the <code>context</code> field
      * @param caller                Object using this function pointer
      * @param characteristic        Gatt characteristic to read
@@ -70,7 +71,7 @@ typedef struct {
      */
     void (*read_gatt_char)(void *context, const void* caller, const MblMwGattChar* characteristic, MblMwFnIntVoidPtrArray handler);
     /**
-     * Enables notifications for characeristic changes
+     * Enables notifications for characeristic changes.
      * @param context               Pointer to the <code>context</code> field
      * @param caller                Object using this function pointer
      * @param characteristic        Characteristic to enable notifications for
@@ -79,7 +80,7 @@ typedef struct {
      */
     void (*enable_notifications)(void *context, const void* caller, const MblMwGattChar* characteristic, MblMwFnIntVoidPtrArray handler, MblMwFnVoidVoidPtrInt ready);
     /**
-     * Register a handler for disconnect events
+     * Register a handler for disconnect events.
      * @param context               Pointer to the <code>context</code> field
      * @param caller                Object using this function pointer
      * @param handler               Handler to respond to the disconnect event

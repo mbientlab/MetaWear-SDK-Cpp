@@ -8,6 +8,7 @@ class TestIBeacon(TestMetaWearBase):
         expected= [0x07, 0x03, 0x4e, 0x00]
 
         self.libmetawear.mbl_mw_ibeacon_set_major(self.board, 78);
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)
 
     def test_set_major_signal(self):
@@ -27,30 +28,35 @@ class TestIBeacon(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_end_record(self.processors[0], None, self.commands_recorded_fn)
         self.events["event"].wait()
 
+        print("TestIBeacon \n")
         self.assertEqual(self.command_history, expected)
 
     def test_set_minor(self):
         expected= [0x07, 0x04, 0x1d, 0x1d]
 
         self.libmetawear.mbl_mw_ibeacon_set_minor(self.board, 7453);
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)
 
     def test_set_period(self):
         expected= [0x07, 0x07, 0xb3, 0x3a]
 
         self.libmetawear.mbl_mw_ibeacon_set_period(self.board, 15027);
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)
 
     def test_set_rx_power(self):
         expected= [0x07, 0x05, 0xc9]
 
         self.libmetawear.mbl_mw_ibeacon_set_rx_power(self.board, -55);
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)
 
     def test_set_tx_power(self):
         expected= [0x07, 0x06, 0xf4]
 
         self.libmetawear.mbl_mw_ibeacon_set_tx_power(self.board, -12);
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)
 
     def test_set_uuid(self):
@@ -59,16 +65,19 @@ class TestIBeacon(TestMetaWearBase):
         bytes = uuid.UUID('{326a9006-85cb-9195-d9dd-464cfbbae75a}').bytes[::-1]
         ad_uuid = cast(bytes, POINTER(c_ubyte * 16))
         self.libmetawear.mbl_mw_ibeacon_set_uuid(self.board, ad_uuid.contents)
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)
 
     def test_enable(self):
         expected= [0x07, 0x01, 0x01]
 
         self.libmetawear.mbl_mw_ibeacon_enable(self.board);
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)
 
     def test_ibeacon_disable(self):
         expected= [0x07, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_ibeacon_disable(self.board);
+        print("TestIBeacon \n")
         self.assertEqual(self.command, expected)

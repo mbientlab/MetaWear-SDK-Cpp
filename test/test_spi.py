@@ -18,6 +18,7 @@ class TestSpiRPro(TestMetaWearBase):
                 slave_select_pin = 10, clock_pin = 0, mosi_pin = 11, miso_pin = 7, lsb_first = 0, use_nrf_pins = 1)
         signal= self.libmetawear.mbl_mw_spi_get_data_signal(self.board, 5, 0xe)
         self.libmetawear.mbl_mw_datasignal_read_with_parameters(signal, byref(parameters))
+        print("TestSpiRPro \n")
         self.assertEqual(self.command, expected)
 
     def test_bmi160_data(self):
@@ -27,4 +28,5 @@ class TestSpiRPro(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x0d\x82\x0c\x07\x30\x81\x0b\xc0', 8))
 
+        print("TestSpiRPro \n")
         self.assertEqual(self.data_byte_array, expected)

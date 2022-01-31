@@ -49,66 +49,76 @@ typedef struct {
 } MblMwLogDownloadHandler;
 
 /**
- * Starts data logging
+ * Starts data logging.
  * @param board                 Board to log data on
  * @param overwrite             Non-zero if older entries will be overwritten
  */
 METAWEAR_API void mbl_mw_logging_start(const MblMwMetaWearBoard* board, uint8_t overwrite);
+
 /**
- * Stops data logging
+ * Stops data logging.
  * @param board                 Board to stop logging
  */
 METAWEAR_API void mbl_mw_logging_stop(const MblMwMetaWearBoard* board);
+
 /**
- * Flushes logging data (pending writes) to the MMS memory
+ * Flushes logging data (pending writes) to the MMS memory.
  * Should be called for the MMS when done with logging and ready to download data
  * For MMS only.
  * @param board                 Board to stop logging
  */
 METAWEAR_API void mbl_mw_logging_flush_page(const MblMwMetaWearBoard* board);
+
 /**
- * Clear the logger of saved entries
+ * Clear the logger of saved entries.
  * @param board                 Board to remove entries from
  */
 METAWEAR_API void mbl_mw_logging_clear_entries(const MblMwMetaWearBoard* board);
+
 /**
- * Downloads the log data
+ * Downloads the log data.
  * @param board                     Board to download the log data from
  * @param n_notifies                How many progress updates to send
  * @param handler                   Handler for processing logger responses
  */
 METAWEAR_API void mbl_mw_logging_download(MblMwMetaWearBoard* board, uint8_t n_notifies, const MblMwLogDownloadHandler* handler);
+
 /**
- * Retrieves the id value identifying the logger
+ * Retrieves the id value identifying the logger.
  * @param logger            Logger to lookup
  * @return Numerical id of the logger
  */
 METAWEAR_API uint8_t mbl_mw_logger_get_id(const MblMwDataLogger* logger);
+
 /**
- * Retrieves the data signal the logger is recording data for
+ * Retrieves the data signal the logger is recording data for.
  * @param logger            Logger to lookup
  * @return Pointer to owning MblMwDataSignal object
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_logger_get_signal(const MblMwDataLogger* logger);
+
 /**
- * Looks up the MblMwDataLogger object corresponding to the id
+ * Looks up the MblMwDataLogger object corresponding to the id.
  * @param board             Board to search on
  * @param id                Numerical id to lookup
  * @return Logger object identified by the id, null if no object is found
  */
 METAWEAR_API MblMwDataLogger* mbl_mw_logger_lookup_id(const MblMwMetaWearBoard* board, uint8_t id);
+
 /**
- * Removes the logger from the board
+ * Removes the logger from the board.
  * @param logger                logger to remove
  */
 METAWEAR_API void mbl_mw_logger_remove(MblMwDataLogger* logger);
+
 /**
- * Subscribes to responses from the data logger
+ * Subscribes to responses from the data logger.
  * @param logger                Logger to subscribe to
  * @param context               Pointer to additional data for the callback function
  * @param received_data         Callback function to handle data received from the logger
  */
 METAWEAR_API void mbl_mw_logger_subscribe(MblMwDataLogger* logger, void *context, MblMwFnData received_data);
+
 /**
  * Generates a string identifying the data chain the logger is receiving data from.  This string is matched with the 
  * output of mbl_mw_anonymous_datasignal_get_identifier.
@@ -116,23 +126,27 @@ METAWEAR_API void mbl_mw_logger_subscribe(MblMwDataLogger* logger, void *context
  * @param logger                Calling object
  */
 METAWEAR_API const char* mbl_mw_logger_generate_identifier(const MblMwDataLogger* logger);
+
 /**
- * Retrieves a data signal representing the length of the log, including timestamps
+ * Retrieves a data signal representing the length of the log, including timestamps.
  * @param board                 Board to get reset_uid from
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_logging_get_length_data_signal(const MblMwMetaWearBoard *board);
+
 /**
  * Retrieves a data signal representing the current logger time state.  This includes the
  * reset_uid and time of boot.
  * @param board                 Board to get time from
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_logging_get_time_data_signal(const MblMwMetaWearBoard *board);
+
 /**
- * Get the latest reset_uid read duing connection
+ * Get the latest reset_uid read duing connection.
  * @param board                 Board to get reset_uid from
  * @return value of reset_uid
  */
 METAWEAR_API uint8_t mbl_mw_logging_get_latest_reset_uid(const MblMwMetaWearBoard* board);
+
 /**
  * Get the device boot time for a given reset_uid.  This reference time
  * is automatically calulated at connection time.
@@ -141,6 +155,7 @@ METAWEAR_API uint8_t mbl_mw_logging_get_latest_reset_uid(const MblMwMetaWearBoar
  * @return Number of milliseconds since epoch that the given reset_uid occured
  */
 METAWEAR_API int64_t mbl_mw_logging_get_reference_time(const MblMwMetaWearBoard *board, uint8_t reset_uid);
+
 /**
  * Set the device boot time for a given reset_uid.  This reference time
  * is used to calcuated real timestamps from logged data.

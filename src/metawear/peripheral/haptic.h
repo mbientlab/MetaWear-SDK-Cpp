@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 /**
- * Drives a motor - Pulls down the HCD pin
+ * Drives a motor - Pulls down the HCD pin.
  * The MetaWear has a driver for motor or buzzers that are 3C compatible (check the datasheet)
  * This is not a full PWM driver.
  * @param board             Pointer to the board to send the command to
@@ -20,8 +20,9 @@ extern "C" {
  * @param pulse_width_ms    How long to run the motor, in milliseconds
  */
 METAWEAR_API void mbl_mw_haptic_start_motor(const MblMwMetaWearBoard *board, float duty_cycle_per, uint16_t pulse_width_ms);
+
 /**
- * Drives a buzzer - Pulls down the HCD pin
+ * Drives a buzzer - Pulls down the HCD pin.
  * The MetaWear has a driver for motor or buzzers that are 3C compatible (check the datasheet)
  * @param board             Pointer to the board to send the command to
  * @param pulse_width_ms    How long to run the buzzer, in milliseconds

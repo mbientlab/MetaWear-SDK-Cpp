@@ -10,6 +10,7 @@ class TestI2cR(TestMetaWearBase):
         parameters= I2cReadParameters(device_addr= 0x1c, register_addr= 0xd)
         signal= self.libmetawear.mbl_mw_i2c_get_data_signal(self.board, 1, 0xa)
         self.libmetawear.mbl_mw_datasignal_read_with_parameters(signal, byref(parameters))
+        print("TestI2cR \n")
         self.assertEqual(self.command, expected)
 
     def test_who_am_i_data(self):
@@ -18,5 +19,6 @@ class TestI2cR(TestMetaWearBase):
         signal= self.libmetawear.mbl_mw_i2c_get_data_signal(self.board, 1, 0xa)
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x0d\x81\x0a\x2a', 4))
-
+        
+        print("TestI2cR \n")
         self.assertEqual(self.data_byte_array, expected)

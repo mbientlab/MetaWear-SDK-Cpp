@@ -31,6 +31,7 @@ class TestMacro(TestMetaWearBase):
             [0x0f, 0x03, 0x02, 0x01, 0x01],
             [0x0f, 0x04]
         ]
+        print("TestMacro \n")
         self.assertEqual(self.command_history, expected)
 
     def test_freefall_on_boot(self):
@@ -80,6 +81,7 @@ class TestMacro(TestMetaWearBase):
             [0x0f, 0x04]
         ]
         self.maxDiff = None
+        print("TestMacro \n")
         self.assertEqual(self.command_history, expected)
 
     def test_led_controller(self):
@@ -152,4 +154,5 @@ class TestMacro(TestMetaWearBase):
             [0x0f, 0x03, 0x0a, 0x03, 0x01],
             [0x0f, 0x04]
         ]
+        print("TestMacro \n")
         self.assertEqual(self.command_history, expected)

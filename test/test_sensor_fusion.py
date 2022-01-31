@@ -65,6 +65,7 @@ class TestSensorFusion(TestMetaWearBase):
                 expected_value = test['expected']
                 self.notify_mw_char(test['response'])
 
+                print("TestSensorFusion \n")
                 self.assertEqual(self.data, expected_value)
 
     def test_sensor_control(self):
@@ -174,11 +175,13 @@ class TestSensorFusion(TestMetaWearBase):
                 self.libmetawear.mbl_mw_sensor_fusion_start(self.board)
                 self.libmetawear.mbl_mw_sensor_fusion_stop(self.board)
 
+                print("TestSensorFusion \n")
                 self.assertEqual(test['expected'], self.command_history)
 
     def test_read_calibration(self):
         signal = self.libmetawear.mbl_mw_sensor_fusion_calibration_state_data_signal(self.board)
 
+        print("TestSensorFusion \n")
         self.assertIsNone(signal)
 
 class TestSensorFusionRev1(TestMetaWearBase):
@@ -202,6 +205,7 @@ class TestSensorFusionRev1(TestMetaWearBase):
                 magnetometer = Const.SENSOR_FUSION_CALIBRATION_ACCURACY_MEDIUM
         )
         self.notify_mw_char(to_string_buffer([0x19, 0x8b, 0x00, 0x01, 0x02]))
+        print("TestSensorFusionRev1 \n")
         self.assertEqual(expected_state, self.data)
 
     def test_read_calibration_data(self):
@@ -216,6 +220,7 @@ class TestSensorFusionRev1(TestMetaWearBase):
         e.wait()
 
         # unsupported for rev1
+        print("TestSensorFusionRev1 \n")
         self.assertFalse(bool(actual[0]))
 
     def test_write_calibration_data(self):
@@ -228,6 +233,7 @@ class TestSensorFusionRev1(TestMetaWearBase):
         self.libmetawear.mbl_mw_sensor_fusion_write_calibration_data(self.board, byref(data))
 
         # unsupported in rev 1, no commands
+        print("TestSensorFusionRev1 \n")
         self.assertEqual([], self.command_history)
 
 class TestSensorFusionRev2(TestMetaWearBase):
@@ -276,6 +282,7 @@ class TestSensorFusionRev2(TestMetaWearBase):
         self.libmetawear.mbl_mw_sensor_fusion_read_calibration_data(self.board, None, fn_wrapper)
         e.wait()
 
+        print("TestSensorFusionRev2 \n")
         self.assertEqual(expected, actual)
 
     def test_write_calibration_data(self):
@@ -332,6 +339,7 @@ class TestSensorFusionRev2(TestMetaWearBase):
                 self.libmetawear.mbl_mw_sensor_fusion_set_mode(self.board, test['mode'])
                 self.libmetawear.mbl_mw_sensor_fusion_write_calibration_data(self.board, byref(data))
 
+                print("TestSensorFusionRev2 \n")
                 self.assertEqual(test['expected'], self.command_history)
 
 class TestSensorFusionRev3(TestMetaWearBase):
@@ -376,5 +384,6 @@ class TestSensorFusionRev3(TestMetaWearBase):
 
                 self.libmetawear.mbl_mw_sensor_fusion_reset_orientation(self.board)
 
+                print("TestSensorFusionRev3 \n")
                 self.assertEqual(test['expected'], self.command_history)
 

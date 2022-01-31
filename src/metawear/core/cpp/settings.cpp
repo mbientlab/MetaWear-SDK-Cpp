@@ -41,16 +41,19 @@ struct SettingsTransientState {
 static unordered_map<const MblMwMetaWearBoard*, SettingsTransientState> transient_states;
 
 
+// Helper function - power status received
 static int32_t current_power_status_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     transient_states[board].read_power_status_handler(transient_states[board].read_power_status_context, board, response[2]);
     return 0;
 }
 
+// Helper function - charge status received
 static int32_t current_charge_status_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     transient_states[board].read_charge_status_handler(transient_states[board].read_charge_status_context, board, response[2]);
     return 0;
 }
 
+// Helper function - init module
 void init_settings_module(MblMwMetaWearBoard *board) {
     auto info = &board->module_info.at(MBL_MW_MODULE_SETTINGS);
 
@@ -111,30 +114,37 @@ void init_settings_module(MblMwMetaWearBoard *board) {
     transient_states.insert({board, newState});
 }
 
+// Helper function - free module
 void free_settings_module(MblMwMetaWearBoard* board) {
     transient_states.erase(board);
 }
 
+// Get disconnect event
 MblMwEvent* mbl_mw_settings_get_disconnect_event(const MblMwMetaWearBoard *board) {
     GET_EVENT(SETTINGS_DISCONNECT_EVENT_RESPONSE_HEADER);
 }
 
+// Get battery state signal
 MblMwDataSignal* mbl_mw_settings_get_battery_state_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(SETTINGS_BATTERY_STATE_RESPONSE_HEADER);
 }
 
+// Get MAC signal
 MblMwDataSignal* mbl_mw_settings_get_mac_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(SETTINGS_MAC_RESPONSE_HEADER);
 }
 
+// Get power status signal
 MblMwDataSignal* mbl_mw_settings_get_power_status_data_signal(const MblMwMetaWearBoard* board) {
     GET_DATA_SIGNAL(POWER_STATUS_RESPONSE_HEADER);
 }
 
+// Get charge status signal
 MblMwDataSignal* mbl_mw_settings_get_charge_status_data_signal(const MblMwMetaWearBoard* board) {
     GET_DATA_SIGNAL(CHARGE_STATUS_RESPONSE_HEADER);
 }
 
+// Read power
 void mbl_mw_settings_read_current_power_status(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler) {
     if (board->module_events.count(POWER_STATUS_RESPONSE_HEADER)) {
         transient_states[board].read_power_status_handler = handler;
@@ -147,6 +157,7 @@ void mbl_mw_settings_read_current_power_status(MblMwMetaWearBoard* board, void* 
     }
 }
 
+// Read charge
 void mbl_mw_settings_read_current_charge_status(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler) {
     if (board->module_events.count(CHARGE_STATUS_RESPONSE_HEADER)) {
         transient_states[board].read_charge_status_handler = handler;
@@ -159,16 +170,19 @@ void mbl_mw_settings_read_current_charge_status(MblMwMetaWearBoard* board, void*
     }
 }
 
+// Set device name
 void mbl_mw_settings_set_device_name(const MblMwMetaWearBoard *board, const uint8_t *device_name, uint8_t len) {
     vector<uint8_t> command(device_name, device_name + len);
     command.insert(command.begin(), {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::DEVICE_NAME)});
     send_command(board, command.data(), (uint8_t) command.size());
 }
 
+// Set ad interval
 void mbl_mw_settings_set_ad_interval(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout) {
     mbl_mw_settings_set_ad_parameters(board, interval, timeout, MBL_MW_BLE_AD_TYPE_CONNECTED_UNDIRECTED);
 }
 
+// Set ad parameters
 void mbl_mw_settings_set_ad_parameters(const MblMwMetaWearBoard *board, uint16_t interval, uint8_t timeout, MblMwBleAdType type) {
     vector<uint8_t> command = {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::AD_INTERVAL), 0, 0, timeout};
 
@@ -184,16 +198,19 @@ void mbl_mw_settings_set_ad_parameters(const MblMwMetaWearBoard *board, uint16_t
     send_command(board, command.data(), (uint8_t) command.size());
 }
 
+// Set TX power
 void mbl_mw_settings_set_tx_power(const MblMwMetaWearBoard *board, int8_t tx_power) {
     uint8_t command[3]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::TX_POWER), static_cast<uint8_t>(tx_power)};
     SEND_COMMAND;
 }
 
+// Start ad
 void mbl_mw_settings_start_advertising(const MblMwMetaWearBoard *board) {
     uint8_t command[2]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::START_ADVERTISING)};
     SEND_COMMAND;
 }
 
+// Set scan response
 void mbl_mw_settings_set_scan_response(const MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     if (len > MW_CMD_MAX_LENGTH) {
         vector<uint8_t> first(response, response + 13), second(response + 13, response + len);
@@ -211,6 +228,7 @@ void mbl_mw_settings_set_scan_response(const MblMwMetaWearBoard *board, const ui
     }
 }
 
+// Set conn params
 void mbl_mw_settings_set_connection_parameters(const MblMwMetaWearBoard *board, float min_conn_interval, float max_conn_interval, uint16_t latency, 
         uint16_t timeout) {
     uint8_t command[10]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::CONNECTION_PARAMS)};
@@ -221,6 +239,7 @@ void mbl_mw_settings_set_connection_parameters(const MblMwMetaWearBoard *board, 
     SEND_COMMAND;
 }
 
+// Whitelist
 void mbl_mw_settings_add_whitelist_address(const MblMwMetaWearBoard *board, uint8_t index, const MblMwBtleAddress *address) {
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= WHITELIST_REVISION) {
         uint8_t command[10]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::WHITELIST_ADDRESSES), index};
@@ -229,6 +248,7 @@ void mbl_mw_settings_add_whitelist_address(const MblMwMetaWearBoard *board, uint
     }
 }
 
+// Whitelist signal
 MblMwDataSignal* mbl_mw_settings_get_whitelist_data_signal(MblMwMetaWearBoard* board, uint8_t index) {
     ResponseHeader header(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::WHITELIST_ADDRESSES)), index);
     if (!board->module_events.count(header)) {
@@ -237,6 +257,7 @@ MblMwDataSignal* mbl_mw_settings_get_whitelist_data_signal(MblMwMetaWearBoard* b
     return dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
 }
 
+// Whitelist filter
 void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, MblMwWhitelistFilter mode) {
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= WHITELIST_REVISION) {
         uint8_t command[3]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::WHITELIST_FILTER_MODE), static_cast<uint8_t>(mode)};
@@ -244,6 +265,7 @@ void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, 
     }
 }
 
+// Enable 3V reg
 void mbl_mw_settings_enable_3V_regulator(const MblMwMetaWearBoard *board, uint8_t enable) {
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= MMS_REVISION) {
         uint8_t command[3]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::THREE_VOLT_POWER), static_cast<uint8_t>(enable)};
@@ -251,6 +273,7 @@ void mbl_mw_settings_enable_3V_regulator(const MblMwMetaWearBoard *board, uint8_
     }
 }
 
+// Name for the loggers
 void create_settings_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SettingsRegister::BATTERY_STATE):
@@ -273,6 +296,7 @@ void create_settings_uri(const MblMwDataSignal* signal, stringstream& uri) {
     }
 }
 
+// Get firmware ID
 uint8_t mbl_mw_settings_get_firmware_build_id(const MblMwMetaWearBoard *board) {
     auto info = &board->module_info.at(MBL_MW_MODULE_SETTINGS);
     if (info->extra.size() > 1) {

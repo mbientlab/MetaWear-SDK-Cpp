@@ -21,19 +21,22 @@ extern "C" {
  * @return Pointer to the data signal, null if the processor does not have an internal state
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(const MblMwDataProcessor* processor);
+
 /**
- * Removes a data processor and its consumers from the board
+ * Removes a data processor and its consumers from the board.
  * @param processor         Processor to remove
  */
 METAWEAR_API void mbl_mw_dataprocessor_remove(MblMwDataProcessor *processor);
+
 /**
- * Retrieves the id value identifying the processor
+ * Retrieves the id value identifying the processor.
  * @param processor         Processor to lookup
  * @return Numerical id of the processor
  */
 METAWEAR_API uint8_t mbl_mw_dataprocessor_get_id(const MblMwDataProcessor* processor);
+
 /**
- * Looks up the MblMwDataProcessor object corresponding to the id
+ * Looks up the MblMwDataProcessor object corresponding to the id.
  * @param board             Board to search on
  * @param id                Numerical id to lookup
  * @return Data processor object identified by the id, null if no object is found

@@ -8,30 +8,35 @@ class TestLedControl(TestMetaWearBase):
         expected= [0x02, 0x01, 0x01]
 
         self.libmetawear.mbl_mw_led_play(self.board)
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
     def test_autoplay(self):
         expected= [0x02, 0x01, 0x02]
 
         self.libmetawear.mbl_mw_led_autoplay(self.board)
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
     def test_pause(self):
         expected= [0x02, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_led_pause(self.board)
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
     def test_stop_clear(self):
         expected= [0x02, 0x02, 0x01]
 
         self.libmetawear.mbl_mw_led_stop_and_clear(self.board)
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
     def test_stop_no_clear(self):
         expected= [0x02, 0x02, 0x00]
 
         self.libmetawear.mbl_mw_led_stop(self.board, 0)
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
 class TestLedPattern(TestMetaWearBase):
@@ -42,6 +47,7 @@ class TestLedPattern(TestMetaWearBase):
         self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.BLINK)
         self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.GREEN)
 
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
     def test_solid_pattern(self):
@@ -51,6 +57,7 @@ class TestLedPattern(TestMetaWearBase):
         self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.SOLID)
         self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.RED)
 
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
     def test_pulse_pattern(self):
@@ -60,6 +67,7 @@ class TestLedPattern(TestMetaWearBase):
         self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.PULSE)
         self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.BLUE)
 
+        print("TestLedControl \n")
         self.assertEqual(self.command, expected)
 
 class TestLedDelayedPattern(TestMetaWearBase):
@@ -74,6 +82,7 @@ class TestLedDelayedPattern(TestMetaWearBase):
         self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.BLINK)
         self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.GREEN)
 
+        print("TestLedDelayedPattern \n")
         self.assertEqual(self.command, expected)
 
     def test_solid_pattern(self):
@@ -83,6 +92,7 @@ class TestLedDelayedPattern(TestMetaWearBase):
         self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.SOLID)
         self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.RED)
 
+        print("TestLedDelayedPattern \n")
         self.assertEqual(self.command, expected)
 
     def test_pulse_pattern(self):
@@ -92,4 +102,5 @@ class TestLedDelayedPattern(TestMetaWearBase):
         self.libmetawear.mbl_mw_led_load_preset_pattern(byref(pattern), LedPreset.PULSE)
         self.libmetawear.mbl_mw_led_write_pattern(self.board, byref(pattern), LedColor.BLUE)
 
+        print("TestLedDelayedPattern \n")
         self.assertEqual(self.command, expected)

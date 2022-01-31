@@ -16,7 +16,7 @@ typedef struct MblMwDataProcessor MblMwDataProcessor;
 #endif
 
 /**
- * Definition for callback functions that accept an MblMwDataProcessor pointer
+ * Definition for callback functions that accept an MblMwDataProcessor pointer.
  * @param context           Pointer to the context the enclosing function was called with
  * @param processor         Processor to be used with the function
  */

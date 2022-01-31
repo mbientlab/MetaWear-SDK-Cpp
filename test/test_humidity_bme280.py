@@ -41,6 +41,7 @@ class TestHumidityBme280Config(TestMetaWearBase):
         for test in tests:
             with self.subTest(channel= test['oversampling_name']):
                 self.libmetawear.mbl_mw_humidity_bme280_set_oversampling(self.board, test['oversampling'])
+                print("TestHumidityBme280Config \n")
                 self.assertEqual(self.command, test['expected'])
 
 class TestHumidityBme280Data(TestMetaWearBase):
@@ -56,4 +57,5 @@ class TestHumidityBme280Data(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x16\x81\xc7\xfc\x00\x00'))
 
+        print("TestHumidityBme280Data \n")
         self.assertAlmostEqual(self.data_float.value, expected)

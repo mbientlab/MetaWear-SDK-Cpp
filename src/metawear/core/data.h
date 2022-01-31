@@ -34,7 +34,7 @@ typedef enum {
 } MblMwDataTypeId;
 
 /**
- * Wrapper class encapsulating one sample of sensor data
+ * Wrapper class encapsulating one sample of sensor data.
  */
 typedef struct {
     int64_t epoch;                  ///< Number of milliseconds since epoch
@@ -45,7 +45,7 @@ typedef struct {
 } MblMwData;
 
 /**
- * Definition for callback functions that handle data from an MblMwDataSignal
+ * Definition for callback functions that handle data from an MblMwDataSignal.
  * @param context       Pointer to the context the enclosing function was called with
  * @param data          Data returned from the signal
  */

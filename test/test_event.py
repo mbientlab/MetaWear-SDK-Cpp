@@ -21,6 +21,7 @@ class TestEvent(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_end_record(self.timerSignals[0], None, self.commands_recorded_fn)
         self.events["event"].wait()
 
+        print("TestEvent \n")
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_schedule_read_gpio_adc(self):
@@ -40,6 +41,7 @@ class TestEvent(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_end_record(self.timerSignals[0], None, self.commands_recorded_fn)
         self.events["event"].wait()
 
+        print("TestEvent \n")
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_schedule_read_temp_gpio(self):
@@ -72,6 +74,7 @@ class TestEvent(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_end_record(self.timerSignals[1], None, self.commands_recorded_fn)
         self.events["event"].wait()
 
+        print("TestEvent \n")
         self.assertEqual(self.command_history, expected_cmds)
 
 class TestEventTimeout(TestMetaWearBase):
@@ -92,4 +95,5 @@ class TestEventTimeout(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_end_record(signal, None, self.commands_recorded_fn)
         self.events["event"].wait()
 
+        print("TestEventTimeout \n")
         self.assertEqual(self.event_status[0], Const.STATUS_ERROR_TIMEOUT)

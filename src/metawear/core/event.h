@@ -16,11 +16,12 @@ extern "C" {
 #endif
 
 /**
- * Retrieves the MblMwMetaWearBoard the event belongs to
+ * Retrieves the MblMwMetaWearBoard the event belongs to.
  * @param event     Event to lookup
  * @return Pointer to the owner
  */
 METAWEAR_API MblMwMetaWearBoard* mbl_mw_event_get_owner(const MblMwEvent *event);
+
 /**
  * Enables command recording.  
  * Commands can be used to execute functions on the sensor as a result of an event.
@@ -29,6 +30,7 @@ METAWEAR_API MblMwMetaWearBoard* mbl_mw_event_get_owner(const MblMwEvent *event)
  * @param event     Event to record commands for
  */
 METAWEAR_API void mbl_mw_event_record_commands(MblMwEvent *event);
+
 /**
  * Ends command recording.  
  * This function is non-blocking and will asynchronously alert the caller when the operation is completed.
@@ -37,6 +39,7 @@ METAWEAR_API void mbl_mw_event_record_commands(MblMwEvent *event);
  * @param commands_recorded     Callback function to be executed when commands have been recorded
  */
 METAWEAR_API void mbl_mw_event_end_record(MblMwEvent *event, void *context, MblMwFnEventPtrInt commands_recorded);
+
 /**
  * Remove all recorded events from the board.
  * @param board                 Calling object

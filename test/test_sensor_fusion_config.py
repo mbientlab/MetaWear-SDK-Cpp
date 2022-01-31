@@ -50,6 +50,7 @@ class TestSensorFusionConfig(TestMetaWearBase):
                     [0x15, 0x04, 0x04, 0x0e],
                     [0x15, 0x03, 0x6]
                 ]
+                print("TestSensorFusionConfig \n")
                 self.assertEqual(self.command_history, expected)
 
     def test_configure_imu_plus(self):
@@ -62,6 +63,7 @@ class TestSensorFusionConfig(TestMetaWearBase):
                     [0x03, 0x03, 0x28, TestSensorFusionConfig.bmi160_acc_range_bitmask[test['acc_range']]],
                     [0x13, 0x03, 0x28, TestSensorFusionConfig.bmi160_rot_range_bitmask[test['gyro_range']]],
                 ]
+                print("TestSensorFusionConfig \n")
                 self.assertEqual(self.command_history, expected)
 
     def test_configure_compass(self):
@@ -75,6 +77,7 @@ class TestSensorFusionConfig(TestMetaWearBase):
                     [0x15, 0x04, 0x04, 0x0e],
                     [0x15, 0x03, 0x6]
                 ]
+                print("TestSensorFusionConfig \n")
                 self.assertEqual(self.command_history, expected)
 
     def test_configure_compass(self):
@@ -88,4 +91,5 @@ class TestSensorFusionConfig(TestMetaWearBase):
                     [0x15, 0x04, 0x04, 0x0e],
                     [0x15, 0x03, 0x6]
                 ]
+                print("TestSensorFusionConfig \n")
                 self.assertEqual(self.command_history, expected)

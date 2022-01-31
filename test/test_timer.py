@@ -8,6 +8,7 @@ class TestTimer(TestMetaWearBase):
         self.libmetawear.mbl_mw_timer_create(self.board, 3141, 59, 1, None, self.timer_signal_ready)
         self.events["timer"].wait()
 
+        print("TestTimer \n")
         self.assertEqual(self.command, expected)
 
     def test_create_timer_indefinite(self):
@@ -16,6 +17,7 @@ class TestTimer(TestMetaWearBase):
         self.libmetawear.mbl_mw_timer_create_indefinite(self.board, 1000, 0, None, self.timer_signal_ready)
         self.events["timer"].wait()
 
+        print("TestTimer \n")
         self.assertEqual(self.command, expected)
 
     def test_start(self):
@@ -25,6 +27,7 @@ class TestTimer(TestMetaWearBase):
         self.events["timer"].wait()
         self.libmetawear.mbl_mw_timer_start(self.timerSignals[0])
 
+        print("TestTimer \n")
         self.assertEqual(self.command, expected)
 
     def test_stop(self):
@@ -36,6 +39,7 @@ class TestTimer(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_timer_stop(self.timerSignals[0])
 
+        print("TestTimer \n")
         self.assertEqual(self.command, expected)
 
     def test_remove(self):
@@ -62,6 +66,7 @@ class TestTimer(TestMetaWearBase):
 
         # Ignore the add timer and events commands
         del self.command_history[0:5]
+        print("TestTimer \n")
         self.assertEqual(self.command_history, expected_cmds)
 
 class TestTimerTimeout(TestMetaWearBase):
@@ -75,4 +80,5 @@ class TestTimerTimeout(TestMetaWearBase):
         self.libmetawear.mbl_mw_timer_create(self.board, 667408, -1, 0, None, self.timer_signal_ready)
         self.events["timer"].wait()
 
+        print("TestTimerTimeout \n")
         self.assertIsNone(self.timerSignals[0])

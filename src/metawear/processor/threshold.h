@@ -32,8 +32,9 @@ typedef enum {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_threshold_create(MblMwDataSignal *source, MblMwThresholdMode mode, float boundary,
         float hysteresis, void *context, MblMwFnDataProcessor processor_created);
+
 /**
- * Modifies the threshold processor configuration
+ * Modifies the threshold processor configuration.
  * @param threshold             Threshold processor to modify
  * @param boundary              Limit (threshold) that triggers an event when data crosses it
  * @param hysteresis            Min distance (error/diff) between the limit and value to signal a successful crossing

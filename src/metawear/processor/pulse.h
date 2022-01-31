@@ -34,8 +34,9 @@ typedef enum {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_pulse_create(MblMwDataSignal *source, MblMwPulseOutput output,
             float threshold, uint16_t width, void *context, MblMwFnDataProcessor processor_created);
+
 /**
- * Modify the configuration of a pulse detector
+ * Modify the configuration of a pulse detector.
  * @param pulse             Pulse detector to modify
  * @param threshold         New threshold of the detector
  * @param width             New width of the detector

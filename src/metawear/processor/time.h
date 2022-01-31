@@ -32,8 +32,9 @@ typedef enum {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_time_create(MblMwDataSignal *source, MblMwTimeMode mode, uint32_t period,
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
- * Modify the configuration of the time delay processor
+ * Modify the configuration of the time delay processor.
  * @param time_delay            Time delay processor to modify
  * @param period                How often to allow data through, in milliseconds
  */

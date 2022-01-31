@@ -658,6 +658,7 @@ class TestThreshold(TestMetaWearBase):
         signal= self.libmetawear.mbl_mw_humidity_bme280_get_percentage_data_signal(self.board)
         self.libmetawear.mbl_mw_dataprocessor_threshold_create(signal, ThresholdMode.BINARY, 57.0, 0.0, None, self.processor_handler)
         self.events["processor"].wait()
+        print("TestThreshold \n")
         self.assertEqual(self.command, expected)
 
 class TestThreeAxisRightShift(TestMetaWearBase):
