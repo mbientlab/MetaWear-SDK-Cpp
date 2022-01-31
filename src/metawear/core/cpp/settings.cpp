@@ -24,7 +24,7 @@ using std::piecewise_construct;
 using std::unordered_map;
 
 const float AD_INTERVAL_STEP= 0.625f, CONN_INTERVAL_STEP= 1.25f, TIMEOUT_STEP= 10;
-const uint8_t CONN_PARAMS_REVISION= 1, DISCONNECTED_EVENT_REVISION= 2, BATTERY_REVISION= 3, CHARGE_STATUS_REVISION = 5, WHITELIST_REVISION = 6, MMS_REVISION = 9;
+const uint8_t CONN_PARAMS_REVISION= 1, DISCONNECTED_EVENT_REVISION= 2, BATTERY_REVISION= 3, CHARGE_STATUS_REVISION = 5, WHITELIST_REVISION = 6, MMS_REVISION = 9, MMS_PHY_REVISION = 10;
 
 const ResponseHeader 
     SETTINGS_BATTERY_STATE_RESPONSE_HEADER(MBL_MW_MODULE_SETTINGS, READ_REGISTER(ORDINAL(SettingsRegister::BATTERY_STATE))),
@@ -269,6 +269,14 @@ void mbl_mw_settings_set_whitelist_filter_mode(const MblMwMetaWearBoard *board, 
 void mbl_mw_settings_enable_3V_regulator(const MblMwMetaWearBoard *board, uint8_t enable) {
     if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= MMS_REVISION) {
         uint8_t command[3]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::THREE_VOLT_POWER), static_cast<uint8_t>(enable)};
+        SEND_COMMAND;
+    }
+}
+
+// Force 1M PHY
+void mbl_mw_settings_force_1M_phy(const MblMwMetaWearBoard *board, uint8_t enable) {
+    if (board->module_info.at(MBL_MW_MODULE_SETTINGS).revision >= MMS_PHY_REVISION) {
+        uint8_t command[3]= {MBL_MW_MODULE_SETTINGS, ORDINAL(SettingsRegister::FORCE_1M_PHY), static_cast<uint8_t>(enable)};
         SEND_COMMAND;
     }
 }

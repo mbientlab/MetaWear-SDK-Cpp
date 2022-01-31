@@ -64,7 +64,7 @@ METAWEAR_API void mbl_mw_debug_read_stack_overflow_state(const MblMwMetaWearBoar
 
 /**
  * Reads the internal queues' current usage statistics; data is returned as a byte array.  
- * If feature is unspported, nullptr will be passed to the `handler` parameter
+ * If feature is unspported, nullptr will be passed to the `handler` parameter.
  * @param board     Calling object
  * @param context   Pointer to additional data for the callback function
  * @param handler   Callback function for handling the received data
@@ -78,6 +78,13 @@ METAWEAR_API void mbl_mw_debug_read_schedule_queue_usage(const MblMwMetaWearBoar
  * @param lenght    Size of the value array
  */
 METAWEAR_API void mbl_mw_debug_spoof_notification(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length);
+
+/**
+ * Creates a fake button event with the data 0x02.
+ * Requires that the switch signal be streaming or logging to add a spoofed event in the logger.
+ * @param board     Calling object
+ */
+METAWEAR_API void mbl_mw_debug_spoof_button_event(const MblMwMetaWearBoard *board);
 
 /**
  * Sends a raw command directly to the MetaWear.  Useful for testing.

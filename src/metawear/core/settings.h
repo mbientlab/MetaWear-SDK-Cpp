@@ -199,13 +199,20 @@ METAWEAR_API void mbl_mw_settings_read_current_power_status(MblMwMetaWearBoard* 
 METAWEAR_API void mbl_mw_settings_read_current_charge_status(MblMwMetaWearBoard* board, void* context, MblMwFnBoardPtrInt handler);
 
 /**
- * Turns on the 3V regulator 
+ * Turns on the 3V regulator.
  * Needed if IOs / peripherals need 3V power from the MetaSensor
  * For MMS only, will be ignored for all others
  * @param board         Board to modify
  * @param index         0: Disable, 1: Enable
  */
 METAWEAR_API void mbl_mw_settings_enable_3V_regulator(const MblMwMetaWearBoard *board, uint8_t enable);
+
+/**
+ * Force 1M PHY (Disables 2M PHY in BLE5.0+).
+ * @param board         Board to modify
+ * @param index         0: Use Auto Phy 1: Force 1Mhz Phy
+ */
+METAWEAR_API void mbl_mw_settings_force_1M_phy(const MblMwMetaWearBoard *board, uint8_t enable);
 
 #ifdef	__cplusplus
 }

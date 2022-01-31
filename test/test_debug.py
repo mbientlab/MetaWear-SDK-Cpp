@@ -45,6 +45,13 @@ class TestDebug(TestMetaWearBase):
         print("TestDebug \n")
         self.assertEqual(self.command, expected)
 
+    def test_switch_spoof(self):
+        expected = [0xfe, 0x03, 0x01, 0x01, 0x00, 0x02]
+
+        self.libmetawear.mbl_mw_debug_spoof_button_event(self.board)
+        print("TestDebug \n")
+        self.assertEqual(self.command, expected)
+
     def test_stack_overflow(self):
         states= [0, 1]
 

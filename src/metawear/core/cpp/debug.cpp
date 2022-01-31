@@ -153,6 +153,12 @@ void mbl_mw_debug_spoof_notification(const MblMwMetaWearBoard *board, const uint
     send_command(board, command.data(), (uint8_t) command.size());
 }
 
+// Fake a button event with data 0x02
+void mbl_mw_debug_spoof_button_event(const MblMwMetaWearBoard *board) {
+    uint8_t command[6]= {MBL_MW_MODULE_DEBUG, ORDINAL(DebugRegister::NOTIFICATION_SPOOF), 0x01, 0x01, 0x00, 0x02};
+    SEND_COMMAND;
+}
+
 // Send command
 void mbl_mw_debug_send_command(const MblMwMetaWearBoard *board, const uint8_t *value, uint8_t length) {
     send_command(board, value, length);
