@@ -47,11 +47,13 @@ typedef struct {
  * @return Pointer to the newly created struct
  */
 METAWEAR_API MblMwMetaWearBoard* mbl_mw_metawearboard_create(const MblMwBtleConnection *connection);
+
 /**
- * Frees the memory allocated for the struct
+ * Frees the memory allocated for the struct.
  * @param board     Pointer to the memory to free
  */
 METAWEAR_API void mbl_mw_metawearboard_free(MblMwMetaWearBoard *board);
+
 /**
  * Sets how long the API should wait before a required response is received.  
  * You should increase this value if operations such as API initialization, creating timer, 
@@ -60,6 +62,7 @@ METAWEAR_API void mbl_mw_metawearboard_free(MblMwMetaWearBoard *board);
  * @param response_time_ms      How long to wait for a response, from [0, 4000]ms.  Use 0ms for indefinite timeout
  */
 METAWEAR_API void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard* board, uint16_t response_time_ms);
+
 /**
  * Initialize the API's internal state.  
  * This function is non-blocking and will alert the caller when the operation is complete.
@@ -68,19 +71,22 @@ METAWEAR_API void mbl_mw_metawearboard_set_time_for_response(MblMwMetaWearBoard*
  * @param initialized   Callback function to be executed when the board is initialized
  */
 METAWEAR_API void mbl_mw_metawearboard_initialize(MblMwMetaWearBoard *board, void *context, MblMwFnBoardPtrInt initialized);
+
 /**
- * Removes all data processors and timers from the MetaWear board
+ * Removes all data processors and timers from the MetaWear board.
  * @param board         Board to tear down
  */
 METAWEAR_API void mbl_mw_metawearboard_tear_down(MblMwMetaWearBoard *board);
+
 /**
- * Checks if the board is initialized
+ * Checks if the board is initialized.
  * @param board     Board to check
  * @return Zero if not initialized, non-zero if it is
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_is_initialized(const MblMwMetaWearBoard *board);
+
 /**
- * Checks module type i.e. what kind of accelerometer is being used  
+ * Checks module type i.e. what kind of accelerometer is being used.
  * @param board         Board to check
  * @param module        Module to lookup
  * @return Module type used by the board, MBL_MW_MODULE_TYPE_NA if module is not available
@@ -88,31 +94,36 @@ METAWEAR_API int32_t mbl_mw_metawearboard_is_initialized(const MblMwMetaWearBoar
  * @see MBL_MW_MODULE_ACC_TYPE_BMI160
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_lookup_module(const MblMwMetaWearBoard *board, MblMwModule module);
+
 /**
  * Determines the board model of the currently connected device.  
  * Only call this function after the board has been initialized.
  * @return Board model, MBL_MW_MODEL_NA if unable to determine
  */
 METAWEAR_API MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board);
+
 /**
  * Determines the board model of the currently connected device.  
  * Only call this function after the board has been initialized.
  * @return Friendly name representing the board model 
  */
 METAWEAR_API const char* mbl_mw_metawearboard_get_model_name(const MblMwMetaWearBoard* board);
+
 /**
  * Retrieves supported characteristics from the Device Information service.  
  * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
  * @return Struct holding the characteristics
  */
 METAWEAR_API const MblMwDeviceInformation* mbl_mw_metawearboard_get_device_information(const MblMwMetaWearBoard* board);
+
 /**
- * Returns information about the onboard modules
+ * Returns information about the onboard modules.
  * @param board             Calling object
  * @param size              Pointer to where the size of the returned array will be written to
  * @return Array of info objects
  */
 METAWEAR_API MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMetaWearBoard* board, uint32_t* size);
+
 /**
  * Serializes the API state.  
  * The memory allocated by the function must be freed by calling mbl_mw_memory_free.
@@ -121,6 +132,7 @@ METAWEAR_API MblMwModuleInfo* mbl_mw_metawearboard_get_module_info(const MblMwMe
  * @return Byte array of the serialized state
  */
 METAWEAR_API uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* board, uint32_t* size);
+
 /**
  * Deserializes API state.  
  * This function must be executed before calling mbl_mw_metawearboard_initialize.
@@ -130,6 +142,7 @@ METAWEAR_API uint8_t* mbl_mw_metawearboard_serialize(const MblMwMetaWearBoard* b
  * @return MBL_MW_STATUS_OK if successful, MBL_MW_STATUS_ERROR_SERIALIZATION_FORMAT if failed
  */
 METAWEAR_API int32_t mbl_mw_metawearboard_deserialize(MblMwMetaWearBoard* board, uint8_t* state, uint32_t size);
+
 /**
  * Reads the current state of the board and creates anonymous data signals based on what data is being logged.
  * If this task failed, a null pointer will be passed into the `anonymous_signals` parameter
@@ -152,7 +165,7 @@ typedef struct {
 } MblMwDfuDelegate;
 
 /**
- * Starts the DFU process and updloads the given file to the device
+ * Starts the DFU process and updloads the given file to the device.
  * @param board         Calling object
  * @param delegate      Struct the function will forward DFU progress updates to
  * @param filename      Path to firmware bin file

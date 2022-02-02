@@ -57,6 +57,7 @@ class TestBarometerBme280Config(BarometerBoschBase.TestBarometerBoschConfig):
             with self.subTest(time= test['time']):
                 self.libmetawear.mbl_mw_baro_bme280_set_standby_time(self.board, test['standby_time'])
                 self.libmetawear.mbl_mw_baro_bosch_write_config(self.board)
+                print("TestBarometerBme280Config \n")
                 self.assertEqual(self.command, test['expected'])
 
 class TestBarometerBmp280PressureData(BarometerBoschBase.TestBarometerBoschPressureData):

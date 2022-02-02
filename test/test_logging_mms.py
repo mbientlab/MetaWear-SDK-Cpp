@@ -8,7 +8,7 @@ from cbindings import *
 import time
 import threading
 
-class TestLoggingModule(TestMetaWearBase):
+class TestLoggingModuleMMS(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_MOTION_S_BOARD
         super().setUp()
@@ -20,6 +20,7 @@ class TestLoggingModule(TestMetaWearBase):
         ]
 
         self.libmetawear.mbl_mw_logging_start(self.board, 1)
+        print("TestLoggingModuleMMS \n")
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_start_no_overwrite(self):
@@ -29,27 +30,31 @@ class TestLoggingModule(TestMetaWearBase):
         ]
 
         self.libmetawear.mbl_mw_logging_start(self.board, 0)
+        print("TestLoggingModuleMMS \n")
         self.assertEqual(self.command_history, expected_cmds)
         
     def test_stop(self):
         expected= [0x0b, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_logging_stop(self.board)
+        print("TestLoggingModuleMMS \n")
         self.assertEqual(self.command, expected)
 
     def test_flush(self):
         expected= [0x0b, 0x10, 0x01]
 
         self.libmetawear.mbl_mw_logging_flush_page(self.board)
+        print("TestLoggingModuleMMS \n")
         self.assertEqual(self.command, expected)
 
     def test_clear_entries(self):
         expected= [0x0b, 0x09, 0xff, 0xff, 0xff, 0xff]
 
         self.libmetawear.mbl_mw_logging_clear_entries(self.board)
+        print("TestLoggingModuleMMS \n")
         self.assertEqual(self.command, expected)
 
-class TestLogDownload(TestMetaWearBase):
+class TestLogDownloadMMS(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_MOTION_S_BOARD
 
@@ -63,12 +68,14 @@ class TestLogDownload(TestMetaWearBase):
     def progress_update_handler(self, context, entries_left, total_entries):
         self.updates.append(entries_left)
         if (entries_left == 0):
+            print("TestLogDownloadMMS \n")
             self.assertEqual(self.updates, self.expected_updates)
 
     def unknown_entry_handler(self, context, id, epoch, data, length):
 #        now= datetime.datetime.now()
 #        now_ms= (mktime(now.timetuple()) + now.microsecond/1000000.0) * 1000
         data_ptr= cast(data, POINTER(c_uint))
+        print("TestLogDownloadMMS \n")
         self.assertTrue(id == self.expected_entry[0] and data_ptr.contents.value == self.expected_entry[1])
 
     def test_readout_progress(self):
@@ -119,6 +126,7 @@ class TestLogDownload(TestMetaWearBase):
         self.libmetawear.mbl_mw_logging_download(self.board, 20, self.download_handler)
         self.notify_mw_char(create_string_buffer(b'\x0b\x0d', 2))
 
+        print("TestLogDownloadMMS \n")
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_unknown_entry(self):
@@ -127,7 +135,7 @@ class TestLogDownload(TestMetaWearBase):
         self.libmetawear.mbl_mw_logging_download(self.board, 20, byref(self.download_handler))
         self.notify_mw_char(create_string_buffer(b'\x0b\x07\xa1\xcc\x4d\x00\x00\x6c\x01\x00\x00', 11))
 
-class TestAccelerometerLoggingBase(TestMetaWearBase):
+class TestAccelerometerLoggingBaseMMS(TestMetaWearBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -163,13 +171,14 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
 
         self.events["log"].set()
 
-class TestAccelerometerLogging(TestAccelerometerLoggingBase):
+class TestAccelerometerLoggingMMS(TestAccelerometerLoggingBaseMMS):
     def test_acc_data(self):
         acc_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
         self.libmetawear.mbl_mw_datasignal_log(acc_signal, None, self.logger_created)
         self.events["log"].wait()
 
+        print("TestAccelerometerLoggingMMS \n")
         self.assertEqual(self.logged_data, Bmi270Accelerometer.expected_values)
 
     def test_epoch_calc(self):
@@ -179,9 +188,10 @@ class TestAccelerometerLogging(TestAccelerometerLoggingBase):
         self.events["log"].wait()
 
         self.maxDiff = None
+        print("TestAccelerometerLoggingMMS \n")
         self.assertEqual(self.data_time_offsets, Bmi270Accelerometer.expected_offsets)
 
-class TestGyroYAxisLoggingBase(TestMetaWearBase):
+class TestGyroYAxisLoggingBaseMMS(TestMetaWearBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -207,7 +217,7 @@ class TestGyroYAxisLoggingBase(TestMetaWearBase):
 
         self.events["log"].set()
 
-class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
+class TestGyroYAxisLoggingMMS(TestGyroYAxisLoggingBaseMMS):
     def test_gyro_data(self):
         rot_signal= self.libmetawear.mbl_mw_gyro_bmi270_get_rotation_data_signal(self.board)
         roy_y_signal = self.libmetawear.mbl_mw_datasignal_get_component(rot_signal, Const.GYRO_ROTATION_Y_AXIS_INDEX)
@@ -217,11 +227,13 @@ class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
         self.events["log"].wait()
 
         # why doesn't unittest come with an assertAlmostEqual for list of floats?
+        print("TestGyroYAxisLoggingMMS \n")
         self.assertEqual(len(self.logged_data), len(Bmi270GyroYAxis.expected_values))
         for a, b in zip(self.logged_data, Bmi270GyroYAxis.expected_values):
+            print("TestGyroYAxisLoggingMMS \n")
             self.assertAlmostEqual(a, b, delta = 0.001)
 
-class TestLogIdentifiers(TestMetaWearBase):
+class TestLogIdentifiersMMS(TestMetaWearBase):
     def setUp(self):        
         self.boardType= TestMetaWearBase.METAWEAR_MOTION_S_BOARD
 
@@ -235,9 +247,10 @@ class TestLogIdentifiers(TestMetaWearBase):
         self.events["log"].wait()
 
         actual = self.libmetawear.mbl_mw_logger_generate_identifier(self.loggers[0])
+        print("TestLogIdentifiersMMS \n")
         self.assertEqual(actual.decode('ascii'), "angular-velocity[2]")
 
-class TestSensorFusionLogging(TestMetaWearBase):
+class TestSensorFusionLoggingMMS(TestMetaWearBase):
     def setUp(self):
         self.boardType = TestMetaWearBase.METAWEAR_MOTION_S_BOARD
 
@@ -255,6 +268,7 @@ class TestSensorFusionLogging(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_log(signal, None, self.logger_created)
         self.events["log"].wait()
 
+        print("TestSensorFusionLoggingMMS \n")
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_corrected_mag_setup(self):
@@ -271,7 +285,7 @@ class TestSensorFusionLogging(TestMetaWearBase):
 
         self.assertEqual(self.command_history, expected_cmds)
 
-class TestLoggerSetup(TestMetaWearBase):
+class TestLoggerSetupMMS(TestMetaWearBase):
     def test_accelerometer(self):
         self.expected_cmds= [
             [0x0b, 0x02, 0x03, 0x04, 0xff, 0x60],
@@ -286,9 +300,10 @@ class TestLoggerSetup(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_logger_remove(self.loggers[0])
 
+        print("TestLoggerSetupMMS \n")
         self.assertEqual(self.command_history, self.expected_cmds)
 
-class TestLoggerTimeout(TestMetaWearBase):
+class TestLoggerTimeoutMMS(TestMetaWearBase):
     def commandLogger(self, context, board, writeType, characteristic, command, length):
         if (command[0] == 0xb and command[1] == 0x2):
             self.dc_handler(self.board, 0)
@@ -302,9 +317,10 @@ class TestLoggerTimeout(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_log(self.test_signal, None, self.logger_created)
 
         self.events["log"].wait()
+        print("TestLoggerTimeoutMMS \n")
         self.assertIsNone(self.loggers[0])
 
-class TestLogTimestamp(TestMetaWearBase):
+class TestLogTimestampMMS(TestMetaWearBase):
     def initialized(self, context, board, status):
         super().initialized(context, board, status)
         self.now = int(time.time() * 1000)
@@ -328,4 +344,5 @@ class TestLogTimestamp(TestMetaWearBase):
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x20, 0x75, 0x1b, 0x04, 0x00, 0x3e, 0x01, 0xcd, 0x01, 0x21, 0x76, 0x1b, 0x04, 0x00, 0xc0, 0x07, 0x00, 0x00]))
 
         # epoch should be within 32701ms
+        print("TestLogTimestampMMS \n")
         self.assertTrue(abs(epoch[0] - self.now) <= 32701)

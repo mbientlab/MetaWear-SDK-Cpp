@@ -56,6 +56,7 @@ struct GyroBoschState {
 
 static unordered_map<const MblMwMetaWearBoard*, GyroBoschState> states;
 
+// Helper function - receive a config response
 static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     memcpy(board->module_config.at(MBL_MW_MODULE_GYRO), response + 2, sizeof(GyroBoschConfig));
 
@@ -68,10 +69,12 @@ static int32_t received_config_response(MblMwMetaWearBoard *board, const uint8_t
     return MBL_MW_STATUS_OK;
 }
 
+// Helper function - get gyro scale
 float bosch_gyro_get_data_scale(const MblMwMetaWearBoard *board) {
     return FSR_SCALE[((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range];
 }
 
+// Helpfer function - init module
 void init_gyro_module(MblMwMetaWearBoard *board) {
     switch(board->module_info.at(MBL_MW_MODULE_GYRO).implementation) {
     case MBL_MW_MODULE_GYRO_TYPE_BMI160:
@@ -161,66 +164,81 @@ void init_gyro_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Helper function - delete module
 void free_gyro_module(MblMwMetaWearBoard *board) {
     states.erase(board);
 }
 
+// Get the bmi160 gyro signal
 MblMwDataSignal* mbl_mw_gyro_bmi160_get_rotation_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(GYRO_BMI160_ROT_RESPONSE_HEADER);
 }
 
-MblMwDataSignal* mbl_mw_gyro_bmi270_get_rotation_data_signal(const MblMwMetaWearBoard *board) {
-    GET_DATA_SIGNAL(GYRO_BMI270_ROT_RESPONSE_HEADER);
-}
-
+// Get the bmi160 gyro signal
 MblMwDataSignal* mbl_mw_gyro_bmi160_get_high_freq_rotation_data_signal(const MblMwMetaWearBoard *board) {
     return mbl_mw_gyro_bmi160_get_packed_rotation_data_signal(board);
 }
 
+// Get the bmi270 gyro signal
+MblMwDataSignal* mbl_mw_gyro_bmi270_get_rotation_data_signal(const MblMwMetaWearBoard *board) {
+    GET_DATA_SIGNAL(GYRO_BMI270_ROT_RESPONSE_HEADER);
+}
+
+// Get the packed bmi160 gyro signal
 MblMwDataSignal* mbl_mw_gyro_bmi160_get_packed_rotation_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(GYRO_BMI160_PACKED_ROT_RESPONSE_HEADER);
 }
 
+// Get the packed bmi270 gyro signal
 MblMwDataSignal* mbl_mw_gyro_bmi270_get_packed_rotation_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(GYRO_BMI270_PACKED_ROT_RESPONSE_HEADER);
 }
 
+// Helper function - serialize
 void serialize_gyro_config(const MblMwMetaWearBoard *board, vector<uint8_t>& state) {
     SERIALIZE_MODULE_CONFIG(GyroBoschConfig, MBL_MW_MODULE_GYRO);
 }
 
+// Helper function - deserialize
 void deserialize_gyro_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
     DESERIALIZE_MODULE_CONFIG(GyroBoschConfig, MBL_MW_MODULE_GYRO);
 }
 
+// Set the bmi160 odr
 void mbl_mw_gyro_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwGyroBoschOdr odr) {
     ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_odr= odr;
 }
 
+// Set the bmi160 range
 void mbl_mw_gyro_bmi160_set_range(MblMwMetaWearBoard *board, MblMwGyroBoschRange range) {
     ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range= range;
 }
 
+// Write the bmi160 config
 void mbl_mw_gyro_bmi160_write_config(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::CONFIG)};
     memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_GYRO), sizeof(GyroBoschConfig));
     SEND_COMMAND;
 }
 
+// Set the bmi270 odr
 void mbl_mw_gyro_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwGyroBoschOdr odr) {
     ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_odr= odr;
 }
 
+// Set the bmi270 range
 void mbl_mw_gyro_bmi270_set_range(MblMwMetaWearBoard *board, MblMwGyroBoschRange range) {
     ((GyroBoschConfig*) board->module_config.at(MBL_MW_MODULE_GYRO))->gyr_range= range;
 }
 
+// Write the bmi270 config
 void mbl_mw_gyro_bmi270_write_config(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::CONFIG)};
     memcpy(command + 2, board->module_config.at(MBL_MW_MODULE_GYRO), sizeof(GyroBoschConfig));
     SEND_COMMAND;
 }
 
+// Read the bmi160 config
 void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
     states[board].read_config_context = context;
     states[board].read_config_completed = completed;
@@ -229,6 +247,7 @@ void mbl_mw_gyro_bmi160_read_config(const MblMwMetaWearBoard* board, void *conte
     SEND_COMMAND;
 }
 
+// Read the bmi270 config
 void mbl_mw_gyro_bmi270_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
     states[board].read_config_context = context;
     states[board].read_config_completed = completed;
@@ -237,47 +256,56 @@ void mbl_mw_gyro_bmi270_read_config(const MblMwMetaWearBoard* board, void *conte
     SEND_COMMAND;
 }
 
+// Start the bmi160 gyro
 void mbl_mw_gyro_bmi160_start(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::POWER_MODE), 1};
     SEND_COMMAND;
 }
 
+// Stop the bmi160 gyro
 void mbl_mw_gyro_bmi160_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::POWER_MODE), 0};
     SEND_COMMAND;
 }
 
+// Start the bmi270 gyro
 void mbl_mw_gyro_bmi270_start(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::POWER_MODE), 1};
     SEND_COMMAND;
 }
 
+// Stop the bmi270 gyro
 void mbl_mw_gyro_bmi270_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::POWER_MODE), 0};
     SEND_COMMAND;
 }
 
+// Start sampling the bmi160 gyro
 void mbl_mw_gyro_bmi160_enable_rotation_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA_INTERRUPT_ENABLE), 0x1, 0x0};
     SEND_COMMAND;
 }
 
+// Stop sampling the bmi160 gyro
 void mbl_mw_gyro_bmi160_disable_rotation_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi160Register::DATA_INTERRUPT_ENABLE), 0x0, 0x1};
     SEND_COMMAND;
 }
 
+// Start sampling the bmi270 gyro
 void mbl_mw_gyro_bmi270_enable_rotation_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::DATA_INTERRUPT_ENABLE), 0x1, 0x0};
     SEND_COMMAND;
 }
 
+// Stop sampling the bmi270 gyro
 void mbl_mw_gyro_bmi270_disable_rotation_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= {MBL_MW_MODULE_GYRO, ORDINAL(GyroBmi270Register::DATA_INTERRUPT_ENABLE), 0x0, 0x1};
     SEND_COMMAND;
 }
 
-void mbl_mw_gyro_bmi270_acc_offsets(const MblMwMetaWearBoard* board, uint8_t x_offset, uint8_t y_offset, uint8_t z_offset) {
+// Manual gyroscope offsets
+void mbl_mw_gyro_bmi270_offsets(const MblMwMetaWearBoard* board, uint8_t x_offset, uint8_t y_offset, uint8_t z_offset) {
     uint8_t gyr_usr_off_x_7_0 = x_offset;
     uint8_t gyr_usr_off_y_7_0 = y_offset;
     uint8_t gyr_usr_off_z_7_0 = z_offset;
@@ -286,6 +314,7 @@ void mbl_mw_gyro_bmi270_acc_offsets(const MblMwMetaWearBoard* board, uint8_t x_o
     SEND_COMMAND;
 }
 
+// Name for the loggers
 void create_gyro_uri(const MblMwDataSignal* signal, std::stringstream& uri) {
     switch(signal->owner->module_info.at(MBL_MW_MODULE_GYRO).implementation) {
     case MBL_MW_MODULE_GYRO_TYPE_BMI160:

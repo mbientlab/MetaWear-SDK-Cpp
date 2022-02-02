@@ -19,6 +19,7 @@ const uint8_t PACKED_MAG_REVISION = 1, SUSPEND_REVISION = 2;
 const ResponseHeader BMM150_MAG_DATA_RESPONSE_HEADER(MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::MAG_DATA)),
         BMM150_MAG_PACKED_DATA_RESPONSE_HEADER(MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::PACKED_MAG_DATA));;
 
+// Init the mag module
 void init_magnetometer_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_MAGNETOMETER) && board->module_info.at(MBL_MW_MODULE_MAGNETOMETER).present) {
         MblMwDataSignal* bfield;
@@ -46,14 +47,17 @@ void init_magnetometer_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Get the mag signal
 MblMwDataSignal* mbl_mw_mag_bmm150_get_b_field_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(BMM150_MAG_DATA_RESPONSE_HEADER);
 }
 
+// Get the mag signal packed
 MblMwDataSignal* mbl_mw_mag_bmm150_get_packed_b_field_data_signal(const MblMwMetaWearBoard *board) {
     GET_DATA_SIGNAL(BMM150_MAG_PACKED_DATA_RESPONSE_HEADER);
 }
 
+// Configure the mag with odr
 void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_reps, uint16_t z_reps, MblMwMagBmm150Odr odr) {
     if (board->module_info.at(MBL_MW_MODULE_MAGNETOMETER).revision >= SUSPEND_REVISION) {
         mbl_mw_mag_bmm150_stop(board);
@@ -67,6 +71,7 @@ void mbl_mw_mag_bmm150_configure(const MblMwMetaWearBoard *board, uint16_t xy_re
     send_command(board, data_rate_cmd, sizeof(data_rate_cmd));
 }
 
+// Set the mode of the magnetometer
 void mbl_mw_mag_bmm150_set_preset(const MblMwMetaWearBoard *board, MblMwMagBmm150Preset preset) {
     switch (preset) {
     case MBL_MW_MAG_BMM150_PRESET_LOW_POWER:
@@ -84,26 +89,31 @@ void mbl_mw_mag_bmm150_set_preset(const MblMwMetaWearBoard *board, MblMwMagBmm15
     }
 }
 
+// Enable magnetometer sampling
 void mbl_mw_mag_bmm150_enable_b_field_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::DATA_INTERRUPT_ENABLE), 1, 0 };
     SEND_COMMAND;
 }
 
+// Disable magnetometer sampling
 void mbl_mw_mag_bmm150_disable_b_field_sampling(const MblMwMetaWearBoard *board) {
     uint8_t command[4]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::DATA_INTERRUPT_ENABLE), 0, 1 };
     SEND_COMMAND;
 }
 
+// Start the magnetometer
 void mbl_mw_mag_bmm150_start(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::POWER_MODE), 1 };
     SEND_COMMAND;
 }
 
+// Stop the magnetometer
 void mbl_mw_mag_bmm150_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::POWER_MODE), 0 };
     SEND_COMMAND;
 }
 
+// Turn off the magnetometer
 void mbl_mw_mag_bmm150_suspend(const MblMwMetaWearBoard *board) {
     if (board->module_info.at(MBL_MW_MODULE_MAGNETOMETER).revision >= SUSPEND_REVISION) {
         uint8_t command[3]= { MBL_MW_MODULE_MAGNETOMETER, ORDINAL(MagnetometerBmm150Register::POWER_MODE), 2 };
@@ -111,6 +121,7 @@ void mbl_mw_mag_bmm150_suspend(const MblMwMetaWearBoard *board) {
     }
 }
 
+// Name for the loggers
 void create_magnetometer_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(MagnetometerBmm150Register::MAG_DATA):

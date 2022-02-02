@@ -32,6 +32,7 @@ typedef enum {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_delta_create(MblMwDataSignal *source, MblMwDeltaMode mode, float magnitude,
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
  * Sets the reference value of the processor.
  * @param delta                 Delta processor to modify
@@ -40,8 +41,9 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_delta_create(MblMwDataSignal *source, 
  * a non-delta processor was passed in
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_delta_set_reference(MblMwDataProcessor *delta, float previous_value);
+
 /**
- * Modifies the magnitude that allows data through
+ * Modifies the magnitude that allows data through.
  * @param delta             Delta processor to modify
  * @param magnitude         Min distance from the reference value to allow the input to pass
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 

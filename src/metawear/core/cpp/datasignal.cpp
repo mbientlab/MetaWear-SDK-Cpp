@@ -221,6 +221,7 @@ void MblMwDataSignal::make_unsigned() {
     }
 }
 
+// Get component of signal
 MblMwDataSignal* mbl_mw_datasignal_get_component(const MblMwDataSignal* signal, uint8_t index) {
     try {
         return signal->components.at(index);
@@ -229,26 +230,31 @@ MblMwDataSignal* mbl_mw_datasignal_get_component(const MblMwDataSignal* signal, 
     }
 }
 
+// Subscribe to signal
 void mbl_mw_datasignal_subscribe(MblMwDataSignal *signal, void *context, MblMwFnData received_data) {
     signal->context= context;
     signal->handler= received_data;
     signal->subscribe();
 }
 
+// Unsubscribe to signal
 void mbl_mw_datasignal_unsubscribe(MblMwDataSignal *signal) {
     signal->context= nullptr;
     signal->handler= nullptr;
     signal->unsubscribe();
 }
 
+// Read signal
 void mbl_mw_datasignal_read(const MblMwDataSignal* signal) {
     signal->read();
 }
 
+// Read signal with paramenter
 void mbl_mw_datasignal_read_with_parameters(const MblMwDataSignal* signal, const void* parameters) {
     signal->read(parameters);
 }
 
+// Is datasignal readable?
 int32_t mbl_mw_datasignal_is_readable(const MblMwDataSignal* signal) {
     return signal->header.is_readable();
 }

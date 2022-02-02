@@ -64,6 +64,7 @@ void MblMwEvent::serialize(vector<uint8_t>& state) const {
     state.insert(state.end(), event_command_ids.begin(), event_command_ids.end());
 }
 
+// Helper function - event command recorded
 static int32_t event_command_recorded(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = GET_EVENT_STATE(board);
     if (state->event_owner != nullptr) {
@@ -80,6 +81,7 @@ static int32_t event_command_recorded(MblMwMetaWearBoard *board, const uint8_t *
     return MBL_MW_STATUS_OK;
 }
 
+// Helper function - init module
 void init_event_module(MblMwMetaWearBoard* board) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_EVENT, ORDINAL(EventRegister::ENTRY)),
         forward_as_tuple(event_command_recorded));
@@ -89,10 +91,12 @@ void init_event_module(MblMwMetaWearBoard* board) {
     }
 }
 
+// Helper function - free module
 void free_event_module(void *state) {
     delete (EventState*) state;
 }
 
+// Start record
 void mbl_mw_event_record_commands(MblMwEvent *event) {
     auto state = GET_EVENT_STATE(event->owner);
 
@@ -102,6 +106,7 @@ void mbl_mw_event_record_commands(MblMwEvent *event) {
     state->event_config.assign({event->header.module_id, event->header.register_id, event->header.data_id});
 }
 
+// End record
 void mbl_mw_event_end_record(MblMwEvent *event, void *context, MblMwFnEventPtrInt commands_recorded) {
     auto state = GET_EVENT_STATE(event->owner);
 
@@ -118,10 +123,12 @@ void mbl_mw_event_end_record(MblMwEvent *event, void *context, MblMwFnEventPtrIn
     }
 }
 
+// Get owner
 MblMwMetaWearBoard* mbl_mw_event_get_owner(const MblMwEvent *event) {
     return event->owner;
 }
 
+// Helper function - record command
 bool record_command(const MblMwMetaWearBoard* board, const uint8_t* command, uint8_t len) {
     auto state = GET_EVENT_STATE(board);
 
@@ -150,13 +157,16 @@ bool record_command(const MblMwMetaWearBoard* board, const uint8_t* command, uin
     return false;
 }
 
+// Helper function - set token
 void set_data_token(MblMwMetaWearBoard* board, const EventDataParameter* token) {
     GET_EVENT_STATE(board)->data_token = token;
 }
+// Helper function - clear token
 void clear_data_token(MblMwMetaWearBoard* board) {
     GET_EVENT_STATE(board)->data_token = nullptr;;
 }
 
+// Remove all events
 void mbl_mw_event_remove_all(MblMwMetaWearBoard* board) {
     for (auto it: board->module_events) {
         it.second->event_command_ids.clear();

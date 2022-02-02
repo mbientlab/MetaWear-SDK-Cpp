@@ -58,6 +58,7 @@ void MblMwGpioAnalogSignal::read(const void* parameters) const {
     }
 }
 
+// Helper function - init module
 void init_gpio_module(MblMwMetaWearBoard *board) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_GPIO, READ_REGISTER(ORDINAL(GpioRegister::READ_AI_ABS_REF))),
         forward_as_tuple(response_handler_data_with_id));
@@ -69,6 +70,7 @@ void init_gpio_module(MblMwMetaWearBoard *board) {
         forward_as_tuple(response_handler_data_with_id));
 }
 
+// Get analog gpio signal
 MblMwDataSignal* mbl_mw_gpio_get_analog_input_data_signal(MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioAnalogReadMode mode) {
     GpioRegister analogReadRegister;
 
@@ -91,6 +93,7 @@ MblMwDataSignal* mbl_mw_gpio_get_analog_input_data_signal(MblMwMetaWearBoard* bo
     return dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
 }
 
+// Get digital gpio signal
 MblMwDataSignal* mbl_mw_gpio_get_digital_input_data_signal(MblMwMetaWearBoard* board, uint8_t pin) {
     ResponseHeader header(MBL_MW_MODULE_GPIO, READ_REGISTER(ORDINAL(GpioRegister::READ_DI)), pin);
 
@@ -100,6 +103,7 @@ MblMwDataSignal* mbl_mw_gpio_get_digital_input_data_signal(MblMwMetaWearBoard* b
     return dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
 }
 
+// Get pin change monitor signal
 MblMwDataSignal* mbl_mw_gpio_get_pin_monitor_data_signal(MblMwMetaWearBoard* board, uint8_t pin) {
     ResponseHeader header(MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::PIN_CHANGE_NOTIFY), pin);
 
@@ -110,6 +114,7 @@ MblMwDataSignal* mbl_mw_gpio_get_pin_monitor_data_signal(MblMwMetaWearBoard* boa
     return dynamic_cast<MblMwDataSignal*>(board->module_events.at(header));
 }
 
+// Set pull mode on gpio
 void mbl_mw_gpio_set_pull_mode(const MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioPullMode mode) {
     uint8_t command[3]= {MBL_MW_MODULE_GPIO, 0, pin};
 
@@ -129,31 +134,37 @@ void mbl_mw_gpio_set_pull_mode(const MblMwMetaWearBoard* board, uint8_t pin, Mbl
     }
 }
 
+// Set digital pin 
 void mbl_mw_gpio_set_digital_output(const MblMwMetaWearBoard* board, uint8_t pin) {
     uint8_t command[3]= {MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::SET_DO), pin};
     send_command(board, command, sizeof(command));
 }
 
+// Clear digital pin 
 void mbl_mw_gpio_clear_digital_output(const MblMwMetaWearBoard* board, uint8_t pin) {
     uint8_t command[3]= {MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::CLEAR_DO), pin};
     send_command(board, command, sizeof(command));
 }
 
+// Set the pin change we want to monitor
 void mbl_mw_gpio_set_pin_change_type(const MblMwMetaWearBoard* board, uint8_t pin, MblMwGpioPinChangeType type) {
     uint8_t command[4]= {MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::PIN_CHANGE), pin, (uint8_t) type};
     send_command(board, command, sizeof(command));
 }
 
+// Start pin change monitoring
 void mbl_mw_gpio_start_pin_monitoring(const MblMwMetaWearBoard* board, uint8_t pin) {
     uint8_t command[4]= {MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::PIN_CHANGE_NOTIFY_ENABLE), pin, 1};
     send_command(board, command, sizeof(command));
 }
 
+// Stop pin change monitoring
 void mbl_mw_gpio_stop_pin_monitoring(const MblMwMetaWearBoard* board, uint8_t pin) {
     uint8_t command[4]= {MBL_MW_MODULE_GPIO, ORDINAL(GpioRegister::PIN_CHANGE_NOTIFY_ENABLE), pin, 0};
     send_command(board, command, sizeof(command));
 }
 
+// Name for the loggers
 void create_gpio_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(GpioRegister::READ_AI_ABS_REF):

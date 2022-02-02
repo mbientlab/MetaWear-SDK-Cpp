@@ -177,7 +177,7 @@ swiftbindings:
 
 test: build
 	make pythonbindings
-	python3.7 -m unittest discover -s test
+	python3 -m unittest discover -s test
 
 test-debug: build
 	make pythonbindings

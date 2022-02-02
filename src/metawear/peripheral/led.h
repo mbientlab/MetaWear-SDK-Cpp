@@ -48,41 +48,46 @@ typedef struct {
 } MblMwLedPattern;
 
 /**
- * Loads the struct with a preset configuration
+ * Loads the struct with a preset configuration.
  * @param pattern       Pointer to the pattern to write the configuration to
  * @param preset        Preset pattern to load 
  */
 METAWEAR_API void mbl_mw_led_load_preset_pattern(MblMwLedPattern* pattern, MblMwLedPreset preset);
 
 /**
- * Writes the led pattern to the board
+ * Writes the led pattern to the board.
  * @param board     Pointer to the board to send the command to
  * @param pattern   Pointer to the pattern attributes to write to the board
  * @param color     Color the pattern is configuring
  */
 METAWEAR_API void mbl_mw_led_write_pattern(const MblMwMetaWearBoard* board, const MblMwLedPattern* pattern, MblMwLedColor color);
+
 /**
- * Plays any programmed patterns, and immediately plays any patterns programmed later
+ * Plays any programmed patterns, and immediately plays any patterns programmed later.
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_led_autoplay(const MblMwMetaWearBoard* board);
+
 /**
- * Plays any programmed patterns
+ * Plays any programmed patterns.
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_led_play(const MblMwMetaWearBoard *board);
+
 /**
- * Pauses the patterns
+ * Pauses the patterns.
  * @param board     Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_led_pause(const MblMwMetaWearBoard *board);
+
 /**
- * Stops playing LED patterns
+ * Stops playing LED patterns.
  * @param board             Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_led_stop(const MblMwMetaWearBoard *board);
+
 /**
- * Stops playing LED patterns and clears all pattern configurations
+ * Stops playing LED patterns and clears all pattern configurations.
  * @param board             Pointer to the board to send the command to
  */
 METAWEAR_API void mbl_mw_led_stop_and_clear(const MblMwMetaWearBoard *board);

@@ -7,10 +7,12 @@ class AccelerometerBoschBase:
     class TestOrientation(TestMetaWearBase):
         def test_enable(self):
             self.libmetawear.mbl_mw_acc_bosch_enable_orientation_detection(self.board)
+            print("TestOrientation \n")
             self.assertEqual(self.command, [0x03, 0x0f, 0x01, 0x00])
 
         def test_disable(self):
             self.libmetawear.mbl_mw_acc_bosch_disable_orientation_detection(self.board)
+            print("TestOrientation \n")
             self.assertEqual(self.command, [0x03, 0x0f, 0x00, 0x01])
 
         def test_handle_response(self):
@@ -63,6 +65,7 @@ class AccelerometerBoschBase:
                     self.libmetawear.mbl_mw_datasignal_subscribe(orientation, None, self.sensor_data_handler)
                     
                     self.notify_mw_char(to_string_buffer(test['response']))
+                    print("TestOrientation \n")
                     self.assertEqual(self.data_int32.value, test['expected'])
 
     class TestAnyMotion(TestMetaWearBase):
@@ -79,10 +82,12 @@ class AccelerometerBoschBase:
             
             self.libmetawear.mbl_mw_acc_bosch_enable_motion_detection(self.board,2)
 
+            print("TestAnyMotion \n")
             self.assertEqual(self.command_history, expected)
 
         def test_disable(self):
             self.libmetawear.mbl_mw_acc_bosch_disable_motion_detection(self.board,2)
+            print("TestAnyMotion \n")
             self.assertEqual(self.command, [0x03, 0x09, 0x00, 0x7f])
 
         def test_handle_response(self):
@@ -125,6 +130,7 @@ class AccelerometerBoschBase:
                     self.libmetawear.mbl_mw_datasignal_subscribe(orientation, None, self.sensor_data_handler)
                     
                     self.notify_mw_char(to_string_buffer(test['response']))
+                    print("TestAnyMotion \n")
                     self.assertEqual(self.data, test['expected'])
 
     class TestTapDetector(TestMetaWearBase):
@@ -138,18 +144,21 @@ class AccelerometerBoschBase:
             self.libmetawear.mbl_mw_acc_bosch_set_shock_time(self.board, AccBoschTapShockTime._50ms)
             self.libmetawear.mbl_mw_acc_bosch_write_tap_config(self.board)
 
+            print("TestTapDetector \n")
             self.assertEqual(self.command, expected)
 
         def test_start_single(self):
             expected = [0x03, 0x0c, 0x02, 0x00]
 
             self.libmetawear.mbl_mw_acc_bosch_enable_tap_detection(self.board, 1, 0)
+            print("TestTapDetector \n")
             self.assertEqual(self.command, expected)
 
         def test_stop_tap(self):
             expected = [0x03, 0x0c, 0x00, 0x03]
 
             self.libmetawear.mbl_mw_acc_bosch_disable_tap_detection(self.board)
+            print("TestTapDetector \n")
             self.assertEqual(self.command, expected)
 
         def test_single_response(self):
@@ -157,9 +166,11 @@ class AccelerometerBoschBase:
             self.libmetawear.mbl_mw_datasignal_subscribe(tap, None, self.sensor_data_handler)
 
             self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x12]))
+            print("TestTapDetector \n")
             self.assertEqual(self.data, BoschTap(type = 0x2, sign = 0x0))
 
             self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x32]))
+            print("TestTapDetector \n")
             self.assertEqual(self.data, BoschTap(type = 0x2, sign = 0x1))
 
         def test_configure_double(self):
@@ -174,12 +185,14 @@ class AccelerometerBoschBase:
             self.libmetawear.mbl_mw_acc_bosch_set_shock_time(self.board, AccBoschTapShockTime._75ms)
             self.libmetawear.mbl_mw_acc_bosch_write_tap_config(self.board)
 
+            print("TestTapDetector \n")
             self.assertEqual(self.command, expected)
 
         def test_start_double(self):
             expected = [0x03, 0x0c, 0x01, 0x00]
 
             self.libmetawear.mbl_mw_acc_bosch_enable_tap_detection(self.board, 0, 1)
+            print("TestTapDetector \n")
             self.assertEqual(self.command, expected)
 
         def test_double_response(self):
@@ -187,9 +200,11 @@ class AccelerometerBoschBase:
             self.libmetawear.mbl_mw_datasignal_subscribe(tap, None, self.sensor_data_handler)
 
             self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x11]))
+            print("TestTapDetector \n")
             self.assertEqual(self.data, BoschTap(type = 0x1, sign = 0x0))
 
             self.notify_mw_char(to_string_buffer([0x03, 0x0e, 0x31]))
+            print("TestTapDetector \n")
             self.assertEqual(self.data, BoschTap(type = 0x1, sign = 0x1))
 
 class TestAccelerometerBmi160Orientation(AccelerometerBoschBase.TestOrientation):

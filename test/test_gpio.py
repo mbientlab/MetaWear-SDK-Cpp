@@ -8,12 +8,14 @@ class TestGpioDigitalConfig(TestMetaWearBase):
         expected= [0x05, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_gpio_set_digital_output(self.board, 0)
+        print("TestGpioDigitalConfig \n")
         self.assertEqual(self.command, expected)
 
     def test_clear_digital_out(self):
         expected= [0x05, 0x02, 0x01]
 
         self.libmetawear.mbl_mw_gpio_clear_digital_output(self.board, 1)
+        print("TestGpioDigitalConfig \n")
         self.assertEqual(self.command, expected)
 
     def test_set_pull_mode(self):
@@ -26,6 +28,7 @@ class TestGpioDigitalConfig(TestMetaWearBase):
         for test in tests:
             with self.subTest(pullmode=test['mode']):
                 self.libmetawear.mbl_mw_gpio_set_pull_mode(self.board, test['pin'], test['mode'])
+                print("TestGpioDigitalConfig \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_set_pin_change_type(self):
@@ -38,6 +41,7 @@ class TestGpioDigitalConfig(TestMetaWearBase):
         for test in tests:
             with self.subTest(changetype=test['mode']):
                 self.libmetawear.mbl_mw_gpio_set_pin_change_type(self.board, test['pin'], test['mode'])
+                print("TestGpioDigitalConfig \n")
                 self.assertEqual(self.command, test['expected'])
 
 class TestGpioDigitalData(TestMetaWearBase):
@@ -53,6 +57,7 @@ class TestGpioDigitalData(TestMetaWearBase):
         for test in tests:
             with self.subTest(changetype=test['change_type']):
                 self.notify_mw_char(test['response'])
+                print("TestGpioDigitalData \n")
                 self.assertEqual(self.data_uint32.value, test['expected'])
 
     # Combining subscribe and unsubscribe since unsubscribing from pin monitoring does not 
@@ -63,18 +68,21 @@ class TestGpioDigitalData(TestMetaWearBase):
         pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_pin_monitor_data_signal(self.board, 1);
         self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_unsubscribe(pin_monitor_signal)
+        print("TestGpioDigitalData \n")
         self.assertEqual(self.command, expected)
 
     def test_pin_monitor_start(self):
         expected= [0x05, 0x0b, 0x05, 0x01]
 
         self.libmetawear.mbl_mw_gpio_start_pin_monitoring(self.board, 5)
+        print("TestGpioDigitalData \n")
         self.assertEqual(self.command, expected)
 
     def test_pin_monitor_stop(self):
         expected= [0x05, 0x0b, 0x06, 0x00]
 
         self.libmetawear.mbl_mw_gpio_stop_pin_monitoring(self.board, 6)
+        print("TestGpioDigitalData \n")
         self.assertEqual(self.command, expected)
 
     def test_read_digital_input(self):
@@ -83,6 +91,7 @@ class TestGpioDigitalData(TestMetaWearBase):
         di_signal= self.libmetawear.mbl_mw_gpio_get_digital_input_data_signal(self.board, 4)
         self.libmetawear.mbl_mw_datasignal_subscribe(di_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_datasignal_read(di_signal)
+        print("TestGpioDigitalData \n")
         self.assertEqual(self.command, expected)
 
     def test_read_digital_input_silent(self):
@@ -90,6 +99,7 @@ class TestGpioDigitalData(TestMetaWearBase):
 
         di_signal= self.libmetawear.mbl_mw_gpio_get_digital_input_data_signal(self.board, 4)
         self.libmetawear.mbl_mw_datasignal_read(di_signal)
+        print("TestGpioDigitalData \n")
         self.assertEqual(self.command, expected)
 
 
@@ -105,6 +115,7 @@ class TestGpioDigitalData(TestMetaWearBase):
         for test in tests:
             with self.subTest(changetype=test['state']):
                 self.notify_mw_char(test['response'])
+                print("TestGpioDigitalData \n")
                 self.assertEqual(self.data_uint32.value, test['expected'])
 
 class TestGpioAnalogData(TestMetaWearBase):
@@ -119,6 +130,7 @@ class TestGpioAnalogData(TestMetaWearBase):
                 an_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, test['pin'], test['mode'])
                 self.libmetawear.mbl_mw_datasignal_subscribe(an_signal, None, self.sensor_data_handler)
                 self.libmetawear.mbl_mw_datasignal_read(an_signal)
+                print("TestGpioAnalogData \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_read_analog_input_silent(self):
@@ -131,6 +143,7 @@ class TestGpioAnalogData(TestMetaWearBase):
             with self.subTest(readmode=test['mode']):
                 an_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, test['pin'], test['mode'])
                 self.libmetawear.mbl_mw_datasignal_read(an_signal)
+                print("TestGpioAnalogData \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_read_analog_enhanced(self):
@@ -144,6 +157,7 @@ class TestGpioAnalogData(TestMetaWearBase):
             with self.subTest(readmode=test['mode']):
                 an_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, test['pin'], test['mode'])
                 self.libmetawear.mbl_mw_datasignal_read_with_parameters(an_signal, byref(parameters))
+                print("TestGpioAnalogData \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_handle_analog_data(self):
@@ -158,6 +172,7 @@ class TestGpioAnalogData(TestMetaWearBase):
                 self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
 
                 self.notify_mw_char(test['response'])
+                print("TestGpioAnalogData \n")
                 self.assertEqual(self.data_uint32.value, test['expected'])
 
 class TestGpioEnhancedAnalogRead(TestMetaWearBase):
@@ -175,6 +190,7 @@ class TestGpioEnhancedAnalogRead(TestMetaWearBase):
             with self.subTest(readmode=test['mode']):
                 an_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, test['pin'], test['mode'])
                 self.libmetawear.mbl_mw_datasignal_read(an_signal)
+                print("TestGpioEnhancedAnalogRead \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_read_analog_with_parameters(self):
@@ -190,6 +206,7 @@ class TestGpioEnhancedAnalogRead(TestMetaWearBase):
                 an_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, test['pin'], test['mode'])
                 self.libmetawear.mbl_mw_datasignal_subscribe(an_signal, None, self.sensor_data_handler)
                 self.libmetawear.mbl_mw_datasignal_read_with_parameters(an_signal, byref(parameters))
+                print("TestGpioEnhancedAnalogRead \n")
                 self.assertEqual(self.command, test['expected'])
 
     def test_handle_analog_data(self):
@@ -204,4 +221,5 @@ class TestGpioEnhancedAnalogRead(TestMetaWearBase):
                 self.libmetawear.mbl_mw_datasignal_subscribe(virtual_signal, None, self.sensor_data_handler)
 
                 self.notify_mw_char(test['response'])
+                print("TestGpioEnhancedAnalogRead \n")
                 self.assertEqual(self.data_uint32.value, test['expected'])

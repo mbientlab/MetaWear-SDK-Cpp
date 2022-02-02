@@ -35,6 +35,7 @@ struct MacroState {
 
 MacroState::MacroState() : is_recording(false) { }
 
+// Helper function - macro add
 static int32_t macro_add_cmd_response(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = GET_MACRO_STATE(board);
 
@@ -50,6 +51,7 @@ static int32_t macro_add_cmd_response(MblMwMetaWearBoard *board, const uint8_t *
     return MBL_MW_STATUS_OK;
 }
 
+// Helper function - macro add
 static int32_t macro_add_cmd_response_raw(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = GET_MACRO_STATE(board);
     state->commands_recorded(state->commands_recorded_context, board, response[2]);
@@ -57,6 +59,7 @@ static int32_t macro_add_cmd_response_raw(MblMwMetaWearBoard *board, const uint8
     return MBL_MW_STATUS_OK;
 }
 
+// Helper function - init module
 void init_macro_module(MblMwMetaWearBoard *board) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_MACRO, ORDINAL(MacroRegister::BEGIN)),
         forward_as_tuple(macro_add_cmd_response));
@@ -66,10 +69,12 @@ void init_macro_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Helper function - free module
 void free_macro_module(void *state) {
     delete (MacroState*) state;
 }
 
+// Record macro
 void mbl_mw_macro_record(MblMwMetaWearBoard *board, uint8_t exec_on_boot) {
     auto state = GET_MACRO_STATE(board);
     state->commands.clear();
@@ -77,6 +82,7 @@ void mbl_mw_macro_record(MblMwMetaWearBoard *board, uint8_t exec_on_boot) {
     state->exec_on_boot = exec_on_boot == 0 ? 0 : 1;
 }
 
+// Record macro raw
 void mbl_mw_macro_record_raw(MblMwMetaWearBoard *board, uint8_t exec_on_boot, void *context, MblMwFnBoardPtrInt ready) {
     auto state = GET_MACRO_STATE(board);
     board->responses[MACRO_BEGIN] = macro_add_cmd_response_raw;
@@ -87,6 +93,7 @@ void mbl_mw_macro_record_raw(MblMwMetaWearBoard *board, uint8_t exec_on_boot, vo
     send_command(board, command, sizeof(command));
 }
 
+// End macro
 void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, void *context, MblMwFnBoardPtrInt commands_recorded) {
     auto state = GET_MACRO_STATE(board);
     state->is_recording = false;
@@ -99,16 +106,19 @@ void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, void *context, MblMwFnBo
     }, 2000);
 }
 
+// Macro execute
 void mbl_mw_macro_execute(MblMwMetaWearBoard *board, uint8_t id) {
     uint8_t command[3] = { MBL_MW_MODULE_MACRO, ORDINAL(MacroRegister::EXECUTE), id };
     send_command(board, command, sizeof(command));
 }
 
+// Macro erase
 void mbl_mw_macro_erase_all(MblMwMetaWearBoard *board) {
     uint8_t command[2] = { MBL_MW_MODULE_MACRO, ORDINAL(MacroRegister::ERASE_ALL) };
     send_command(board, command, sizeof(command));
 }
 
+// Record macro
 void record_macro(const MblMwMetaWearBoard *board, const uint8_t* command, uint8_t len) {
     auto state = GET_MACRO_STATE(board);
     if (state != nullptr && state->is_recording) {

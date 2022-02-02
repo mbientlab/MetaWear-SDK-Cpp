@@ -16,7 +16,7 @@ typedef struct MblMwTimer MblMwTimer;
 #endif
 
 /**
- * Definition for callback functions that accept an MblMwTimer pointer
+ * Definition for callback functions that accept an MblMwTimer pointer.
  * @param context       Pointer to the context the enclosing function was called with
  * @param timer         Timer to be used with the function
  */

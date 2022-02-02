@@ -24,6 +24,7 @@ extern "C" {
  */
 METAWEAR_API void mbl_mw_macro_record(MblMwMetaWearBoard *board, uint8_t exec_on_boot);
 METAWEAR_API void mbl_mw_macro_record_raw(MblMwMetaWearBoard *board, uint8_t exec_on_boot, void *context, MblMwFnBoardPtrInt ready);
+
 /**
  * Ends macro recording.  
  * An numerical id representing the macro will be passed to the callback function when the operation is complete.
@@ -32,12 +33,14 @@ METAWEAR_API void mbl_mw_macro_record_raw(MblMwMetaWearBoard *board, uint8_t exe
  * @param commands_recorded     Callback function to be executed when the commands are recorded
  */
 METAWEAR_API void mbl_mw_macro_end_record(MblMwMetaWearBoard *board, void *context, MblMwFnBoardPtrInt commands_recorded);
+
 /**
- * Execute the commands corresponding to the macro ID
+ * Execute the commands corresponding to the macro ID.
  * @param board     Calling object
  * @param id        Numerical ID of the macro to execute
  */
 METAWEAR_API void mbl_mw_macro_execute(MblMwMetaWearBoard *board, uint8_t id);
+
 /**
  * Remove all macros on the flash memory.  
  * The erase operation will not be performed until you disconnect from the board.  

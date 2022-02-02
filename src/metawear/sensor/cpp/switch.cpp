@@ -11,10 +11,12 @@ using std::stringstream;
 
 const ResponseHeader SWITCH_RESPONSE_HEADER(MBL_MW_MODULE_SWITCH, ORDINAL(SwitchRegister::STATE));
 
+// Get switch data signal
 MblMwDataSignal* mbl_mw_switch_get_state_data_signal(const MblMwMetaWearBoard *board) {
     return dynamic_cast<MblMwDataSignal*>(board->module_events.at(SWITCH_RESPONSE_HEADER));
 }
 
+// Helper function - init module
 void init_switch_module(MblMwMetaWearBoard *board) {
     if (board->module_info.count(MBL_MW_MODULE_SWITCH) && board->module_info.at(MBL_MW_MODULE_SWITCH).present) {
         if (!board->module_events.count(SWITCH_RESPONSE_HEADER)) {
@@ -26,6 +28,7 @@ void init_switch_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Name for the loggers
 void create_switch_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(CLEAR_READ(signal->header.register_id)) {
     case ORDINAL(SwitchRegister::STATE):

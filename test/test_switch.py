@@ -11,12 +11,14 @@ class TestSwitch(TestMetaWearBase):
         expected= [0x01, 0x01, 0x01]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal, None, self.sensor_data_handler)
+        print("TestSwitch \n")
         self.assertEqual(self.command, expected)
 
     def test_mbl_mw_switch_unsubscribe(self):
         expected= [0x01, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.switch_data_signal)
+        print("TestSwitch \n")
         self.assertEqual(self.command, expected)
 
     def test_mbl_mw_switch_get_data_pushed(self):
@@ -24,6 +26,7 @@ class TestSwitch(TestMetaWearBase):
         
         self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x01\x01\x01', 3))
+        print("TestSwitch \n")
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_mbl_mw_switch_get_data_released(self):
@@ -31,4 +34,5 @@ class TestSwitch(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.switch_data_signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x01\x01\x00', 3))
+        print("TestSwitch \n")
         self.assertEqual(self.data_uint32.value, expected)

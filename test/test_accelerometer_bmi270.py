@@ -77,6 +77,7 @@ class TestAccBmi270Config(TestMetaWearBase):
             with self.subTest(odr= test['odr_name']):
                 self.libmetawear.mbl_mw_acc_bmi270_set_odr(self.board, test['odr'])
                 self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
+                print("TestAccBmi270Config \n")
                 self.assertListEqual(self.command, test['expected'])
 
     def test_set_range(self):
@@ -84,6 +85,7 @@ class TestAccBmi270Config(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._16G)
         self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
+        print("TestAccBmi270Config \n")
         self.assertListEqual(self.command, expected)
 
     def test_set_odr_and_range(self):
@@ -92,18 +94,21 @@ class TestAccBmi270Config(TestMetaWearBase):
         self.libmetawear.mbl_mw_acc_bmi270_set_odr(self.board, AccBmi270Odr._200Hz)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
         self.libmetawear.mbl_mw_acc_bosch_write_acceleration_config(self.board)
+        print("TestAccBmi270Config \n")
         self.assertListEqual(self.command, expected)
 
     def test_enable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x01, 0x00]
 
         self.libmetawear.mbl_mw_acc_bosch_enable_acceleration_sampling(self.board)
+        print("TestAccBmi270Config \n")
         self.assertListEqual(self.command, expected)
 
     def test_disable_acceleration_sampling(self):
         expected= [0x03, 0x02, 0x00, 0x01]
 
         self.libmetawear.mbl_mw_acc_bosch_disable_acceleration_sampling(self.board)
+        print("TestAccBmi270Config \n")
         self.assertListEqual(self.command, expected)
 
 class TestBmi270AccelerationData(TestMetaWearBase):
@@ -121,18 +126,21 @@ class TestBmi270AccelerationData(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._4G)
         self.notify_mw_char(response)
+        print("TestBmi270AccelerationData \n")
         self.assertEqual(self.data_cartesian_float, expected)
 
     def test_subscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x01]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
+        print("TestBmi270AccelerationData \n")
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe_acceleration_data(self):
         expected= [0x03, 0x04, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
+        print("TestBmi270AccelerationData \n")
         self.assertListEqual(self.command, expected)
 
 class TestBmi270HighFreqAccData(TestMetaWearBase):
@@ -156,18 +164,21 @@ class TestBmi270HighFreqAccData(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
         self.libmetawear.mbl_mw_acc_bosch_set_range(self.board, AccBoschRange._8G)
         self.notify_mw_char(response)
+        print("TestBmi270HighFreqAccData \n")
         self.assertEqual(self.cartesian_float_values, expected_values)
 
     def test_subscribe(self):
         expected= [0x03, 0x05, 0x01]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.accel_data_signal, None, self.sensor_data_handler)
+        print("TestBmi270HighFreqAccData \n")
         self.assertListEqual(self.command, expected)
 
     def test_unsubscribe(self):
         expected= [0x03, 0x05, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.accel_data_signal)
+        print("TestBmi270HighFreqAccData \n")
         self.assertListEqual(self.command, expected)
 
 class TestBmi270StepCounterSetup(TestMetaWearBase):
@@ -189,6 +200,7 @@ class TestBmi270StepCounterSetup(TestMetaWearBase):
                 self.libmetawear.mbl_mw_acc_bmi270_set_step_counter_trigger(self.board, 1)
                 self.libmetawear.mbl_mw_acc_bmi270_enable_step_counter(self.board)
                 self.libmetawear.mbl_mw_acc_bmi270_write_step_counter_config(self.board)
+                print("TestBmi270StepCounterSetup \n")
                 self.assertListEqual(self.command, test['expected'])
 
 class TestBmi270StepCounterData(TestMetaWearBase):
@@ -205,6 +217,7 @@ class TestBmi270StepCounterData(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.step_counter_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
+        print("TestBmi270StepCounterData \n")
         self.assertEqual(self.data_uint32.value, expected)
 
 class TestBmi270StepCounterRead(TestMetaWearBase):
@@ -216,10 +229,11 @@ class TestBmi270StepCounterRead(TestMetaWearBase):
     def test_read_step_counter(self):
 
         def handler(ctx, board, value):
-            actual.append(value)
+            print(value)
 
         wrapper = FnVoid_VoidP_VoidP_Int(handler)
         self.libmetawear.mbl_mw_acc_bmi270_read_step_counter(self.board, None, wrapper)
+        print("TestBmi270StepCounterRead \n")
         self.notify_mw_char(to_string_buffer([ 0x11, 0x12, 0x00, 0x01 ])) #fix me
 
         self.assertEqual(self.command, [0x03, 0x8b])
@@ -236,24 +250,28 @@ class TestBmi270StepDetectorData(TestMetaWearBase):
         expected= [0x3, 0x0b, 0x1]
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.step_detector_signal, None, self.sensor_data_handler)
+        print("TestBmi270StepDetectorData \n")
         self.assertEqual(self.command, expected)
 
     def test_unsubscribe_detector(self):
         expected= [0x3, 0x0b, 0x0]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.step_detector_signal, self.sensor_data_handler)
+        print("TestBmi270StepDetectorData \n")
         self.assertEqual(self.command, expected)
 
     def test_enable_detector(self):
         expected= [0x03, 0x06, 0x80, 0x00]
 
         self.libmetawear.mbl_mw_acc_bmi270_enable_step_detector(self.board)
+        print("TestBmi270StepDetectorData \n")
         self.assertEqual(self.command, expected)
 
     def test_disable_detector(self):
         expected= [0x03, 0x06, 0x00, 0x80]
 
         self.libmetawear.mbl_mw_acc_bmi270_disable_step_detector(self.board)
+        print("TestBmi270StepDetectorData \n")
         self.assertEqual(self.command, expected)
 
     def test_get_detection(self):
@@ -262,4 +280,5 @@ class TestBmi270StepDetectorData(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.step_detector_signal, None, self.sensor_data_handler)
         self.notify_mw_char(response)
+        print("TestBmi270StepDetectorData \n")
         self.assertEqual(self.data_uint32.value, expected)

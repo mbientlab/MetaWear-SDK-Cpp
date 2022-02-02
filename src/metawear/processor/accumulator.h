@@ -20,6 +20,7 @@ extern "C" {
  * @param processor_created     Callback function to be executed when the processor is created
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_accumulator_create(MblMwDataSignal *source, void *context, MblMwFnDataProcessor processor_created);
+
 /**
  * Create an accumulator with a specific output size.  
  * Keeps a running sum of the input and returns the output as the specified size
@@ -30,8 +31,9 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_accumulator_create(MblMwDataSignal *so
  * @param processor_created     Callback function to be executed when the processor is created
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_accumulator_create_size(MblMwDataSignal *source, uint8_t output_size, void *context, MblMwFnDataProcessor processor_created);
+
 /**
- * Overwrites the current accumulator value with a new value
+ * Overwrites the current accumulator value with a new value.
  * Can be used to reset the running sum
  * @param accumulator           Accumulator processor to modify
  * @param new_running_sum       New running sum of the accumulator

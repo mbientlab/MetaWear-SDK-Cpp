@@ -64,7 +64,7 @@ struct DataProcessorState : public AsyncCreator {
     uint8_t entry_id;
 };
 
-
+// Helper function - create processor state signal
 static void create_processor_state_signal(MblMwDataProcessor* processor, DataInterpreter interpreter) {
     ResponseHeader state_header(MBL_MW_MODULE_DATA_PROCESSOR, READ_REGISTER(ORDINAL(DataProcessorRegister::STATE)));
     processor->state= new MblMwDataSignal(state_header, processor->owner, interpreter, processor->n_channels, 
@@ -417,6 +417,7 @@ void MblMwDataProcessor::serialize(vector<uint8_t>& state) const {
     state.push_back(static_cast<uint8_t>(type));
 }
 
+// Name of processor
 static const char* type_to_uri(DataProcessorType type, void* config) {
     switch(type) {
     case DataProcessorType::ACCUMULATOR:
@@ -458,10 +459,12 @@ static const char* type_to_uri(DataProcessorType type, void* config) {
     }
 }
 
+// Id of processor
 void MblMwDataProcessor::create_uri(std::stringstream& uri) const {
     uri << type_to_uri(type, config) << "?id=" << (int) header.data_id;
 }
 
+// Helper function - name of state
 void create_dataprocessor_state_uri(const MblMwDataSignal* signal, stringstream& uri) {
     ResponseHeader header(MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY), signal->header.data_id);
     auto processor = dynamic_cast<MblMwDataProcessor*>(signal->owner->module_events.at(header));
@@ -469,6 +472,7 @@ void create_dataprocessor_state_uri(const MblMwDataSignal* signal, stringstream&
     uri << type_to_uri(processor->type, processor->config) << "-state?id=" << (int) processor->header.data_id;
 }
 
+// Helper function - processor created
 static int32_t dataprocessor_created(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = GET_DATAPROCESSOR_STATE(board);
 
@@ -493,6 +497,7 @@ static int32_t dataprocessor_created(MblMwMetaWearBoard *board, const uint8_t *r
     return MBL_MW_STATUS_OK;
 }
 
+// Helper function - processor config received
 static int32_t dataprocessor_config_received(MblMwMetaWearBoard *board, const uint8_t *response, uint8_t len) {
     auto state = GET_DATAPROCESSOR_STATE(board);
     state->timeout->cancel();
@@ -526,6 +531,7 @@ static int32_t dataprocessor_config_received(MblMwMetaWearBoard *board, const ui
     return MBL_MW_STATUS_OK;
 }
 
+// Helper function - init module
 void init_dataprocessor_module(MblMwMetaWearBoard* board) {
     board->responses.emplace(piecewise_construct, forward_as_tuple(MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY)),
         forward_as_tuple(response_handler_data_with_id));
@@ -541,10 +547,12 @@ void init_dataprocessor_module(MblMwMetaWearBoard* board) {
     }
 }
 
+// Helper function - free module
 void free_dataprocessor_module(void* state) {
     delete (DataProcessorState*) state;
 }
 
+// Helper function - disconnect
 void disconnect_dataprocessor(MblMwMetaWearBoard* board) {
     auto state = GET_DATAPROCESSOR_STATE(board);
     if (state != nullptr) {
@@ -552,11 +560,13 @@ void disconnect_dataprocessor(MblMwMetaWearBoard* board) {
     }
 }
 
+// Dataprocessor state signal
 MblMwDataSignal* mbl_mw_dataprocessor_get_state_data_signal(const MblMwDataProcessor* processor) {
     ResponseHeader state_header(MBL_MW_MODULE_DATA_PROCESSOR, READ_REGISTER(ORDINAL(DataProcessorRegister::STATE)), processor->header.data_id);
     GET_DATA_SIGNAL_BOARD(processor->owner, state_header);
 }
 
+// Helper function - processor remove
 void mbl_mw_dataprocessor_remove(MblMwDataProcessor *processor) {
     if (processor->parent_id != NO_PARENT) {
         auto parent_consumers= &processor->parent()->consumers;
@@ -583,15 +593,18 @@ void mbl_mw_dataprocessor_remove(MblMwDataProcessor *processor) {
     remove_inner(processor);
 }
 
+// Get processor id
 uint8_t mbl_mw_dataprocessor_get_id(const MblMwDataProcessor* processor) {
     return processor->header.data_id;
 }
 
+// Lookup id
 MblMwDataProcessor* mbl_mw_dataprocessor_lookup_id(const MblMwMetaWearBoard* board, uint8_t id) {
     ResponseHeader map_key(MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY), id);
     return dynamic_cast<MblMwDataProcessor*>(board->module_events.at(map_key));
 }
 
+// Helper function - create processor
 void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, void *context, MblMwFnDataProcessor processor_created) {
     auto state = GET_DATAPROCESSOR_STATE(processor->owner);
     state->pending_fns.push([state, processor, context, processor_created, source](void) -> void {
@@ -618,6 +631,7 @@ void create_processor(MblMwDataSignal* source, MblMwDataProcessor* processor, vo
     state->create_next(false);
 }
 
+// Helper function - set processor state
 void set_processor_state(MblMwDataProcessor *processor, void* new_state, uint8_t size) {
     vector<uint8_t> command = { MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::STATE), processor->header.data_id };
     if (new_state != nullptr) {
@@ -626,6 +640,7 @@ void set_processor_state(MblMwDataProcessor *processor, void* new_state, uint8_t
     send_command(processor->owner, command.data(), (uint8_t) command.size());
 }
 
+// Helper function - processor config modify
 void modify_processor_configuration(MblMwDataProcessor *processor, uint8_t size) {
     vector<uint8_t> command = { MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::PARAMETER), processor->header.data_id, 
             type_to_id.at(processor->type)};
@@ -633,6 +648,7 @@ void modify_processor_configuration(MblMwDataProcessor *processor, uint8_t size)
     send_command(processor->owner, command.data(), (uint8_t) command.size());
 }
 
+// Helper function - sync proc
 void sync_processor_chain(MblMwMetaWearBoard* board, uint8_t id, ProcessorEntriesHandler handler) {
     auto state = GET_DATAPROCESSOR_STATE(board);
 
@@ -654,6 +670,7 @@ void sync_processor_chain(MblMwMetaWearBoard* board, uint8_t id, ProcessorEntrie
     state->create_next(false);
 }
 
+// Helper function - lookup proc
 MblMwDataProcessor* lookup_processor(const MblMwMetaWearBoard* board, uint8_t id) {
     ResponseHeader key = {MBL_MW_MODULE_DATA_PROCESSOR, ORDINAL(DataProcessorRegister::NOTIFY), id};
     return dynamic_cast<MblMwDataProcessor*>(board->module_events.at(key));

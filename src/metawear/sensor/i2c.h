@@ -29,6 +29,7 @@ typedef struct {
  * @return Pointer to the i2c data signal
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_i2c_get_data_signal(MblMwMetaWearBoard *board, uint8_t length, uint8_t id);
+
 /**
  * Writes data via the i2c bus
  * @param board             Board the i2c bus resides on

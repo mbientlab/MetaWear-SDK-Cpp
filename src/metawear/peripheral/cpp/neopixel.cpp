@@ -12,44 +12,53 @@ static const uint8_t HOLD_ENABLE= 1, HOLD_DISABLE= 0;
 
 static const uint8_t ROTATE_INDEFINITELY= 0xff;
 
+// Init strand
 static void inline init_strand(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t gpio_pin, uint8_t n_pixels, uint8_t speed, MblMwNeoPixelColorOrdering ordering) {
     uint8_t command[6]= {NEOPIXEL_MODULE, NEOPIXEL_INITIALIZE, strand, static_cast<uint8_t>(ordering | (speed << 2)), gpio_pin, n_pixels};
     SEND_COMMAND;
 }
 
+// Init strand - slow
 void mbl_mw_neopixel_init_slow_strand(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t gpio_pin, uint8_t n_pixels, MblMwNeoPixelColorOrdering ordering) {
     init_strand(board, strand, gpio_pin, n_pixels, SPEED_SLOW, ordering);
 }
 
+// Init strand - fast
 void mbl_mw_neopixel_init_fast_strand(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t gpio_pin, uint8_t n_pixels, MblMwNeoPixelColorOrdering ordering) {
     init_strand(board, strand, gpio_pin, n_pixels, SPEED_FAST, ordering);
 }
 
+// Free strand
 void mbl_mw_neopixel_free_strand(const MblMwMetaWearBoard *board, uint8_t strand) {
     uint8_t command[3]= {NEOPIXEL_MODULE, NEOPIXEL_DEINITIALIZE, strand};
     SEND_COMMAND;
 }
 
+// Enable hold
 void mbl_mw_neopixel_enable_hold(const MblMwMetaWearBoard *board, uint8_t strand) {
     uint8_t command[4]= {NEOPIXEL_MODULE, NEOPIXEL_HOLD, strand, HOLD_ENABLE};
     SEND_COMMAND;
 }
 
+// Disable hold
 void mbl_mw_neopixel_disable_hold(const MblMwMetaWearBoard *board, uint8_t strand) {
     uint8_t command[4]= {NEOPIXEL_MODULE, NEOPIXEL_HOLD, strand, HOLD_DISABLE};
     SEND_COMMAND;
 }
 
+// Clear
 void mbl_mw_neopixel_clear(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t start, uint8_t end) {
     uint8_t command[5]= {NEOPIXEL_MODULE, NEOPIXEL_CLEAR, strand, start, end};
     SEND_COMMAND;
 }
 
+// Set color
 void mbl_mw_neopixel_set_color(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t pixel, uint8_t red, uint8_t green, uint8_t blue) {
     uint8_t command[7]= {NEOPIXEL_MODULE, NEOPIXEL_PIXEL, strand, pixel, red, green, blue};
     SEND_COMMAND;
 }
 
+// Rotate
 void mbl_mw_neopixel_rotate(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t count, uint16_t period_ms, MblMwNeoPixelRotDirection direction) {
     uint8_t command[7]= {NEOPIXEL_MODULE, NEOPIXEL_ROTATE, strand, 
             static_cast<uint8_t>((direction != MBL_MW_NP_ROT_DIR_TOWARDS) ? MBL_MW_NP_ROT_DIR_AWAY : MBL_MW_NP_ROT_DIR_TOWARDS),
@@ -59,10 +68,12 @@ void mbl_mw_neopixel_rotate(const MblMwMetaWearBoard *board, uint8_t strand, uin
     SEND_COMMAND;
 }
 
+// Rotate forever
 void mbl_mw_neopixel_rotate_indefinitely(const MblMwMetaWearBoard *board, uint8_t strand, uint8_t period_ms, MblMwNeoPixelRotDirection direction) {
     mbl_mw_neopixel_rotate(board, strand, ROTATE_INDEFINITELY, period_ms, direction);
 }
 
+// Stop rotation
 void mbl_mw_neopixel_stop_rotation(const MblMwMetaWearBoard *board, uint8_t strand) {
     uint8_t command[7]= {NEOPIXEL_MODULE, NEOPIXEL_ROTATE, strand};
 

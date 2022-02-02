@@ -62,6 +62,7 @@ struct CartesianShort {
 const float BOSCH_BARO_SCALE= 256.f, TEMPERATURE_SCALE= 8.f, MMA8452Q_ACC_SCALE= 1000.f, BMM150_SCALE= 16.f, BME280_HUMIDITY_SCALE= 1024.f, 
         Q16_16_SCALE= 0x10000, SENSOR_FUSION_ACC_SCALE = 1000.f, MSS_TO_G_SCALE = 9.80665f;
 
+// Helper function - int
 static MblMwData* convert_to_int32(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t *value = (int32_t*) malloc(sizeof(int32_t));
 
@@ -69,6 +70,7 @@ static MblMwData* convert_to_int32(bool log_data, const MblMwDataSignal* signal,
     CREATE_MESSAGE(MBL_MW_DT_ID_INT32);
 }
 
+// Helper function - int
 static MblMwData* convert_to_uint32(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t *value= (uint32_t*) calloc(1, sizeof(uint32_t));
 
@@ -76,6 +78,7 @@ static MblMwData* convert_to_uint32(bool log_data, const MblMwDataSignal* signal
     CREATE_MESSAGE(MBL_MW_DT_ID_UINT32);
 }
 
+// Helper function - acc
 static MblMwData* convert_to_mma8452q_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort milliG;
     memcpy(&milliG, response, sizeof(milliG));
@@ -88,6 +91,7 @@ static MblMwData* convert_to_mma8452q_acceleration(bool log_data, const MblMwDat
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
+// Helper function - acc
 static MblMwData* convert_to_bosch_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
@@ -102,6 +106,7 @@ static MblMwData* convert_to_bosch_acceleration(bool log_data, const MblMwDataSi
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
+// Helper function - acc
 static MblMwData* convert_to_bosch_acceleration_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
     CAST_INT32(unscaled)
@@ -112,6 +117,7 @@ static MblMwData* convert_to_bosch_acceleration_single_axis(bool log_data, const
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
+// Helper function - acc
 static MblMwData* convert_to_bosch_acceleration_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled= 0;
     CAST_UINT32(unscaled)
@@ -122,6 +128,7 @@ static MblMwData* convert_to_bosch_acceleration_unsigned_single_axis(bool log_da
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
+// Helper function - rotation
 static MblMwData* convert_to_bosch_rotation(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
@@ -136,6 +143,7 @@ static MblMwData* convert_to_bosch_rotation(bool log_data, const MblMwDataSignal
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
+// Helper function - rotation
 static MblMwData* convert_to_bosch_rotation_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     int32_t unscaled;
     CAST_INT32(unscaled)
@@ -146,6 +154,7 @@ static MblMwData* convert_to_bosch_rotation_single_axis(bool log_data, const Mbl
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
+// Helper function - rotation
 static MblMwData* convert_to_bosch_rotation_unsigned_single_axis(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t unscaled= 0;
     CAST_UINT32(unscaled)
@@ -156,6 +165,7 @@ static MblMwData* convert_to_bosch_rotation_unsigned_single_axis(bool log_data, 
     CREATE_MESSAGE(MBL_MW_DT_ID_FLOAT);
 }
 
+// Helper function - byte
 static MblMwData* convert_to_byte_array(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwData *msg= (MblMwData*) malloc(sizeof(MblMwData));
     msg->type_id= MBL_MW_DT_ID_BYTE_ARRAY;
@@ -167,6 +177,7 @@ static MblMwData* convert_to_byte_array(bool log_data, const MblMwDataSignal* si
     return msg;
 }
 
+// Helper function - mag
 static MblMwData* convert_to_bmm150_b_field(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     CartesianShort unscaled;
     memcpy(&unscaled, response, sizeof(unscaled));
@@ -179,6 +190,7 @@ static MblMwData* convert_to_bmm150_b_field(bool log_data, const MblMwDataSignal
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
+// Helper function - batt
 static MblMwData* convert_to_battery_state(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwBatteryState *value= (MblMwBatteryState*) malloc(sizeof(MblMwBatteryState));
     memcpy(&value->voltage, response + 1, 2);
@@ -187,6 +199,7 @@ static MblMwData* convert_to_battery_state(bool log_data, const MblMwDataSignal*
     CREATE_MESSAGE(MBL_MW_DT_ID_BATTERY_STATE);
 }
 
+// Helper function - motion
 static MblMwData* convert_to_bosch_any_motion(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwBoschAnyMotion *value= (MblMwBoschAnyMotion*) malloc(sizeof(MblMwBoschAnyMotion));
     auto detected = [response](uint8_t& field, uint8_t axis) {
@@ -202,6 +215,7 @@ static MblMwData* convert_to_bosch_any_motion(bool log_data, const MblMwDataSign
     CREATE_MESSAGE(MBL_MW_DT_ID_BOSCH_ANY_MOTION);
 }
 
+// Helper function - gesture
 static MblMwData* convert_to_bmi270_gesture(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwBoschGestureType *value= (MblMwBoschGestureType*) malloc(sizeof(MblMwBoschGestureType));
 
@@ -214,6 +228,7 @@ static MblMwData* convert_to_bmi270_gesture(bool log_data, const MblMwDataSignal
     CREATE_MESSAGE(MBL_MW_DT_ID_BOSCH_GESTURE);
 }
 
+// Helper function - activity
 static MblMwData* convert_to_bmi270_activity(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     uint32_t temp = response[0];
     temp = temp >> 1;
@@ -243,6 +258,7 @@ RAW_CONVERT(convert_to_quaternion, MblMwQuaternion, MBL_MW_DT_ID_QUATERNION)
 RAW_CONVERT(convert_to_euler_angles, MblMwEulerAngles, MBL_MW_DT_ID_EULER_ANGLE)
 RAW_CONVERT(convert_to_corrected_vector3, MblMwCorrectedCartesianFloat, MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT)
 
+// Helper function - vector
 static MblMwData* convert_to_vector3(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwCartesianFloat unscaled, *value = (MblMwCartesianFloat*) malloc(sizeof(MblMwCartesianFloat));
     memcpy(&unscaled, response, sizeof(MblMwCartesianFloat));
@@ -254,6 +270,7 @@ static MblMwData* convert_to_vector3(bool log_data, const MblMwDataSignal* signa
     CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
+// Helper function - acc
 static MblMwData* convert_to_corrected_acc(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwCorrectedCartesianFloat unscaled, *value = (MblMwCorrectedCartesianFloat*) malloc(sizeof(MblMwCorrectedCartesianFloat));
     memcpy(&unscaled, response, sizeof(float) * 3);
@@ -266,6 +283,7 @@ static MblMwData* convert_to_corrected_acc(bool log_data, const MblMwDataSignal*
     CREATE_MESSAGE(MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT);
 }
 
+// Helper function - overflow
 static MblMwData* convert_to_overflow_state(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwOverflowState *value= (MblMwOverflowState*) malloc(sizeof(MblMwOverflowState));
     memcpy(&value->length, response + 1, 2);
@@ -274,6 +292,7 @@ static MblMwData* convert_to_overflow_state(bool log_data, const MblMwDataSignal
     CREATE_MESSAGE(MBL_MW_DT_ID_OVERFLOW_STATE);
 }
 
+// Helper function - orientation
 static MblMwData* convert_to_sensor_orientation(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
     MblMwSensorOrientation *value= (MblMwSensorOrientation*) malloc(sizeof(MblMwSensorOrientation));
     *value = (MblMwSensorOrientation) (((response[0] & 0x6) >> 1) + 4 * ((response[0] & 0x8) >> 3));
@@ -281,6 +300,7 @@ static MblMwData* convert_to_sensor_orientation(bool log_data, const MblMwDataSi
     CREATE_MESSAGE(MBL_MW_DT_ID_SENSOR_ORIENTATION);
 }
 
+// Helper function - mac
 static MblMwData* convert_to_mac_address(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
     const int strSize = 17 + 1;
     const uint8_t offset = len == 7 ? 1 : 0;
@@ -304,6 +324,7 @@ static MblMwData* convert_to_sensor_orientation_mma8452q(bool log_data, const Mb
     CREATE_MESSAGE(MBL_MW_DT_ID_SENSOR_ORIENTATION);
 }
 
+// Helper function - log
 static MblMwData* convert_to_logging_time(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwLoggingTime *value = (MblMwLoggingTime*)malloc(sizeof(MblMwLoggingTime));
 
@@ -321,6 +342,7 @@ static MblMwData* convert_to_logging_time(bool log_data, const MblMwDataSignal* 
     CREATE_MESSAGE(MBL_MW_DT_ID_LOGGING_TIME);
 }
 
+// Helper function - address
 static MblMwData* convert_to_btle_address(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwBtleAddress *value = (MblMwBtleAddress*)malloc(sizeof(MblMwBtleAddress));
     memcpy(value, response, sizeof(MblMwBtleAddress));
@@ -328,6 +350,7 @@ static MblMwData* convert_to_btle_address(bool log_data, const MblMwDataSignal* 
     CREATE_MESSAGE(MBL_MW_DT_ID_BTLE_ADDRESS);
 }
 
+// Helper function - calibrate
 static MblMwData* convert_to_calibration_state(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     MblMwCalibrationState *value = (MblMwCalibrationState*)malloc(sizeof(MblMwCalibrationState));
     memcpy(value, response, sizeof(MblMwCalibrationState));
@@ -335,6 +358,7 @@ static MblMwData* convert_to_calibration_state(bool log_data, const MblMwDataSig
     CREATE_MESSAGE(MBL_MW_DT_ID_CALIBRATION_STATE);
 }
 
+// Helper function - fused
 static MblMwData* convert_to_fused(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
     auto processor = dynamic_cast<const MblMwDataProcessor*>(signal);
     if (processor->type != DataProcessorType::FUSER) {
@@ -364,6 +388,7 @@ static MblMwData* convert_to_fused(bool log_data, const MblMwDataSignal* signal,
     return msg;
 }
 
+// Helper function - tap
 static MblMwData* convert_to_bosch_tap(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
     MblMwBoschTap *value = (MblMwBoschTap*) malloc(sizeof(MblMwBoschTap));
 
@@ -421,38 +446,47 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::BMI270_ACTIVITY , convert_to_bmi270_activity }
 };
 
+// Helper function - acc
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * bosch_get_data_scale(signal->owner);
 }
 
+// Helper function - acc
 static float mma8452q_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * MMA8452Q_ACC_SCALE;
 }
 
+// Helper function - baro
 static float bosch_baro_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * BOSCH_BARO_SCALE;
 }
 
+// Helper function - gyro
 static float bosch_gyro_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * bosch_gyro_get_data_scale(signal->owner);
 }
 
+// Helper function - num
 static float number_to_firmware_default(const MblMwDataSignal* signal, float value) {
     return value;
 }
 
+// Helper function - humidity
 static float bme280_humidity_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * BME280_HUMIDITY_SCALE;
 }
 
+// Helper function - temp
 static float temp_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * TEMPERATURE_SCALE;
 }
 
+// Helper function - fixed pt
 static float q16_16_fixed_point_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * Q16_16_SCALE;
 }
 
+// Helper function - mag scale
 static float bosch_magnetometer_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * BMM150_SCALE;
 }
@@ -481,6 +515,7 @@ size_t hash<FirmwareConverter>::operator()(const FirmwareConverter& key) const {
 
 }
 
+// Helper function - free
 void free_data(const MblMwDataSignal* signal, MblMwData* data) {
     if (data->type_id == MBL_MW_DT_ID_DATA_ARRAY) {
         auto processor = dynamic_cast<const MblMwDataProcessor*>(signal);

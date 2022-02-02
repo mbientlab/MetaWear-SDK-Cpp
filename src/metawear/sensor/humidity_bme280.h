@@ -30,6 +30,7 @@ typedef enum {
  * UINT32 is return signal data type 
  */
 METAWEAR_API MblMwDataSignal* mbl_mw_humidity_bme280_get_percentage_data_signal(const MblMwMetaWearBoard *board);
+
 /**
  * Sets the oversampling mode
  * For the humidity measurement, oversampling is possible to reduce the noise. 

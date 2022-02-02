@@ -30,6 +30,7 @@ static const vector<float> MMA8452Q_ODR_VALUES= {800.f, 400.f, 200.f, 100.f, 50.
     BMA255_ODR_VALUES= {15.62f, 31.26f, 62.5f, 125.f, 250.f, 500.f, 1000.f},
     BOSCH_FSR_VALUES= {2.f, 4.f, 8.f, 16.f};
 
+// Helper function - init module
 void init_accelerometer_module(MblMwMetaWearBoard *board) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -47,6 +48,7 @@ void init_accelerometer_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Helper function - Free module
 void free_accelerometer_module(MblMwMetaWearBoard *board) {
     if (!board->module_info.count(MBL_MW_MODULE_ACCELEROMETER)) {
         return;
@@ -64,6 +66,7 @@ void free_accelerometer_module(MblMwMetaWearBoard *board) {
     }
 }
 
+// Helper function - serialize
 void serialize_accelerometer_config(const MblMwMetaWearBoard *board, std::vector<uint8_t>& state) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -81,6 +84,7 @@ void serialize_accelerometer_config(const MblMwMetaWearBoard *board, std::vector
     }
 }
 
+// Helper function - deserialize
 void deserialize_accelerometer_config(MblMwMetaWearBoard *board, uint8_t** state_stream) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -98,6 +102,7 @@ void deserialize_accelerometer_config(MblMwMetaWearBoard *board, uint8_t** state
     }
 }
 
+// Name for the loggers
 void create_acc_uri(const MblMwDataSignal* signal, stringstream& uri) {
     switch(signal->owner->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -113,6 +118,7 @@ void create_acc_uri(const MblMwDataSignal* signal, stringstream& uri) {
     }
 }
 
+// Get acc signal
 MblMwDataSignal* mbl_mw_acc_get_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -125,10 +131,12 @@ MblMwDataSignal* mbl_mw_acc_get_acceleration_data_signal(const MblMwMetaWearBoar
     return nullptr;
 }
 
+// Get acc signal
 MblMwDataSignal* mbl_mw_acc_get_high_freq_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     return mbl_mw_acc_get_packed_acceleration_data_signal(board);
 }
 
+// Get packed signal
 MblMwDataSignal* mbl_mw_acc_get_packed_acceleration_data_signal(const MblMwMetaWearBoard *board) {
     switch(board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -141,6 +149,7 @@ MblMwDataSignal* mbl_mw_acc_get_packed_acceleration_data_signal(const MblMwMetaW
     return nullptr;
 }
 
+// Set odr
 float mbl_mw_acc_set_odr(MblMwMetaWearBoard *board, float odr) {
     uint8_t index;
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
@@ -165,6 +174,7 @@ float mbl_mw_acc_set_odr(MblMwMetaWearBoard *board, float odr) {
     return INVALID_SETTING;
 }
 
+// Set range
 float mbl_mw_acc_set_range(MblMwMetaWearBoard *board, float range) {
     uint8_t index;
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
@@ -183,6 +193,7 @@ float mbl_mw_acc_set_range(MblMwMetaWearBoard *board, float range) {
     return INVALID_SETTING;
 }
 
+// Write config
 void mbl_mw_acc_write_acceleration_config(const MblMwMetaWearBoard* board) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -196,6 +207,7 @@ void mbl_mw_acc_write_acceleration_config(const MblMwMetaWearBoard* board) {
     }
 }
 
+// Read config
 void mbl_mw_acc_read_config(const MblMwMetaWearBoard* board, void *context, MblMwFnBoardPtrInt completed) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -209,6 +221,7 @@ void mbl_mw_acc_read_config(const MblMwMetaWearBoard* board, void *context, MblM
     }
 }
 
+// Start acc
 void mbl_mw_acc_start(const MblMwMetaWearBoard *board) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -222,6 +235,7 @@ void mbl_mw_acc_start(const MblMwMetaWearBoard *board) {
     }
 }
 
+// Stop acc
 void mbl_mw_acc_stop(const MblMwMetaWearBoard *board) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -235,6 +249,7 @@ void mbl_mw_acc_stop(const MblMwMetaWearBoard *board) {
     }
 }
 
+// Enable sampling
 void mbl_mw_acc_enable_acceleration_sampling(const MblMwMetaWearBoard *board) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:
@@ -248,6 +263,7 @@ void mbl_mw_acc_enable_acceleration_sampling(const MblMwMetaWearBoard *board) {
     }    
 }
 
+// Disable sampling
 void mbl_mw_acc_disable_acceleration_sampling(const MblMwMetaWearBoard *board) {
     switch (board->module_info.at(MBL_MW_MODULE_ACCELEROMETER).implementation) {
     case MBL_MW_MODULE_ACC_TYPE_MMA8452Q:

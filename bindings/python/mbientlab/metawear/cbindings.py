@@ -1158,8 +1158,8 @@ def init_libmetawear(libmetawear):
     libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses.restype = None
     libmetawear.mbl_mw_proximity_tsl2671_set_n_pulses.argtypes = [c_void_p, c_ubyte]
 
-    libmetawear.mbl_mw_gyro_bmi270_acc_offsets.restype = None
-    libmetawear.mbl_mw_gyro_bmi270_acc_offsets.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte]
+    libmetawear.mbl_mw_gyro_bmi270_offsets.restype = None
+    libmetawear.mbl_mw_gyro_bmi270_offsets.argtypes = [c_void_p, c_ubyte, c_ubyte, c_ubyte]
 
     libmetawear.mbl_mw_gyro_bmi160_enable_rotation_sampling.restype = None
     libmetawear.mbl_mw_gyro_bmi160_enable_rotation_sampling.argtypes = [c_void_p]
@@ -1388,6 +1388,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_settings_enable_3V_regulator.restype = None
     libmetawear.mbl_mw_settings_enable_3V_regulator.argtypes = [c_void_p, c_ubyte]
+
+    libmetawear.mbl_mw_settings_force_1M_phy.restype = None
+    libmetawear.mbl_mw_settings_force_1M_phy.argtypes = [c_void_p, c_ubyte]
 
     libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.restype = c_void_p
     libmetawear.mbl_mw_acc_get_high_freq_acceleration_data_signal.argtypes = [c_void_p]
@@ -1658,6 +1661,9 @@ def init_libmetawear(libmetawear):
 
     libmetawear.mbl_mw_debug_spoof_notification.restype = None
     libmetawear.mbl_mw_debug_spoof_notification.argtypes = [c_void_p, POINTER(c_ubyte), c_ubyte]
+
+    libmetawear.mbl_mw_debug_spoof_button_event.restype = None
+    libmetawear.mbl_mw_debug_spoof_button_event.argtypes = [c_void_p, c_ubyte]
 
     libmetawear.mbl_mw_gpio_get_analog_input_data_signal.restype = c_void_p
     libmetawear.mbl_mw_gpio_get_analog_input_data_signal.argtypes = [c_void_p, c_ubyte, c_int]

@@ -34,16 +34,18 @@ typedef enum {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_passthrough_create(MblMwDataSignal *source, MblMwPassthroughMode mode, uint16_t count,
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
- * Modify the internal count of the passthrough processor
+ * Modify the internal count of the passthrough processor.
  * @param passthrough           Passthrough processor to modify
  * @param new_count             New internal count
  * @return MBL_MW_STATUS_OK if processor state was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
  * a non-passthrough processor was passed in
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_passthrough_set_count(MblMwDataProcessor *passthrough, uint16_t new_count);
+
 /**
- * Modify the passthrough configuration
+ * Modify the passthrough configuration.
  * @param passthrough           Passthrough processor to update
  * @param mode                  New operation mode to use
  * @param count                 New initial count

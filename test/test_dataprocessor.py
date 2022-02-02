@@ -1,3 +1,4 @@
+from ast import parse
 from common import TestMetaWearBase, to_string_buffer
 from ctypes import *
 from cbindings import *
@@ -63,6 +64,7 @@ class TestDataProcessingChain(TestMetaWearBase):
             [0x0a, 0x03, 0x01]
         ]
 
+        print("TestDataProcessingChain \n")
         self.assertEqual(self.command_history, expected)
 
     def test_freefall(self):
@@ -92,6 +94,7 @@ class TestDataProcessingChain(TestMetaWearBase):
             [0x09, 0x02, 0x09, 0x03, 0x02, 0x00, 0x06, 0x01, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff],
             [0x09, 0x02, 0x09, 0x03, 0x02, 0x00, 0x06, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00]
         ]
+        print("TestDataProcessingChain \n")
         self.assertEqual(self.command_history, expected)
 
     def test_sample_collector(self):
@@ -109,6 +112,7 @@ class TestDataProcessingChain(TestMetaWearBase):
             [0x09, 0x02, 0x05, 0xc7, 0x00, 0x20, 0x0a, 0x01, 0x10],
             [0x09, 0x02, 0x09, 0x03, 0x00, 0x20, 0x01, 0x02, 0x00, 0x00]
         ]
+        print("TestDataProcessingChain \n")
         self.assertEqual(self.command_history, expected)
 
 class TestActivityMonitorRPro(TestMetaWearBase):
@@ -151,17 +155,20 @@ class TestActivityMonitorRPro(TestMetaWearBase):
             [0x09, 0x03, 0x01]
         ]
 
+        print("TestActivityMonitorRPro \n")
         self.assertEqual(self.command_history, expected)
 
     def test_time_processor_data(self):
         expected= 2003.7236328125
         self.notify_mw_char(create_string_buffer(b'\x09\x03\x03\x4f\xee\xf4\x01', 7))
+        print("TestActivityMonitorRPro \n")
         self.assertAlmostEqual(self.data_float.value, expected)
 
     def test_time_processor_unsubscribe(self):
         expected= [0x09, 0x07, 0x03, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.processors[1])
+        print("TestActivityMonitorRPro \n")
         self.assertEqual(self.command, expected)
 
 class TestTemperatureConversionRPro(TestMetaWearBase):
@@ -207,6 +214,7 @@ class TestTemperatureConversionRPro(TestMetaWearBase):
             [0x09, 0x03, 0x01]
         ]
 
+        print("TestTemperatureConversionRPro \n")
         self.assertEqual(self.command_history, self.expected_cmds)
 
     def test_temperature_data(self):
@@ -219,6 +227,7 @@ class TestTemperatureConversionRPro(TestMetaWearBase):
         for resp in responses:
             with self.subTest(response=resp[2]):
                 self.notify_mw_char(resp[0])
+                print("TestTemperatureConversionRPro \n")
                 self.assertAlmostEqual(self.data_float.value, resp[1])
 
     def test_temperature_unsubscribe(self):
@@ -232,6 +241,7 @@ class TestTemperatureConversionRPro(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.kelvin_signal)
 
         unsubscribe_cmds= self.command_history[8:11].copy()
+        print("TestTemperatureConversionRPro \n")
         self.assertEqual(unsubscribe_cmds, expected_cmds)
 
 class TestAccAxisProcessing(TestMetaWearBase):
@@ -263,6 +273,7 @@ class TestAccAxisProcessing(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_pulse_create(acc_z_signal, PulseOutput.AREA, 1.0, 16, None, pulse_handler)
         e.wait()
 
+        print("TestAccAxisProcessing \n")
         self.assertEqual(self.command_history, expected)
 
     def test_acc_y_threshold(self):
@@ -285,6 +296,7 @@ class TestAccAxisProcessing(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_threshold_create(acc_y_signal, ThresholdMode.BINARY, 1.0, 0.0, None, ths_created)
         e.wait()
 
+        print("TestAccAxisProcessing \n")
         self.assertEqual(self.command_history, expected)
 
 class TestGpioAdcPulse(TestMetaWearBase):
@@ -312,18 +324,21 @@ class TestGpioAdcPulse(TestMetaWearBase):
             [0x09, 0x03, 0x01]
         ]
 
+        print("TestGpioAdcPulse \n")
         self.assertEqual(self.command_history, expected)
 
     def test_pulse_data(self):
         expected= 789
 
         self.notify_mw_char(create_string_buffer(b'\x09\x03\x00\x15\x03\x00\x00', 7))
+        print("TestGpioAdcPulse \n")
         self.assertEqual(self.data_uint32.value, expected)
 
     def test_pulse_unsubscribe(self):
         expected= [0x09, 0x07, 0x00, 0x00]
 
         self.libmetawear.mbl_mw_datasignal_unsubscribe(self.pulse_signal)
+        print("TestGpioAdcPulse \n")
         self.assertEqual(self.command, expected)
 
 class TestGpioFeedbackSetup(TestMetaWearBase):
@@ -438,6 +453,7 @@ class TestGpioFeedback(TestGpioFeedbackSetup):
             [0x0a, 0x03, 0x00, 0x01, 0x00]
         ]
 
+        print("TestGpioFeedback \n")
         self.assertEqual(self.command_history, expected_cmds)
 
     def test_remove_out_of_order(self):
@@ -459,6 +475,7 @@ class TestGpioFeedback(TestGpioFeedbackSetup):
         self.libmetawear.mbl_mw_dataprocessor_remove(self.abs_ref_offset)
         remove_cmds= self.command_history[22:].copy()
 
+        print("TestGpioFeedback \n")
         self.assertEqual(remove_cmds, expected_cmds)
 
     def test_remove_passthrough(self):
@@ -472,6 +489,7 @@ class TestGpioFeedback(TestGpioFeedbackSetup):
         self.libmetawear.mbl_mw_dataprocessor_remove(self.offset_passthrough)
         remove_cmds= self.command_history[22:].copy()
 
+        print("TestGpioFeedback \n")
         self.assertEqual(remove_cmds, expected_cmds)
 
     def test_remove_math(self):
@@ -492,6 +510,7 @@ class TestGpioFeedback(TestGpioFeedbackSetup):
         self.libmetawear.mbl_mw_dataprocessor_remove(self.abs_ref_offset)
         remove_cmds= self.command_history[22:].copy()
 
+        print("TestGpioFeedback \n")
         self.assertEqual(remove_cmds, expected_cmds)
 
 class TestPassthroughSetCount(TestMetaWearBase):
@@ -510,6 +529,7 @@ class TestPassthroughSetCount(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_count()
+        print("TestPassthroughSetCount \n")
         self.assertEqual(self.status, Const.STATUS_OK)
 
     def test_invalid_set_count(self):
@@ -517,6 +537,7 @@ class TestPassthroughSetCount(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_count()
+        print("TestPassthroughSetCount \n")
         self.assertEqual(self.status, Const.STATUS_WARNING_INVALID_PROCESSOR_TYPE)
 
 class TestAccumulatorSetSum(TestMetaWearBase):
@@ -535,6 +556,7 @@ class TestAccumulatorSetSum(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_state()
+        print("TestAccumulatorSetSum \n")
         self.assertEqual(self.status, Const.STATUS_OK)
 
     def test_invalid_set_count(self):
@@ -542,6 +564,7 @@ class TestAccumulatorSetSum(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_state()
+        print("TestAccumulatorSetSum \n")
         self.assertEqual(self.status, Const.STATUS_WARNING_INVALID_PROCESSOR_TYPE)
 
 class TestCounterSetCount(TestMetaWearBase):
@@ -560,6 +583,7 @@ class TestCounterSetCount(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_state()
+        print("TestCounterSetCount \n")
         self.assertEqual(self.status, Const.STATUS_OK)
 
     def test_invalid_set_count(self):
@@ -567,6 +591,7 @@ class TestCounterSetCount(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_state()
+        print("TestCounterSetCount \n")
         self.assertEqual(self.status, Const.STATUS_WARNING_INVALID_PROCESSOR_TYPE)
 
 class TestAverageReset(TestMetaWearBase):
@@ -585,6 +610,7 @@ class TestAverageReset(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.reset()
+        print("TestAverageReset \n")
         self.assertEqual(self.status, Const.STATUS_OK)
 
     def test_invalid_reset(self):
@@ -592,6 +618,7 @@ class TestAverageReset(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.reset()
+        print("TestAverageReset \n")
         self.assertEqual(self.status, Const.STATUS_WARNING_INVALID_PROCESSOR_TYPE)
 
 class TestDeltaSetPrevious(TestMetaWearBase):
@@ -610,6 +637,7 @@ class TestDeltaSetPrevious(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_reference()
+        print("TestDeltaSetPrevious \n")
         self.assertEqual(self.status, Const.STATUS_OK)
 
     def test_invalid_set_previous(self):
@@ -617,21 +645,20 @@ class TestDeltaSetPrevious(TestMetaWearBase):
         self.events["processor"].wait()
 
         self.set_reference()
+        print("TestDeltaSetPrevious \n")
         self.assertEqual(self.status, Const.STATUS_WARNING_INVALID_PROCESSOR_TYPE)
 
 class TestThreshold(TestMetaWearBase):
     def setUp(self):
         self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
-
         super().setUp()
 
     def test_valid_set_count(self):
         expected= [0x09, 0x02, 0x16, 0xc1, 0xff, 0x60, 0x0d, 0x0b, 0x00, 0xe4, 0x00, 0x00, 0x00, 0x00]
-
         signal= self.libmetawear.mbl_mw_humidity_bme280_get_percentage_data_signal(self.board)
         self.libmetawear.mbl_mw_dataprocessor_threshold_create(signal, ThresholdMode.BINARY, 57.0, 0.0, None, self.processor_handler)
         self.events["processor"].wait()
-
+        print("TestThreshold \n")
         self.assertEqual(self.command, expected)
 
 class TestThreeAxisRightShift(TestMetaWearBase):
@@ -659,6 +686,7 @@ class TestThreeAxisRightShift(TestMetaWearBase):
             [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x09, 0x14, 0x08, 0x08, 0x00, 0x00, 0x00, 0x02],
             [0x0b, 0x02, 0x09, 0x03, 0x00, 0x40]
         ]
+        print("TestThreeAxisRightShift \n")
         self.assertEqual(self.command_history, expected)
 
 # Future test data, figure out how to use this
@@ -685,6 +713,7 @@ class TestBmm150DataProcessor(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_rss_create(signal, None, rss_created_ptr)
         e.wait()
 
+        print("TestBmm150DataProcessor \n")
         self.assertEqual(self.command, expected)
 
 class TestDataProcessorTimeout(TestMetaWearBase):
@@ -705,6 +734,7 @@ class TestDataProcessorTimeout(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_rss_create(signal, None, dataprocessor_created_fn)
         self.e.wait()
 
+        print("TestDataProcessorTimeout \n")
         self.assertIsNone(self.created_proc)
 
     def test_timeout_with_state(self):
@@ -714,6 +744,7 @@ class TestDataProcessorTimeout(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_accumulator_create(signal, None, dataprocessor_created_fn)
         self.e.wait()
 
+        print("TestDataProcessorTimeout \n")
         self.assertIsNone(self.created_proc)
 
 class TestMultiComparatorRedirect(TestMetaWearBase):
@@ -742,6 +773,7 @@ class TestMultiComparatorRedirect(TestMetaWearBase):
         self.libmetawear.mbl_mw_dataprocessor_comparator_modify(self.processors[1], ComparatorOperation.GT, 0.5)
         self.libmetawear.mbl_mw_dataprocessor_comparator_modify(self.processors[1], ComparatorOperation.GT, 2.0)
 
+        print("TestMultiComparatorRedirect \n")
         self.assertEqual(self.command_history, expected)
 
 class TestMultiComparator(TestMetaWearBase):
@@ -761,6 +793,7 @@ class TestMultiComparator(TestMetaWearBase):
                 len(references), None, self.processor_handler)
         self.events["processor"].wait()
 
+        print("TestMultiComparator \n")
         self.assertEqual(self.command, expected)
 
     def test_zone(self):
@@ -773,6 +806,7 @@ class TestMultiComparator(TestMetaWearBase):
                 len(references), None, self.processor_handler)
         self.events["processor"].wait()
 
+        print("TestMultiComparator \n")
         self.assertEqual(self.command, expected)
 
     def test_absolute(self):
@@ -785,6 +819,7 @@ class TestMultiComparator(TestMetaWearBase):
                 len(references), None, self.processor_handler)
         self.events["processor"].wait()
 
+        print("TestMultiComparator \n")
         self.assertEqual(self.command, expected)
 
     def test_modify_config(self):
@@ -799,6 +834,7 @@ class TestMultiComparator(TestMetaWearBase):
         references= (c_float * 4)(128, 256, 512, 1024)
         self.libmetawear.mbl_mw_dataprocessor_multi_comparator_modify(self.processors[0], ComparatorOperation.LT, references, len(references))
 
+        print("TestMultiComparator \n")
         self.assertEqual(self.command, expected)
 
     def test_modify_config_signal(self):
@@ -822,6 +858,7 @@ class TestMultiComparator(TestMetaWearBase):
         self.libmetawear.mbl_mw_event_end_record(self.processors[0], None, self.commands_recorded_fn)
         self.events["event"].wait()
 
+        print("TestMultiComparator \n")
         self.assertEqual(self.command_history, expected_cmds)
 
 class TestMathProcessor(TestMetaWearBase):
@@ -835,6 +872,7 @@ class TestMathProcessor(TestMetaWearBase):
     def test_constant_op(self):
         expected= [0x09, 0x02, 0x04, 0xc1, 0x00, 0x20, 0x09, 0x17, 0x0b, 0x19, 0x00, 0x00, 0x00, 0x00]
 
+        print("TestMathProcessor \n")
         self.assertEqual(self.command, expected)
 
     def test_constant_op_data(self):
@@ -842,6 +880,7 @@ class TestMathProcessor(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x09\x03\x00\x19\x00\x00\x00', 7))
+        print("TestMathProcessor \n")
         self.assertEqual(self.data_int32.value, expected)
 
 class TestSensorFusionLimiter(TestMetaWearBase):
@@ -867,6 +906,7 @@ class TestSensorFusionLimiter(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_log(self.processors[0], None, self.logger_created)
         self.events["log"].wait()
 
+        print("TestSensorFusionLimiter \n")
         self.assertEqual(self.command_history, expected)
 
 class TestAccounter(TestMetaWearBase):
@@ -884,6 +924,7 @@ class TestAccounter(TestMetaWearBase):
     def test_create(self):
         expected = [ 0x9, 0x2, 0x3, 0x4, 0xff, 0xa0, 0x11, 0x31, 0x3 ]
 
+        print("TestAccounter \n")
         self.assertEqual(self.command, expected)
 
     def test_data_extraction(self):
@@ -892,6 +933,7 @@ class TestAccounter(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x09\x03\x00\xa6\x33\x0d\x00\xc1\x00\xb1\x24\x19\xcd', 13))
 
+        print("TestAccounter \n")
         self.assertEqual(self.data, expected)
 
     def test_time_offset(self):
@@ -920,6 +962,7 @@ class TestAccounter(TestMetaWearBase):
         for r in responses:
             self.notify_mw_char(to_string_buffer(r))
 
+        print("TestAccounter \n")
         self.assertEqual(offsets, expected)
 
     def test_count_and_time(self):
@@ -948,6 +991,7 @@ class TestAccounter(TestMetaWearBase):
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0x8D, 0x00, 0x00, 0x00, 0x4E, 0xFF, 0x35, 0xFD, 0x79, 0x07, 0x4D, 0xFF, 0x35, 0xFD, 0x7D, 0x07]))
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x03, 0xA4, 0xA4, 0x03, 0x00, 0x05, 0x65, 0x84, 0x01]))
 
+        print("TestAccounter \n")
         self.assertEqual(epochs[1] - epochs[0], 73)
 
 class TestAccounterCount(TestMetaWearBase):
@@ -963,6 +1007,7 @@ class TestAccounterCount(TestMetaWearBase):
     def test_create(self):
         expected = [ 0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x11, 0x30, 0x03 ]
 
+        print("TestAccounterCount \n")
         self.assertEqual(self.command, expected)
 
     def test_count_extraction(self):
@@ -976,6 +1021,7 @@ class TestAccounterCount(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], None, data_handler_fn)
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x00, 0xec, 0x01, 0x00, 0x00, 0x01, 0x0b, 0x9a, 0x07, 0x40, 0x40]))
 
+        print("TestAccounterCount \n")
         self.assertEqual(actual[0], expected)
 
 class TestPacker(TestMetaWearBase):
@@ -991,6 +1037,7 @@ class TestPacker(TestMetaWearBase):
     def test_create(self):
         expected = [0x9, 0x2, 0x4, 0xc1, 0x1, 0x20, 0x10, 0x1, 0x3]
 
+        print("TestPacker \n")
         self.assertEqual(self.command, expected)
 
     def test_data_extraction(self):
@@ -1005,6 +1052,7 @@ class TestPacker(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], None, fn_wrapper)
         self.notify_mw_char(create_string_buffer(b'\x09\x03\x00\xf5\x00\xf1\x00\xf2\x00\xf2\x00', 11))
 
+        print("TestPacker \n")
         self.assertEqual(values, expected)
 
 class TestAccounterPackerChain(TestMetaWearBase):
@@ -1027,6 +1075,7 @@ class TestAccounterPackerChain(TestMetaWearBase):
             [0x9, 0x2, 0x9, 0x3, 0x0, 0xa0, 0x10, 0x5, 0x1]
         ]
 
+        print("TestAccounterPackerChain \n")
         self.assertEqual(self.command_history, expected)
 
     def test_data_extraction(self):
@@ -1042,6 +1091,7 @@ class TestAccounterPackerChain(TestMetaWearBase):
         self.notify_mw_char(create_string_buffer(b'\x09\x03\x01\x7b\x64\x02\x00\xec\x00\x92\x64\x02\x00\xeb\x00', 15))
         self.notify_mw_char(create_string_buffer(b'\x09\x03\x01\xa8\x64\x02\x00\xef\x00\xbf\x64\x02\x00\xed\x00', 15))
 
+        print("TestAccounterPackerChain \n")
         self.assertEqual(values, expected)
 
     def test_time_offset(self):
@@ -1067,6 +1117,7 @@ class TestAccounterPackerChain(TestMetaWearBase):
         for r in responses:
             self.notify_mw_char(to_string_buffer(r))
 
+        print("TestAccounterPackerChain \n")
         self.assertEqual(offsets, expected)
 
 class TestPackerAccounterChain(TestMetaWearBase):
@@ -1089,6 +1140,7 @@ class TestPackerAccounterChain(TestMetaWearBase):
             [0x09, 0x02, 0x09, 0x03, 0x00, 0x20, 0x11, 0x31, 0x03]
         ]
 
+        print("TestPackerAccounterChain \n")
         self.assertEqual(self.command_history, expected)
 
     def test_data_extraction(self):
@@ -1105,6 +1157,7 @@ class TestPackerAccounterChain(TestMetaWearBase):
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x01, 0x04, 0x85, 0xa0, 0x00, 0xc4, 0x00, 0xc5, 0x00, 0xc4, 0x00, 0xc3, 0x00]))
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x01, 0x5e, 0x85, 0xa0, 0x00, 0xc2, 0x00, 0xc3, 0x00, 0xc4, 0x00, 0xc2, 0x00]))
 
+        print("TestPackerAccounterChain \n")
         self.assertEqual(values, expected)
 
     def test_time_offset(self):
@@ -1132,6 +1185,7 @@ class TestPackerAccounterChain(TestMetaWearBase):
         for r in responses:
             self.notify_mw_char(to_string_buffer(r))
 
+        print("TestPackerAccounterChain \n")
         self.assertEqual(offsets, expected)
 
 class TestHpf(TestMetaWearBase):
@@ -1150,6 +1204,7 @@ class TestHpf(TestMetaWearBase):
             [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x03, 0x25, 0x04, 0x02]
         ]
 
+        print("TestHpf \n")
         self.assertEqual(self.command_history, expected)
 
     def test_acc_hpf_data(self):
@@ -1158,58 +1213,63 @@ class TestHpf(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x00, 0xef, 0xff, 0x29, 0x00, 0x16, 0x00]))
 
+        print("TestHpf \n")
         self.assertEqual(self.data_cartesian_float, expected)
 
-class TestFuser(TestMetaWearBase):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-        self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
+# class TestFuser(TestMetaWearBase):
+#     def setUp(self):
+#         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+#         self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
 
-        super().setUp()
+#         super().setUp()
 
-        self.acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.gyro = self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
+#         self.acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
+#         self.gyro = self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
+#         signals = (c_void_p * 1)()
+#         signals[0] = self.gyro
+#         self.libmetawear.mbl_mw_dataprocessor_fuser_create(self.acc, signals, 1, None, self.processor_handler)
+#         self.events["processor"].wait()
+#         self.events["processor"].clear()
+#         self.libmetawear.mbl_mw_dataprocessor_time_create(self.processors[0], TimeMode.ABSOLUTE, 20, None, self.processor_handler)
+#         self.events["processor"].wait()
 
-        signals = (c_void_p * 1)()
-        signals[0] = self.gyro
-        self.libmetawear.mbl_mw_dataprocessor_fuser_create(self.acc, signals, 1, None, self.processor_handler)
-        self.events["processor"].wait()
+#     def test_data_handling(self):
+#         parsed_values = {}
+#         def fused_data_handler(context, data):
+#             values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
+#             self.sensorDataHandler(context, values.contents[0])
+#             parsed_values['acc'] = self.data
+#             print(self.data)
+#             self.sensorDataHandler(context, values.contents[1])
+#             parsed_values['gyro'] = self.data
+#             print(self.data)
+#             print("done")
+#         fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
 
-        self.events["processor"].clear()
-        self.libmetawear.mbl_mw_dataprocessor_time_create(self.processors[0], TimeMode.ABSOLUTE, 20, None, self.processor_handler)
-        self.events["processor"].wait()
+#         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], None, fn_wrapper)
+#         print("sub1")
+#         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+#         print(parsed_values)
+#         self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
+#         print("sub2")
+#         self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
+#         print("TestFuser fuser \n")
+#         self.assertEqual(parsed_values['acc'], self.data)
 
-    def test_data_handling(self):
-        parsed_values = {}
-        def fused_data_handler(context, data):
-            values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
+#         self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
+#         self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+#         print("TestFuser fuser \n")
+#         self.assertEqual(parsed_values['gyro'], self.data)
 
-            self.sensorDataHandler(context, values.contents[0])
-            parsed_values['acc'] = self.data
+#     def test_commands(self):
+#         expected= [
+#             [0x09, 0x02, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05],
+#             [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+#             [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x14, 0x00, 0x00, 0x00]
+#         ]
 
-            self.sensorDataHandler(context, values.contents[1])
-            parsed_values['gyro'] = self.data
-        fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], None, fn_wrapper)
-        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
-        self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
-        self.assertEqual(parsed_values['acc'], self.data)
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
-        self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
-        self.assertEqual(parsed_values['gyro'], self.data)
-
-    def test_commands(self):
-        expected= [
-            [0x09, 0x02, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05],
-            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
-            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x14, 0x00, 0x00, 0x00]
-        ]
-
-        self.assertEqual(self.command_history, expected)
+#         print("TestFuser fuser \n")
+#         self.assertEqual(self.command_history, expected)
 
 class TestFuserAccounter(TestMetaWearBase):
     def setUp(self):
@@ -1242,6 +1302,7 @@ class TestFuserAccounter(TestMetaWearBase):
         parsed_values = {}
         def fused_data_handler(context, data):
             counter = cast(data.contents.extra, POINTER(c_uint)).contents.value
+            print("TestFuserAccounter \n")
             self.assertEqual(542, counter)
 
             values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
@@ -1271,10 +1332,12 @@ class TestFuserAccounter(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
+        print("TestFuserAccounter \n")
         self.assertEqual(parsed_values_no_counter['acc'], self.data)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+        print("TestFuserAccounter \n")
         self.assertEqual(parsed_values_no_counter['gyro'], self.data)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[2], None, fn_wrapper)
@@ -1282,10 +1345,12 @@ class TestFuserAccounter(TestMetaWearBase):
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
+        print("TestFuserAccounter \n")
         self.assertEqual(parsed_values['acc'], self.data)
 
         self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
+        print("TestFuserAccounter \n")
         self.assertEqual(parsed_values['gyro'], self.data)
 
     def test_commands(self):
@@ -1297,4 +1362,5 @@ class TestFuserAccounter(TestMetaWearBase):
             [0x09, 0x02, 0x09, 0x03, 0x02, 0x60, 0x11, 0x31, 0x03]
         ]
 
+        print("TestFuserAccounter \n")
         self.assertEqual(self.command_history, expected)

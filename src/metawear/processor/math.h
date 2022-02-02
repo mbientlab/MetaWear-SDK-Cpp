@@ -40,6 +40,7 @@ typedef enum {
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_math_create(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
  * Create a math processor using signed operations.  
  * Performs simple arithmetic on sensor data. See MblMwMathOperation for allowed ops.
@@ -52,6 +53,7 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_math_create(MblMwDataSignal *source, M
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_math_create_signed(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
  * Create a math processor using unsigned operations.  
  * Performs simple arithmetic on sensor data. See MblMwMathOperation for allowed ops.
@@ -64,16 +66,18 @@ METAWEAR_API int32_t mbl_mw_dataprocessor_math_create_signed(MblMwDataSignal *so
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_math_create_unsigned(MblMwDataSignal *source, MblMwMathOperation op, float rhs,
         void *context, MblMwFnDataProcessor processor_created);
+
 /**
- * Modify the configuration of a math processor, changing the right side value of the operation
+ * Modify the configuration of a math processor, changing the right side value of the operation.
  * @param math                  Math processor to modify
  * @param rhs                   New right hand side of the operation
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 
  * a non-math processor was passed in
  */
 METAWEAR_API int32_t mbl_mw_dataprocessor_math_modify_rhs(MblMwDataProcessor *math, float rhs);
+
 /**
- * Modify the configuration of a math processor for a feedback or feedforward loop
+ * Modify the configuration of a math processor for a feedback or feedforward loop.
  * @param math                  Math processor to modify
  * @param rhs_signal            Data signal supplying the rhs value of the operation
  * @return MBL_MW_STATUS_OK if processor configuration was updated, MBL_MW_STATUS_WARNING_INVALID_PROCESSOR_TYPE if 

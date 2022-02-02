@@ -8,11 +8,13 @@ using namespace std;
 
 const uint8_t LED_PLAY= 1, LED_STOP= 2, LED_CONFIG= 3, DELAYED_REVISION= 1;
 
+// Helper function - set intensities
 static inline void set_intensities(MblMwLedPattern *pattern, uint8_t high, uint8_t low) {
     pattern->high_intensity= high;
     pattern->low_intensity= low;
 }
 
+// Helper function - pulse times
 static inline void set_pulse_times(MblMwLedPattern *pattern, uint16_t rise_ms, uint16_t high_ms, uint16_t fall_ms, uint16_t duration_ms) {
     pattern->rise_time_ms= rise_ms;
     pattern->high_time_ms= high_ms;
@@ -20,6 +22,7 @@ static inline void set_pulse_times(MblMwLedPattern *pattern, uint16_t rise_ms, u
     pattern->pulse_duration_ms= duration_ms;
 }
 
+// Led preset pattern
 void mbl_mw_led_load_preset_pattern(MblMwLedPattern* pattern, MblMwLedPreset preset) {
     switch (preset) {
     case MBL_MW_LED_PRESET_BLINK:
@@ -37,6 +40,7 @@ void mbl_mw_led_load_preset_pattern(MblMwLedPattern* pattern, MblMwLedPreset pre
     }
 }
 
+// Led write pattern
 void mbl_mw_led_write_pattern(const MblMwMetaWearBoard *board, const MblMwLedPattern *pattern, MblMwLedColor color) {
     uint8_t command[17]= { MBL_MW_MODULE_LED, LED_CONFIG, static_cast<uint8_t>(color), 2};
 
@@ -49,26 +53,31 @@ void mbl_mw_led_write_pattern(const MblMwMetaWearBoard *board, const MblMwLedPat
     SEND_COMMAND;
 }
 
+// Led autoplay
 void mbl_mw_led_autoplay(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_LED, LED_PLAY, 2};
     SEND_COMMAND;
 }
 
+// Led play
 void mbl_mw_led_play(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_LED, LED_PLAY, 1};
     SEND_COMMAND;
 }
 
+// Led pause
 void mbl_mw_led_pause(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_LED, LED_PLAY, 0};
     SEND_COMMAND;
 }
 
+// Led stop
 void mbl_mw_led_stop(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_LED, LED_STOP, 0};
     SEND_COMMAND;
 }
 
+// Led stop and clear
 void mbl_mw_led_stop_and_clear(const MblMwMetaWearBoard *board) {
     uint8_t command[3]= {MBL_MW_MODULE_LED, LED_STOP, 1};
     SEND_COMMAND;

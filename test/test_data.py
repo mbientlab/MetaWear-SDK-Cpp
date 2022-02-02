@@ -19,6 +19,7 @@ class TestDataLength(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x05\x87\x01\x72\x03', 5))
 
+        print("TestDataLength \n")
         self.assertEqual(self.data_length, expected)
 
     def test_float(self):
@@ -29,6 +30,7 @@ class TestDataLength(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(temp_signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x04\x81\x02\xac\xff', 5))
 
+        print("TestDataLength \n")
         self.assertEqual(self.data_length, expected)
 
     def test_cartesian_float(self):
@@ -38,6 +40,7 @@ class TestDataLength(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(accel_data_signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x03\x04\xe1\xb3\xa1\x24\xb1\x2e', 8))
 
+        print("TestDataLength \n")
         self.assertEqual(self.data_length, expected)
 
     def test_byte_array(self):
@@ -47,6 +50,7 @@ class TestDataLength(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x0d\x81\x0a\x2a', 4))
 
+        print("TestDataLength \n")
         self.assertEqual(self.data_length, expected)
 
     def test_battery_state(self):
@@ -56,6 +60,7 @@ class TestDataLength(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x11\x8c\x63\x34\x10', 5))
 
+        print("TestDataLength \n")
         self.assertEqual(self.data_length, expected)
 
 
@@ -66,4 +71,5 @@ class TestDataLength(TestMetaWearBase):
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x17\x81\xa2\x01\x7b\x00\x9a\x00\x7c\x00', 10))
 
+        print("TestDataLength \n")
         self.assertEqual(self.data_length, expected)

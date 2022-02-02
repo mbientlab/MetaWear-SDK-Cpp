@@ -69,6 +69,7 @@ class TestAcceleration(AnonymousSignalBase):
                     self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestAcceleration \n")
         self.assertEqual(self.result['length'], 1)
 
     def test_handle_download(self):
@@ -76,6 +77,7 @@ class TestAcceleration(AnonymousSignalBase):
 
         self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[0], None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([11,7,-96,-26,66,0,0,-11,0,61,1,-95,-26,66,0,0,-35,15,0,0]))
+        print("TestAcceleration \n")
         self.assertEqual(self.data_cartesian_float, expected)
 
 class TestGyroY(AnonymousSignalBase):
@@ -98,6 +100,7 @@ class TestGyroY(AnonymousSignalBase):
                     self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestGyroY \n")
         self.assertEqual(self.result['length'], 1)
 
     def test_handle_download(self):
@@ -108,10 +111,12 @@ class TestGyroY(AnonymousSignalBase):
         self.notify_mw_char(to_string_buffer([11, 7, 64, 34, 223, 4, 0, 249, 255, 0, 0, 64, 61, 223, 4, 0, 254, 255, 0, 0]))
 
         for a, b in zip(self.actual, expected):
+            print("TestGyroY \n")
             self.assertAlmostEqual(a, b, delta = 0.001)
 
     def test_identifier(self):
         actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        print("TestGyroY \n")
         self.assertEqual(actual.decode('ascii'), "angular-velocity[1]")
 
 class TestSplitImu(AnonymousSignalBase):
@@ -137,6 +142,7 @@ class TestSplitImu(AnonymousSignalBase):
                     self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestSplitImu \n")
         self.assertEqual(self.result['length'], 2)
 
     def test_handle_download(self):
@@ -145,11 +151,13 @@ class TestSplitImu(AnonymousSignalBase):
 
         expected = CartesianFloat(x = 0.060, y = 0.077, z = 0.991)
         self.notify_mw_char(to_string_buffer([11,7,0x60,-26,66,0,0,-11,0,61,1,0x62,-26,66,0,0,-35,15,0,0]))
+        print("TestSplitImu \n")
         self.assertEqual(self.data_cartesian_float, expected)
 
         
         expected= CartesianFloat(x = 224.192, y = 170.823, z = 147.012)
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x61, 0x38, 0xc2, 0x01, 0x00, 0xe6, 0x72, 0x8c, 0x57, 0x63, 0x38, 0xc2, 0x01, 0x00, 0x58, 0x4b, 0x00, 0x00]))
+        print("TestSplitImu \n")
         self.assertEqual(self.data_cartesian_float, expected)
 
 class TestActivity(AnonymousSignalBase):
@@ -183,13 +191,16 @@ class TestActivity(AnonymousSignalBase):
                 self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestActivity \n")
         self.assertEqual(self.result['length'], 2)
 
     def test_check_scheme(self):        
         actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        print("TestActivity \n")
         self.assertEqual("acceleration:rms?id=0:accumulate?id=1:time?id=2", actual.decode('ascii'))
 
         actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[1])
+        print("TestActivity \n")
         self.assertEqual("acceleration:rms?id=0:accumulate?id=1:buffer-state?id=3", actual.decode('ascii'))
 
     def test_handle_download(self):
@@ -201,6 +212,7 @@ class TestActivity(AnonymousSignalBase):
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0x00, 0x53, 0x82, 0x02, 0x00, 0x16, 0x98, 0xdd, 0x00]))
 
         for a, b in zip(self.actual, expected):
+            print("TestActivity \n")
             self.assertAlmostEqual(a, b, delta = 0.001)
 
     def test_handle_state_download(self):
@@ -209,6 +221,7 @@ class TestActivity(AnonymousSignalBase):
         self.libmetawear.mbl_mw_anonymous_datasignal_subscribe(self.result['signals'].contents[1], None, self.sensor_data_handler)
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xc1, 0xe9, 0x06, 0x02, 0x00, 0xe3, 0x1d, 0xdc, 0x00]))
 
+        print("TestActivity \n")
         self.assertAlmostEqual(expected, self.data_float.value, delta = 0.001)
 
 class TestQuaternionLimiter(AnonymousSignalBase):
@@ -240,10 +253,12 @@ class TestQuaternionLimiter(AnonymousSignalBase):
                 self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestQuaternionLimiter \n")
         self.assertEqual(self.result['length'], 1)
 
     def test_check_scheme(self):
         actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        print("TestQuaternionLimiter \n")
         self.assertEqual("quaternion:time?id=0", actual.decode('ascii'))
 
 class TestMultipleLoggers(AnonymousSignalBase):
@@ -267,6 +282,7 @@ class TestMultipleLoggers(AnonymousSignalBase):
                     self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestMultipleLoggers \n")
         self.assertEqual(self.result['length'], 2)
 
 class TestTemperature(AnonymousSignalBase):
@@ -295,6 +311,7 @@ class TestTemperature(AnonymousSignalBase):
                     self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestTemperature \n")
         self.assertEqual(self.result['length'], 4)
 
     def test_handle_download(self):
@@ -308,12 +325,14 @@ class TestTemperature(AnonymousSignalBase):
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xa1, 0xbd, 0x25, 0x00, 0x00, 0xfd, 0x00, 0x00, 0x00, 0xa2, 0xbd, 0x25, 0x00, 0x00, 0x38, 0xff, 0x00, 0x00]))
 
         for a, b in zip(self.actual, expected):
+            print("TestTemperature \n")
             self.assertAlmostEqual(a, b, delta = 0.001)
 
     def test_identifier(self):
         for x in range(0, 4):
             with self.subTest(source=str(x)):
                 actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[x])
+                print("TestTemperature \n")
                 self.assertEqual("temperature[%d]" % (x), actual.decode('ascii'))
 
 class TestTimeout(AnonymousSignalBase):
@@ -362,6 +381,7 @@ class TestTimeout(AnonymousSignalBase):
 
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
         result = self.sync_loggers()
+        print("TestTimeout \n")
         self.assertEqual(result['length'], Const.STATUS_ERROR_TIMEOUT)
         self.assertIsNone(result['signals'])
 
@@ -370,6 +390,7 @@ class TestTimeout(AnonymousSignalBase):
 
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
         result = self.sync_loggers()
+        print("TestTimeout \n")
         self.assertEqual(result['length'], Const.STATUS_ERROR_TIMEOUT)
         self.assertIsNone(result['signals'])
 
@@ -408,10 +429,12 @@ class TestFuser(AnonymousSignalBase):
                 self.schedule_response(response)
 
     def test_sync_loggers(self):
+        print("TestFuser anon \n")
         self.assertEqual(self.result['length'], 1)
 
     def test_check_scheme(self):        
         actual = self.libmetawear.mbl_mw_anonymous_datasignal_get_identifier(self.result['signals'].contents[0])
+        print("TestFuser anon \n")
         self.assertEqual("acceleration:fuser?id=1", actual.decode('ascii'))
 
     def test_handle_download(self):
@@ -439,4 +462,5 @@ class TestFuser(AnonymousSignalBase):
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xc2, 0xac, 0x1b, 0x00, 0x00, 0x79, 0x00, 0x0c, 0x00, 0xc0, 0xc8, 0x1b, 0x00, 0x00, 0x36, 0xff, 0x35, 0x01]))
         self.notify_mw_char(to_string_buffer([0x0b, 0x07, 0xc1, 0xc8, 0x1b, 0x00, 0x00, 0x02, 0x42, 0x50, 0x00, 0xc2, 0xc8, 0x1b, 0x00, 0x00, 0x82, 0x00, 0x1d, 0x00]))
 
+        print("TestFuser anon \n")
         self.assertEqual(results, expected)
