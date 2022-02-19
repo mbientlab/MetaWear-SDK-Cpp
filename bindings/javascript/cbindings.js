@@ -1690,6 +1690,21 @@ var Lib = ffi.Library(LIBMETAWEAR_PATH, {
   'mbl_mw_settings_enable_3V_regulator': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
 
 /**
+ * Force 1M PHY (Disables 2M PHY in BLE5.0+).
+ * @param board         Board to modify
+ * @param index         0: Use Auto Phy 1: Force 1Mhz Phy
+ */
+  'mbl_mw_settings_force_1M_phy': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
+ * Creates a fake button event with the data value.
+ * Requires that the switch signal be streaming or logging to add a spoofed event in the logger.
+ * @param board     Calling object
+ * @param value     Value to spoof, 1 byte
+ */
+  'mbl_mw_debug_spoof_button_event': [ref.types.void, [ref.refType(MetaWearBoard), ref.types.uint8]],
+
+/**
  * @deprecated As of v0.8.0 and will be removed in v1.0.0.  Use mbl_mw_acc_get_packed_acceleration_data_signal instead.
  */
   'mbl_mw_acc_get_high_freq_acceleration_data_signal': [ref.refType(DataSignal), [ref.refType(MetaWearBoard)]],
