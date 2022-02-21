@@ -56,8 +56,7 @@ usage: cl [ option... ] filename... [ /link linkoption... ]
 ```
 
 ### GCC and Clang
-Linux users can build the project by invoking GNU make; the default action is to build the shared library for your current platform.  You can also 
-change the C++ compiler by overriding the CXX make variable.
+Linux users can build the project by invoking GNU make; the default action is to build the shared library for your current platform.  You can also change the C++ compiler by overriding the CXX make variable.
 
 ```sh
 > make
