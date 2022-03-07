@@ -62,14 +62,14 @@ LD_FLAGS:=$(LD_FLAGS),$(LIB_SHORT_NAME) $(ARCH)
 REAL_DIST_DIR:=$(DIST_DIR)/$(CONFIGURATION)/lib/$(MACHINE)
 REAL_BUILD_DIR:=$(BUILD_DIR)/$(MACHINE)/$(CONFIGURATION)
 MODULES_BUILD_DIR:=$(addprefix $(REAL_BUILD_DIR)/, $(MODULES_SRC_DIR))
-LIBMETAWEAR_JAVASCRIPT_PATH:=$(BUILD_DIR)/bindings/javascript/libmetawear-path.js
+LIBMETAWEAR_JAVASCRIPT_PATH:=$(BINDINGS_DIR)/javascript/libmetawear-path.js
 
 OBJS:=$(addprefix $(REAL_BUILD_DIR)/,$(SRCS:%.cpp=%.o))
 DEPS:=$(OBJS:%.o=%.d)
 
 APP_OUTPUT:=$(REAL_DIST_DIR)/$(LIB_NAME)
 
-build: $(APP_OUTPUT)
+build: $(APP_OUTPUT) $(LIBMETAWEAR_JAVASCRIPT_PATH)
 
 $(REAL_BUILD_DIR)/%.o: %.cpp
 	$(CXX) -MMD -MP -MF "$(@:%.o=%.d)" -c -o $@ $(CXXFLAGS) $<
@@ -156,4 +156,4 @@ test-debug: build
 	$(DBG) python3
 
 $(LIBMETAWEAR_JAVASCRIPT_PATH):
-	@echo "module.exports = '$(abspath $(METAWEAR_LIB_SO_NAME))';" > $@
+	@echo "module.exports = '$(abspath $(METAWEAR_LIB_SO_NAME))';" > $(LIBMETAWEAR_JAVASCRIPT_PATH)
