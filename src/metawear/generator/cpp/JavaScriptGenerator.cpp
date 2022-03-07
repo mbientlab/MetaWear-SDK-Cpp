@@ -68,10 +68,10 @@ void JavaScriptGenerator::create(ostream& os, const CHeaderFile& header) {
     os << "// Warning!!!" << endl 
         << "// This JavaScript module is generated from the MetaWear C++ API header files" << endl
         << "// Do not edit" << endl
-        << "var ref = require('ref');" << endl
-        << "var ffi = require('ffi');" << endl
-        << "var Struct = require('ref-struct');" << endl
-        << "var ArrayType = require('ref-array');" << endl
+        << "var ref = require('ref-napi');" << endl
+        << "var ffi = require('ffi-napi');" << endl
+        << "var Struct = require('ref-struct-di')(ref);" << endl
+        << "var ArrayType = require('ref-array-di')(ref);" << endl
         << "var Enum = require('enum');" << endl
         << "var LIBMETAWEAR_PATH = require('./libmetawear-path');" << endl << endl
         << "// TODO: These exist because arrays are not handled perfectly yet" << endl
