@@ -1,10 +1,10 @@
 // Warning!!!
 // This JavaScript module is generated from the MetaWear C++ API header files
 // Do not edit
-var ref = require('ref');
-var ffi = require('ffi');
-var Struct = require('ref-struct');
-var ArrayType = require('ref-array');
+var ref = require('ref-napi');
+var ffi = require('ffi-napi');
+var Struct = require('ref-struct-di')(ref);
+var ArrayType = require('ref-array-di')(ref);
 var Enum = require('enum');
 var LIBMETAWEAR_PATH = require('./libmetawear-path');
 
