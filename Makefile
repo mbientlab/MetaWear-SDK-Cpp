@@ -45,10 +45,12 @@ ifeq ($(MACHINE),x86)
 	ARCH=-m32
 else ifeq ($(MACHINE),x64)
 	ARCH=-m64
+else ifeq ($(MACHINE),aarch64)
+	ARCH=-march=native
 else ifeq ($(MACHINE),arm)
 	ARCH=-marm
 else
-    $(error Unrecognized "MACHINE" value, use 'x86', 'x64', or 'arm')
+    $(error Unrecognized "MACHINE" value, use 'x86', 'x64', 'aarch64', or 'arm')
 endif
 
 ifndef NO_MULTILIB
