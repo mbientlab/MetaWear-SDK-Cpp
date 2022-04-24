@@ -1,0 +1,5 @@
+msbuild.exe MetaWear.Win32.vcxproj "-p:Configuration=Release;Platform=Win32"
+msbuild.exe MetaWear.Win32.vcxproj "-p:Configuration=Release;Platform=x64"
+rem msbuild.exe MetaWear.WinRT.vcxproj "-p:Configuration=Release;Platform=ARM"
+rem msbuild.exe MetaWear.WinRT.vcxproj "-p:Configuration=Release;Platform=Win32"
+rem msbuild.exe MetaWear.WinRT.vcxproj "-p:Configuration=Release;Platform=x64"
