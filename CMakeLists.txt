@@ -102,14 +102,14 @@ if(MSVC OR WIN32)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${VERSION})
-set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${DIST_PATH})
-message(STATUS "Output Dir: ${PROJECT_BINARY_DIR}/${DIST_PATH}")
+set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${DIST_PATH}/${CMAKE_BUILD_TYPE})
+message(STATUS "Output Dir: ${PROJECT_BINARY_DIR}/${DIST_PATH}/${CMAKE_BUILD_TYPE}")
 
 #----------------
 # Install
 #----------------
 
 message(STATUS "CMAKE_INSTALL_PREFIX='${CMAKE_INSTALL_PREFIX}'")
-install(TARGETS ${PROJECT_NAME} DESTINATION ${DIST_PATH})
+install(TARGETS ${PROJECT_NAME} DESTINATION ${DIST_PATH}/${CMAKE_BUILD_TYPE})
 
 #-------------------------------------------------------------------------------
