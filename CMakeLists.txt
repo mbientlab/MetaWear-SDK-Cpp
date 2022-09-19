@@ -3,7 +3,7 @@
 #----------------
 
 include(cmake/ReadVariables.cmake)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.21)
 project(metawear)
 
 # Use the following from subdirectories as required
@@ -51,6 +51,9 @@ set(MODULES "metawear/platform" "metawear/core" "metawear/peripheral" "metawear/
 set(SOURCE_DIR "src")
 set(BUILD_DIR "build")
 set(DIST_DIR "dist")
+
+# include directory
+target_include_directories(${PROJECT_NAME} PRIVATE ${SOURCE_DIR})
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     # 64 bits
