@@ -53,7 +53,7 @@ set(BUILD_DIR "build")
 set(DIST_DIR "dist")
 
 # include directory
-target_include_directories(${PROJECT_NAME} PRIVATE ${SOURCE_DIR})
+include_directories(${SOURCE_DIR})
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     # 64 bits
