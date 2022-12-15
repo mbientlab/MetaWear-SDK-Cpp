@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
 
         CXChildVisitResult result = CXChildVisit_Continue;
         auto kind = clang_getCursorKind(c);
-//        cout << toString(clang_getCursorKindSpelling(kind)) << ", " << toString(clang_getCursorSpelling(c)) << endl;
+        //cout << toString(clang_getCursorKindSpelling(kind)) << ", " << toString(clang_getCursorSpelling(c)) << endl;
         switch(kind) {
             case CXCursor_EnumConstantDecl: {
                 enumBuilder->addEntry(clang_Cursor_getRawCommentText(c), clang_getCursorSpelling(c), clang_getEnumConstantDeclValue(c));

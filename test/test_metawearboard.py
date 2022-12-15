@@ -61,7 +61,6 @@ class TestMetaWearBoard(TestMetaWearBase):
             ModuleInfo(name = b"Accelerometer", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 1),
             ModuleInfo(name = b"Temperature", extra = to_ubyte_pointer([0x00, 0x01]), extra_len = 2, present = 1, implementation = 1, revision = 0),
             ModuleInfo(name = b"Gpio", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
-            ModuleInfo(name = b"NeoPixel", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
             ModuleInfo(name = b"IBeacon", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
             ModuleInfo(name = b"Haptic", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
             ModuleInfo(name = b"DataProcessor", extra = to_ubyte_pointer([0x1c]), extra_len = 1, present = 1, implementation = 0, revision = 0),
@@ -70,14 +69,12 @@ class TestMetaWearBoard(TestMetaWearBase):
             ModuleInfo(name = b"Timer", extra = to_ubyte_pointer([0x08]), extra_len = 1, present = 1, implementation = 0, revision = 0),
             ModuleInfo(name = b"SerialPassthrough", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
             ModuleInfo(name = b"Macro", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
-            ModuleInfo(name = b"Conductance", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"Settings", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 0),
             ModuleInfo(name = b"Barometer", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"Gyro", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"AmbientLight", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"Magnetometer", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"Humidity", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
-            ModuleInfo(name = b"Color", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"Proximity", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"SensorFusion", extra = to_ubyte_pointer([]), extra_len = 0, present = 0, implementation = 0xff, revision = 0xff),
             ModuleInfo(name = b"Debug", extra = to_ubyte_pointer([]), extra_len = 0, present = 1, implementation = 0, revision = 2)
@@ -390,7 +387,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         ]
 
         self.firmware_revision= create_string_buffer(b'1.2.5', 5)
-        self.boardType = TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.libmetawear.mbl_mw_metawearboard_initialize(self.board, None, self.initialized_fn)
 
         readable_signal = self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, 0)
@@ -473,7 +470,7 @@ class TestMetaWearBoardSerialize(TestMetaWearBase):
         ]
 
         self.firmware_revision= create_string_buffer(b'1.2.5', 5)
-        self.boardType = TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         state_buffer= to_string_buffer(state)
         self.libmetawear.mbl_mw_metawearboard_deserialize(self.board, cast(state_buffer, POINTER(c_ubyte)), len(state_buffer.raw))
@@ -548,7 +545,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
         ]
 
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
     def test_teardown_serialize(self):
@@ -576,7 +573,7 @@ class TestMetaWearBoardTearDownSerialize(TestMetaWearBase):
 
 class TestMetaWearBoardDeserialize(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.state= to_string_buffer(serializedstate.activity_with_buffer)
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
@@ -610,7 +607,7 @@ class TestMetaWearBoardDeserialize(TestMetaWearBase):
 
 class TestDeserializeTimer(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
         state_buffer= to_string_buffer(serializedstate.timer_two_events)
@@ -653,7 +650,7 @@ class TestDeserializeTimer(TestMetaWearBase):
 
 class TestDeserializeAccelerometerLog(TestAccelerometerLoggingBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
         state_buffer= to_string_buffer(serializedstate.accelerometer_log)
@@ -685,7 +682,7 @@ class TestDeserializeAccelerometerLog(TestAccelerometerLoggingBase):
 
 class TestDeserializeGyroYAxisLog(TestGyroYAxisLoggingBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
         state_buffer= to_string_buffer(serializedstate.gyro_y_axis_logging_state)
@@ -712,7 +709,7 @@ class TestDeserializeGyroYAxisLog(TestGyroYAxisLoggingBase):
 
 class TestDeserializeActivityHandler(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
         state_buffer= to_string_buffer(serializedstate.activity_with_buffer)
@@ -768,7 +765,7 @@ class TestDeserializeActivityHandler(TestMetaWearBase):
 
 class TestSerializeMultiComparator(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.firmware_revision= create_string_buffer(b'1.2.3', 5)
 
         super().setUp()
@@ -795,7 +792,7 @@ class TestSerializeMultiComparator(TestMetaWearBase):
 
 class TestDeserializeMultiComparator(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.firmware_revision= create_string_buffer(b'1.2.3', 5)
         self.board= self.libmetawear.mbl_mw_metawearboard_create(byref(self.btle_connection))
 
@@ -825,12 +822,6 @@ class TestModel(TestMetaWearBase):
         setup = True
 
         self.models = [
-            ["metawear r", TestMetaWearBase.METAWEAR_R_BOARD, Model.METAWEAR_R, "MetaWear R"],
-            ["metawear rg", TestMetaWearBase.METAWEAR_RG_BOARD, Model.METAWEAR_RG, "MetaWear RG"],
-            ["metawear rpro", TestMetaWearBase.METAWEAR_RPRO_BOARD, Model.METAWEAR_RPRO, "MetaWear RPro"],
-            ["metawear cpro", TestMetaWearBase.METAWEAR_CPRO_BOARD, Model.METAWEAR_CPRO, "MetaWear CPro"],
-            ["metaenv", TestMetaWearBase.METAWEAR_ENV_BOARD, Model.METAENV, "MetaEnvironment"],
-            ["metadetect", TestMetaWearBase.METAWEAR_DETECT_BOARD, Model.METADETECT, "MetaDetector"],
             ["metamotion r", TestMetaWearBase.METAWEAR_MOTION_R_BOARD, Model.METAMOTION_R, "MetaMotion R"],
             ["metamotion s", TestMetaWearBase.METAWEAR_MOTION_S_BOARD, Model.METAMOTION_S, "MetaMotion S"]
         ]
@@ -888,7 +879,7 @@ class TestMissingModule(TestMetaWearBase):
         self.init_event.set()
 
     def test_no_modules(self):
-        self.boardType = TestMetaWearBase.CUSTOM_BOARD
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.custom_module_number = b'5'
 
         self.lookup_module_response = lambda x: to_string_buffer([x, 0x80])

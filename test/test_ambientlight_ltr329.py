@@ -5,7 +5,7 @@ from ctypes import *
 
 class TestALsLtr329Config(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -45,7 +45,7 @@ class TestALsLtr329Config(TestMetaWearBase):
 
 class TestAlsLtr329DataHandler(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 

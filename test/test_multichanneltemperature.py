@@ -5,7 +5,7 @@ from cbindings import *
 
 class TestMultiChannelTemperatureMwr(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_R_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -88,7 +88,7 @@ class TestMultiChannelTemperatureMwr(TestMetaWearBase):
 
 class TestMultiChannelTemperatureMwrPro(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         super().setUp()
 
     def test_configure_ext_thermistor(self):

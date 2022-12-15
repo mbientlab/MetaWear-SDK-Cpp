@@ -7,7 +7,7 @@ import threading
 
 class TestDataProcessingChain(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -115,138 +115,9 @@ class TestDataProcessingChain(TestMetaWearBase):
         print("TestDataProcessingChain \n")
         self.assertEqual(self.command_history, expected)
 
-class TestActivityMonitorRPro(TestMetaWearBase):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-
-        super().setUp()
-
-        e = threading.Event()
-        self.processors = []
-        def accum_processor_created(context, acc):
-            self.processors.append(acc)
-            self.libmetawear.mbl_mw_dataprocessor_buffer_create(acc, context, buffer_handler)
-
-        def time_processor_created(context, time):
-            self.processors.append(time)
-            self.libmetawear.mbl_mw_dataprocessor_delta_create(time, DeltaMode.DIFFERENTIAL, 180000.0, context, delta_handler)
-
-        rms_handler = FnVoid_VoidP_VoidP(lambda ctx, p: self.libmetawear.mbl_mw_dataprocessor_accumulator_create_size(p, 4, ctx, accum_handler))
-        accum_handler = FnVoid_VoidP_VoidP(accum_processor_created)
-        buffer_handler = FnVoid_VoidP_VoidP(lambda ctx, p: self.libmetawear.mbl_mw_dataprocessor_time_create(self.processors[0], TimeMode.ABSOLUTE, 30000, 
-                ctx, time_handler))
-        time_handler = FnVoid_VoidP_VoidP(time_processor_created)
-        delta_handler = FnVoid_VoidP_VoidP(lambda ctx, p: e.set())
-
-        accel_signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_dataprocessor_rms_create(accel_signal, None, rms_handler)
-        e.wait()
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], None, self.sensor_data_handler)
-
-    def test_activity_setup(self):
-        expected= [
-            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x07, 0xa5, 0x00],
-            [0x09, 0x02, 0x09, 0x03, 0x00, 0x20, 0x02, 0x07],
-            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x0f, 0x03],
-            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x03, 0x30, 0x75, 0x00, 0x00],
-            [0x09, 0x02, 0x09, 0x03, 0x03, 0x60, 0x0c, 0x0b, 0x00, 0x00, 0xc8, 0xaf],
-            [0x09, 0x07, 0x03, 0x01],
-            [0x09, 0x03, 0x01]
-        ]
-
-        print("TestActivityMonitorRPro \n")
-        self.assertEqual(self.command_history, expected)
-
-    def test_time_processor_data(self):
-        expected= 2003.7236328125
-        self.notify_mw_char(create_string_buffer(b'\x09\x03\x03\x4f\xee\xf4\x01', 7))
-        print("TestActivityMonitorRPro \n")
-        self.assertAlmostEqual(self.data_float.value, expected)
-
-    def test_time_processor_unsubscribe(self):
-        expected= [0x09, 0x07, 0x03, 0x00]
-
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.processors[1])
-        print("TestActivityMonitorRPro \n")
-        self.assertEqual(self.command, expected)
-
-class TestTemperatureConversionRPro(TestMetaWearBase):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-
-        super().setUp()
-
-        e = threading.Event()
-
-        def f_add_processor_created(context, signal):
-            self.fahrenheit_signal= signal
-            self.libmetawear.mbl_mw_dataprocessor_math_create(self.temp_signal, MathOperation.ADD, 273.15, context, k_add_handler)
-
-        def k_add_processor_created(context, signal):
-            self.kelvin_signal= signal
-
-            self.libmetawear.mbl_mw_datasignal_subscribe(self.temp_signal, None, self.sensor_data_handler)
-            self.libmetawear.mbl_mw_datasignal_subscribe(self.fahrenheit_signal, None, self.sensor_data_handler)
-            self.libmetawear.mbl_mw_datasignal_subscribe(self.kelvin_signal, None, self.sensor_data_handler)
-
-            e.set()
-
-        f_mult_handler= FnVoid_VoidP_VoidP(lambda ctx, p: self.libmetawear.mbl_mw_dataprocessor_math_create(p, MathOperation.DIVIDE, 10.0, ctx, f_divide_handler))
-        f_divide_handler= FnVoid_VoidP_VoidP(lambda ctx, p: self.libmetawear.mbl_mw_dataprocessor_math_create(p, MathOperation.ADD, 32.0, ctx, f_add_handler))
-        f_add_handler= FnVoid_VoidP_VoidP(f_add_processor_created)
-        k_add_handler= FnVoid_VoidP_VoidP(k_add_processor_created)
-
-        self.temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, 
-                MetaWearRProChannel.ON_DIE)
-        self.libmetawear.mbl_mw_dataprocessor_math_create(self.temp_signal, MathOperation.MULTIPLY, 18.0, None, f_mult_handler)
-        e.wait()
-
-    def test_temperature_setup(self):
-        self.expected_cmds= [
-            [0x09, 0x02, 0x04, 0xc1, 0x00, 0x20, 0x09, 0x17, 0x02, 0x12, 0x00, 0x00, 0x00, 0x00],
-            [0x09, 0x02, 0x09, 0x03, 0x00, 0x60, 0x09, 0x1f, 0x03, 0x0a, 0x00, 0x00, 0x00, 0x00],
-            [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x09, 0x1f, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00],
-            [0x09, 0x02, 0x04, 0xc1, 0x00, 0x20, 0x09, 0x17, 0x01, 0x89, 0x08, 0x00, 0x00, 0x00],
-            [0x09, 0x07, 0x02, 0x01],
-            [0x09, 0x03, 0x01],
-            [0x09, 0x07, 0x03, 0x01],
-            [0x09, 0x03, 0x01]
-        ]
-
-        print("TestTemperatureConversionRPro \n")
-        self.assertEqual(self.command_history, self.expected_cmds)
-
-    def test_temperature_data(self):
-        responses= [
-            [create_string_buffer(b'\x04\x81\x00\x04\x01', 5), 32.5, "celsius"],
-            [create_string_buffer(b'\x09\x03\x02\xd4\x02\x00\x00', 7), 90.5, "fahrenheit"],
-            [create_string_buffer(b'\x09\x03\x03\x8d\x09\x00\x00', 7), 305.625, "kelvin"]
-        ]
-
-        for resp in responses:
-            with self.subTest(response=resp[2]):
-                self.notify_mw_char(resp[0])
-                print("TestTemperatureConversionRPro \n")
-                self.assertAlmostEqual(self.data_float.value, resp[1])
-
-    def test_temperature_unsubscribe(self):
-        expected_cmds= [
-            [0x09, 0x07, 0x02, 0x00],
-            [0x09, 0x07, 0x03, 0x00]
-        ]
-
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.temp_signal)
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.fahrenheit_signal)
-        self.libmetawear.mbl_mw_datasignal_unsubscribe(self.kelvin_signal)
-
-        unsubscribe_cmds= self.command_history[8:11].copy()
-        print("TestTemperatureConversionRPro \n")
-        self.assertEqual(unsubscribe_cmds, expected_cmds)
-
 class TestAccAxisProcessing(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.firmware_revision= create_string_buffer(b'1.2.3', 5)
 
         super().setUp()
@@ -515,7 +386,7 @@ class TestGpioFeedback(TestGpioFeedbackSetup):
 
 class TestPassthroughSetCount(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -542,7 +413,7 @@ class TestPassthroughSetCount(TestMetaWearBase):
 
 class TestAccumulatorSetSum(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -569,7 +440,7 @@ class TestAccumulatorSetSum(TestMetaWearBase):
 
 class TestCounterSetCount(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -596,7 +467,7 @@ class TestCounterSetCount(TestMetaWearBase):
 
 class TestAverageReset(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -623,7 +494,7 @@ class TestAverageReset(TestMetaWearBase):
 
 class TestDeltaSetPrevious(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -648,58 +519,11 @@ class TestDeltaSetPrevious(TestMetaWearBase):
         print("TestDeltaSetPrevious \n")
         self.assertEqual(self.status, Const.STATUS_WARNING_INVALID_PROCESSOR_TYPE)
 
-class TestThreshold(TestMetaWearBase):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
-        super().setUp()
-
-    def test_valid_set_count(self):
-        expected= [0x09, 0x02, 0x16, 0xc1, 0xff, 0x60, 0x0d, 0x0b, 0x00, 0xe4, 0x00, 0x00, 0x00, 0x00]
-        signal= self.libmetawear.mbl_mw_humidity_bme280_get_percentage_data_signal(self.board)
-        self.libmetawear.mbl_mw_dataprocessor_threshold_create(signal, ThresholdMode.BINARY, 57.0, 0.0, None, self.processor_handler)
-        self.events["processor"].wait()
-        print("TestThreshold \n")
-        self.assertEqual(self.command, expected)
-
-class TestThreeAxisRightShift(TestMetaWearBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
-        self.processor_created_fn= FnVoid_VoidP_VoidP(self.processor_created)
-        self.logger_created_fn= FnVoid_VoidP_VoidP(self.logger_created)
-
-    def test_acc_rshift(self):
-        e = threading.Event()
-        handlers= {
-            "rshift": FnVoid_VoidP_VoidP(lambda ctx, p: self.libmetawear.mbl_mw_datasignal_log(p, None, handlers["rshift_logger"])),
-            "rshift_logger": FnVoid_VoidP_VoidP(lambda ctx, p: e.set())
-        }
-
-        processor_created_fn= FnVoid_VoidP_VoidP(self.processor_created)
-
-        signal= self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_dataprocessor_math_create(signal, MathOperation.RSHIFT, 8, None, handlers["rshift"])
-        e.wait()
-
-        expected= [
-            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x09, 0x14, 0x08, 0x08, 0x00, 0x00, 0x00, 0x02],
-            [0x0b, 0x02, 0x09, 0x03, 0x00, 0x40]
-        ]
-        print("TestThreeAxisRightShift \n")
-        self.assertEqual(self.command_history, expected)
-
-# Future test data, figure out how to use this
-#Shifted: (1.969, 0.812, 0.984)
-#[126, 52, 63]
-#Raw: [46, 126, 85, 52, 119, 63]
-#Raw: (1.972, 0.818, 0.992)
-
 class TestBmm150DataProcessor(TestMetaWearBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.boardType= TestMetaWearBase.METAWEAR_CPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
     def test_number_to_firmware(self):
         expected= [0x09, 0x02, 0x09, 0x03, 0x00, 0x20, 0x06, 0x00, 0x04, 0x00, 0xa0, 0x0f, 0x00, 0x00]
@@ -749,7 +573,7 @@ class TestDataProcessorTimeout(TestMetaWearBase):
 
 class TestMultiComparatorRedirect(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.firmware_revision= create_string_buffer(b'1.2.3', 5)
 
         super().setUp()
@@ -778,7 +602,7 @@ class TestMultiComparatorRedirect(TestMetaWearBase):
 
 class TestMultiComparator(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
         self.firmware_revision= create_string_buffer(b'1.2.3', 5)
 
         super().setUp()
@@ -911,7 +735,7 @@ class TestSensorFusionLimiter(TestMetaWearBase):
 
 class TestAccounter(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -996,7 +820,7 @@ class TestAccounter(TestMetaWearBase):
 
 class TestAccounterCount(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -1026,7 +850,7 @@ class TestAccounterCount(TestMetaWearBase):
 
 class TestPacker(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -1057,7 +881,7 @@ class TestPacker(TestMetaWearBase):
 
 class TestAccounterPackerChain(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -1122,7 +946,7 @@ class TestAccounterPackerChain(TestMetaWearBase):
 
 class TestPackerAccounterChain(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -1188,93 +1012,10 @@ class TestPackerAccounterChain(TestMetaWearBase):
         print("TestPackerAccounterChain \n")
         self.assertEqual(offsets, expected)
 
-class TestHpf(TestMetaWearBase):
-    def setUp(self):
-        self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x02\x1C', 5)
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-
-        super().setUp()
-
-        signal = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-        self.libmetawear.mbl_mw_dataprocessor_highpass_create(signal, 4, None, self.processor_handler)
-        self.events["processor"].wait()        
-
-    def test_create_acc(self):
-        expected = [
-            [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x03, 0x25, 0x04, 0x02]
-        ]
-
-        print("TestHpf \n")
-        self.assertEqual(self.command_history, expected)
-
-    def test_acc_hpf_data(self):
-        expected = CartesianFloat(x= -0.00104, y= 0.0025, z= 0.0013)
-
-        self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[0], None, self.sensor_data_handler)
-        self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x00, 0xef, 0xff, 0x29, 0x00, 0x16, 0x00]))
-
-        print("TestHpf \n")
-        self.assertEqual(self.data_cartesian_float, expected)
-
-# class TestFuser(TestMetaWearBase):
-#     def setUp(self):
-#         self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-#         self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
-
-#         super().setUp()
-
-#         self.acc = self.libmetawear.mbl_mw_acc_get_acceleration_data_signal(self.board)
-#         self.gyro = self.libmetawear.mbl_mw_gyro_bmi160_get_rotation_data_signal(self.board)
-#         signals = (c_void_p * 1)()
-#         signals[0] = self.gyro
-#         self.libmetawear.mbl_mw_dataprocessor_fuser_create(self.acc, signals, 1, None, self.processor_handler)
-#         self.events["processor"].wait()
-#         self.events["processor"].clear()
-#         self.libmetawear.mbl_mw_dataprocessor_time_create(self.processors[0], TimeMode.ABSOLUTE, 20, None, self.processor_handler)
-#         self.events["processor"].wait()
-
-#     def test_data_handling(self):
-#         parsed_values = {}
-#         def fused_data_handler(context, data):
-#             values = cast(data.contents.value, POINTER(POINTER(Data) * 2))
-#             self.sensorDataHandler(context, values.contents[0])
-#             parsed_values['acc'] = self.data
-#             print(self.data)
-#             self.sensorDataHandler(context, values.contents[1])
-#             parsed_values['gyro'] = self.data
-#             print(self.data)
-#             print("done")
-#         fn_wrapper = FnVoid_VoidP_DataP(fused_data_handler)
-
-#         self.libmetawear.mbl_mw_datasignal_subscribe(self.processors[1], None, fn_wrapper)
-#         print("sub1")
-#         self.notify_mw_char(to_string_buffer([0x09, 0x03, 0x02, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
-#         print(parsed_values)
-#         self.libmetawear.mbl_mw_datasignal_subscribe(self.acc, None, self.sensor_data_handler)
-#         print("sub2")
-#         self.notify_mw_char(to_string_buffer([0x03, 0x04, 0xf4, 0x0d, 0x3c, 0x39, 0x99, 0x11]))
-#         print("TestFuser fuser \n")
-#         self.assertEqual(parsed_values['acc'], self.data)
-
-#         self.libmetawear.mbl_mw_datasignal_subscribe(self.gyro, None, self.sensor_data_handler)
-#         self.notify_mw_char(to_string_buffer([0x13, 0x05, 0x01, 0x80, 0xd6, 0x91, 0xd3, 0x67]))
-#         print("TestFuser fuser \n")
-#         self.assertEqual(parsed_values['gyro'], self.data)
-
-#     def test_commands(self):
-#         expected= [
-#             [0x09, 0x02, 0x13, 0x05, 0xff, 0xa0, 0x0f, 0x05],
-#             [0x09, 0x02, 0x03, 0x04, 0xff, 0xa0, 0x1b, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
-#             [0x09, 0x02, 0x09, 0x03, 0x01, 0x60, 0x08, 0x13, 0x14, 0x00, 0x00, 0x00]
-#         ]
-
-#         print("TestFuser fuser \n")
-#         self.assertEqual(self.command_history, expected)
-
 class TestFuserAccounter(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-        self.metawear_rpro_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
+        self.metawear_motion_r_services[0x09] = create_string_buffer(b'\x09\x80\x00\x03\x1C', 5)
 
         super().setUp()
 

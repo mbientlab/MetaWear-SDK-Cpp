@@ -5,7 +5,7 @@ from cbindings import *
 
 class TestBarometerBmp280Config(BarometerBoschBase.TestBarometerBoschConfig):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -72,12 +72,12 @@ class TestBarometerBmp280Config(BarometerBoschBase.TestBarometerBoschConfig):
 
 class TestBarometerBmp280PressureData(BarometerBoschBase.TestBarometerBoschPressureData):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
 class TestBarometerBmp280AltitudeData(BarometerBoschBase.TestBarometerBoschAltitudeData):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()

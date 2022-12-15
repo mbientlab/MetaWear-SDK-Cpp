@@ -59,7 +59,7 @@ struct CartesianShort {
     CREATE_MESSAGE(type_id);\
 }\
 
-const float BOSCH_BARO_SCALE= 256.f, TEMPERATURE_SCALE= 8.f, MMA8452Q_ACC_SCALE= 1000.f, BMM150_SCALE= 16.f, BME280_HUMIDITY_SCALE= 1024.f, 
+const float BOSCH_BARO_SCALE= 256.f, TEMPERATURE_SCALE= 8.f, BMM150_SCALE= 16.f, BME280_HUMIDITY_SCALE= 1024.f, 
         Q16_16_SCALE= 0x10000, SENSOR_FUSION_ACC_SCALE = 1000.f, MSS_TO_G_SCALE = 9.80665f;
 
 // Helper function - int
@@ -76,19 +76,6 @@ static MblMwData* convert_to_uint32(bool log_data, const MblMwDataSignal* signal
 
     CAST_UINT32(*value);
     CREATE_MESSAGE(MBL_MW_DT_ID_UINT32);
-}
-
-// Helper function - acc
-static MblMwData* convert_to_mma8452q_acceleration(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {
-    CartesianShort milliG;
-    memcpy(&milliG, response, sizeof(milliG));
-
-    MblMwCartesianFloat *value= (MblMwCartesianFloat*) malloc(sizeof(MblMwCartesianFloat));
-    value->x= milliG.x / MMA8452Q_ACC_SCALE;
-    value->y= milliG.y / MMA8452Q_ACC_SCALE;
-    value->z= milliG.z / MMA8452Q_ACC_SCALE;
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_CARTESIAN_FLOAT);
 }
 
 // Helper function - acc
@@ -241,9 +228,6 @@ static MblMwData* convert_to_bmi270_activity(bool log_data, const MblMwDataSigna
 
 CONVERT_TO_FLOAT(convert_to_temperature, int32_t, TEMPERATURE_SCALE)
 
-CONVERT_TO_FLOAT(convert_to_mma8452q_acceleration_single_axis, int32_t, MMA8452Q_ACC_SCALE)
-CONVERT_TO_FLOAT(convert_to_mma8452q_acceleration_unsigned_single_axis, uint32_t, MMA8452Q_ACC_SCALE)
-
 CONVERT_TO_FLOAT(convert_to_bmp280_pressure, uint32_t, BOSCH_BARO_SCALE)
 CONVERT_TO_FLOAT(convert_to_bmp280_altitude, int32_t, BOSCH_BARO_SCALE)
 
@@ -253,7 +237,6 @@ CONVERT_TO_FLOAT(convert_to_bmm150_b_field_unsigned_single_axis, uint32_t, BMM15
 CONVERT_TO_FLOAT(convert_to_bme280_humidity, uint32_t, BME280_HUMIDITY_SCALE)
 CONVERT_TO_FLOAT(convert_to_q16_16_fixed_point, int32_t, Q16_16_SCALE)
 
-RAW_CONVERT(convert_to_tcs34725_adc, MblMwTcs34725ColorAdc, MBL_MW_DT_ID_TCS34725_ADC)
 RAW_CONVERT(convert_to_quaternion, MblMwQuaternion, MBL_MW_DT_ID_QUATERNION)
 RAW_CONVERT(convert_to_euler_angles, MblMwEulerAngles, MBL_MW_DT_ID_EULER_ANGLE)
 RAW_CONVERT(convert_to_corrected_vector3, MblMwCorrectedCartesianFloat, MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT)
@@ -314,14 +297,6 @@ static MblMwData* convert_to_mac_address(bool log_data, const MblMwDataSignal* s
     msg->type_id = MBL_MW_DT_ID_STRING;
     msg->length = strSize;
     return msg;
-}
-
-static MblMwData* convert_to_sensor_orientation_mma8452q(bool log_data, const MblMwDataSignal* signal, const uint8_t *response, uint8_t len) {    
-    MblMwSensorOrientation *value= (MblMwSensorOrientation*) malloc(sizeof(MblMwSensorOrientation));
-    uint32_t offset = (response[0] & 0x06) >> 1;
-    *value = (MblMwSensorOrientation) (4 * (response[0] & 0x01) + ((offset == 2 || offset == 3) ? offset ^ 0x1 : offset));
-
-    CREATE_MESSAGE(MBL_MW_DT_ID_SENSOR_ORIENTATION);
 }
 
 // Helper function - log
@@ -416,15 +391,11 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::BOSCH_ACCELERATION , convert_to_bosch_acceleration },
     { DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS , convert_to_bosch_acceleration_single_axis },
     { DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS , convert_to_bosch_acceleration_unsigned_single_axis },
-    { DataInterpreter::MMA8452Q_ACCELERATION , convert_to_mma8452q_acceleration },
-    { DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS , convert_to_mma8452q_acceleration_single_axis },
-    { DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS , convert_to_mma8452q_acceleration_unsigned_single_axis },
     { DataInterpreter::BYTE_ARRAY , convert_to_byte_array },
     { DataInterpreter::BMM150_B_FIELD , convert_to_bmm150_b_field },
     { DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS , convert_to_bmm150_b_field_single_axis },
     { DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS , convert_to_bmm150_b_field_unsigned_single_axis },
     { DataInterpreter::SETTINGS_BATTERY_STATE , convert_to_battery_state },
-    { DataInterpreter::TCS34725_COLOR_ADC , convert_to_tcs34725_adc },
     { DataInterpreter::BME280_HUMIDITY , convert_to_bme280_humidity },
     { DataInterpreter::Q16_16_FIXED_POINT , convert_to_q16_16_fixed_point },
     { DataInterpreter::SENSOR_FUSION_QUATERNION , convert_to_quaternion },
@@ -435,7 +406,6 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
     { DataInterpreter::DEBUG_OVERFLOW_STATE , convert_to_overflow_state },
     { DataInterpreter::SENSOR_ORIENTATION, convert_to_sensor_orientation },
     { DataInterpreter::MAC_ADDRESS, convert_to_mac_address },
-    { DataInterpreter::SENSOR_ORIENTATION_MMA8452Q, convert_to_sensor_orientation_mma8452q },
     { DataInterpreter::LOGGING_TIME, convert_to_logging_time },
     { DataInterpreter::BTLE_ADDRESS, convert_to_btle_address },
     { DataInterpreter::BOSCH_ANY_MOTION, convert_to_bosch_any_motion },
@@ -449,11 +419,6 @@ unordered_map<DataInterpreter, FnBoolDataSignalByteArray> data_response_converte
 // Helper function - acc
 static float bosch_acc_to_firmware(const MblMwDataSignal* signal, float value) {
     return value * bosch_get_data_scale(signal->owner);
-}
-
-// Helper function - acc
-static float mma8452q_to_firmware(const MblMwDataSignal* signal, float value) {
-    return value * MMA8452Q_ACC_SCALE;
 }
 
 // Helper function - baro
@@ -497,7 +462,6 @@ unordered_map<FirmwareConverter, FnDataSignalFloat> number_to_firmware_converter
     { FirmwareConverter::BOSCH_ACCELERATION , bosch_acc_to_firmware },
     { FirmwareConverter::BOSCH_BAROMETER , bosch_baro_to_firmware },
     { FirmwareConverter::BOSCH_ROTATION , bosch_gyro_to_firmware },
-    { FirmwareConverter::MMA8452Q_ACCELERATION , mma8452q_to_firmware},
     { FirmwareConverter::TEMPERATURE , temp_to_firmware},
     { FirmwareConverter::Q16_16_FIXED_POINT , q16_16_fixed_point_to_firmware},
     { FirmwareConverter::BOSCH_MAGNETOMETER , bosch_magnetometer_to_firmware},

@@ -5,8 +5,8 @@ from cbindings import *
 
 class TestDataLength(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
-        self.metawear_environment_services[0x11]= create_string_buffer(b'\x11\x80\x00\x03', 4)
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_S_BOARD
+        self.metawear_motion_s_services[0x11]= create_string_buffer(b'\x11\x80\x00\x03', 4)
         super().setUp()
 
     def sensorDataHandler(self, context, data):
@@ -14,7 +14,7 @@ class TestDataLength(TestMetaWearBase):
 
     def test_uint32(self):
         expected= 4
-    
+
         pin_monitor_signal= self.libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, 1, GpioAnalogReadMode.ADC);
         self.libmetawear.mbl_mw_datasignal_subscribe(pin_monitor_signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x05\x87\x01\x72\x03', 5))
@@ -59,17 +59,6 @@ class TestDataLength(TestMetaWearBase):
         signal= self.libmetawear.mbl_mw_settings_get_battery_state_data_signal(self.board)
         self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
         self.notify_mw_char(create_string_buffer(b'\x11\x8c\x63\x34\x10', 5))
-
-        print("TestDataLength \n")
-        self.assertEqual(self.data_length, expected)
-
-
-    def test_tcs34725(self):
-        expected= 8
-
-        signal= self.libmetawear.mbl_mw_cd_tcs34725_get_adc_data_signal(self.board)
-        self.libmetawear.mbl_mw_datasignal_subscribe(signal, None, self.sensor_data_handler)
-        self.notify_mw_char(create_string_buffer(b'\x17\x81\xa2\x01\x7b\x00\x9a\x00\x7c\x00', 10))
 
         print("TestDataLength \n")
         self.assertEqual(self.data_length, expected)

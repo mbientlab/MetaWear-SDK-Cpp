@@ -2,7 +2,7 @@
 
 include config.mk
 
-CXXFLAGS+=-std=c++11 -Wall -Werror -I$(SOURCE_DIR) -I/Users/Kasso/Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/include/
+CXXFLAGS+=-std=c++11 -I$(SOURCE_DIR) -I/usr/local/opt/llvm/include
 
 ifeq ($(CONFIGURATION),debug)
     CXXFLAGS+=-g
@@ -13,7 +13,7 @@ else ifeq ($(CONFIGURATION),release)
 else
     $(error Invalid value for "CONFIGURATION", must be 'release' or 'debug')
 endif
-LDFLAGS+=-lclang -ldl -rdynamic -L/Users/Kasso/Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib
+LDFLAGS+=-ldl -rdynamic -L/usr/local/opt/llvm/lib -lclang
 
 ifeq ($(MACHINE),x86)
     CXXFLAGS+=-m32

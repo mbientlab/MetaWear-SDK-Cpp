@@ -56,7 +56,7 @@ class TestSettings(TestMetaWearBase):
 
 class TestSettingsRevision1(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x01', 4)
+        self.metawear_motion_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x01', 4)
         super().setUp()
 
     def test_set_ad_interval(self):
@@ -79,7 +79,7 @@ class TestSettingsRevision1(TestMetaWearBase):
 
 class TestSettingsRevision2(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x02', 4)
+        self.metawear_motion_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x02', 4)
         super().setUp()
 
     def test_disconnected_event(self):
@@ -117,7 +117,7 @@ class TestSettingsRevision2(TestMetaWearBase):
 
 class TestSettingsRevision3(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x03', 4)
+        self.metawear_motion_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x03', 4)
         super().setUp()
 
     def test_disconnected_event(self):
@@ -196,7 +196,7 @@ class TestSettingsRevision3(TestMetaWearBase):
 
 class TestSettingsRevision5(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x05\x03', 5)
+        self.metawear_motion_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x05\x03', 5)
         super().setUp()
 
     def test_power_status_signal(self):
@@ -255,7 +255,7 @@ class TestSettingsRevision5(TestMetaWearBase):
 
 class TestSettingsRevisionNoStatus(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x05\x00', 5)
+        self.metawear_motion_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x05\x00', 5)
         super().setUp()
 
     def test_power_status_signal(self):
@@ -305,7 +305,7 @@ class TestSettingsRevisionNoStatus(TestMetaWearBase):
 
 class TestSettingsRevision6(TestSettings):
     def setUp(self):
-        self.metawear_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x06', 4)
+        self.metawear_motion_r_services[0x11]= create_string_buffer(b'\x11\x80\x00\x06', 4)
         super().setUp()
 
     def test_set_ad_interval(self):
