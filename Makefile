@@ -124,7 +124,8 @@ install: $(APP_OUTPUT)
 tag:
 	git tag -a $(VERSION)
 
-bindings: 
+bindings:
+	$(file > $@,$(MASTER_HEADERS))
 	$(MAKE) CXX=$(CXX) -C c-binding-generator/ -j4
 	$(MAKE) APP_NAME=metawearbinding MODULES=metawear/generator \
         CXXFLAGS="-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -Ic-binding-generator/src -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS"
@@ -136,15 +137,18 @@ export PYTHONPATH=$(BUILD_DIR)/bindings/python/
 export METAWEAR_LIB_SO_NAME=$(APP_OUTPUT)
 
 pythonbindings:
+	echo $(MASTER_HEADERS) > $(BUILD_DIR)/metawear.h
 	mkdir -p $(BUILD_DIR)/bindings/python/mbientlab/metawear
 	$(MAKE) bindings CREATOR=createPythonGenerator OUTPUT=$(PYTHON_BINDINGS)
 
 javascriptbindings:
+	echo $(MASTER_HEADERS) > $(BUILD_DIR)/metawear.h
 	mkdir -p $(BUILD_DIR)/bindings/javascript
 	$(MAKE) bindings CREATOR=createJavaScriptGenerator OUTPUT=$(JAVASCRIPT_BINDINGS)
 	$(MAKE) $(LIBMETAWEAR_JAVASCRIPT_PATH)
 
 swiftbindings:
+	echo $(MASTER_HEADERS) > $(BUILD_DIR)/metawear.h
 	mkdir -p $(BUILD_DIR)/bindings/swift
 	$(MAKE) bindings CREATOR=createSwiftGenerator OUTPUT=$(SWIFT_BINDINGS)
 

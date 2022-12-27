@@ -13,13 +13,13 @@ class TestSettings(TestMetaWearBase):
         expected= [0x11, 0x1c, 0x01]
         
         self.libmetawear.mbl_mw_settings_enable_3V_regulator(self.board, 1)
-        print("TestSettings 0 \n")
+        print("TestSettings \n")
         self.assertEqual(self.command, expected)
 
     def test_force_1m_phy(self):
         expected= [0x11, 0x1d, 0x01]
         
         self.libmetawear.mbl_mw_settings_force_1M_phy(self.board, 1)
-        print("TestSettings 1 \n")
+        print("TestSettings \n")
         self.assertEqual(self.command, expected)
    

@@ -27,8 +27,7 @@ class TestMultiChannelTemperatureMwr(TestMetaWearBase):
                 temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, chnl[1])
                 self.libmetawear.mbl_mw_datasignal_subscribe(temp_signal, None, self.sensor_data_handler)
                 self.libmetawear.mbl_mw_datasignal_read(temp_signal)
-                print("TestMultiChannelTemperatureMwr ", chnl)
-                print("\n")
+                print("TestMultiChannelTemperatureMwr \n")
                 self.assertListEqual(self.command, chnl[0])
 
     def test_read_temperature_silent(self):
@@ -41,8 +40,7 @@ class TestMultiChannelTemperatureMwr(TestMetaWearBase):
              with self.subTest(channel=chnl):
                 temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, chnl[1])
                 self.libmetawear.mbl_mw_datasignal_read(temp_signal)
-                print("TestMultiChannelTemperatureMwr ", chnl)
-                print("\n")
+                print("TestMultiChannelTemperatureMwr \n")
                 self.assertListEqual(self.command, chnl[0])
 
     def test_get_temperature_data(self):
@@ -56,35 +54,33 @@ class TestMultiChannelTemperatureMwr(TestMetaWearBase):
                 temp_signal= self.libmetawear.mbl_mw_multi_chnl_temp_get_temperature_data_signal(self.board, resp[2])
                 self.libmetawear.mbl_mw_datasignal_subscribe(temp_signal, None, self.sensor_data_handler)
                 self.notify_mw_char(resp[0])
-                print("TestMultiChannelTemperatureMwr ", resp)
-                print("\n")
+                print("TestMultiChannelTemperatureMwr \n")
                 self.assertAlmostEqual(self.data_float.value, resp[1])
 
     def test_get_num_channels(self):
-        expected= 2
+        expected= 4
         result= self.libmetawear.mbl_mw_multi_chnl_temp_get_num_channels(self.board)
 
         print("TestMultiChannelTemperatureMwr \n")
         self.assertEqual(result, expected)
 
     def test_get_source(self):
-        channels= [TemperatureSource.NRF_DIE, TemperatureSource.EXT_THERM]
+        channels= [MetaWearRProChannel.ON_DIE, MetaWearRProChannel.BMP280, MetaWearRProChannel.ON_BOARD_THERMISTOR, MetaWearRProChannel.EXT_THERMISTOR]
 
         for i in range(0, len(channels)):
             with self.subTest(channel=i):
                 source= self.libmetawear.mbl_mw_multi_chnl_temp_get_source(self.board, i)
-                print("TestMultiChannelTemperatureMwr ", i)
-                print("\n")
+                print("TestMultiChannelTemperatureMwr \n")
                 self.assertEqual(source, channels[i])
 
-    def test_get_invalid_source(self):
-        channels= [-1, 2]
+    #def test_get_invalid_source(self):
+    #    channels= [-1, 2]
 
-        for chnl in channels:
-            with self.subTest(channel=chnl):
-                print("TestMultiChannelTemperatureMwr ", chnl)
-                print("\n")
-                self.assertEqual(TemperatureSource.INVALID, self.libmetawear.mbl_mw_multi_chnl_temp_get_source(self.board, chnl))
+    #    for chnl in channels:
+    #        with self.subTest(channel=chnl):
+    #            print("TestMultiChannelTemperatureMwr ", chnl)
+    #            print("\n")
+    #            self.assertEqual(TemperatureSource.INVALID, self.libmetawear.mbl_mw_multi_chnl_temp_get_source(self.board, chnl))
 
 class TestMultiChannelTemperatureMwrPro(TestMetaWearBase):
     def setUp(self):
