@@ -72,7 +72,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\metawear\**\cpp\*.h" />
     <ClInclude Include="src\metawear\**\*.h" />
     <ClCompile Include="src\metawear\core\**\*.cpp" />
     <ClCompile Include="src\metawear\dfu\**\*.cpp" />
