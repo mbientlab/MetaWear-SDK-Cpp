@@ -5,7 +5,7 @@ from cbindings import *
 
 class TestMagnetometerBmm150(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_CPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -82,7 +82,7 @@ class TestMagnetometerBmm150(TestMetaWearBase):
 
 class TestMagnetometerBmm150Rev2(TestMagnetometerBmm150):
     def setUp(self):
-        self.metawear_cpro_services[0x15] = create_string_buffer(b'\x15\x80\x00\x02', 4)
+        self.metawear_motion_r_services[0x15] = create_string_buffer(b'\x15\x80\x00\x02', 4)
 
         super().setUp()
 
@@ -105,7 +105,7 @@ class TestMagnetometerBmm150Rev2(TestMagnetometerBmm150):
 
 class TestMagnetometerBmm150Data(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_CPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -188,8 +188,8 @@ class TestMagnetometerBmm150Data(TestMetaWearBase):
 
 class TestMagnetometerPackedData(TestMetaWearBase):
     def setUp(self):
-        self.metawear_cpro_services[0x15] = create_string_buffer(b'\x15\x80\x00\x01', 4)
-        self.boardType = TestMetaWearBase.METAWEAR_CPRO_BOARD
+        self.metawear_motion_r_services[0x15] = create_string_buffer(b'\x15\x80\x00\x01', 4)
+        self.boardType = TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 

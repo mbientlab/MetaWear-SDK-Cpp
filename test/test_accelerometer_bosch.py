@@ -71,7 +71,7 @@ class AccelerometerBoschBase:
     class TestAnyMotion(TestMetaWearBase):
         def test_enable(self):
             expected= [
-                [0x03, 0x0a, 0x03, 0x2f, 0x14, 0x14] if self.boardType == TestMetaWearBase.METAWEAR_RPRO_BOARD else [0x03, 0x0a, 0x03, 0x2f, 0x14],
+                [0x03, 0x0a, 0x03, 0x2f, 0x14, 0x14] if self.boardType == TestMetaWearBase.METAWEAR_MOTION_R_BOARD else [0x03, 0x0a, 0x03, 0x2f, 0x14],
                 [0x03, 0x09, 0x07, 0x00]
             ]
 
@@ -209,36 +209,18 @@ class AccelerometerBoschBase:
 
 class TestAccelerometerBmi160Orientation(AccelerometerBoschBase.TestOrientation):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
 class TestAccelerometerBmi160AnyMotion(AccelerometerBoschBase.TestAnyMotion):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
 class TestAccelerometerBmi160AnyMotion(AccelerometerBoschBase.TestTapDetector):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
-
-        super().setUp()
-
-class TestAccelerometerBma255Orientation(AccelerometerBoschBase.TestOrientation):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
-
-        super().setUp()
-
-class TestAccelerometerBma255AnyMotion(AccelerometerBoschBase.TestAnyMotion):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
-
-        super().setUp()
-
-class TestAccelerometerBma255Tap(AccelerometerBoschBase.TestTapDetector):
-    def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_ENV_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()

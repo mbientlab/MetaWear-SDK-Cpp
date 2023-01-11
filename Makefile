@@ -124,11 +124,12 @@ install: $(APP_OUTPUT)
 tag:
 	git tag -a $(VERSION)
 
-bindings: 
+bindings:
+	$(file > $@,$(MASTER_HEADERS))
 	$(MAKE) CXX=$(CXX) -C c-binding-generator/ -j4
 	$(MAKE) APP_NAME=metawearbinding MODULES=metawear/generator \
         CXXFLAGS="-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -Ic-binding-generator/src -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS"
-	./c-binding-generator/dist/$(CONFIGURATION)/bin/$(MACHINE)/cbinds --cxx-flags "-std=c++11 -I. -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS" \
+	./c-binding-generator/dist/$(CONFIGURATION)/bin/$(MACHINE)/cbinds --cxx-flags "-x c++ -I. -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS" \
         --generator-lib dist/$(CONFIGURATION)/lib/$(MACHINE)/libmetawearbinding.$(EXTENSION).$(VERSION_MAJOR) \
         --generator-creator $(CREATOR) -f $(BUILD_DIR)/metawear.h -o $(OUTPUT)
 
@@ -136,10 +137,12 @@ export PYTHONPATH=$(BUILD_DIR)/bindings/python/
 export METAWEAR_LIB_SO_NAME=$(APP_OUTPUT)
 
 pythonbindings:
+	echo $(MASTER_HEADERS) > $(BUILD_DIR)/metawear.h
 	mkdir -p $(BUILD_DIR)/bindings/python/mbientlab/metawear
 	$(MAKE) bindings CREATOR=createPythonGenerator OUTPUT=$(PYTHON_BINDINGS)
 
 javascriptbindings:
+	echo $(MASTER_HEADERS) > $(BUILD_DIR)/metawear.h
 	mkdir -p $(BUILD_DIR)/bindings/javascript
 	$(MAKE) bindings CREATOR=createJavaScriptGenerator OUTPUT=$(JAVASCRIPT_BINDINGS)
 	$(MAKE) $(LIBMETAWEAR_JAVASCRIPT_PATH)

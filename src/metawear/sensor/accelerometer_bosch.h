@@ -1,10 +1,10 @@
 /**
  * @copyright MbientLab License 
  * @file accelerometer_bosch.h
- * @brief Interacts with the supported Bosch accelerometers, currently BMI270, BMI160 and BMA255
+ * @brief Interacts with the supported Bosch accelerometers, currently BMI270 or BMI160
  * @details The BMI160 and BMA255 sensors are identical except for the output data rates.  Functions that are generic for 
  * both accelerometers have "bosch" in the name whereas functions specific to either accelerometer are contain their model 
- * i.e. "bmi160" or "bma255".
+ * i.e. "bmi160" or "bmi270".
  */
 #pragma once
 
@@ -81,20 +81,6 @@ typedef enum {
     MBL_MW_ACC_BMI160_ODR_800Hz,
     MBL_MW_ACC_BMI160_ODR_1600Hz
 } MblMwAccBmi160Odr;
-
-/**
- * Available ouput data rates on the BMA255 accelerometer
- */
-typedef enum {
-    MBL_MW_ACC_BMA255_ODR_15_62Hz= 0,
-    MBL_MW_ACC_BMA255_ODR_31_26Hz,
-    MBL_MW_ACC_BMA255_ODR_62_5Hz,
-    MBL_MW_ACC_BMA255_ODR_125Hz,
-    MBL_MW_ACC_BMA255_ODR_250Hz,
-    MBL_MW_ACC_BMA255_ODR_500Hz,
-    MBL_MW_ACC_BMA255_ODR_1000Hz,
-    MBL_MW_ACC_BMA255_ODR_2000Hz
-} MblMwAccBma255Odr;
 
 /**
  * Available ouput data rates on the BMI270 accelerometer
@@ -335,15 +321,6 @@ METAWEAR_API void mbl_mw_acc_bmi160_set_odr(MblMwMetaWearBoard *board, MblMwAccB
  * @param odr       Output data rate value to assign
  */
 METAWEAR_API void mbl_mw_acc_bmi270_set_odr(MblMwMetaWearBoard *board, MblMwAccBmi270Odr odr);
-
-/**
- * Sets the output data rate for the BMI160 accelerometer
- * The ODR sets the output data frequency in Hz.
- * See MblMwAccBmi160Odr for allowed values.
- * @param board     Pointer to the board to modify
- * @param odr       Output data rate value to assign
- */
-METAWEAR_API void mbl_mw_acc_bma255_set_odr(MblMwMetaWearBoard *board, MblMwAccBma255Odr odr);
 
 /**
  * Sets the acceleration range

@@ -177,7 +177,7 @@ class TestGpioAnalogData(TestMetaWearBase):
 
 class TestGpioEnhancedAnalogRead(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x5]= create_string_buffer(b'\x05\x80\x00\x02', 4)
+        self.metawear_motion_r_services[0x5]= create_string_buffer(b'\x05\x80\x00\x02', 4)
         super().setUp()
 
     def test_read_analog_no_parameters(self):

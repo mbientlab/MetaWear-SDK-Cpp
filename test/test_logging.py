@@ -45,7 +45,7 @@ class TestLoggingModule(TestMetaWearBase):
 
 class TestLogDownload(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -138,7 +138,7 @@ class TestAccelerometerLoggingBase(TestMetaWearBase):
         self.responses = Bmi160Accelerometer.log_responses
 
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -190,7 +190,7 @@ class TestGyroYAxisLoggingBase(TestMetaWearBase):
                 received_unknown_entry = cast(None, FnVoid_VoidP_UByte_Long_UByteP_UByte), received_unhandled_entry = cast(None, FnVoid_VoidP_DataP))
 
     def setUp(self):        
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -224,7 +224,7 @@ class TestGyroYAxisLogging(TestGyroYAxisLoggingBase):
 
 class TestLogIdentifiers(TestMetaWearBase):
     def setUp(self):        
-        self.boardType= TestMetaWearBase.METAWEAR_RPRO_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 

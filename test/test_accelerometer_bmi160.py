@@ -5,7 +5,7 @@ from ctypes import create_string_buffer
 
 class TestAccBmi160Config(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -113,7 +113,7 @@ class TestAccBmi160Config(TestMetaWearBase):
 
 class TestBmi160AccelerationData(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -145,7 +145,7 @@ class TestBmi160AccelerationData(TestMetaWearBase):
 
 class TestBmi160HighFreqAccData(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -183,7 +183,7 @@ class TestBmi160HighFreqAccData(TestMetaWearBase):
 
 class TestBmi160StepCounterSetup(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -216,7 +216,7 @@ class TestBmi160StepCounterSetup(TestMetaWearBase):
 
 class TestBmi160StepCounterData(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -248,7 +248,7 @@ class TestBmi160StepCounterData(TestMetaWearBase):
 
 class TestBmi160StepDetectorData(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
