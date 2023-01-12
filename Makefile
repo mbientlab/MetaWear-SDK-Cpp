@@ -125,7 +125,6 @@ tag:
 	git tag -a $(VERSION)
 
 bindings:
-	$(file > $@,$(MASTER_HEADERS))
 	$(MAKE) CXX=$(CXX) -C c-binding-generator/ -j4
 	$(MAKE) APP_NAME=metawearbinding MODULES=metawear/generator \
         CXXFLAGS="-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -Ic-binding-generator/src -Isrc -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS"
