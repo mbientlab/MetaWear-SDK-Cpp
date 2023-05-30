@@ -25,16 +25,6 @@ typedef struct {
 } MblMwBatteryState;
 
 /**
- * Tuple wrapping ADC data from the TCS34725 color detector
- */
-typedef struct {
-    uint16_t clear;         ///< ADC value from an unfiltered diode
-    uint16_t red;           ///< ADC value from a red filtered diode
-    uint16_t green;         ///< ADC value from a green filtered diode
-    uint16_t blue;          ///< ADC value from a blue filtered diode
-} MblMwTcs34725ColorAdc;
-
-/**
  * 4-element float vector holding Euler angles, all values are in degrees
  */
 typedef struct {

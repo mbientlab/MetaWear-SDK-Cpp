@@ -42,19 +42,16 @@
 #include "metawear/sensor/cpp/accelerometer_private.h"
 #include "metawear/sensor/cpp/ambientlight_ltr329_private.h"
 #include "metawear/sensor/cpp/barometer_bosch_private.h"
-#include "metawear/sensor/cpp/colordetector_tcs34725_private.h"
 #include "metawear/sensor/cpp/gpio_private.h"
 #include "metawear/sensor/cpp/gpio_register.h"
 #include "metawear/sensor/cpp/gyro_bosch_private.h"
 #include "metawear/sensor/cpp/humidity_bme280_private.h"
 #include "metawear/sensor/cpp/magnetometer_bmm150_private.h"
 #include "metawear/sensor/cpp/multichanneltemperature_private.h"
-#include "metawear/sensor/cpp/proximity_tsl2671_private.h"
 #include "metawear/sensor/cpp/serialpassthrough_private.h"
 #include "metawear/sensor/cpp/serialpassthrough_register.h"
 #include "metawear/sensor/cpp/sensor_fusion_private.h"
 #include "metawear/sensor/cpp/switch_private.h"
-#include "metawear/sensor/cpp/conductance_private.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -212,7 +209,6 @@ const vector<vector<uint8_t>> MODULE_DISCOVERY_CMDS= {
     {MBL_MW_MODULE_ACCELEROMETER, READ_INFO_REGISTER},
     {MBL_MW_MODULE_TEMPERATURE, READ_INFO_REGISTER},
     {MBL_MW_MODULE_GPIO, READ_INFO_REGISTER},
-    {MBL_MW_MODULE_NEO_PIXEL, READ_INFO_REGISTER},
     {MBL_MW_MODULE_IBEACON, READ_INFO_REGISTER},
     {MBL_MW_MODULE_HAPTIC, READ_INFO_REGISTER},
     {MBL_MW_MODULE_DATA_PROCESSOR, READ_INFO_REGISTER},
@@ -221,15 +217,12 @@ const vector<vector<uint8_t>> MODULE_DISCOVERY_CMDS= {
     {MBL_MW_MODULE_TIMER, READ_INFO_REGISTER},
     {MBL_MW_MODULE_I2C, READ_INFO_REGISTER},
     {MBL_MW_MODULE_MACRO, READ_INFO_REGISTER},
-    {MBL_MW_MODULE_CONDUCTANCE, READ_INFO_REGISTER},
     {MBL_MW_MODULE_SETTINGS, READ_INFO_REGISTER},
     {MBL_MW_MODULE_BAROMETER, READ_INFO_REGISTER},
     {MBL_MW_MODULE_GYRO, READ_INFO_REGISTER},
     {MBL_MW_MODULE_AMBIENT_LIGHT, READ_INFO_REGISTER},
     {MBL_MW_MODULE_MAGNETOMETER, READ_INFO_REGISTER},
     {MBL_MW_MODULE_HUMIDITY, READ_INFO_REGISTER},
-    {MBL_MW_MODULE_COLOR_DETECTOR, READ_INFO_REGISTER},
-    {MBL_MW_MODULE_PROXIMITY, READ_INFO_REGISTER},
     {MBL_MW_MODULE_SENSOR_FUSION, READ_INFO_REGISTER},
     {MBL_MW_MODULE_DEBUG, READ_INFO_REGISTER}
 };
@@ -239,8 +232,6 @@ const unordered_map<uint8_t, void(*)(const MblMwMetaWearBoard*, vector<uint8_t>&
     { MBL_MW_MODULE_BAROMETER, serialize_barometer_config },
     { MBL_MW_MODULE_GYRO, serialize_gyro_config },
     { MBL_MW_MODULE_AMBIENT_LIGHT, serialize_ambient_light_config },
-    { MBL_MW_MODULE_COLOR_DETECTOR, serialize_colordetector_config },
-    { MBL_MW_MODULE_PROXIMITY, serialize_proximity_config },
     { MBL_MW_MODULE_SENSOR_FUSION, serialize_sensor_fusion_config }
 };
 const unordered_map<uint8_t, void(*)(MblMwMetaWearBoard*, uint8_t**)> CONFIG_DESERIALIZATION = {
@@ -248,8 +239,6 @@ const unordered_map<uint8_t, void(*)(MblMwMetaWearBoard*, uint8_t**)> CONFIG_DES
     { MBL_MW_MODULE_BAROMETER, deserialize_barometer_config },
     { MBL_MW_MODULE_GYRO, deserialize_gyro_config },
     { MBL_MW_MODULE_AMBIENT_LIGHT, deserialize_ambient_light_config },
-    { MBL_MW_MODULE_COLOR_DETECTOR, deserialize_colordetector_config },
-    { MBL_MW_MODULE_PROXIMITY, deserialize_proximity_config },
     { MBL_MW_MODULE_SENSOR_FUSION, deserialize_sensor_fusion_config }
 };
 
@@ -366,7 +355,6 @@ const unordered_map<uint8_t, tuple<const char*, void(*)(MblMwMetaWearBoard*)>> M
     { MBL_MW_MODULE_ACCELEROMETER, make_tuple("Accelerometer", init_accelerometer_module) },
     { MBL_MW_MODULE_TEMPERATURE, make_tuple("Temperature", init_multichannel_temp_module) },
     { MBL_MW_MODULE_GPIO, make_tuple("Gpio", init_gpio_module) },
-    { MBL_MW_MODULE_NEO_PIXEL, make_tuple("NeoPixel", nullptr) },
     { MBL_MW_MODULE_IBEACON, make_tuple("IBeacon", nullptr) },
     { MBL_MW_MODULE_HAPTIC, make_tuple("Haptic", nullptr) },
     { MBL_MW_MODULE_DATA_PROCESSOR, make_tuple("DataProcessor", init_dataprocessor_module) },
@@ -375,15 +363,12 @@ const unordered_map<uint8_t, tuple<const char*, void(*)(MblMwMetaWearBoard*)>> M
     { MBL_MW_MODULE_TIMER, make_tuple("Timer", init_timer_module) },
     { MBL_MW_MODULE_I2C, make_tuple("SerialPassthrough", init_serialpassthrough_module) },
     { MBL_MW_MODULE_MACRO, make_tuple("Macro", init_macro_module) },
-    { MBL_MW_MODULE_CONDUCTANCE, make_tuple("Conductance", init_conductance_module) },
     { MBL_MW_MODULE_SETTINGS, make_tuple("Settings", init_settings_module) },
     { MBL_MW_MODULE_BAROMETER, make_tuple("Barometer", init_barometer_module) },
     { MBL_MW_MODULE_GYRO, make_tuple("Gyro", init_gyro_module) },
     { MBL_MW_MODULE_AMBIENT_LIGHT, make_tuple("AmbientLight", init_ambient_light_module) },
     { MBL_MW_MODULE_MAGNETOMETER, make_tuple("Magnetometer", init_magnetometer_module) },
     { MBL_MW_MODULE_HUMIDITY, make_tuple("Humidity", init_humidity_module) },
-    { MBL_MW_MODULE_COLOR_DETECTOR, make_tuple("Color", init_colordetector_module) },
-    { MBL_MW_MODULE_PROXIMITY, make_tuple("Proximity", init_proximity_module) },
     { MBL_MW_MODULE_SENSOR_FUSION, make_tuple("SensorFusion", init_sensor_fusion_module) },
     { MBL_MW_MODULE_DEBUG, make_tuple("Debug", init_debug_module) }
 };
@@ -601,9 +586,6 @@ MblMwModel mbl_mw_metawearboard_get_model(const MblMwMetaWearBoard* board) {
     if (board->module_number == "2") {
         if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_MAGNETOMETER) != MBL_MW_MODULE_TYPE_NA) {
             return MBL_MW_MODEL_METAWEAR_CPRO;
-        }
-        if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_PROXIMITY) != MBL_MW_MODULE_TYPE_NA) {
-            return MBL_MW_MODEL_METADETECT;
         }
         if (mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_HUMIDITY) != MBL_MW_MODULE_TYPE_NA) {
             return MBL_MW_MODEL_METAENV;

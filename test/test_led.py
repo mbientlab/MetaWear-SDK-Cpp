@@ -72,7 +72,7 @@ class TestLedPattern(TestMetaWearBase):
 
 class TestLedDelayedPattern(TestMetaWearBase):
     def setUp(self):
-        self.metawear_r_services[0x2]= create_string_buffer(b'\x02\x80\x00\x01\x03\x00', 6)
+        self.metawear_motion_r_services[0x2]= create_string_buffer(b'\x02\x80\x00\x01\x03\x00', 6)
         super().setUp()
 
     def test_blink_pattern(self):

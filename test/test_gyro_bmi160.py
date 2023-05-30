@@ -6,7 +6,7 @@ from cbindings import *
 
 class TestGyroBmi160Config(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -65,7 +65,7 @@ class TestGyroBmi160Config(TestMetaWearBase):
 
 class TestGyroBmi160DataHandler(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 
@@ -127,7 +127,7 @@ class TestGyroBmi160DataHandler(TestMetaWearBase):
 
 class TestGyroBmi160HighFreqDataHandler(TestMetaWearBase):
     def setUp(self):
-        self.boardType= TestMetaWearBase.METAWEAR_RG_BOARD
+        self.boardType= TestMetaWearBase.METAWEAR_MOTION_R_BOARD
 
         super().setUp()
 

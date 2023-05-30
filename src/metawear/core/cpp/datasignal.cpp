@@ -8,13 +8,11 @@
 #include "metawear/sensor/cpp/accelerometer_private.h"
 #include "metawear/sensor/cpp/ambientlight_ltr329_private.h"
 #include "metawear/sensor/cpp/barometer_bosch_private.h"
-#include "metawear/sensor/cpp/colordetector_tcs34725_private.h"
 #include "metawear/sensor/cpp/gpio_private.h"
 #include "metawear/sensor/cpp/gyro_bosch_private.h"
 #include "metawear/sensor/cpp/humidity_bme280_private.h"
 #include "metawear/sensor/cpp/magnetometer_bmm150_private.h"
 #include "metawear/sensor/cpp/multichanneltemperature_private.h"
-#include "metawear/sensor/cpp/proximity_tsl2671_private.h"
 #include "metawear/sensor/cpp/sensor_fusion_private.h"
 #include "metawear/sensor/cpp/serialpassthrough_private.h"
 #include "metawear/sensor/cpp/switch_private.h"
@@ -145,10 +143,6 @@ void MblMwDataSignal::create_uri(stringstream& uri) const {
         return create_magnetometer_uri(this, uri);
     case MBL_MW_MODULE_HUMIDITY:
         return create_humidity_uri(this, uri);
-    case MBL_MW_MODULE_COLOR_DETECTOR:
-        return create_colordetector_uri(this, uri);
-    case MBL_MW_MODULE_PROXIMITY:
-        return create_proximity_uri(this, uri);
     case MBL_MW_MODULE_SENSOR_FUSION:
         return create_sensor_fusion_uri(this, uri);
     }
@@ -180,9 +174,6 @@ void MblMwDataSignal::make_signed() {
     case DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS:
         interpreter = DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS;
         break;
-    case DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS:
-        interpreter = DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS;
-        break;
     case DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS:
         interpreter = DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS;
         break;
@@ -206,9 +197,6 @@ void MblMwDataSignal::make_unsigned() {
         break;
     case DataInterpreter::BOSCH_ACCELERATION_SINGLE_AXIS:
         interpreter = DataInterpreter::BOSCH_ACCELERATION_UNSIGNED_SINGLE_AXIS;
-        break;
-    case DataInterpreter::MMA8452Q_ACCELERATION_SINGLE_AXIS:
-        interpreter = DataInterpreter::MMA8452Q_ACCELERATION_UNSIGNED_SINGLE_AXIS;
         break;
     case DataInterpreter::BMM150_B_FIELD_SINGLE_AXIS:
         interpreter = DataInterpreter::BMM150_B_FIELD_UNSIGNED_SINGLE_AXIS;

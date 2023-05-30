@@ -9,42 +9,48 @@ This project is a C++ implementation of the MetaWear protocol.  If compiled as a
 
 The library only constructs the bytes for communicating with the MetaWear platform, it **does not** contain any Bluetooth LE code.  Users will need to fill in the appropriate Bluetooth LE functions for their target platform.
 
-> ADDITIONAL NOTES  
-This library is platform agnostic and does not contain any Bluetooth code. You are responsible for adding in this functionality.
+> This library is platform agnostic and does not contain any Bluetooth code. You are responsible for adding in this functionality.
+
+Version 0.30.0 supports the following boards:
+- [x] MMS
+- [x] MMC
+- [x] MMR + MMRL
+- [ ] MetaTracker
+- [ ] MetaWear HR / PPG
+- [ ] MMM (mini)
+- [ ] MWR, MWRG, MWRGPro
+- [ ] MWC, MWCPro, MWCenv, MWCDetect 
+- [ ] Custom boards
 
 ### Overview
-
 [MetaWear](https://mbientlab.com) is a complete development and production platform for wearable and connected device applications.
 
-MetaWear features a number of sensors and peripherals all easily controllable over Bluetooth 4.0/5.0 Low Energy using this SDK, no firmware or hardware experience needed!
-
-The MetaWear hardware comes pre-loaded with a wirelessly upgradeable firmware, so it keeps getting more powerful over time.
+MetaWear features a number of sensors and peripherals (button, acceleromter, LED, gyroscope, magnetometer, ambient light, IOs...) all easily controllable over Bluetooth 4.0/5.0 Low Energy using this SDK.
 
 ### Requirements
 - [MetaWear board](https://mbientlab.com/store/)
 - A linux/mac/windows machine with Bluetooth 4.0 or Bluetooth 5.0
 
 ### Notes
-- Our tutorials will mostly reflect usage on ios and linux (see our SDKs)
-- Can work on macOS/iOS/OSX/tvOS (you may need to do some additional dev yourself - not documented/supported by Mbient)
-- Can work on Windows (you will need to do some additional dev yourself - not documented/supported by Mbient)
+- Our tutorials will mostly reflect usage on iOS and Linux (see our Swift, Python and Javascript SDKs)
+- Some Windows support is provided with Python.
 
 ### License
 See the [License](https://github.com/mbientlab/MetaWear-SDK-Cpp/blob/master/LICENSE.md).
 
 ### Support
-Reach out to the [community](https://mbientlab.com/community/) if you encounter any problems, or just want to chat :)
+Reach out to the [community](https://mbientlab.com/community/) if you encounter any problems.
 
 ## Getting Started
 
 ### Installation
-Building the project has been tested on Unix systems with Clang 4.  
+Building the project has been tested on Linux Debian with Clang 15.  
 
 ### Usage
 
 ```sh
 > clang++ --version
-clang version 4.0.1 (tags/RELEASE_401/final 305264)
+clang version 15.0.6
 Target: x86_64-unknown-linux-gnu
 ```
 ```bat
@@ -74,8 +80,8 @@ dist/
     └── lib
         └── x64
             ├── libmetawear.so -> libmetawear.so.0
-            ├── libmetawear.so.0 -> libmetawear.so.0.20.9
-            └── libmetawear.so.0.20.9
+            ├── libmetawear.so.0 -> libmetawear.so.0.30.0
+            └── libmetawear.so.0.30.0
 
 ```
 
@@ -99,5 +105,4 @@ OK (skipped=1)
 ```
 
 ### Tutorials
-
 Tutorials can be found [here](https://mbientlab.com/tutorials/).

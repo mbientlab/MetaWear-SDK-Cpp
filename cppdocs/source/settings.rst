@@ -9,7 +9,7 @@ Functions communicating with this module are defined in the `settings.h <https:/
 Battery State
 -------------
 The battery data provided by the Settings module reports both charge percentange and voltage, encapsulated by the 
-`MblMwBatteryState <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwBatteryState.html>`_ struct.  Unlike the battery gatt servive, this 
+`MblMwBatteryState <https://mbientlab.com/docs/metawear/cpp/latest/structMblMwBatteryState.html>`_ struct.  Unlike the battery gatt service, this 
 battery data can be utilized with MetaWear features such as the logger. ::
 
     #include "metawear/core/datasignal.h"
