@@ -288,7 +288,7 @@ static MblMwData* convert_to_mac_address(bool log_data, const MblMwDataSignal* s
     const int strSize = 17 + 1;
     const uint8_t offset = len == 7 ? 1 : 0;
     char *value = (char *)malloc(strSize);
-    sprintf(value, "%02X:%02X:%02X:%02X:%02X:%02X", response[5 + offset], response[4 + offset], 
+    snprintf(value, strSize,"%02X:%02X:%02X:%02X:%02X:%02X", response[5 + offset], response[4 + offset], 
         response[3 + offset], response[2 + offset], response[1 + offset], response[0 + offset]);
     value[strSize - 1] = '\0';
 

@@ -9,7 +9,7 @@
 using std::distance;
 using std::fabs;
 using std::min_element;
-using std::sprintf;
+using std::snprintf;
 using std::strcpy;
 using std::strlen;
 using std::transform;
@@ -17,7 +17,7 @@ using std::vector;
 
 char* copy_string_index(const char* src, std::uint8_t i) {
     char* buffer = (char*)std::malloc(strlen(src) + 6);
-    sprintf(buffer, "%s[%d]", src, i);
+    snprintf(buffer, strlen(src) + 6, "%s[%d]", src, i);
     return buffer;
 }
 
