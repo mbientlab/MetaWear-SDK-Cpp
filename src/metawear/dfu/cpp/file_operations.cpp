@@ -124,11 +124,12 @@ void FileOperations::openZip(const char *filename)
                 if (it1 != it->end()) {
                     auto it2 = it1->find("bin_file");
                     if (it2 != it1->end()) {
-                        firmwareFilename = *it2;
+                        firmwareFilename = static_cast<std::string const&>(*it2);
                     }
+
                     auto it3 = it1->find("dat_file");
                     if (it3 != it1->end()) {
-                        metadataFilename = *it3;
+                        metadataFilename = static_cast<std::string const&>(*it3);
                     }
                 }
             }
