@@ -85,6 +85,16 @@ dist/
 
 ```
 
+### CMake
+For cross-platform inclusion of this SDK via cmake just clone thie repository and include the folder as a subdirectory to the parent project and apply the appropriate target links similar to below:
+```
+# Adds Metawear SDK as a dependency
+message(STATUS "Device: Adding Metawear SDK Support")
+add_subdirectory(MetaWear-SDK-Cpp)
+target_include_directories(${PROJECT_NAME} PRIVATE MetaWear-SDK-Cpp/src)
+target_link_libraries(${PROJECT_NAME} PUBLIC metawear metawear::metawear)
+```
+
 ## Testing
 Unit tests for the library are written in Python (min v3.4.1) and can be invoked by calling the test target.
 
