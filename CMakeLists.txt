@@ -80,9 +80,14 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 # Compiler flags
 #----------------
 
-set(COMMON_FLAGS "-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -I${SOURCE_DIR} -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS ${OPT_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
-set(CMAKE_C_FLAGS ${COMMON_FLAGS})
+if(MSVC)
+	add_compile_options(/W4)
+	add_compile_definitions(METAWEAR_DLL METAWEAR_DLL_EXPORTS)
+else()
+	set(COMMON_FLAGS "-std=c++11 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -Wall -I${SOURCE_DIR} -DMETAWEAR_DLL -DMETAWEAR_DLL_EXPORTS ${OPT_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
+	set(CMAKE_C_FLAGS ${COMMON_FLAGS})
+endif()
 
 message(STATUS "CMAKE_CXX_COMPILER_VERSION='${CMAKE_CXX_COMPILER_VERSION}'")
 message(STATUS "CMAKE_CXX_FLAGS='${CMAKE_CXX_FLAGS}'")
